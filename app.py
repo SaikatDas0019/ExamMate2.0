@@ -120,7 +120,8 @@ def send_otp():
     session['temp_user'] = {'name': name, 'email': email, 'password': hashed_password, 'role': role, 'otp': otp_code}
 
     smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", 587))
+    # ক্লাউড সার্ভারের জন্য নিরাপদ পোর্ট 465 ব্যবহার করছি
+    smtp_port = int(os.getenv("SMTP_PORT", 465)) 
     smtp_username = os.getenv("SMTP_USERNAME")
     smtp_password = os.getenv("SMTP_PASSWORD")
     from_email = os.getenv("FROM_EMAIL", smtp_username)
@@ -132,15 +133,15 @@ def send_otp():
     msg["To"] = email
 
     try:
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
+        # SMTP এর বদলে SMTP_SSL ব্যবহার করছি যা Render ব্লকিং এড়ায়
+        with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
             server.login(smtp_username, smtp_password)
             server.sendmail(from_email, email, msg.as_string())
         return jsonify({"success": True, "message": "OTP sent successfully!"})
     except Exception as e:
         print(f"\n❌ [SMTP ERROR IN SEND_OTP]: {e}\n")
         return jsonify({"success": False, "error": "Failed to send OTP. Check terminal for details."}), 500
-
+    
 # ==========================================
 # ৩. API রুটস (Sign Up - Verify OTP)
 # ==========================================
@@ -224,7 +225,7 @@ def forgot_password():
         session['reset_user'] = {'email': email, 'otp': otp_code}
 
         smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-        smtp_port = int(os.getenv("SMTP_PORT", 587))
+        smtp_port = int(os.getenv("SMTP_PORT", 465)) # পোর্ট 465
         smtp_username = os.getenv("SMTP_USERNAME")
         smtp_password = os.getenv("SMTP_PASSWORD")
         from_email = os.getenv("FROM_EMAIL", smtp_username)
@@ -234,15 +235,12 @@ def forgot_password():
         msg["Subject"] = "ExamMate Password Reset OTP"
         msg["To"] = email
 
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
+        # SMTP_SSL ব্যবহার
+        with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
             server.login(smtp_username, smtp_password)
             server.sendmail(from_email, email, msg.as_string())
         return jsonify({"success": True})
-    except Exception as e:
-        print(f"\n❌ [SMTP ERROR IN FORGOT_PASSWORD]: {e}\n")
-        return jsonify({"success": False, "error": "Error sending reset OTP."}), 500
-
+    
 # ==========================================
 # ৬. API রুটস (Forgot Password - Reset)
 # ==========================================
