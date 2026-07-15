@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Teacher Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Global Theme (Light Theme & Mobile First) */
+        :root { color-scheme: light; }
+        body { 
+            background-color: #f9fafb; 
+            color: #333333; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .container { 
+            width: 100%;
+            max-width: 480px; 
+            background-color: #ffffff;
+            min-height: 100vh;
+            padding: 1.5rem 1rem 6rem 1rem; 
+            box-sizing: border-box;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+
+        /* Header Section */
+        .profile-header { 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; 
+        }
+        .profile-left { 
+            display: flex; align-items: center; gap: 12px; cursor: pointer;
+        }
+        .avatar { 
+            width: 50px; height: 50px; background: #e0f2fe; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.5rem; border: 2px solid #38bdf8; color: #0369a1;
+        }
+        .greeting h3 { margin: 0; font-size: 1.2rem; font-weight: 700; color: #111827; }
+        .greeting p { margin: 0; font-size: 0.8rem; color: #6b7280; }
+        .bell-icon { 
+            font-size: 1.2rem; color: #4b5563; background: #f3f4f6; 
+            padding: 10px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
+        }
+
+        /* Metrics */
+        .metrics-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+            margin-bottom: 1.5rem; 
+        }
+        .metric-card { 
+            background: #f0fdf4; 
+            border: 1px solid #bbf7d0; 
+            border-radius: 14px; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+        }
+        .metric-header { font-size: 0.8rem; color: #4b5563; font-weight: 600;}
+        .metric-val { font-size: 1.6rem; font-weight: 700; color: #111827; margin: 0; line-height: 1; }
+
+        /* Action Buttons */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .btn-create, .btn-ai {
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .btn-create { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+        .btn-ai { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+        .btn-create:hover, .btn-ai:hover { transform: translateY(-2px); }
+
+        /* Section Titles */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: #111827; margin: 0; }
+        .view-all-btn { background: none; border: none; color: #3b82f6; font-weight: 600; cursor: pointer; font-size: 0.9rem;}
+
+        /* Exam Cards Grid */
+        .exam-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .exam-card { 
+            background: #ffffff; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 14px; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+        }
+        .exam-content { padding: 12px; flex: 1;}
+        .exam-title { font-size: 0.85rem; color: #1e293b; font-weight: 700; margin-bottom: 8px; line-height: 1.2; }
+        .exam-code-box { background: #f1f5f9; padding: 5px 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
+        .exam-code { font-family: monospace; font-size: 0.9rem; color: #0f172a; font-weight: 700; }
+        .ana-btn { 
+            background: #f8fafc; 
+            border: none;
+            border-top: 1px solid #e2e8f0; 
+            width: 100%; 
+            padding: 10px;
+            color: #3b82f6; 
+            font-weight: 600; 
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .ana-btn:hover { background: #eff6ff; }
+
+        /* Student Analytics Bottom Grid */
+        .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+        .btn-anly { border: none; border-radius: 12px; height: 50px; color: white; font-weight: 600; font-size: 0.95rem; cursor: pointer;}
+        .btn-jee { background: #ef4444; } .btn-neet { background: #f97316; }
+        .btn-wbjee { background: #0ea5e9; } .btn-adv { background: #8b5cf6; }
+
+        /* -------------------------------------- */
+        /* ANALYSIS VIEW SPECIFIC STYLES */
+        /* -------------------------------------- */
+        .back-btn { background: none; border: none; color: #3b82f6; font-weight: bold; cursor: pointer; padding: 0; margin-bottom: 15px; font-size: 1rem;}
+        
+        .analysis-metrics { display: flex; justify-content: space-between; margin: 15px 0; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;}
+        .ana-metric { text-align: center; }
+        .ana-metric span { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 5px;}
+        .ana-metric strong { font-size: 1.2rem; color: #0f172a; }
+
+        .rank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+        .rank-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
+        .rank-box h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: #1e293b; text-align: center;}
+        .rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.8rem;}
+        .rank-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #e2e8f0;}
+        .rank-list li:last-child { border-bottom: none; }
+        
+        /* Graph Container */
+        .chart-container { position: relative; height: 200px; width: 100%; margin-bottom: 2rem;}
+
+        /* Section Visibility */
+        #dashboard-view { display: block; }
+        #analysis-view { display: none; }
+        #all-exams-view { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div id="dashboard-view">
+            <div class="profile-header">
+                <div class="profile-left" onclick="window.location.href='teacher_profile.html'">
+                    <div class="avatar"><i class="fas fa-user-tie"></i></div>
+                    <div class="greeting">
+                        <h3 id="teacher-name">Hi, Teacher</h3>
+                        <p>Manage your classes! 🎓</p>
+                    </div>
+                </div>
+                <div class="bell-icon" onclick="window.location.href='notification.html'"><i class="fas fa-bell"></i></div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card"><div class="metric-header">🏅 Total Exams</div><div class="metric-val" id="val-exams">12</div></div>
+                <div class="metric-card"><div class="metric-header">👥 Total Students</div><div class="metric-val" id="val-students">145</div></div>
+                <div class="metric-card"><div class="metric-header">📈 Avg Score</div><div class="metric-val" id="val-avg">78%</div></div>
+                <div class="metric-card"><div class="metric-header">🏆 Active Exams</div><div class="metric-val" id="val-active">05</div></div>
+            </div>
+
+            <div class="action-grid">
+                <button class="btn-create" onclick="window.location.href='create_exam.html'">📝 Create New Exam</button>
+                <button class="btn-ai" onclick="alert('AI Generator Module launching soon!')">🤖 AI Generate ✨</button>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-title">Recent Exams</h2>
+                <button class="view-all-btn" onclick="showAllExams()">View All ➡️</button>
+            </div>
+            
+            <div class="exam-grid" id="recent-exams-container">
+                </div>
+
+            <h2 class="section-title" style="margin-top: 1rem; margin-bottom: 10px;">Student Results & Analytics</h2>
+            <div class="analytics-grid">
+                <button class="btn-anly btn-jee">JEE Main</button>
+                <button class="btn-anly btn-neet">NEET</button>
+                <button class="btn-anly btn-wbjee">WBJEE</button>
+                <button class="btn-anly btn-adv">JEE Advanced</button>
+            </div>
+        </div>
+
+
+        <div id="all-exams-view">
+            <button class="back-btn" onclick="showDashboard()">⬅️ Back to Dashboard</button>
+            <h1 style="font-size: 1.5rem; margin-bottom: 15px;">All Created Exams</h1>
+            
+            <div class="exam-grid" id="all-exams-container">
+                </div>
+        </div>
+
+
+        <div id="analysis-view">
+            <button class="back-btn" onclick="showDashboard()">⬅️ Back to Dashboard</button>
+            
+            <h1 style="font-size: 1.4rem; margin-top:10px; margin-bottom: 2px;">📈 <span id="ana-exam-name">Exam Name</span> Report</h1>
+            <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Exam Code: <strong id="ana-exam-code">CODE</strong></div>
+
+            <div class="analysis-metrics">
+                <div class="ana-metric"><span>Students</span><strong id="ana-total-students">0</strong></div>
+                <div class="ana-metric"><span>Avg Score</span><strong id="ana-avg-score">0</strong></div>
+                <div class="ana-metric"><span>Questions</span><strong id="ana-total-qs">0</strong></div>
+            </div>
+
+            <div class="rank-grid">
+                <div class="rank-box">
+                    <h3>🏆 Top Students</h3>
+                    <ul class="rank-list" id="top-students-list">
+                        </ul>
+                </div>
+                <div class="rank-box">
+                    <h3>📉 Bottom Students</h3>
+                    <ul class="rank-list" id="bottom-students-list">
+                        </ul>
+                </div>
+            </div>
+
+            <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 10px;">📊 Score Distribution</h3>
+            <div class="chart-container">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="window.location.href='student_dashboard.html'">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='student_dashboard.html'">
+            <div class="nav-icon"><i class="far fa-file-alt"></i></div>
+            <span>Tests</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='student_profile.html'">
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+            <span>Analytics</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='student_profile.html'">
+            <div class="nav-icon"><i class="far fa-user"></i></div>
+            <span>Profile</span>
+        </div>
+    </div>
+
+    <script>
+        let scoreChart = null;
+
+        // ১. পেজ লোড হলে ডেটাবেস থেকে ড্যাশবোর্ডের ডেটা আনা
+        window.onload = async () => {
+            const userName = localStorage.getItem('userName') || "Teacher";
+            const userEmail = localStorage.getItem('userEmail');
+            document.getElementById('teacher-name').innerText = "Hi, " + userName.split(' ')[0];
+
+            if (userEmail) {
+                try {
+                    const response = await fetch('/api/teacher-dashboard', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: userEmail })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        document.getElementById('val-exams').innerText = data.total_exams;
+                        document.getElementById('val-students').innerText = data.total_students;
+                        document.getElementById('val-avg').innerText = data.avg_score + '%';
+                        document.getElementById('val-active').innerText = data.total_exams; 
+
+                        renderExams(data.all_exams);
+                    }
+                } catch (error) {
+                    console.log("Error fetching dashboard data:", error);
+                }
+            }
+        };
+
+        // ২. এক্সাম লিস্ট স্ক্রিনে দেখানো
+        function renderExams(examsList) {
+            const recentContainer = document.getElementById('recent-exams-container');
+            const allContainer = document.getElementById('all-exams-container');
+            recentContainer.innerHTML = ''; allContainer.innerHTML = '';
+
+            if(examsList.length === 0) {
+                recentContainer.innerHTML = '<p style="color:#64748b; font-size:0.9rem; padding: 10px;">No exams created yet.</p>';
+                return;
+            }
+
+            examsList.forEach((exam, index) => {
+                const cardHTML = `
+                    <div class="exam-card">
+                        <div class="exam-content">
+                            <div class="exam-title">${exam.name}</div>
+                            <div class="exam-code-box">
+                                <span style="font-size: 0.7rem; color: #64748b;">Code</span>
+                                <span class="exam-code">${exam.code}</span>
+                            </div>
+                        </div>
+                        <button class="ana-btn" onclick="openAnalysis('${exam.code}', '${exam.name}')">View Analysis 📈</button>
+                    </div>
+                `;
+                allContainer.innerHTML += cardHTML;
+                if (index < 2) recentContainer.innerHTML += cardHTML;
+            });
+        }
+
+        // ৩. পেজ চেঞ্জ করার লজিক (UI Toggles)
+        function showDashboard() {
+            document.getElementById('dashboard-view').style.display = 'block';
+            document.getElementById('analysis-view').style.display = 'none';
+            document.getElementById('all-exams-view').style.display = 'none';
+        }
+
+        function showAllExams() {
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('all-exams-view').style.display = 'block';
+        }
+
+        // ৪. অ্যানালাইসিস পেজ ওপেন করা এবং ডেটাবেস থেকে ডেটা আনা
+        async function openAnalysis(examCode, examName) {
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('all-exams-view').style.display = 'none';
+            document.getElementById('analysis-view').style.display = 'block';
+
+            document.getElementById('ana-exam-name').innerText = examName;
+            document.getElementById('ana-exam-code').innerText = examCode;
+
+            try {
+                const response = await fetch('/api/teacher-analysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: examCode })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    document.getElementById('ana-total-students').innerText = data.total_students;
+                    document.getElementById('ana-avg-score').innerText = data.avg_score;
+                    document.getElementById('ana-total-qs').innerText = data.total_q;
+
+                    document.getElementById('top-students-list').innerHTML = data.top.map(s => `<li><span>${s.name}</span><strong>${s.score}</strong></li>`).join('');
+                    document.getElementById('bottom-students-list').innerHTML = data.bottom.map(s => `<li><span>${s.name}</span><strong>${s.score}</strong></li>`).join('');
+
+                    renderChart(data.chartLabels, data.chartData);
+                } else {
+                    alert(data.error || "No data available for this exam yet.");
+                }
+            } catch (error) {
+                alert("Server error connecting to database.");
+            }
+        }
+
+        // ৫. গ্রাফ তৈরি করা (Chart.js)
+        function renderChart(labels, data) {
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            if(scoreChart !== null) { scoreChart.destroy(); }
+
+            scoreChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: data,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#e2e8f0', drawBorder: false }, ticks: { stepSize: 1 } },
+                        x: { grid: { display: false, drawBorder: false } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

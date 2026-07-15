@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* আপনার Streamlit এর CSS এখানে HTML এর জন্য অপ্টিমাইজ করা হয়েছে */
+        :root {
+            color-scheme: dark;
+        }
+        body {
+            background-color: #05070f;
+            background: linear-gradient(180deg, #08101f 0%, #04060d 100%);
+            color: #e8eef8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .container {
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        /* Logo and Header Section */
+        .header-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .logo {
+            width: 80px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        .header-section h1 {
+            margin: 0 0 0.35rem 0;
+            color: #f5f9ff;
+            font-size: 2.6rem;
+            letter-spacing: -0.03em;
+        }
+        .header-section p {
+            margin: 0;
+            color: #c8d3ea;
+            font-size: 1.05rem;
+        }
+
+        /* Sign up / Sign in Section */
+        .auth-card {
+            background: rgba(17, 29, 52, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 26px;
+            padding: 30px;
+            margin-bottom: 1.8rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+            /* স্ক্রিনশটের মতো সবুজ বর্ডার দেওয়া হলো */
+            border: 2px solid rgba(34, 192, 93, 0.5); 
+        }
+        .auth-card h2 {
+            margin: 0 0 1.5rem 0;
+            color: #f2f7ff;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .buttons-container {
+            display: flex;
+            flex-direction: column; /* মোবাইলের জন্য বাটন নিচে নিচে থাকবে */
+            gap: 15px;
+        }
+        
+        button {
+            width: 100%;
+            background-color: rgba(30, 166, 77, 0.8);
+            color: #ffffff;
+            border-radius: 999px;
+            padding: 1rem 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(30, 166, 77, 0.2);
+            transition: transform 150ms ease, background-color 150ms ease;
+        }
+        button:hover {
+            background-color: rgba(34, 192, 93, 1);
+            transform: translateY(-2px);
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,0.2);
+            margin: 2rem 0;
+        }
+
+        /* Features Section */
+        .features-header {
+            font-size: 1.6rem;
+            color: #f2f7ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .feature-card {
+            background: rgba(30, 166, 77, 0.2); /* স্ক্রিনশটের মতো সবুজ আভা */
+            border: 1px solid rgba(34, 192, 93, 0.4);
+            border-radius: 15px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #e8eef8;
+        }
+        .feature-icon {
+            font-size: 1.5rem;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            padding: 10px;
+            width: 24px;
+            text-align: center;
+        }
+        .feature-text strong {
+            color: #f4fbff;
+            font-size: 1.05rem;
+        }
+        .feature-text p {
+            margin: 5px 0 0 0;
+            color: #c8d3ea;
+            font-size: 0.95rem;
+        }
+
+        /* Desktop View Adjustments */
+        @media (min-width: 600px) {
+            .buttons-container {
+                flex-direction: row; /* বড় স্ক্রিনে বাটন পাশাপাশি থাকবে */
+            }
+        }
+        
+        /* স্পেশাল আইকন কালার */
+        .icon-green { color: #81c784; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-content">
+        
+        <div class="header-section">
+            <h1>ExamMate</h1>
+            <p>Best app for MCQ practice of any exam.</p>
+        </div>
+
+        <div class="auth-card">
+            
+            <h2>✅ Sign-Up or Sign-In</h2>
+            
+            <div class="buttons-container">
+                <button onclick="goToSignUp()">Sign Up</button>
+                <button onclick="goToSignIn()">Sign In</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2 class="features-header">🟢 Features:</h2>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-clock"></i></div>
+                <div class="feature-text">
+                    <strong>Time Management:</strong> Testing with timers like the real thing.
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-pen"></i></div>
+                <div class="feature-text">
+                    <strong>Customize Exam:</strong> Teachers have the freedom to set questions like their own.
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-list-ul"></i></div>
+                <div class="feature-text">
+                    <strong>Perfect Prep:</strong> Unlimited MCQ Practice.
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="feature-text">
+                    <strong>Instant Result:</strong> Opportunity to know the correct answer and score as soon as the test is over.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // সাইন আপ পেজে যাওয়ার ফাংশন
+        function goToSignUp() {
+            // alert() দিয়ে চেক করা হচ্ছে বাটন কাজ করছে কিনা। 
+            // পরবর্তীতে এখানে আমরা সিঙ্গেল পেজ লজিক বসাবো।
+            window.location.href = "signup.html";
+            
+            // যদি আলাদা ফাইল থাকতো, তাহলে আমরা এই কোডটি ব্যবহার করতাম:
+            // window.location.href = "signup.html"; 
+        }
+
+        // সাইন ইন পেজে যাওয়ার ফাংশন
+        function goToSignIn() {
+            window.location.href = "signin.html";
+            
+            // যদি আলাদা ফাইল থাকতো, তাহলে আমরা এই কোডটি ব্যবহার করতাম:
+            // window.location.href = "signin.html";
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Teacher Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* Global Theme */
+        :root { color-scheme: light; }
+        body { 
+            background-color: #f9fafb; 
+            color: #333333; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .container { 
+            width: 100%;
+            max-width: 480px; 
+            background-color: #ffffff;
+            min-height: 100vh;
+            padding: 1.5rem 1.5rem 6rem 1.5rem; 
+            box-sizing: border-box;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+
+        /* Title */
+        .page-title { font-size: 1.8rem; font-weight: 800; text-align: center; margin-bottom: 1.5rem; color: #111827; }
+
+        /* Profile Picture Section */
+        .profile-pic-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+        .profile-image {
+            width: 150px; height: 150px; border-radius: 50%; object-fit: cover;
+            border: 4px solid #4CAF50; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        #file-upload { display: none; }
+        .btn-upload, .btn-edit {
+            background: #3b82f6; color: white; padding: 8px 20px; border-radius: 20px;
+            border: none; font-weight: 600; cursor: pointer; transition: 0.3s;
+        }
+        .btn-upload:hover { background: #2563eb; }
+        .btn-edit { background: #6b7280; }
+        .btn-edit:hover { background: #4b5563; }
+
+        /* User Info */
+        .user-info { text-align: center; margin-bottom: 20px; font-size: 1.1rem; }
+        .user-info p { margin: 5px 0; color: #4b5563; }
+        .user-info strong { color: #111827; }
+
+        hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
+        .section-title { font-size: 1.2rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; }
+
+        /* Exam Selection Dropdown */
+        .exam-select-box {
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d1d5db;
+            font-size: 1rem; color: #111827; margin-bottom: 1.5rem; outline: none; background: #f8fafc;
+        }
+        .exam-select-box:focus { border-color: #3b82f6; box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
+
+        /* Metrics */
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+        .metric-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 10px; text-align: center; }
+        .metric-box span { display: block; font-size: 0.75rem; color: #4b5563; margin-bottom: 5px; }
+        .metric-box strong { font-size: 1.2rem; color: #111827; }
+
+        /* Top / Bottom Students */
+        .rank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+        .rank-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
+        .rank-box h3 { margin: 0 0 10px 0; font-size: 0.9rem; text-align: center; }
+        .top-title { color: #16a34a; }
+        .bottom-title { color: #dc2626; }
+        .rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.8rem; }
+        .rank-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #e2e8f0; }
+
+        /* Graph Container */
+        .chart-container { position: relative; height: 220px; width: 100%; margin-bottom: 1.5rem; }
+
+        /* Full Table */
+        .table-responsive { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid #e5e7eb; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 400px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f3f4f6; color: #374151; font-weight: 600; }
+        td { color: #4b5563; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff;
+            border-top: 1px solid #e5e7eb; padding: 10px 0; z-index: 999;
+            display: flex; justify-content: space-around; max-width: 480px; margin: 0 auto;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.75rem; color: #9ca3af; cursor: pointer; font-weight: 600; }
+        .nav-item.active { color: #22c55e; }
+        .nav-icon { font-size: 1.3rem; }
+
+        /* Hide analysis container initially */
+        #analysis-container { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="page-title">Profile</div>
+
+        <div class="profile-pic-container">
+            <img id="profile-img" src="https://ui-avatars.com/api/?name=Teacher&background=random&size=180" alt="Profile Picture" class="profile-image">
+            <div id="upload-controls">
+                <label for="file-upload" class="btn-upload"><i class="fas fa-camera"></i> Upload Photo</label>
+                <input type="file" id="file-upload" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(event)">
+            </div>
+            <div id="edit-controls" style="display: none;">
+                <button class="btn-edit" onclick="removeImage()">Remove / Edit</button>
+            </div>
+        </div>
+
+        <div class="user-info">
+            <p><strong>Name:</strong> <span id="display-name">Suman Sir</span></p>
+            <p><strong>Email:</strong> <span id="display-email">suman.teacher@exam.com</span></p>
+        </div>
+
+        <hr>
+
+        <div class="section-title">Your Exams & Results Analysis</div>
+        
+        <select id="exam-selector" class="exam-select-box" onchange="loadExamAnalysis()">
+            <option value="" disabled selected>Select an exam to view analysis...</option>
+            <option value="EXAM-101">Physics HS Sem-3 2025 (EXAM-101)</option>
+            <option value="EXAM-205">Chemistry Group 18 (EXAM-205)</option>
+            <option value="EXAM-301">Math Integration Test (EXAM-301)</option>
+        </select>
+
+        <div id="analysis-container">
+            <h3 style="font-size: 1.1rem; color: #111827; margin-top: 0;">📊 Exam Summary Metrics</h3>
+            <div class="metrics-grid">
+                <div class="metric-box"><span>Total Students</span><strong id="m-students">0</strong></div>
+                <div class="metric-box"><span>Avg Score</span><strong id="m-avg">0</strong></div>
+                <div class="metric-box"><span>Questions</span><strong id="m-total-q">0</strong></div>
+            </div>
+
+            <div class="rank-grid">
+                <div class="rank-box">
+                    <h3 class="top-title">🏆 Top Students</h3>
+                    <ul class="rank-list" id="list-top"></ul>
+                </div>
+                <div class="rank-box">
+                    <h3 class="bottom-title">📉 Bottom Students</h3>
+                    <ul class="rank-list" id="list-bottom"></ul>
+                </div>
+            </div>
+
+            <h3 style="font-size: 1rem; color: #111827;">📊 Score Distribution Graph</h3>
+            <div class="chart-container">
+                <canvas id="scoreChart"></canvas>
+            </div>
+
+            <h3 style="font-size: 1rem; color: #111827;">📋 All Students List</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Score</th>
+                            <th>Total</th>
+                            <th>Perf. (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="full-table-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="window.location.href='student_dashboard.html'">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='student_dashboard.html'">
+            <div class="nav-icon"><i class="far fa-file-alt"></i></div>
+            <span>Tests</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='student_profile.html'">
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+            <span>Analytics</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='student_profile.html'">
+            <div class="nav-icon"><i class="far fa-user"></i></div>
+            <span>Profile</span>
+        </div>
+    </div>
+
+    <script>
+        // Profile Pic Logic
+        const defaultImageSrc = "https://ui-avatars.com/api/?name=Teacher&background=random&size=180";
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById('profile-img').src = reader.result;
+                document.getElementById('upload-controls').style.display = 'none';
+                document.getElementById('edit-controls').style.display = 'block';
+            }
+            if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+        }
+        function removeImage() {
+            document.getElementById('profile-img').src = defaultImageSrc;
+            document.getElementById('file-upload').value = "";
+            document.getElementById('upload-controls').style.display = 'block';
+            document.getElementById('edit-controls').style.display = 'none';
+        }
+
+        // Mock Data for Analysis
+        let scoreChart = null;
+
+        window.onload = async () => {
+            const userName = localStorage.getItem('userName') || "Teacher";
+            const userEmail = localStorage.getItem('userEmail');
+            
+            document.getElementById('display-name').innerText = userName;
+            document.getElementById('display-email').innerText = userEmail;
+
+            // ড্রপডাউনে এক্সামের লিস্ট আনা
+            if (userEmail) {
+                try {
+                    const response = await fetch('/api/teacher-dashboard', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: userEmail })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success && data.all_exams.length > 0) {
+                        const selector = document.getElementById('exam-selector');
+                        data.all_exams.forEach(ex => {
+                            const opt = document.createElement('option');
+                            opt.value = ex.code;
+                            opt.innerText = `${ex.name} (${ex.code})`;
+                            selector.appendChild(opt);
+                        });
+                    }
+                } catch (error) { console.log("Error loading exams for profile."); }
+            }
+        };
+
+        async function loadExamAnalysis() {
+            const selectedCode = document.getElementById('exam-selector').value;
+            const container = document.getElementById('analysis-container');
+            
+            if(!selectedCode) return;
+            container.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/teacher-analysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: selectedCode })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    container.style.display = 'block';
+
+                    document.getElementById('m-students').innerText = data.total_students;
+                    document.getElementById('m-avg').innerText = data.avg_score;
+                    document.getElementById('m-total-q').innerText = data.total_q;
+
+                    document.getElementById('list-top').innerHTML = data.top.map(s => `<li><span>${s.name}</span><strong>${s.score}</strong></li>`).join('');
+                    document.getElementById('list-bottom').innerHTML = data.bottom.map(s => `<li><span>${s.name}</span><strong>${s.score}</strong></li>`).join('');
+
+                    renderChart(data.chartLabels, data.chartData);
+
+                    const tbody = document.getElementById('full-table-body');
+                    tbody.innerHTML = data.all_students.map(s => {
+                        return `<tr><td>${s.name}</td><td>${s.score}</td><td>${data.total_q}</td><td>${s.perf}%</td></tr>`;
+                    }).join('');
+                } else {
+                    alert(data.error || "No data available for this exam.");
+                }
+            } catch (error) {
+                alert("Server error connecting to database.");
+            }
+        }
+
+        function renderChart(labels, data) {
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            if(scoreChart !== null) scoreChart.destroy();
+
+            scoreChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Students',
+                        data: data,
+                        backgroundColor: '#4CAF50',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#e2e8f0', drawBorder: false } },
+                        x: { grid: { display: false, drawBorder: false } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

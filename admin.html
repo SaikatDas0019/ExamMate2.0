@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { color-scheme: light; }
+        body { background-color: #f1f5f9; color: #1e293b; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .admin-box { background: #ffffff; width: 100%; max-width: 450px; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); box-sizing: border-box; }
+        h1 { font-size: 1.75rem; font-weight: 800; color: #0f172a; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        h1 i { color: #3b82f6; }
+        p { color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 0.85rem; font-weight: 700; color: #475569; text-transform: uppercase; }
+        select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; outline: none; transition: all 0.2s; }
+        select:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+        textarea { resize: none; height: 100px; }
+        .btn-send { background-color: #3b82f6; color: white; border: none; width: 100%; padding: 14px; font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: background 0.2s; }
+        .btn-send:hover { background-color: #2563eb; }
+        .btn-send:disabled { background-color: #94a3b8; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-box">
+        <h1><i class="fas fa-user-shield"></i> Admin Panel</h1>
+        <p>Send a global notification or announcement to ExamMate users.</p>
+
+        <div class="form-group">
+            <label for="target-role">Target Audience</label>
+            <select id="target-role">
+                <option value="All">All Users (Everyone)</option>
+                <option value="Student">Students Only</option>
+                <option value="Teacher">Teachers Only</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="notif-message">Notification Message</label>
+            <textarea id="notif-message" placeholder="Type your announcement here..."></textarea>
+        </div>
+
+        <button class="btn-send" id="send-btn" onclick="sendNotification()">Broadcast Announcement <i class="fas fa-paper-plane"></i></button>
+    </div>
+
+    <script>
+        async function sendNotification() {
+            const targetRole = document.getElementById('target-role').value;
+            const message = document.getElementById('notif-message').value.trim();
+            const sendBtn = document.getElementById('send-btn');
+
+            if (!message) {
+                alert("Please enter a message before sending!");
+                return;
+            }
+
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = 'Broadcasting... <i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const response = await fetch('/api/admin/send-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, target_role: targetRole })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    alert("🎉 Success! " + data.message);
+                    document.getElementById('notif-message').value = ""; // ক্লিয়ার ইনপুট
+                } else {
+                    alert("Error: " + (data.error || "Failed to send."));
+                }
+            } catch (error) {
+                alert("Server connection error.");
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = 'Broadcast Announcement <i class="fas fa-paper-plane"></i>';
+            }
+        }
+    </script>
+</body>
+</html>

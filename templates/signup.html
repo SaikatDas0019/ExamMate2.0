@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Sign Up</title>
+    <style>
+        /* Global Theme (Pure White) */
+        :root { color-scheme: light; }
+        body { 
+            background-color: #ffffff; 
+            color: #333333; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container { width: 100%; max-width: 450px; padding: 2rem; box-sizing: border-box; }
+        
+        /* Titles */
+        .custom-title { text-align: center; font-size: 2rem; font-weight: 800; margin-bottom: 5px; color: #000000; }
+        .custom-subtitle { text-align: center; color: #4b5563; font-size: 1rem; margin-bottom: 2rem; }
+        
+        /* Input Fields */
+        .input-group { margin-bottom: 1.2rem; display: flex; flex-direction: column; }
+        .input-group label { color: #333333; font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+        .input-group input, .input-group select { 
+            background-color: #ffffff; border: 1px solid #d1d5db; color: #000000; 
+            border-radius: 12px; padding: 14px 16px; font-size: 1rem; outline: none; transition: all 0.3s ease;
+        }
+        .input-group input:focus, .input-group select:focus { border: 1px solid #3b82f6; box-shadow: 0 0 5px rgba(59, 130, 246, 0.4); }
+        
+        /* Buttons */
+        .btn-primary { 
+            width: 100%; background: #3b82f6; color: #ffffff; border-radius: 25px; 
+            padding: 0.85rem 1rem; font-size: 1.1rem; font-weight: 700; border: none; 
+            cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2); margin-top: 10px;
+        }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3); }
+
+        .btn-secondary { 
+            width: 100%; background: #f8fafc; color: #4b5563; border: 1px solid #cbd5e1; 
+            border-radius: 25px; padding: 0.85rem 1rem; font-size: 1rem; font-weight: 600; 
+            cursor: pointer; transition: all 0.3s ease; margin-top: 15px;
+        }
+        .btn-secondary:hover { background: #f1f5f9; color: #1e293b; border: 1px solid #94a3b8; }
+
+        /* Error Box */
+        #signup-error { 
+            color: #ef4444; font-size: 0.95rem; margin-bottom: 15px; display: none; 
+            font-weight: bold; text-align: center; background: #fef2f2; 
+            padding: 10px; border-radius: 8px; border: 1px solid #fee2e2; 
+        }
+
+        /* Section Visibility */
+        #otp-section { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="signup-error"></div>
+
+        <div id="signup-section">
+            <div class="custom-title">Create Account</div>
+            <div class="custom-subtitle">Join ExamMate today!</div>
+            
+            <form id="signup-form" onsubmit="handleSignUp(event)">
+                <div class="input-group">
+                    <label>👤 Full Name</label>
+                    <input type="text" id="name" required placeholder="Enter your full name">
+                </div>
+
+                <div class="input-group">
+                    <label>📧 Email Address</label>
+                    <input type="email" id="email" required placeholder="Enter your email">
+                </div>
+                
+                <div class="input-group">
+                    <label>🔒 Password</label>
+                    <input type="password" id="password" required placeholder="Create a strong password">
+                </div>
+                
+                <div class="input-group">
+                    <label>🎓 Select Role</label>
+                    <select id="role" required>
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Teacher</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-primary">Create Account</button>
+            </form>
+            
+            <button class="btn-secondary" onclick="window.location.href='signin.html'">Already have an account? Sign In</button>
+        </div>
+
+        <div id="otp-section">
+            <div class="custom-title">Verify Email</div>
+            <div class="custom-subtitle" id="otp-subtitle">OTP sent to your email</div>
+
+            <form id="otp-form" onsubmit="handleOTPVerify(event)">
+                <div class="input-group">
+                    <label>🔢 Enter 4-Digit OTP</label>
+                    <input type="text" id="otp-code" required placeholder="0000" maxlength="4" pattern="\d{4}">
+                </div>
+                
+                <button type="submit" class="btn-primary">Verify & Register</button>
+            </form>
+            
+            <button class="btn-secondary" onclick="goBack()">⬅️ Back</button>
+        </div>
+    </div>
+
+    <script>
+        let tempUserData = {};
+
+        function showErrorMessage(msg) {
+            const errBox = document.getElementById('signup-error');
+            errBox.innerText = msg;
+            errBox.style.display = 'block';
+        }
+
+        function clearError() {
+            document.getElementById('signup-error').style.display = 'none';
+        }
+
+        async function handleSignUp(event) {
+            event.preventDefault();
+            clearError();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value; // পাসওয়ার্ড নেওয়া হলো
+            const role = document.getElementById('role').value;
+            
+            const submitBtn = document.querySelector('#signup-form button[type="submit"]');
+            submitBtn.innerText = "Sending OTP...";
+            submitBtn.disabled = true;
+
+            try {
+                // পাসওয়ার্ড সহ ডেটা পাঠানো হলো
+                const response = await fetch('/api/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, email: email, password: password, role: role }) 
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    document.getElementById('signup-section').style.display = 'none';
+                    document.getElementById('otp-section').style.display = 'block';
+                    document.getElementById('otp-subtitle').innerText = "OTP sent to " + email;
+                    tempUserData = { name: name, email: email, role: role };
+                } else {
+                    showErrorMessage(data.error || "Failed to send OTP!");
+                }
+            } catch (error) {
+                showErrorMessage("Server connection error! Please make sure Flask is running.");
+            } finally {
+                submitBtn.innerText = "Create Account";
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function handleOTPVerify(event) {
+            event.preventDefault();
+            clearError();
+            
+            const otpCode = document.getElementById('otp-code').value;
+            const submitBtn = document.querySelector('#otp-form button[type="submit"]');
+            
+            submitBtn.innerText = "Verifying...";
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ otp: otpCode })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (tempUserData.role === "Student") {
+                        localStorage.setItem('userEmail', tempUserData.email);
+                        localStorage.setItem('userName', tempUserData.name);
+                        window.location.href = "student_dashboard.html";
+                    } else {
+                        window.location.href = "teacher_dashboard.html";
+                    }
+                } else {
+                    showErrorMessage(data.error || "Incorrect OTP! Try again.");
+                }
+            } catch (error) {
+                showErrorMessage("Server communication failed.");
+            } finally {
+                submitBtn.innerText = "Verify & Register";
+                submitBtn.disabled = false;
+            }
+        }
+
+        function goBack() {
+            clearError();
+            document.getElementById('otp-section').style.display = 'none';
+            document.getElementById('signup-section').style.display = 'block';
+            document.getElementById('otp-code').value = '';
+        }
+    </script>
+</body>
+</html>

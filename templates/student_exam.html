@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Exam Room</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { color-scheme: light; }
+        body { 
+            background-color: #f9fafb; color: #333333; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; display: flex; justify-content: center;
+        }
+        .container { 
+            width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh;
+            padding: 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        .message-box { text-align: center; margin-top: 50px; }
+        .message-box h2 { color: #ef4444; }
+        .exam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .exam-header h2 { margin: 0; font-size: 1.2rem; color: #111827; }
+        .exam-header .timer { font-weight: bold; color: #ef4444; font-size: 1.1rem; }
+        .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 10px; margin-bottom: 15px; height: 8px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: #3b82f6; width: 0%; transition: width 0.3s ease; }
+        .progress-text { font-size: 0.9rem; color: #4b5563; font-weight: 600; margin-bottom: 20px; }
+        hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
+        .question-text { font-size: 1.1rem; font-weight: 600; color: #111827; margin-bottom: 1.5rem; line-height: 1.5; }
+        .option-label { display: block; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; font-size: 1rem; color: #334155; }
+        .option-label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .option-label input[type="radio"] { display: none; }
+        .option-label.selected { background: #eff6ff; border-color: #3b82f6; color: #1e3a8a; font-weight: 600; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 10px; margin-top: 2rem; }
+        .btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+        .btn-prev { background: #f1f5f9; color: #475569; }
+        .btn-next { background: #3b82f6; color: white; }
+        .btn-submit { background: #10b981; color: white; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .result-box { text-align: center; padding: 2rem 0; }
+        .score-circle { width: 150px; height: 150px; border-radius: 50%; background: #eff6ff; border: 8px solid #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 900; color: #1e3a8a; margin: 0 auto 20px auto; }
+        .success-text { color: #16a34a; font-weight: 600; margin-bottom: 20px; }
+        #exam-section, #result-section, #error-section { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div id="error-section" class="message-box">
+            <h2 id="error-msg">Loading Exam...</h2>
+            <button class="btn btn-next" style="margin-top:20px;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
+        </div>
+
+        <div id="exam-section">
+            <div class="exam-header">
+                <h2 id="display-exam-name">Exam Name</h2>
+                <div class="timer"><i class="fas fa-clock"></i> <span id="time-left">00:00</span></div>
+            </div>
+            <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+            <div class="progress-text" id="progress-text">Question No.: 1 / 10</div>
+            <hr>
+            <div class="question-text" id="question-text">Loading question...</div>
+            <div id="options-container"></div>
+            <hr>
+            <div class="nav-buttons">
+                <button class="btn btn-prev" id="btn-prev" onclick="changeQuestion(-1)">⬅️ Previous</button>
+                <button class="btn btn-next" id="btn-next" onclick="changeQuestion(1)">Next ➡️</button>
+                <button class="btn btn-submit" id="btn-submit" onclick="submitExam()" style="display:none;">Submit 🚀</button>
+            </div>
+        </div>
+
+        <div id="result-section" class="result-box">
+            <h2>🎉 Exam Completed!</h2>
+            <div class="score-circle" id="final-score">0/0</div>
+            <p class="success-text">Your answers have been submitted successfully. The teacher will be able to view them.</p>
+            <button class="btn btn-next" style="width:100%;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
+        </div>
+
+    </div>
+
+    <script>
+        let dbQuestions = [];
+        let examName = "";
+        let examCode = "";
+        let currentIndex = 0;
+        let studentAnswers = {}; 
+        let totalQuestions = 0;
+        let timerInterval;
+
+        window.onload = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            examCode = urlParams.get('code');
+            
+            if(!examCode) {
+                document.getElementById('error-msg').innerText = "No Exam Code Selected!";
+                document.getElementById('error-section').style.display = 'block';
+                return;
+            }
+
+            try {
+                // ডেটাবেস থেকে প্রশ্ন তুলে আনা
+                const response = await fetch('/api/get-exam-questions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: examCode })
+                });
+                const data = await response.json();
+
+                if (data.success && data.questions.length > 0) {
+                    dbQuestions = data.questions;
+                    examName = data.exam_name;
+                    totalQuestions = dbQuestions.length;
+                    
+                    startExam(data.timer_minutes);
+                } else {
+                    document.getElementById('error-msg').innerText = data.error || "No questions inside this exam!";
+                    document.getElementById('error-section').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('error-msg').innerText = "Server error fetching exam.";
+                document.getElementById('error-section').style.display = 'block';
+            }
+        };
+
+        function startExam(minutes) {
+            document.getElementById('error-section').style.display = 'none';
+            document.getElementById('exam-section').style.display = 'block';
+            document.getElementById('display-exam-name').innerText = examName;
+            
+            let timeInSeconds = minutes * 60;
+            updateTimerDisplay(timeInSeconds);
+            
+            timerInterval = setInterval(() => {
+                timeInSeconds--;
+                updateTimerDisplay(timeInSeconds);
+                if(timeInSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Time is up! Auto-submitting.");
+                    submitExam();
+                }
+            }, 1000);
+
+            loadQuestion(0);
+        }
+
+        function updateTimerDisplay(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            document.getElementById('time-left').innerText = `${m}:${s}`;
+        }
+
+        function loadQuestion(index) {
+            const q = dbQuestions[index];
+            document.getElementById('question-text').innerText = `Q: ${q.q_text}`;
+            
+            const progress = ((index + 1) / totalQuestions) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').innerText = `Question No.: ${index + 1} / ${totalQuestions}`;
+
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = ""; 
+            
+            const options = [
+                { letter: 'A', text: q.opt_a }, { letter: 'B', text: q.opt_b },
+                { letter: 'C', text: q.opt_c }, { letter: 'D', text: q.opt_d }
+            ];
+
+            options.forEach(opt => {
+                const isSelected = studentAnswers[index] === opt.letter;
+                const label = document.createElement('label');
+                label.className = `option-label ${isSelected ? 'selected' : ''}`;
+                
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = `q${index}`;
+                input.value = opt.letter;
+                if(isSelected) input.checked = true;
+                
+                input.onclick = () => {
+                    studentAnswers[index] = opt.letter;
+                    loadQuestion(index); 
+                };
+
+                label.appendChild(input);
+                label.appendChild(document.createTextNode(`${opt.letter}. ${opt.text}`));
+                optsContainer.appendChild(label);
+            });
+
+            document.getElementById('btn-prev').disabled = (index === 0);
+            if (index === totalQuestions - 1) {
+                document.getElementById('btn-next').style.display = 'none';
+                document.getElementById('btn-submit').style.display = 'block';
+            } else {
+                document.getElementById('btn-next').style.display = 'block';
+                document.getElementById('btn-submit').style.display = 'none';
+            }
+        }
+
+        function changeQuestion(step) {
+            currentIndex += step;
+            loadQuestion(currentIndex);
+        }
+
+        async function submitExam() {
+            clearInterval(timerInterval); 
+            let score = 0;
+            dbQuestions.forEach((q, idx) => {
+                if (studentAnswers[idx] === q.correct) score++;
+            });
+
+            const userEmail = localStorage.getItem('userEmail') || "student@email.com";
+
+            // রেজাল্ট ডেটাবেসে পাঠানো
+            try {
+                await fetch('/api/submit-exam-result', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail, exam_code: examCode, exam_name: examName, score: score, total_questions: totalQuestions
+                    })
+                });
+            } catch (e) { console.log("Failed to save score online:", e); }
+
+            document.getElementById('exam-section').style.display = 'none';
+            document.getElementById('result-section').style.display = 'block';
+            document.getElementById('final-score').innerText = `${score}/${totalQuestions}`;
+        }
+    </script>
+</body>
+</html>

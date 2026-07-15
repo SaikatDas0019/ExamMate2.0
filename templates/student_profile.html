@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { color-scheme: light; }
+        body { 
+            background-color: #f9fafb; color: #333333; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; display: flex; justify-content: center;
+        }
+        .container { 
+            width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh;
+            padding: 1.5rem 1.5rem 5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+        .page-title { font-size: 1.8rem; font-weight: 800; text-align: center; margin-bottom: 1.5rem; color: #111827; }
+        .profile-pic-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+        .profile-image { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #4CAF50; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #file-upload { display: none; }
+        .btn-upload, .btn-edit { background: #3b82f6; color: white; padding: 8px 20px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-upload:hover { background: #2563eb; }
+        .btn-edit { background: #6b7280; }
+        .user-info { text-align: center; margin-bottom: 20px; font-size: 1.1rem; }
+        .user-info p { margin: 5px 0; color: #4b5563; }
+        .user-info strong { color: #111827; }
+        hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
+        .section-title { font-size: 1.2rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; }
+        .teachers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .teacher-btn { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 5px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-align: center; }
+        .table-responsive { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid #e5e7eb; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 400px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f3f4f6; color: #374151; font-weight: 600; }
+        td { color: #4b5563; }
+        .perf-excellent { color: #16a34a; font-weight: bold; }
+        .perf-avg { color: #ca8a04; font-weight: bold; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #e5e7eb; padding: 10px 0; z-index: 999; display: flex; justify-content: space-around; max-width: 450px; margin: 0 auto; box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.75rem; color: #9ca3af; cursor: pointer; font-weight: 600; }
+        .nav-item.active { color: #22c55e; }
+        .nav-icon { font-size: 1.3rem; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="page-title">Profile</div>
+
+        <div class="profile-pic-container">
+            <img id="profile-img" src="https://ui-avatars.com/api/?name=Student&background=random&size=180" alt="Profile Picture" class="profile-image">
+            <div id="upload-controls">
+                <label for="file-upload" class="btn-upload"><i class="fas fa-camera"></i> Upload Photo</label>
+                <input type="file" id="file-upload" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(event)">
+            </div>
+            <div id="edit-controls" style="display: none;">
+                <button class="btn-edit" onclick="removeImage()">Remove / Edit</button>
+            </div>
+        </div>
+
+        <div class="user-info">
+            <p><strong>Name:</strong> <span id="display-name">Loading...</span></p>
+            <p><strong>Email:</strong> <span id="display-email">Loading...</span></p>
+        </div>
+
+        <hr>
+        <div class="section-title">My Favourite Teachers</div>
+        <div class="teachers-grid">
+            <button class="teacher-btn">Tarapada Sir</button>
+            <button class="teacher-btn">Prokash Sir</button>
+            <button class="teacher-btn">Somnath Sir</button>
+            <button class="teacher-btn">Amit Sir</button>
+            <button class="teacher-btn">Manash Sir</button>
+            <button class="teacher-btn">Mithun Sir</button>
+        </div>
+
+        <hr>
+        <div class="section-title">Exam History</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exam Name</th>
+                        <th>Score</th>
+                        <th>Total</th>
+                        <th>Date Taken</th>
+                        <th>Performance</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="window.location.href='student_dashboard.html'">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='student_dashboard.html'">
+            <div class="nav-icon"><i class="far fa-file-alt"></i></div>
+            <span>Tests</span>
+        </div>
+        <div class="nav-item active" onclick="window.location.href='student_profile.html'">
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+            <span>Analytics</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='student_profile.html'">
+            <div class="nav-icon"><i class="far fa-user"></i></div>
+            <span>Profile</span>
+        </div>
+    </div>
+
+    <script>
+        const defaultImageSrc = "https://ui-avatars.com/api/?name=Student&background=random&size=180";
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById('profile-img').src = reader.result;
+                document.getElementById('upload-controls').style.display = 'none';
+                document.getElementById('edit-controls').style.display = 'block';
+            }
+            if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+        }
+        function removeImage() {
+            document.getElementById('profile-img').src = defaultImageSrc;
+            document.getElementById('file-upload').value = "";
+            document.getElementById('upload-controls').style.display = 'block';
+            document.getElementById('edit-controls').style.display = 'none';
+        }
+
+        // রিয়েল ডেটাবেস থেকে স্টুডেন্টের হিস্ট্রি লোড করা
+        window.onload = async () => {
+            const userName = localStorage.getItem('userName') || "Student";
+            const userEmail = localStorage.getItem('userEmail') || "student@email.com";
+            
+            document.getElementById('display-name').innerText = userName;
+            document.getElementById('display-email').innerText = userEmail;
+            
+            const tbody = document.getElementById('history-table-body');
+
+            try {
+                const response = await fetch('/api/get-student-history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
+                const data = await response.json();
+
+                if (data.success && data.history.length > 0) {
+                    tbody.innerHTML = "";
+                    data.history.forEach(row => {
+                        const performance = ((row.score / row.total) * 100).toFixed(2);
+                        let perfClass = performance >= 80 ? "perf-excellent" : (performance >= 50 ? "perf-avg" : "");
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${row.exam_name}</td>
+                            <td>${row.score}</td>
+                            <td>${row.total}</td>
+                            <td>${row.date}</td>
+                            <td class="${perfClass}">${performance}%</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px;">No exam history found. Take some exams first!</td></tr>`;
+                }
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px; color: red;">Error loading database data.</td></tr>`;
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Student Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Global Theme (Light Theme & Mobile First) */
+        :root { color-scheme: light; }
+        body { 
+            background-color: #f9fafb; color: #333333; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; display: flex; justify-content: center;
+        }
+        .container { 
+            width: 100%; max-width: 450px; background-color: #ffffff;
+            min-height: 100vh; padding: 1.5rem 1.5rem 5rem 1.5rem; 
+            box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+        
+        /* Header Section */
+        .profile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .profile-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .avatar { 
+            width: 50px; height: 50px; background: #e0f2fe; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.5rem; border: 2px solid #38bdf8; color: #0369a1;
+        }
+        .greeting h3 { margin: 0; font-size: 1.2rem; font-weight: 700; color: #111827; }
+        .greeting p { margin: 0; font-size: 0.8rem; color: #6b7280; }
+        .bell-icon { 
+            font-size: 1.2rem; color: #4b5563; background: #f3f4f6; 
+            padding: 10px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
+        }
+
+        /* My Progress Grid */
+        .section-title { font-size: 1.05rem; font-weight: 700; color: #1f2937; margin: 1.5rem 0 0.8rem 0; display: flex; align-items: center; gap: 6px; }
+        .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+        .progress-card { 
+            background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; 
+            padding: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+        }
+        .progress-icon { font-size: 1.5rem; color: #22c55e; }
+        .progress-info span { font-size: 0.75rem; color: #4b5563; display: block; margin-bottom: 2px; }
+        .progress-info b { font-size: 1.1rem; color: #111827; }
+
+        /* Search Exam Section */
+        .search-box { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+        .search-box input { flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 12px; font-size: 0.95rem; outline: none; }
+        .search-box input:focus { border-color: #3b82f6; }
+        .search-box button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+
+        /* Dynamic Exam Navigation Flow */
+        .nav-breadcrumb { font-size: 0.85rem; color: #6b7280; margin-bottom: 10px; font-weight: 600; }
+        .flow-btn {
+            width: 100%; background: #f8fafc; border: 1px solid #cbd5e1; color: #334155;
+            padding: 12px; border-radius: 12px; font-size: 1rem; font-weight: 600;
+            margin-bottom: 10px; cursor: pointer; text-align: left; transition: 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .flow-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+        .flow-btn i { color: #64748b; }
+        
+        .back-btn { background: transparent; color: #3b82f6; border: none; font-weight: bold; cursor: pointer; padding: 0; margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
+
+        /* Fixed Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff;
+            border-top: 1px solid #e5e7eb; padding: 10px 0; z-index: 999;
+            display: flex; justify-content: space-around; max-width: 450px; margin: 0 auto;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.75rem; color: #9ca3af; cursor: pointer; font-weight: 600; }
+        .nav-item.active { color: #22c55e; }
+        .nav-icon { font-size: 1.3rem; }
+
+        #subjects-section, #exams-section { display: none; }
+        hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="profile-header">
+            <div class="profile-left" onclick="window.location.href='student_profile.html'">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div class="greeting">
+                    <h3 id="student-name">Hi, Student</h3>
+                    <p>Let's ace your exams! 🚀</p>
+                </div>
+            </div>
+            <div class="bell-icon" onclick="window.location.href='notification.html'"><i class="fas fa-bell"></i></div>
+        </div>
+
+        <div class="section-title">📈 My Progress</div>
+        <div class="progress-grid">
+            <div class="progress-card">
+                <div class="progress-icon"><i class="fas fa-medal"></i></div>
+                <div class="progress-info"><span>Total Score</span><b id="stat-score">00</b></div>
+            </div>
+            <div class="progress-card">
+                <div class="progress-icon"><i class="far fa-calendar-alt"></i></div>
+                <div class="progress-info"><span>Total Exams</span><b id="stat-total">00</b></div>
+            </div>
+            <div class="progress-card">
+                <div class="progress-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="progress-info"><span>Highest Marks</span><b id="stat-high">00</b></div>
+            </div>
+            <div class="progress-card">
+                <div class="progress-icon"><i class="fas fa-trophy"></i></div>
+                <div class="progress-info"><span>Lowest Marks</span><b id="stat-low">00</b></div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="section-title">Teacher's Exam Code</div>
+        <div class="search-box">
+            <input type="text" id="exam-code-input" placeholder="e.g: PHY-101">
+            <button id="search-btn" onclick="searchExam()">🔍 Search</button>
+        </div>
+        <div id="search-error" style="color: #ef4444; font-size: 0.85rem; margin-top: -15px; margin-bottom: 15px; display: none; font-weight: bold;"></div>
+
+        <hr>
+
+        <div class="section-title">Explore Exams &nbsp; <span style="color:#22c55e;"><i class="fas fa-chevron-right"></i></span></div>
+
+        <div id="categories-section">
+            <button class="flow-btn" onclick="selectCategory('Class-11 Sem-1')">Class-11 Sem-1 <i class="fas fa-book"></i></button>
+            <button class="flow-btn" onclick="selectCategory('Class-12 Sem-3')">Class-12 Sem-3 <i class="fas fa-book"></i></button>
+            
+            <div class="section-title" style="font-size:0.9rem; margin-top:1rem;">Popular Exams</div>
+            <button class="flow-btn" style="border-left: 4px solid #ef4444;" onclick="selectCategory('JEE Main')">JEE Main <i class="fas fa-arrow-right"></i></button>
+            <button class="flow-btn" style="border-left: 4px solid #f97316;" onclick="selectCategory('NEET')">NEET <i class="fas fa-arrow-right"></i></button>
+            <button class="flow-btn" style="border-left: 4px solid #0ea5e9;" onclick="selectCategory('WBJEE')">WBJEE <i class="fas fa-arrow-right"></i></button>
+            <button class="flow-btn" style="border-left: 4px solid #8b5cf6;" onclick="selectCategory('JEE Advance')">JEE Advance <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <div id="subjects-section">
+            <div class="nav-breadcrumb" id="bc-category">Selected: Category</div>
+            <button class="back-btn" onclick="goBack('categories')"><i class="fas fa-arrow-left"></i> Change Category</button>
+            <div id="subject-list"></div>
+        </div>
+
+        <div id="exams-section">
+            <div class="nav-breadcrumb" id="bc-subject">Selected: Category > Subject</div>
+            <button class="back-btn" onclick="goBack('subjects')"><i class="fas fa-arrow-left"></i> Change Subject</button>
+            <div id="exam-list"></div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentCategory = "";
+        let currentSubject = "";
+
+        // ১. পেজ লোড হলেই ডেটাবেস থেকে ইউজারের নাম এবং প্রগ্রেস আনা
+        window.onload = async () => {
+            const userName = localStorage.getItem('userName') || "Student";
+            const userEmail = localStorage.getItem('userEmail');
+            document.getElementById('student-name').innerText = "Hi, " + userName.split(' ')[0]; // শুধু ফার্স্ট নেম দেখাবে
+
+            if (userEmail) {
+                try {
+                    const response = await fetch('/api/get-student-progress', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: userEmail })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        document.getElementById('stat-score').innerText = data.score;
+                        document.getElementById('stat-total').innerText = data.total_exams;
+                        document.getElementById('stat-high').innerText = data.highest;
+                        document.getElementById('stat-low').innerText = data.lowest;
+                    }
+                } catch (error) {
+                    console.log("Error fetching progress:", error);
+                }
+            }
+        };
+
+        // ২. রিয়েল ডেটাবেসে এক্সাম কোড চেক করে এক্সামে এন্টার করা
+        async function searchExam() {
+            const code = document.getElementById('exam-code-input').value.trim().toUpperCase();
+            const errorMsg = document.getElementById('search-error');
+            const searchBtn = document.getElementById('search-btn');
+
+            if (code === "") {
+                errorMsg.innerText = "Please enter an Exam Code.";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            searchBtn.innerText = "Checking...";
+            searchBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/check-exam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: code })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    errorMsg.style.display = 'none';
+                    // এক্সাম পেজে রিডাইরেক্ট করা হচ্ছে
+                    window.location.href = "student_exam.html?code=" + code;
+                } else {
+                    errorMsg.innerText = data.error || "No Exam Found!";
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.innerText = "Server connection error.";
+                errorMsg.style.display = 'block';
+            } finally {
+                searchBtn.innerText = "🔍 Search";
+                searchBtn.disabled = false;
+            }
+        }
+
+        // --- Categories & Subjects Logic (UI flow) ---
+        const subjectsData = {
+            "JEE Main": [ { name: "Physics", icon: "⚛️", code: "PHY" }, { name: "Chemistry", icon: "🧪", code: "CHEM" }, { name: "Math", icon: "📐", code: "MATH" } ],
+            "NEET": [ { name: "Physics", icon: "⚛️", code: "PHY" }, { name: "Chemistry", icon: "🧪", code: "CHEM" }, { name: "Biology", icon: "🧬", code: "BIO" } ],
+            "Class-12 Sem-3": [ { name: "Bengali", icon: "📖", code: "BEN" }, { name: "Physics", icon: "⚛️", code: "PHY" }, { name: "Chemistry", icon: "🧪", code: "CHEM" } ]
+        };
+
+        // For Explore Exams Section (You can link specific codes here)
+        const examsData = {
+            "Class-12 Sem-3_CHEM": [ { title: "Class 12 Chemistry - Group 18", code: "EXAM-1723" } ],
+            "Class-12 Sem-3_BEN": [ { title: "Class 12 Bengali HS 2025", code: "EXAM-1818" } ]
+        };
+
+        function selectCategory(category) {
+            currentCategory = category;
+            document.getElementById('categories-section').style.display = 'none';
+            document.getElementById('subjects-section').style.display = 'block';
+            document.getElementById('bc-category').innerText = "Selected: " + category;
+
+            const subList = document.getElementById('subject-list');
+            subList.innerHTML = ""; 
+            
+            const subs = subjectsData[category] || [{name: "General", icon: "📚", code: "GEN"}]; 
+            subs.forEach(sub => {
+                const btn = document.createElement('button');
+                btn.className = "flow-btn";
+                btn.innerHTML = `${sub.name} ${sub.icon} <i class="fas fa-chevron-right" style="font-size:0.8rem;"></i>`;
+                btn.onclick = () => selectSubject(sub.name, sub.code);
+                subList.appendChild(btn);
+            });
+        }
+
+        function selectSubject(subjectName, subjectCode) {
+            currentSubject = subjectName;
+            document.getElementById('subjects-section').style.display = 'none';
+            document.getElementById('exams-section').style.display = 'block';
+            document.getElementById('bc-subject').innerText = `Selected: ${currentCategory} > ${currentSubject}`;
+
+            const examList = document.getElementById('exam-list');
+            examList.innerHTML = ""; 
+
+            const lookupKey = `${currentCategory}_${subjectCode}`;
+            const exams = examsData[lookupKey];
+
+            if (exams && exams.length > 0) {
+                exams.forEach(ex => {
+                    const btn = document.createElement('button');
+                    btn.className = "flow-btn";
+                    btn.innerHTML = `<strong>${ex.title}</strong> <i class="fas fa-play-circle" style="color:#3b82f6;"></i>`;
+                    // ক্যাটাগরি থেকে ক্লিক করলেও এক্সাম পেজেই নিয়ে যাবে
+                    btn.onclick = () => window.location.href = "student_exam.html?code=" + ex.code;
+                    examList.appendChild(btn);
+                });
+            } else {
+                examList.innerHTML = `<div style="text-align:center; padding:20px; color:#6b7280;">No Exams available for this subject yet.</div>`;
+            }
+        }
+
+        function goBack(toSection) {
+            if(toSection === 'categories') {
+                document.getElementById('subjects-section').style.display = 'none';
+                document.getElementById('categories-section').style.display = 'block';
+            } else if (toSection === 'subjects') {
+                document.getElementById('exams-section').style.display = 'none';
+                document.getElementById('subjects-section').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
