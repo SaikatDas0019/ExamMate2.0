@@ -228,7 +228,7 @@ def forgot_password():
         msg["Subject"] = "ExamMate Password Reset OTP"
         msg["To"] = email
 
-        with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
+        with smtplib.SMTP_SSL(smtp_server,smtp_port,timeout=1) as server:
             server.login(smtp_username, smtp_password)
             server.sendmail(from_email, email, msg.as_string())
         return jsonify({"success": True})
