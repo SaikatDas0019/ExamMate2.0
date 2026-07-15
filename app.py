@@ -11,7 +11,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 load_dotenv()
 
 app = Flask(__name__)
-# প্রোডাকশনে সেশনের নিরাপত্তার জন্য সিক্রেট কি
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026")
 
 # ==========================================
@@ -81,7 +80,7 @@ def logout():
     return redirect(url_for('signin_page'))
 
 # ==========================================
-# ২. API রুটস (Sign Up - Send OTP & Email Check)
+# ২. API রুটস (Sign Up - Send OTP)
 # ==========================================
 @app.route('/api/send-otp', methods=['POST'])
 def send_otp():
@@ -102,7 +101,6 @@ def send_otp():
                 email TEXT PRIMARY KEY, name TEXT NOT NULL, password TEXT NOT NULL, category TEXT NOT NULL, gender TEXT
             )
         ''')
-        
         cursor.execute("SELECT email FROM users WHERE email = ?", (email,))
         existing_user = cursor.fetchone()
         conn.close()
@@ -114,13 +112,11 @@ def send_otp():
         print(f"\n❌ [DB ERROR IN SEND_OTP CHECK]: {e}\n")
         return jsonify({"success": False, "error": "Database error while checking email."}), 500
 
-    # সিকিউরিটি: পাসওয়ার্ড এনক্রিপ্ট (Hash) করে সেশনে রাখা হচ্ছে
     hashed_password = generate_password_hash(password)
     otp_code = str(random.randint(1000, 9999))
     session['temp_user'] = {'name': name, 'email': email, 'password': hashed_password, 'role': role, 'otp': otp_code}
 
     smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-    # ক্লাউড সার্ভারের জন্য নিরাপদ পোর্ট 465 ব্যবহার করছি
     smtp_port = int(os.getenv("SMTP_PORT", 465)) 
     smtp_username = os.getenv("SMTP_USERNAME")
     smtp_password = os.getenv("SMTP_PASSWORD")
@@ -133,7 +129,6 @@ def send_otp():
     msg["To"] = email
 
     try:
-        # SMTP এর বদলে SMTP_SSL ব্যবহার করছি যা Render ব্লকিং এড়ায়
         with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
             server.login(smtp_username, smtp_password)
             server.sendmail(from_email, email, msg.as_string())
@@ -141,7 +136,7 @@ def send_otp():
     except Exception as e:
         print(f"\n❌ [SMTP ERROR IN SEND_OTP]: {e}\n")
         return jsonify({"success": False, "error": "Failed to send OTP. Check terminal for details."}), 500
-    
+
 # ==========================================
 # ৩. API রুটস (Sign Up - Verify OTP)
 # ==========================================
@@ -166,7 +161,6 @@ def verify_otp():
             conn.commit()
             conn.close()
             
-            # সাইন আপ শেষেই অটো লগইন সেশন তৈরি
             session['user'] = {'email': stored_data['email'], 'name': stored_data['name'], 'role': stored_data['role']}
             session.pop('temp_user', None)
             return jsonify({"success": True})
@@ -193,7 +187,6 @@ def signin():
         user = cursor.fetchone()
         conn.close()
         
-        # হ্যাশ করা পাসওয়ার্ড মেলানো হচ্ছে
         if user and check_password_hash(user["password"], password):
             session['user'] = {'email': email, 'name': user["name"], 'role': user["category"]}
             return jsonify({"success": True, "name": user["name"], "role": user["category"]})
@@ -225,7 +218,7 @@ def forgot_password():
         session['reset_user'] = {'email': email, 'otp': otp_code}
 
         smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-        smtp_port = int(os.getenv("SMTP_PORT", 465)) # পোর্ট 465
+        smtp_port = int(os.getenv("SMTP_PORT", 465)) 
         smtp_username = os.getenv("SMTP_USERNAME")
         smtp_password = os.getenv("SMTP_PASSWORD")
         from_email = os.getenv("FROM_EMAIL", smtp_username)
@@ -235,12 +228,14 @@ def forgot_password():
         msg["Subject"] = "ExamMate Password Reset OTP"
         msg["To"] = email
 
-        # SMTP_SSL ব্যবহার
         with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
             server.login(smtp_username, smtp_password)
             server.sendmail(from_email, email, msg.as_string())
         return jsonify({"success": True})
-    
+    except Exception as e:
+        print(f"\n❌ [SMTP ERROR IN FORGOT_PASSWORD]: {e}\n")
+        return jsonify({"success": False, "error": "Error sending reset OTP."}), 500
+
 # ==========================================
 # ৬. API রুটস (Forgot Password - Reset)
 # ==========================================
@@ -257,7 +252,6 @@ def reset_password():
 
     if user_otp == stored_data['otp']:
         try:
-            # নতুন পাসওয়ার্ডকে হ্যাশ করা হচ্ছে
             secure_password = generate_password_hash(new_password)
             conn = sqlite3.connect('ExamMate.db')
             cursor = conn.cursor()
