@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import requests
-import random
 import os
 import sqlite3
 from dotenv import load_dotenv
@@ -13,39 +12,39 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026")
 
 # ==========================================
-# ০. MailerSend ইমেইল ফাংশন
+# ০. MSG91 OTP Verification Function
 # ==========================================
-def send_email_mailersend(to_email, subject, html):
-    api_key = os.getenv("MAILERSEND_API_KEY")
-    from_email = os.getenv("MAILERSEND_FROM_EMAIL")
-    from_name = os.getenv("MAILERSEND_FROM_NAME", "ExamMate Team")
+def verify_msg91_otp(identifier, otp, req_id=None):
+    auth_key = os.getenv("MSG91_AUTHKEY")
+    widget_id = os.getenv("MSG91_WIDGET_ID")
+    token_auth = os.getenv("MSG91_TOKEN_AUTH")
 
-    if not api_key or not from_email:
-        raise Exception("MailerSend configuration missing in environment variables.")
+    if not auth_key:
+        return False, "MSG91 Auth Key configuration missing."
 
-    url = "https://api.mailersend.com/v1/email"
+    url = "https://control.msg91.com/api/v5/otp/verify"
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "authkey": auth_key,
         "Content-Type": "application/json"
     }
     
-    payload = {
-        "from": {
-            "email": from_email,
-            "name": from_name
-        },
-        "to": [
-            {
-                "email": to_email
-            }
-        ],
-        "subject": subject,
-        "html": html
+    params = {
+        "otp": otp,
+        "mobile": identifier if identifier.isdigit() else None,
+        "email": identifier if "@" in str(identifier) else None
     }
+    params = {k: v for k, v in params.items() if v is not None}
 
-    response = requests.post(url, json=payload, headers=headers)
-    if response.status_code not in [200, 201, 202]:
-        raise Exception(f"MailerSend API error: Status {response.status_code} - {response.text}")
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        res_data = response.json()
+        if response.status_code == 200 and res_data.get("type") == "success":
+            return True, "OTP verified successfully."
+        else:
+            msg = res_data.get("message", "OTP verification failed.")
+            return False, msg
+    except Exception as e:
+        return False, str(e)
 
 # ==========================================
 # ১. HTML পেজের রুট (Routes - লগইন প্রোটেকশন সহ)
@@ -114,7 +113,7 @@ def logout():
     return redirect(url_for('signin_page'))
 
 # ==========================================
-# ২. API রুটস (Sign Up - Send OTP)
+# ২. API রুটস (Sign Up - Initiate User Registration)
 # ==========================================
 @app.route('/api/send-otp', methods=['POST'])
 def send_otp():
@@ -147,39 +146,27 @@ def send_otp():
         return jsonify({"success": False, "error": "Database error while checking email."}), 500
 
     hashed_password = generate_password_hash(password)
-    otp_code = str(random.randint(1000, 9999))
-    session['temp_user'] = {'name': name, 'email': email, 'password': hashed_password, 'role': role, 'otp': otp_code}
+    session['temp_user'] = {'name': name, 'email': email, 'password': hashed_password, 'role': role}
 
-    subject = "ExamMate OTP Verification"
-    html_content = f"""
-    <h2>ExamMate Verification Code</h2>
-    <p>Your OTP is:</p>
-    <h1>{otp_code}</h1>
-    <p>This OTP expires after verification.</p>
-    <p>If you didn't request this email, simply ignore it.</p>
-    """
-
-    try:
-        send_email_mailersend(email, subject, html_content)
-        return jsonify({"success": True, "message": "OTP sent successfully!"})
-    except Exception as e:
-        print(f"\n❌ [MAILERSEND ERROR IN SEND_OTP]: {e}\n")
-        return jsonify({"success": False, "error": "Failed to send OTP. Check terminal for details."}), 500
+    return jsonify({"success": True, "message": "User details saved temporarily. Proceed to MSG91 OTP verification."})
 
 # ==========================================
-# ৩. API রুটস (Sign Up - Verify OTP)
+# ৩. API রুটস (Sign Up - Verify OTP via MSG91)
 # ==========================================
 @app.route('/api/verify-otp', methods=['POST'])
 def verify_otp():
     data = request.get_json()
     user_otp = data.get('otp')
+    req_id = data.get('req_id')
 
     if 'temp_user' not in session:
         return jsonify({"success": False, "error": "Session expired. Please fill form again."}), 400
 
     stored_data = session['temp_user']
 
-    if user_otp == stored_data['otp']:
+    is_valid, msg91_error = verify_msg91_otp(stored_data['email'], user_otp, req_id)
+
+    if is_valid:
         try:
             conn = sqlite3.connect('ExamMate.db')
             cursor = conn.cursor()
@@ -197,7 +184,7 @@ def verify_otp():
             print(f"\n❌ [DB ERROR IN VERIFY_OTP]: {e}\n")
             return jsonify({"success": False, "error": "Database error occurred."}), 500
     else:
-        return jsonify({"success": False, "error": "Incorrect OTP! Please check your inbox and try again."}), 400
+        return jsonify({"success": False, "error": msg91_error or "Incorrect OTP! Please check and try again."}), 400
 
 # ==========================================
 # ৪. API রুটস (Sign In)
@@ -226,7 +213,7 @@ def signin():
         return jsonify({"success": False, "error": "Database connection error."}), 500
 
 # ==========================================
-# ৫. API রুটস (Forgot Password - Send OTP)
+# ৫. API রুটস (Forgot Password - Check User)
 # ==========================================
 @app.route('/api/forgot-password', methods=['POST'])
 def forgot_password():
@@ -243,38 +230,30 @@ def forgot_password():
         if not user:
             return jsonify({"success": False, "error": "This email is not registered with us!"}), 404
 
-        otp_code = str(random.randint(1000, 9999))
-        session['reset_user'] = {'email': email, 'otp': otp_code}
-
-        subject = "ExamMate Password Reset OTP"
-        html_content = f"""
-        <h2>Password Reset</h2>
-        <p>Your OTP is:</p>
-        <h1>{otp_code}</h1>
-        <p>Use this OTP to reset your password.</p>
-        """
-
-        send_email_mailersend(email, subject, html_content)
-        return jsonify({"success": True})
+        session['reset_user'] = {'email': email}
+        return jsonify({"success": True, "message": "Email verified. Proceed to MSG91 OTP verification."})
     except Exception as e:
-        print(f"\n❌ [MAILERSEND ERROR IN FORGOT_PASSWORD]: {e}\n")
-        return jsonify({"success": False, "error": "Error sending reset OTP."}), 500
+        print(f"\n❌ [ERROR IN FORGOT_PASSWORD]: {e}\n")
+        return jsonify({"success": False, "error": "Error processing password reset."}), 500
 
 # ==========================================
-# ৬. API রুটস (Forgot Password - Reset)
+# ৬. API রুটস (Forgot Password - Reset via MSG91)
 # ==========================================
 @app.route('/api/reset-password', methods=['POST'])
 def reset_password():
     data = request.get_json()
     user_otp = data.get('otp')
     new_password = data.get('new_password')
+    req_id = data.get('req_id')
 
     if 'reset_user' not in session:
         return jsonify({"success": False, "error": "Session timed out. Please try again."}), 400
 
     stored_data = session['reset_user']
 
-    if user_otp == stored_data['otp']:
+    is_valid, msg91_error = verify_msg91_otp(stored_data['email'], user_otp, req_id)
+
+    if is_valid:
         try:
             secure_password = generate_password_hash(new_password)
             conn = sqlite3.connect('ExamMate.db')
@@ -288,7 +267,7 @@ def reset_password():
             print(f"\n❌ [DB ERROR IN RESET_PASSWORD]: {e}\n")
             return jsonify({"success": False, "error": "Database error."}), 500
     else:
-        return jsonify({"success": False, "error": "Incorrect OTP! Try again."}), 400
+        return jsonify({"success": False, "error": msg91_error or "Incorrect OTP! Try again."}), 400
 
 # ==========================================
 # ৭. স্টুডেন্ট ড্যাশবোর্ড - প্রগ্রেস ও রেজাল্ট আনা
