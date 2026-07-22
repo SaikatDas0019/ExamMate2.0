@@ -4,323 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExamMate | Sign In</title>
-    <style>
-        /* Global Theme (Pure White) */
-        :root { color-scheme: light; }
-        body { 
-            background-color: #ffffff; 
-            color: #333333; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container { 
-            width: 100%;
-            max-width: 450px; 
-            padding: 2rem; 
-            box-sizing: border-box;
-        }
-        
-        /* Titles */
-        .custom-title { text-align: center; font-size: 2rem; font-weight: 800; margin-bottom: 5px; color: #000000; }
-        .custom-subtitle { text-align: center; color: #4b5563; font-size: 1rem; margin-bottom: 2rem; }
-        
-        /* Input Fields */
-        .input-group {
-            margin-bottom: 1.2rem;
-            display: flex;
-            flex-direction: column;
-        }
-        .input-group label {
-            color: #333333; 
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-        .input-group input { 
-            background-color: #ffffff; 
-            border: 1px solid #d1d5db; 
-            color: #000000; 
-            border-radius: 12px; 
-            padding: 14px 16px; 
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        .input-group input:focus {
-            border: 1px solid #3b82f6;
-            box-shadow: 0 0 5px rgba(59, 130, 246, 0.4);
-        }
-        
-        /* Buttons */
-        .btn-primary { 
-            width: 100%; 
-            background: #3b82f6; 
-            color: #ffffff; 
-            border-radius: 25px; 
-            padding: 0.85rem 1rem; 
-            font-size: 1.1rem; 
-            font-weight: 700; 
-            border: none; 
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
-            margin-top: 10px;
-        }
-        .btn-primary:hover { 
-            background: #2563eb;
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3); 
-        }
-
-        .btn-secondary { 
-            width: 100%;
-            background: #f8fafc; 
-            color: #4b5563; 
-            border: 1px solid #cbd5e1; 
-            border-radius: 25px; 
-            padding: 0.85rem 1rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-        .btn-secondary:hover { 
-            background: #f1f5f9; 
-            color: #1e293b;
-            border: 1px solid #94a3b8;
-        }
-
-        .btn-green {
-            background: #10b981; 
-            color: #ffffff;
-            border: none;
-            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
-        }
-        .btn-green:hover {
-            background: #059669;
-            transform: translateY(-2px);
-        }
-
-        .btn-row {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        /* Section Visibility */
-        #forgot-password-section { display: none; }
-        #otp-reset-fields { display: none; } /* Initially hidden fields */
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <div id="signin-error" style="color: #ef4444; font-size: 0.95rem; margin-bottom: 15px; display: none; font-weight: bold; text-align: center; background: #fef2f2; padding: 10px; border-radius: 8px; border: 1px solid #fee2e2;"></div>
-        
-        <div id="signin-section">
-            <div class="custom-title">Sign In</div>
-            <div class="custom-subtitle">Welcome back to ExamMate</div>
-            
-            <form id="signin-form" onsubmit="handleSignIn(event)">
-                <div class="input-group">
-                    <label>📧 Username / Email</label>
-                    <input type="email" id="email" required placeholder="Enter your email">
-                </div>
-                
-                <div class="input-group">
-                    <label>🔒 Password</label>
-                    <input type="password" id="password" required placeholder="Enter your password">
-                </div>
-                
-                <button type="submit" class="btn-primary">Sign In</button>
-            </form>
-
-            <div class="btn-row">
-                <button type="button" class="btn-secondary" onclick="showForgotPassword()">Forget Password?</button>
-                <button type="button" class="btn-secondary btn-green" onclick="window.location.href='signup.html'">Create Account</button>
-            </div>
-        </div>
-
-        <div id="forgot-password-section">
-            <div class="custom-title">Reset Password</div>
-            <div class="custom-subtitle" id="reset-subtitle">Enter your email to verify identity</div>
-
-            <div id="email-submit-fields">
-                <div class="input-group">
-                    <label>📧 Registered Email</label>
-                    <input type="email" id="reset-email" placeholder="Enter your email address">
-                </div>
-                <button type="button" class="btn-primary" id="btn-send-reset-otp" onclick="sendResetOTP()">Send Reset OTP 📨</button>
-            </div>
-
-            <form id="reset-final-form" onsubmit="handleResetPassword(event)">
-                <div id="otp-reset-fields">
-                    <div class="input-group">
-                        <label>🔢 Enter 4-Digit OTP</label>
-                        <input type="text" id="reset-otp" placeholder="0000" maxlength="4" pattern="\d{4}">
-                    </div>
-                    <div class="input-group">
-                        <label>🔒 New Password</label>
-                        <input type="password" id="new-password" placeholder="Create new password">
-                    </div>
-                    <button type="submit" class="btn-primary">Update Password 🚀</button>
-                </div>
-            </form>
-
-            <button type="button" class="btn-secondary" style="margin-top: 15px;" onclick="hideForgotPassword()">Back to Sign In</button>
-        </div>
-
-    </div>
-
-    <script>
-        function showErr(msg) {
-            const box = document.getElementById('signin-error');
-            box.innerText = msg;
-            box.style.display = 'block';
-        }
-
-        function clearErr() {
-            document.getElementById('signin-error').style.display = 'none';
-        }
-
-        async function handleSignIn(event) {
-            event.preventDefault();
-            clearErr();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const submitBtn = document.querySelector('#signin-form button[type="submit"]');
-            
-            submitBtn.innerText = "Signing In...";
-            submitBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/signin', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, password: password })
-                });
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    if (data.role === "Student") {
-                        localStorage.setItem('userEmail', email);
-                        localStorage.setItem('userName', data.name);
-                        window.location.href = "student_dashboard.html"; 
-                    } else {
-                        window.location.href = "teacher_dashboard.html"; 
-                    }
-                } else {
-                    showErr(data.error || "Invalid email or password!");
-                }
-            } catch (error) {
-                showErr("Server connection error.");
-            } finally {
-                submitBtn.innerText = "Sign In";
-                submitBtn.disabled = false;
-            }
-        }
-
-        function showForgotPassword() {
-            clearErr();
-            document.getElementById('signin-section').style.display = 'none';
-            document.getElementById('forgot-password-section').style.display = 'block';
-            document.getElementById('email-submit-fields').style.display = 'block';
-            document.getElementById('otp-reset-fields').style.display = 'none';
-        }
-
-        function hideForgotPassword() {
-            clearErr();
-            document.getElementById('forgot-password-section').style.display = 'none';
-            document.getElementById('signin-section').style.display = 'block';
-            document.getElementById('reset-email').value = '';
-            document.getElementById('reset-otp').value = '';
-            document.getElementById('new-password').value = '';
-            document.getElementById('reset-subtitle').innerText = "Enter your email to verify identity";
-        }
-
-        async function sendResetOTP() {
-            clearErr();
-            const email = document.getElementById('reset-email').value;
-            const sendBtn = document.getElementById('btn-send-reset-otp');
-                
-            if(!email) {
-                showErr("Please enter your registered email address.");
-                return;
-            }
-        
-            sendBtn.innerText = "Sending OTP...";
-            sendBtn.disabled = true;
-        
-            try {
-                const response = await fetch('/api/forgot-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email })
-                });
-                const data = await response.json();
-            
-                if (response.ok && data.success) {
-                    document.getElementById('reset-subtitle').innerText = "OTP sent to " + email;
-                    document.getElementById('email-submit-fields').style.display = 'none';
-                    document.getElementById('otp-reset-fields').style.display = 'block';
-                } else {
-                    // এই লাইনটি নিশ্চিত করুন, যাতে ব্যাকএন্ডের আসল এররটা স্ক্রিনে আসে
-                    showErr(data.error || "Failed to send reset OTP."); 
-                }
-            } catch (error) {
-                // টেস্টিংয়ের জন্য সাময়িকভাবে এখানে আসল error টা কনসোলে প্রিন্ট করে রাখুন
-                console.error(error);
-                showErr("Network error or server down.");
-            } finally {
-                sendBtn.innerText = "Send Reset OTP 📨";
-                sendBtn.disabled = false;
-            }
-        }
-
-        async function handleResetPassword(event) {
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Sign In</title>
     
     <script src="https://control.msg91.com/app/assets/otp-provider/otp-provider.js"></script>
 
     <style>
+        /* Universal Box-Sizing to prevent layout overflow */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         /* Global Theme (Pure White) */
-        :root { color-scheme: light; }
+        :root { 
+            color-scheme: light; 
+        }
+
+        html {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
         body { 
             background-color: #ffffff; 
             color: #333333; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
         }
+
+        /* Single Centered Container */
         .container { 
             width: 100%;
             max-width: 450px; 
-            padding: 2rem; 
-            box-sizing: border-box;
+            padding: 1.5rem; 
+            margin: auto;
         }
         
         /* Titles */
-        .custom-title { text-align: center; font-size: 2rem; font-weight: 800; margin-bottom: 5px; color: #000000; }
-        .custom-subtitle { text-align: center; color: #4b5563; font-size: 1rem; margin-bottom: 2rem; }
+        .custom-title { 
+            text-align: center; 
+            font-size: 2rem; 
+            font-weight: 800; 
+            margin-bottom: 5px; 
+            color: #000000; 
+        }
+        .custom-subtitle { 
+            text-align: center; 
+            color: #4b5563; 
+            font-size: 1rem; 
+            margin-bottom: 2rem; 
+            word-wrap: break-word;
+        }
         
         /* Input Fields */
         .input-group {
             margin-bottom: 1.2rem;
             display: flex;
             flex-direction: column;
+            width: 100%;
         }
         .input-group label {
             color: #333333; 
@@ -329,6 +75,7 @@
             margin-bottom: 6px;
         }
         .input-group input { 
+            width: 100%;
             background-color: #ffffff; 
             border: 1px solid #d1d5db; 
             color: #000000; 
@@ -371,11 +118,12 @@
             border: 1px solid #cbd5e1; 
             border-radius: 25px; 
             padding: 0.85rem 1rem;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
+            text-align: center;
         }
         .btn-secondary:hover { 
             background: #f1f5f9; 
@@ -394,15 +142,39 @@
             transform: translateY(-2px);
         }
 
+        /* Responsive Action Row */
         .btn-row {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             margin-top: 15px;
+            width: 100%;
+        }
+
+        .btn-row .btn-secondary {
+            flex: 1;
+            min-width: 0; /* Prevents button text overflow on small screens */
+            margin-top: 0;
+        }
+
+        /* Stack buttons vertically on small mobile displays */
+        @media (max-width: 380px) {
+            .btn-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .btn-row .btn-secondary {
+                margin-top: 5px;
+            }
         }
 
         /* Section Visibility */
         #forgot-password-section { display: none; }
-        #otp-reset-fields { display: none; } /* Initially hidden fields */
+        #otp-reset-fields { display: none; }
+        
+        #signin-error {
+            width: 100%;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
@@ -450,7 +222,7 @@
                 <div id="otp-reset-fields">
                     <div class="input-group">
                         <label>🔒 New Password</label>
-                        <input type="password" id="new-password" placeholder="Create new password" required>
+                        <input type="password" id="new-password" placeholder="Create new password">
                     </div>
                     <button type="submit" class="btn-primary">Update Password 🚀</button>
                 </div>
@@ -462,13 +234,11 @@
     </div>
 
     <script>
-        // Global variables to hold verification data returned from MSG91 SDK
         let verifiedOtpToken = "";
         let verifiedReqId = "";
 
-        // Configure configuration parameters for MSG91 Widget
-        const MSG91_WIDGET_ID = "YOUR_MSG91_WIDGET_ID"; // Replace with your MSG91 Widget ID
-        const MSG91_TOKEN_AUTH = "YOUR_MSG91_TOKEN_AUTH"; // Replace with your MSG91 Token Auth
+        const MSG91_WIDGET_ID = "YOUR_MSG91_WIDGET_ID";
+        const MSG91_TOKEN_AUTH = "YOUR_MSG91_TOKEN_AUTH";
 
         function showErr(msg) {
             const box = document.getElementById('signin-error');
@@ -523,7 +293,6 @@
             document.getElementById('forgot-password-section').style.display = 'block';
             document.getElementById('email-submit-fields').style.display = 'block';
             document.getElementById('otp-reset-fields').style.display = 'none';
-            // Reset temporary verification variables when showing section
             verifiedOtpToken = "";
             verifiedReqId = "";
         }
@@ -539,10 +308,6 @@
             verifiedReqId = "";
         }
 
-        /* * Step 1 & Step 2 & Step 3:
-         * Verifies registered email with backend (/api/forgot-password)
-         * If verified, opens the MSG91 Widget for OTP verification.
-         */
         async function sendResetOTP() {
             clearErr();
             const email = document.getElementById('reset-email').value.trim();
@@ -557,7 +322,6 @@
             sendBtn.disabled = true;
         
             try {
-                // Call backend API to check if email exists in database
                 const response = await fetch('/api/forgot-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -568,32 +332,26 @@
                 if (response.ok && data.success) {
                     document.getElementById('reset-subtitle').innerText = "Complete OTP verification via MSG91";
                     
-                    // Configuration object for MSG91 SDK Widget launch
                     const configuration = {
                         widgetId: MSG91_WIDGET_ID,
                         tokenAuth: MSG91_TOKEN_AUTH,
                         identifier: email,
                         exposeMethods: true,
-                        // Step 5: Success Callback when user enters correct OTP in MSG91 Widget
                         success: (data) => {
-                            // Extract token/OTP or req_id returned by MSG91 widget SDK
                             verifiedOtpToken = data.message || data.token || "VERIFIED";
                             verifiedReqId = data.reqId || data.req_id || "";
                             
-                            // Step 6: Show New Password field only after successful OTP verification
                             document.getElementById('email-submit-fields').style.display = 'none';
                             document.getElementById('otp-reset-fields').style.display = 'block';
                             document.getElementById('reset-subtitle').innerText = "Email Verified! Set your new password.";
                             clearErr();
                         },
-                        // Step 5: Failure Callback when OTP verification fails/errors in MSG91 Widget
                         failure: (error) => {
                             console.error("MSG91 OTP Verification Failed:", error);
                             showErr(error.message || "OTP Verification failed via MSG91. Please try again.");
                         }
                     };
 
-                    // Step 3 & 4: Launch MSG91 Widget
                     if (window.sendOtp) {
                         window.sendOtp.init(configuration);
                     } else {
@@ -611,10 +369,6 @@
             }
         }
 
-        /* * Step 7:
-         * Called when submitting the new password after successful MSG91 verification.
-         * Sends request to /api/reset-password.
-         */
         async function handleResetPassword(event) {
             event.preventDefault();
             clearErr();
@@ -635,7 +389,6 @@
             submitBtn.disabled = true;
 
             try {
-                // Post request sending verified token and new password
                 const response = await fetch('/api/reset-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
