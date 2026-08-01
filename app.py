@@ -474,6 +474,59 @@ def admin_send_notification():
         print("Admin Notification Error:", e)
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
+# ১. আগের পাঠানো সব নোটিফিকেশন লিস্ট আনা
+@app.route('/api/admin/get-notifications', methods=['GET'])
+def admin_get_notifications():
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, message, target_role, date_sent FROM notifications ORDER BY id DESC")
+        rows = cursor.fetchall()
+        conn.close()
+
+        notifs = [{"id": r[0], "message": r[1], "target_role": r[2], "date": r[3]} for r in rows]
+        return jsonify({"success": True, "notifications": notifs})
+    except Exception as e:
+        print("Fetch Notif Error:", e)
+        return jsonify({"success": False, "error": "Database error"}), 500
+
+# ২. নোটিফিকেশন এডিট করা
+@app.route('/api/admin/edit-notification', methods=['POST'])
+def admin_edit_notification():
+    data = request.get_json()
+    notif_id = data.get('id')
+    new_message = data.get('message')
+    target_role = data.get('target_role')
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        cursor = conn.cursor()
+        cursor.execute("UPDATE notifications SET message = ?, target_role = ? WHERE id = ?", (new_message, target_role, notif_id))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Notification updated!"})
+    except Exception as e:
+        print("Edit Notif Error:", e)
+        return jsonify({"success": False, "error": "Failed to update"}), 500
+
+# ৩. নোটিফিকেশন ডিলিট করা
+@app.route('/api/admin/delete-notification', methods=['POST'])
+def admin_delete_notification():
+    data = request.get_json()
+    notif_id = data.get('id')
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM notifications WHERE id = ?", (notif_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Notification deleted!"})
+    except Exception as e:
+        print("Delete Notif Error:", e)
+        return jsonify({"success": False, "error": "Failed to delete"}), 500
+
+
 # ==========================================
 # প্রোফাইল আপডেট ও রোল পরিবর্তনের API
 # ==========================================
