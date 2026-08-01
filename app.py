@@ -1,9 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
-import requests
 import os
 import sqlite3
 from dotenv import load_dotenv
-from werkzeug.security import generate_password_hash, check_password_hash
 
 # .env ফাইল লোড করা
 load_dotenv()
@@ -12,95 +10,58 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026")
 
 # ==========================================
-# ০. MSG91 OTP Verification Function
-# ==========================================
-def verify_msg91_otp(identifier, otp, req_id=None):
-    auth_key = os.getenv("MSG91_AUTHKEY")
-    widget_id = os.getenv("MSG91_WIDGET_ID")
-    token_auth = os.getenv("MSG91_TOKEN_AUTH")
-
-    if not auth_key:
-        return False, "MSG91 Auth Key configuration missing."
-
-    url = "https://control.msg91.com/api/v5/otp/verify"
-    headers = {
-        "authkey": auth_key,
-        "Content-Type": "application/json"
-    }
-    
-    params = {
-        "otp": otp,
-        "mobile": identifier if identifier.isdigit() else None,
-        "email": identifier if "@" in str(identifier) else None
-    }
-    params = {k: v for k, v in params.items() if v is not None}
-
-    try:
-        response = requests.get(url, headers=headers, params=params, timeout=10)
-        res_data = response.json()
-        if response.status_code == 200 and res_data.get("type") == "success":
-            return True, "OTP verified successfully."
-        else:
-            msg = res_data.get("message", "OTP verification failed.")
-            return False, msg
-    except Exception as e:
-        return False, str(e)
-
-# ==========================================
-# ১. HTML পেজের রুট (Routes - লগইন প্রোটেকশন সহ)
+# ১. HTML পেজের রুট (Single Auth Page & Dashboard Protection)
 # ==========================================
 @app.route('/')
 def home():
     return render_template('index.html')
 
-@app.route('/signup.html')
-def signup_page():
-    return render_template('signup.html')
-
-@app.route('/signin.html')
-def signin_page():
-    return render_template('signin.html')
+# একক অ্যাথেনটিকেশন পেজ (Signup/Signin দুটোর কাজ এক পেজেই হবে)
+@app.route('/auth.html')
+@app.route('/login.html')
+def auth_page():
+    return render_template('auth.html')
 
 @app.route('/student_dashboard.html')
 def student_dashboard():
     if 'user' not in session or session['user']['role'] != 'Student':
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('auth_page'))
     return render_template('student_dashboard.html')
 
 @app.route('/teacher_dashboard.html')
 def teacher_dashboard():
     if 'user' not in session or session['user']['role'] != 'Teacher':
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('auth_page'))
     return render_template('teacher_dashboard.html')
 
 @app.route('/student_exam.html')
 def student_exam():
     if 'user' not in session or session['user']['role'] != 'Student':
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('auth_page'))
     return render_template('student_exam.html')
 
 @app.route('/student_profile.html')
 def student_profile():
     if 'user' not in session or session['user']['role'] != 'Student':
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('auth_page'))
     return render_template('student_profile.html')
 
 @app.route('/create_exam.html')
 def create_exam():
     if 'user' not in session or session['user']['role'] != 'Teacher':
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('auth_page'))
     return render_template('create_exam.html')
 
 @app.route('/teacher_analytics.html')
 def teacher_analytics():
     if 'user' not in session or session['user']['role'] != 'Teacher':
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('auth_page'))
     return render_template('teacher_analytics.html')
 
 @app.route('/notification.html')
 def notification():
     if 'user' not in session:
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('auth_page'))
     return render_template('notification.html')
 
 @app.route('/admin.html')
@@ -110,167 +71,64 @@ def admin_page():
 @app.route('/logout')
 def logout():
     session.pop('user', None)
-    return redirect(url_for('signin_page'))
+    return redirect(url_for('auth_page'))
 
 # ==========================================
-# ২. API রুটস (Sign Up - Initiate User Registration)
+# ২. Google Auth Sync API (ফায়ারবেস লগইনের পর ব্যাকএন্ডে ডেটা সেভ রাখা)
 # ==========================================
-@app.route('/api/send-otp', methods=['POST'])
-def send_otp():
+@app.route('/api/google-auth-sync', methods=['POST'])
+def google_auth_sync():
     data = request.get_json()
     email = data.get('email')
     name = data.get('name')
-    password = data.get('password')
-    role = data.get('role')
+    role = data.get('role', 'Student') # ডিফল্ট রোল Student
 
-    if not email or not password:
-        return jsonify({"success": False, "error": "Email and Password are required!"}), 400
+    if not email or not name:
+        return jsonify({"success": False, "error": "Missing user details!"}), 400
 
     try:
         conn = sqlite3.connect('ExamMate.db')
         cursor = conn.cursor()
+        
+        # ইউজার টেবিল চেক
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
-                email TEXT PRIMARY KEY, name TEXT NOT NULL, password TEXT NOT NULL, category TEXT NOT NULL, gender TEXT
+                email TEXT PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL
             )
         ''')
-        cursor.execute("SELECT email FROM users WHERE email = ?", (email,))
+        
+        cursor.execute("SELECT category FROM users WHERE email = ?", (email,))
         existing_user = cursor.fetchone()
-        conn.close()
 
         if existing_user:
-            return jsonify({"success": False, "error": "This email is already registered! Please go to Sign In page."}), 400
-
-    except Exception as e:
-        print(f"\n❌ [DB ERROR IN SEND_OTP CHECK]: {e}\n")
-        return jsonify({"success": False, "error": "Database error while checking email."}), 500
-
-    hashed_password = generate_password_hash(password)
-    session['temp_user'] = {'name': name, 'email': email, 'password': hashed_password, 'role': role}
-
-    return jsonify({"success": True, "message": "User details saved temporarily. Proceed to MSG91 OTP verification."})
-
-# ==========================================
-# ৩. API রুটস (Sign Up - Verify OTP via MSG91)
-# ==========================================
-@app.route('/api/verify-otp', methods=['POST'])
-def verify_otp():
-    data = request.get_json()
-    user_otp = data.get('otp')
-    req_id = data.get('req_id')
-
-    if 'temp_user' not in session:
-        return jsonify({"success": False, "error": "Session expired. Please fill form again."}), 400
-
-    stored_data = session['temp_user']
-
-    is_valid, msg91_error = verify_msg91_otp(stored_data['email'], user_otp, req_id)
-
-    if is_valid:
-        try:
-            conn = sqlite3.connect('ExamMate.db')
-            cursor = conn.cursor()
+            # আগে থেকে থাকলে বিদ্যমান Role ব্যবহার করা হবে
+            user_role = existing_user[0]
+        else:
+            # নতুন ইউজার হলে সিস্টেমে সেভ হবে
+            user_role = role
             cursor.execute(
-                "INSERT OR REPLACE INTO users (email, name, password, category) VALUES (?, ?, ?, ?)",
-                (stored_data['email'], stored_data['name'], stored_data['password'], stored_data['role'])
+                "INSERT INTO users (email, name, category) VALUES (?, ?, ?)",
+                (email, name, user_role)
             )
             conn.commit()
-            conn.close()
-            
-            session['user'] = {'email': stored_data['email'], 'name': stored_data['name'], 'role': stored_data['role']}
-            session.pop('temp_user', None)
-            return jsonify({"success": True})
-        except Exception as e:
-            print(f"\n❌ [DB ERROR IN VERIFY_OTP]: {e}\n")
-            return jsonify({"success": False, "error": "Database error occurred."}), 500
-    else:
-        return jsonify({"success": False, "error": msg91_error or "Incorrect OTP! Please check and try again."}), 400
 
-# ==========================================
-# ৪. API রুটস (Sign In)
-# ==========================================
-@app.route('/api/signin', methods=['POST'])
-def signin():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("SELECT name, password, category FROM users WHERE email = ?", (email,))
-        user = cursor.fetchone()
-        conn.close()
-        
-        if user and check_password_hash(user["password"], password):
-            session['user'] = {'email': email, 'name': user["name"], 'role': user["category"]}
-            return jsonify({"success": True, "name": user["name"], "role": user["category"]})
-        else:
-            return jsonify({"success": False, "error": "Invalid email or password. Try again!"}), 401
-    except Exception as e:
-        print(f"\n❌ [DB ERROR IN SIGNIN]: {e}\n")
-        return jsonify({"success": False, "error": "Database connection error."}), 500
-
-# ==========================================
-# ৫. API রুটস (Forgot Password - Check User)
-# ==========================================
-@app.route('/api/forgot-password', methods=['POST'])
-def forgot_password():
-    data = request.get_json()
-    email = data.get('email')
-
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT email FROM users WHERE email = ?", (email,))
-        user = cursor.fetchone()
         conn.close()
 
-        if not user:
-            return jsonify({"success": False, "error": "This email is not registered with us!"}), 404
+        # ফ্ল্যাঙ্ক সেসন সেট করা
+        session['user'] = {'email': email, 'name': name, 'role': user_role}
 
-        session['reset_user'] = {'email': email}
-        return jsonify({"success": True, "message": "Email verified. Proceed to MSG91 OTP verification."})
+        return jsonify({
+            "success": True, 
+            "role": user_role, 
+            "redirect_url": "/student_dashboard.html" if user_role == "Student" else "/teacher_dashboard.html"
+        })
+
     except Exception as e:
-        print(f"\n❌ [ERROR IN FORGOT_PASSWORD]: {e}\n")
-        return jsonify({"success": False, "error": "Error processing password reset."}), 500
+        print(f"\n❌ [DB ERROR IN GOOGLE_AUTH_SYNC]: {e}\n")
+        return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 # ==========================================
-# ৬. API রুটস (Forgot Password - Reset via MSG91)
-# ==========================================
-@app.route('/api/reset-password', methods=['POST'])
-def reset_password():
-    data = request.get_json()
-    user_otp = data.get('otp')
-    new_password = data.get('new_password')
-    req_id = data.get('req_id')
-
-    if 'reset_user' not in session:
-        return jsonify({"success": False, "error": "Session timed out. Please try again."}), 400
-
-    stored_data = session['reset_user']
-
-    is_valid, msg91_error = verify_msg91_otp(stored_data['email'], user_otp, req_id)
-
-    if is_valid:
-        try:
-            secure_password = generate_password_hash(new_password)
-            conn = sqlite3.connect('ExamMate.db')
-            cursor = conn.cursor()
-            cursor.execute("UPDATE users SET password = ? WHERE email = ?", (secure_password, stored_data['email']))
-            conn.commit()
-            conn.close()
-            session.pop('reset_user', None)
-            return jsonify({"success": True})
-        except Exception as e:
-            print(f"\n❌ [DB ERROR IN RESET_PASSWORD]: {e}\n")
-            return jsonify({"success": False, "error": "Database error."}), 500
-    else:
-        return jsonify({"success": False, "error": msg91_error or "Incorrect OTP! Try again."}), 400
-
-# ==========================================
-# ৭. স্টুডেন্ট ড্যাশবোর্ড - প্রগ্রেস ও রেজাল্ট আনা
+# ৩. স্টুডেন্ট ড্যাশবোর্ড - প্রগ্রেস ও রেজাল্ট আনা
 # ==========================================
 @app.route('/api/get-student-progress', methods=['POST'])
 def get_student_progress():
@@ -312,7 +170,7 @@ def get_student_progress():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ৮. এক্সাম সার্চ চেক করা
+# ৪. এক্সাম সার্চ চেক করা
 # ==========================================
 @app.route('/api/check-exam', methods=['POST'])
 def check_exam():
@@ -335,7 +193,7 @@ def check_exam():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ৯. এক্সাম পেজ - পরীক্ষার প্রশ্ন ও সময় আনা
+# ৫. এক্সাম পেজ - পরীক্ষার প্রশ্ন ও সময় আনা
 # ==========================================
 @app.route('/api/get-exam-questions', methods=['POST'])
 def get_exam_questions():
@@ -374,7 +232,7 @@ def get_exam_questions():
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 # ==========================================
-# ১০. এক্সাম পেজ - পরীক্ষার রেজাল্ট সেভ করা
+# ৬. এক্সাম পেজ - পরীক্ষার রেজাল্ট সেভ করা
 # ==========================================
 @app.route('/api/submit-exam-result', methods=['POST'])
 def submit_exam_result():
@@ -400,7 +258,7 @@ def submit_exam_result():
         return jsonify({"success": False, "error": "Failed to save result."}), 500
 
 # ==========================================
-# ১১. প্রোফাইল পেজ - স্টুডেন্টের এক্সাম হিস্ট্রি আনা
+# ৭. প্রোফাইল পেজ - স্টুডেন্টের এক্সাম হিস্ট্রি আনা
 # ==========================================
 @app.route('/api/get-student-history', methods=['POST'])
 def get_student_history():
@@ -425,7 +283,7 @@ def get_student_history():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ১২. Create Exam (Teacher) - প্রশ্ন ও পরীক্ষা সেভ করা
+# ৮. Create Exam (Teacher) - প্রশ্ন ও পরীক্ষা সেভ করা
 # ==========================================
 @app.route('/api/create-exam', methods=['POST'])
 def create_exam_api():
@@ -458,7 +316,7 @@ def create_exam_api():
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 # ==========================================
-# ১৩. Teacher Dashboard - ম্যাট্রিক্স ও এক্সাম লিস্ট
+# ৯. Teacher Dashboard - ম্যাট্রিক্স ও এক্সাম লিস্ট
 # ==========================================
 @app.route('/api/teacher-dashboard', methods=['POST'])
 def get_teacher_dashboard():
@@ -488,7 +346,7 @@ def get_teacher_dashboard():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ১৪. Teacher Profile - অ্যানালাইসিস উইন্ডো
+# ১০. Teacher Profile - অ্যানালাইসিস উইন্ডো
 # ==========================================
 @app.route('/api/teacher-analysis', methods=['POST'])
 def get_teacher_analysis():
@@ -529,7 +387,7 @@ def get_teacher_analysis():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ১৫. Notifications - নোটিফিকেশন রিকভার করা
+# ১১. Notifications - নোটিফিকেশন রিকভার করা
 # ==========================================
 @app.route('/api/notifications', methods=['POST'])
 def get_notifications():
@@ -574,7 +432,7 @@ def get_notifications():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ১৬. Send Notification (Admin Only)
+# ১২. Send Notification (Admin Only)
 # ==========================================
 @app.route('/api/admin/send-notification', methods=['POST'])
 def admin_send_notification():
