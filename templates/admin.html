@@ -30,11 +30,16 @@
         .panel-view { display: none; flex: 1; flex-direction: column; }
         .panel-view.active { display: flex; }
 
-        .chat-feed { flex: 1; padding: 10px; overflow-y: auto; background: #f8fafc; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 380px; margin-bottom: 10px; }
-        .msg-bubble { background: #3b82f6; color: white; padding: 10px 14px; border-radius: 14px 14px 2px 14px; align-self: flex-end; max-width: 85%; font-size: 0.88rem; }
+        .chat-feed { flex: 1; padding: 10px; overflow-y: auto; background: #f8fafc; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 380px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
+        .msg-bubble { background: #3b82f6; color: white; padding: 10px 14px; border-radius: 14px 14px 2px 14px; align-self: flex-end; max-width: 85%; font-size: 0.88rem; position: relative; cursor: pointer; }
+        .msg-info { font-size: 0.7rem; color: #dbeafe; margin-top: 4px; display: flex; justify-content: space-between; gap: 8px; }
+        .msg-actions { display: none; gap: 8px; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 4px; }
+        .act-btn { background: none; border: none; color: white; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
+
         .chat-input-bar { display: flex; gap: 8px; align-items: center; }
         .input-box { flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px; font-size: 0.9rem; outline: none; }
-        .btn-send { background: #3b82f6; color: white; border: none; width: 42px; height: 42px; border-radius: 12px; cursor: pointer; }
+        .btn-send { background: #3b82f6; color: white; border: none; width: 42px; height: 42px; border-radius: 12px; cursor: pointer; font-size: 1rem; display: flex; justify-content: center; align-items: center; }
+        .btn-send:disabled { background: #cbd5e1; cursor: not-allowed; }
 
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 5px; }
@@ -85,8 +90,8 @@
             </div>
             <div class="chat-feed" id="chat-feed"></div>
             <div class="chat-input-bar">
-                <input type="text" class="input-box" id="notif-message" placeholder="Type announcement...">
-                <button class="btn-send" onclick="submitNotification()"><i class="fas fa-paper-plane"></i></button>
+                <input type="text" class="input-box" id="notif-message" placeholder="Type announcement..." onkeydown="if(event.key === 'Enter') submitNotification()">
+                <button class="btn-send" id="send-btn" onclick="submitNotification()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
 
@@ -149,6 +154,8 @@
     </div>
 
     <script>
+        let editingNotifId = null;
+
         function openPanel(panelId, titleText) {
             document.getElementById('dashboard-menu').style.display = 'none';
             document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
@@ -156,6 +163,7 @@
             document.getElementById('admin-title').innerHTML = titleText;
             document.getElementById('back-btn').style.display = 'block';
 
+            if (panelId === 'notif-panel') loadNotifications();
             if (panelId === 'upload-panel') loadDynamicClasses();
         }
 
@@ -166,7 +174,95 @@
             document.getElementById('back-btn').style.display = 'none';
         }
 
-        // নতুন ফোল্ডার তৈরি
+        // --- NOTIFICATION CHAT LOGIC ---
+        async function loadNotifications() {
+            const feed = document.getElementById('chat-feed');
+            try {
+                const response = await fetch('/api/admin/get-notifications');
+                const data = await response.json();
+
+                if (data.success) {
+                    feed.innerHTML = "";
+                    if (data.notifications.length === 0) {
+                        feed.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:15px; font-size:0.8rem;">No notifications sent yet.</div>';
+                        return;
+                    }
+
+                    data.notifications.forEach(n => {
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = 'msg-bubble';
+                        msgDiv.onclick = (e) => {
+                            const act = document.getElementById(`act-${n.id}`);
+                            act.style.display = act.style.display === 'flex' ? 'none' : 'flex';
+                        };
+                        
+                        msgDiv.innerHTML = `
+                            <div>${escapeHTML(n.message)}</div>
+                            <div class="msg-info"><span>${n.target_role}</span><span>${n.date ? n.date.split(' ')[1] || '' : ''}</span></div>
+                            <div class="msg-actions" id="act-${n.id}">
+                                <button class="act-btn" onclick="prepareEdit(event, ${n.id}, '${escapeQuotes(n.message)}', '${n.target_role}')">Edit</button>
+                                <button class="act-btn" style="color:#fca5a5;" onclick="confirmDelete(event, ${n.id})">Delete</button>
+                            </div>
+                        `;
+                        feed.appendChild(msgDiv);
+                    });
+                }
+            } catch (e) { console.error("Error loading notifs:", e); }
+        }
+
+        async function submitNotification() {
+            const role = document.getElementById('target-role').value;
+            const messageInput = document.getElementById('notif-message');
+            const message = messageInput.value.trim();
+            const sendBtn = document.getElementById('send-btn');
+
+            if (!message) return;
+
+            sendBtn.disabled = true;
+
+            let url = editingNotifId ? '/api/admin/edit-notification' : '/api/admin/send-notification';
+            let payload = editingNotifId ? { id: editingNotifId, message: message, target_role: role } : { message: message, target_role: role };
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    messageInput.value = "";
+                    editingNotifId = null;
+                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                    loadNotifications();
+                } else {
+                    alert(data.error || "Failed to send notification.");
+                }
+            } catch (e) { alert("Server error sending message."); }
+            finally { sendBtn.disabled = false; }
+        }
+
+        function prepareEdit(e, id, msg, role) {
+            e.stopPropagation();
+            editingNotifId = id;
+            document.getElementById('notif-message').value = msg;
+            document.getElementById('target-role').value = role;
+            document.getElementById('send-btn').innerHTML = '<i class="fas fa-check"></i>';
+            document.getElementById('notif-message').focus();
+        }
+
+        function confirmDelete(e, id) {
+            e.stopPropagation();
+            if (confirm("Delete this notification?")) {
+                fetch('/api/admin/delete-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                }).then(() => loadNotifications());
+            }
+        }
+
+        // --- FOLDER & RESOURCE LOGIC ---
         async function handleCreateFolder(e) {
             e.preventDefault();
             const className = document.getElementById('new-class-name').value.trim();
@@ -189,7 +285,6 @@
             } catch(e) { alert("Server error"); }
         }
 
-        // ডাইনামিক ক্লাস ও সাবজেক্ট সিলেক্টর লোড
         async function loadDynamicClasses() {
             const classSelect = document.getElementById('res-class');
             try {
@@ -227,7 +322,6 @@
             } catch(e) { console.error(e); }
         }
 
-        // ফাইল আপলোড
         async function handleResourceUpload(e) {
             e.preventDefault();
             const btn = document.getElementById('upload-btn');
@@ -249,6 +343,16 @@
                 } else { alert(data.error || "Failed"); }
             } catch (err) { alert("Server error"); } 
             finally { btn.disabled = false; }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        function escapeQuotes(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
     </script>
 </body>
