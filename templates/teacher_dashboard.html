@@ -317,12 +317,41 @@
     <script>
         let scoreChart = null;
 
+        // অনরিড নোটিফিকেশন থাকলে লাল ডট দেখানোর ফাংশন
+        async function checkUnreadNotifications() {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) return;
+
+            try {
+                const response = await fetch('/api/check-unread-notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
+                const data = await response.json();
+
+                const bellIcon = document.querySelector('.bell-icon');
+                if (data.success && data.has_unread) {
+                    bellIcon.classList.add('has-unread'); // লাল ডট দেখাবে
+                } else {
+                    bellIcon.classList.remove('has-unread'); // লাল ডট সরাবে
+                }
+            }             
+            catch (error) {
+                console.log("Notif check error:", error);
+            }
+         }
+        
+
         // ১. পেজ লোড হলে ডেটাবেস থেকে ড্যাশবোর্ডের ডেটা আনা
         window.onload = async () => {
             const userName = localStorage.getItem('userName') || "Teacher";
             const userEmail = localStorage.getItem('userEmail');
             document.getElementById('teacher-name').innerText = "Hi, " + userName.split(' ')[0];
-
+            
+            // window.onload এর ভেতর এটি কল করুন
+            checkUnreadNotifications();
+            
             if (userEmail) {
                 try {
                     const response = await fetch('/api/teacher-dashboard', {
