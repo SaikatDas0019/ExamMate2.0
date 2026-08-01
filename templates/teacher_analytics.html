@@ -15,15 +15,16 @@
             color: #1a1a1a; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
         }
         .container { 
             width: 100%;
-            max-width: 800px; /* Wider container for analytics */
+            max-width: 480px; /* Mobile First Layout aligned with Teacher Dashboard */
             background-color: #ffffff;
             min-height: 100vh;
-            padding: 2rem; 
+            padding: 1.5rem 1rem 6rem 1rem; 
             box-sizing: border-box;
             box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
@@ -37,31 +38,32 @@
         .back-btn:hover { color: #15803d; text-decoration: underline; }
 
         .page-header { margin-bottom: 20px; }
-        .page-header h1 { font-size: 28px; color: #1a1a1a; margin: 0 0 5px 0; }
-        .page-header p { color: #4b5563; margin: 0; font-size: 0.95rem; }
+        .page-header h1 { font-size: 24px; color: #1a1a1a; margin: 0 0 5px 0; }
+        .page-header p { color: #4b5563; margin: 0; font-size: 0.85rem; }
 
         /* Key Metrics Grid */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 1.5rem;
         }
         .metric-card {
             background: #f0fdf4; border: 1px solid #bbf7d0;
-            border-radius: 12px; padding: 15px; text-align: center;
+            border-radius: 12px; padding: 12px; text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
+        .metric-card.full-width { grid-column: span 2; }
         .metric-card span { display: block; font-size: 0.8rem; color: #4b5563; font-weight: 600; margin-bottom: 5px; }
-        .metric-card strong { font-size: 1.5rem; color: #111827; }
+        .metric-card strong { font-size: 1.3rem; color: #111827; }
 
         /* Section Titles */
-        .section-title { font-size: 1.2rem; font-weight: 700; color: #111827; margin: 2rem 0 1rem 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px;}
+        .section-title { font-size: 1.05rem; font-weight: 700; color: #111827; margin: 1.5rem 0 0.8rem 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px;}
 
         /* Tables */
-        .table-container { width: 100%; overflow-x: auto; margin-bottom: 2rem; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
         th { background-color: #f8fafc; color: #374151; font-weight: 600; }
         td { color: #4b5563; }
         tr:hover { background-color: #f1f5f9; }
@@ -69,28 +71,57 @@
         /* Charts Container */
         .chart-box {
             background: #ffffff; border: 1px solid #e5e7eb;
-            border-radius: 12px; padding: 15px; margin-bottom: 2rem;
+            border-radius: 12px; padding: 12px; margin-bottom: 1.5rem;
         }
-        .chart-container { position: relative; height: 300px; width: 100%; }
+        .chart-container { position: relative; height: 220px; width: 100%; }
 
         /* Individual Student Analysis */
         .student-select-box {
-            width: 100%; max-width: 300px; padding: 10px; border-radius: 8px; 
-            border: 1px solid #cbd5e1; font-size: 1rem; margin-bottom: 15px;
+            width: 100%; padding: 10px; border-radius: 8px; 
+            border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px;
+            box-sizing: border-box;
         }
-        .student-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px; }
+        .student-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
         
         /* Insights Alerts */
-        .alert { padding: 15px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem; }
+        .alert { padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.4; }
         .alert-warning { background-color: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
         .alert-success { background-color: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
         .alert-info { background-color: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-            .metrics-grid .metric-card:last-child { grid-column: span 2; }
-            .student-metrics { grid-template-columns: 1fr; }
+        /* FIXED BOTTOM NAVIGATION BAR STYLING */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #6b7280;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+            flex: 1;
+        }
+        .nav-item.active {
+            color: #3b82f6;
+            font-weight: bold;
+        }
+        .nav-icon {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
         }
     </style>
 </head>
@@ -101,7 +132,7 @@
         <button class="back-btn" onclick="window.location.href='teacher_dashboard.html'">⬅️ Back to Dashboard</button>
         
         <div class="page-header">
-            <h1 id="teacher-name">📊 Class Analytics - Teacher</h1>
+            <h1 id="teacher-name">📊 Class Analytics</h1>
             <p>Monitor student performance and exam statistics</p>
         </div>
 
@@ -111,7 +142,7 @@
             <div class="metric-card"><span>Total Attempts</span><strong id="m-attempts">0</strong></div>
             <div class="metric-card"><span>Class Average</span><strong id="m-avg">0%</strong></div>
             <div class="metric-card"><span>Highest Score</span><strong id="m-high">0%</strong></div>
-            <div class="metric-card"><span>Active Exams</span><strong id="m-exams">0</strong></div>
+            <div class="metric-card full-width"><span>Active Exams</span><strong id="m-exams">0</strong></div>
         </div>
 
         <h2 class="section-title">📝 Exam-wise Performance</h2>
@@ -120,65 +151,82 @@
                 <thead>
                     <tr>
                         <th>Exam Name</th>
-                        <th>Average %</th>
-                        <th>Highest %</th>
-                        <th>Lowest %</th>
+                        <th>Avg %</th>
+                        <th>High %</th>
+                        <th>Low %</th>
                         <th>Attempts</th>
                     </tr>
                 </thead>
-                <tbody id="exam-stats-body">
-                    </tbody>
+                <tbody id="exam-stats-body"></tbody>
             </table>
         </div>
         
         <div class="chart-box">
-            <h3 style="margin-top:0; font-size: 1rem;">Class Performance by Exam</h3>
+            <h3 style="margin-top:0; font-size: 0.95rem;">Class Performance by Exam</h3>
             <div class="chart-container"><canvas id="examChart"></canvas></div>
         </div>
 
-        <h2 class="section-title">🏆 Student Performance Leaderboard</h2>
+        <h2 class="section-title">🏆 Student Leaderboard</h2>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
                         <th>Student Name</th>
-                        <th>Average %</th>
+                        <th>Avg %</th>
                         <th>Best %</th>
-                        <th>Exams Taken</th>
-                        <th>Total Score</th>
+                        <th>Exams</th>
+                        <th>Score</th>
                     </tr>
                 </thead>
-                <tbody id="leaderboard-body">
-                    </tbody>
+                <tbody id="leaderboard-body"></tbody>
             </table>
         </div>
 
         <h2 class="section-title">👤 Individual Student Analysis</h2>
         <select id="student-selector" class="student-select-box" onchange="loadStudentData()">
             <option value="" disabled selected>Select a student...</option>
-            </select>
+        </select>
 
         <div id="student-details" style="display: none;">
             <div class="student-metrics">
-                <div class="metric-card"><span>Student Average</span><strong id="s-avg">0%</strong></div>
-                <div class="metric-card"><span>Best Score</span><strong id="s-best">0%</strong></div>
-                <div class="metric-card"><span>Exams Taken</span><strong id="s-taken">0</strong></div>
+                <div class="metric-card"><span>Average</span><strong id="s-avg">0%</strong></div>
+                <div class="metric-card"><span>Best</span><strong id="s-best">0%</strong></div>
+                <div class="metric-card"><span>Exams</span><strong id="s-taken">0</strong></div>
             </div>
             
             <div class="chart-box">
-                <h3 style="margin-top:0; font-size: 1rem;">Performance Progress</h3>
+                <h3 style="margin-top:0; font-size: 0.95rem;">Performance Progress</h3>
                 <div class="chart-container"><canvas id="progressChart"></canvas></div>
             </div>
         </div>
 
         <h2 class="section-title">💡 Teaching Insights</h2>
-        <div id="insights-container">
-            </div>
+        <div id="insights-container"></div>
 
     </div>
 
+    <!-- Fixed Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="window.location.href='teacher_dashboard.html'">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='teacher_dashboard.html'">
+            <div class="nav-icon"><i class="far fa-file-alt"></i></div>
+            <span>Tests</span>
+        </div>
+        <div class="nav-item active" onclick="window.location.href='teacher_analytics.html'">
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+            <span>Analytics</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='teacher_profile.html'">
+            <div class="nav-icon"><i class="far fa-user"></i></div>
+            <span>Profile</span>
+        </div>
+    </div>
+
     <script>
-        // --- Mock Data (Replace with Backend API data later) ---
+        // --- Mock Data ---
         const classAvg = 76.5;
         
         const overallMetrics = {
