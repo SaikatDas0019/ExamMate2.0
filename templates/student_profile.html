@@ -44,7 +44,7 @@
         .teachers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .teacher-btn { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 5px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-align: center; }
 
-        /* Fixed 3-Item Bottom Navigation Bar */
+        /* Fixed Bottom Navigation Bar */
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb; padding: 8px 0; z-index: 1000; display: flex; justify-content: space-around; box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05); }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
         .nav-item.active { color: #3b82f6; font-weight: bold; }
@@ -88,7 +88,8 @@
 
             <button type="button" class="btn-save-profile" onclick="saveProfileChanges()">Save Changes 💾</button>
         </div>
-        <!-- Logout Button HTML -->
+
+        <!-- Logout Button -->
         <div style="margin-top: 20px; text-align: center;">
             <button onclick="handleLogout()" style="background-color: #ff4d4d; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; max-width: 250px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 🚪 Logout
@@ -107,7 +108,7 @@
         </div>
     </div>
 
-    <!-- Fixed 4-Item Bottom Navigation Bar -->
+    <!-- Fixed Bottom Navigation Bar -->
     <div class="bottom-nav">
         <div class="nav-item" onclick="window.location.href='/student_dashboard.html'">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
@@ -127,50 +128,40 @@
         </div>
     </div>
 
-
     <script>
+        const defaultImageSrc = "https://ui-avatars.com/api/?name=Student&background=random&size=180";
 
-        // লগআউট হ্যান্ডলার ফাংশন
-        function handleLogout() {
-            if (confirm("Are you sure you want to log out?")) {
-                // LocalStorage পরিষ্কার করা
-                localStorage.clear();
-                sessionStorage.clear();
-                // ব্যাকএন্ডে সেশন মুছে ফেলা এবং লগইন পেজে রিডাইরেক্ট
-                window.location.href = '/logout';
-            }
-        }
-
-        // পেজ লোড হলে ডাটাবেস থেকে ছবি ও নাম আনা
+        // ১. নিরাপদ লোড প্রোফাইল
         async function loadUserProfile() {
-            const user = JSON.parse(localStorage.getItem('user')) || {};
-            if (!user.email) return;
+            let userObj = JSON.parse(localStorage.getItem('user')) || {};
+            let userEmail = userObj.email || localStorage.getItem('userEmail') || "";
+            let userName = userObj.name || localStorage.getItem('userName') || "Student";
+
+            document.getElementById('input-name').value = userName;
+            document.getElementById('input-email').value = userEmail;
+
+            if (!userEmail) return;
 
             try {
                 const res = await fetch('/api/get-profile-data', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: user.email })
+                    body: JSON.stringify({ email: userEmail })
                 });
                 const data = await res.json();
 
                 if (data.success) {
-                    if(document.getElementById('profile-name')) {
-                        document.getElementById('profile-name').innerText = data.name;
-                    }
-                    if (data.photo_url && document.getElementById('profile-img')) {
+                    if (data.name) document.getElementById('input-name').value = data.name;
+                    if (data.photo_url) {
                         document.getElementById('profile-img').src = data.photo_url;
                     }
                 }
             } catch(err) {
-                console.error("Profile Load Error:", err);
+                console.error("Profile Fetch Error:", err);
             }
         }
 
-        window.onload = loadUserProfile;
-
-
-        const defaultImageSrc = "https://ui-avatars.com/api/?name=Student&background=random&size=180";
+        // ২. ফটো প্রিভিউ
         function previewImage(event) {
             const reader = new FileReader();
             reader.onload = function() {
@@ -180,6 +171,7 @@
             }
             if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
         }
+
         function removeImage() {
             document.getElementById('profile-img').src = defaultImageSrc;
             document.getElementById('file-upload').value = "";
@@ -187,24 +179,7 @@
             document.getElementById('edit-controls').style.display = 'none';
         }
 
-        window.onload = () => {
-            const userName = localStorage.getItem('userName') || "Student";
-            const userEmail = localStorage.getItem('userEmail') || "";
-            
-            document.getElementById('input-name').value = userName;
-            document.getElementById('input-email').value = userEmail;
-        };
-
-        // 🎯 [FIXED] লগআউট ফাংশন
-        function handleLogout() {
-            if (confirm("Are you sure you want to log out?")) {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = '/logout';
-            }
-        }
-
-        // 🎯 [FIXED] প্রোফাইল আপডেট ফাংশন
+        // ৩. নিরাপদ সেভ প্রোফাইল
         async function saveProfileChanges() {
             const name = document.getElementById('input-name').value.trim();
             const email = document.getElementById('input-email').value.trim();
@@ -212,7 +187,7 @@
             const photoUrl = document.getElementById('profile-img').src;
 
             if (!name || !email) {
-                alert("Please enter your name and email!");
+                alert("Name or Email missing!");
                 return;
             }
 
@@ -231,17 +206,18 @@
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    // LocalStorage আপডেট করা
-                    const userObj = JSON.parse(localStorage.getItem('user')) || {};
+                    let userObj = JSON.parse(localStorage.getItem('user')) || {};
+                    userObj.email = email;
                     userObj.name = name;
                     userObj.role = role;
                     userObj.photo_url = photoUrl;
+
                     localStorage.setItem('user', JSON.stringify(userObj));
                     localStorage.setItem('userName', name);
+                    localStorage.setItem('userEmail', email);
 
-                    alert("Profile updated successfully! 🚀");
+                    alert("Profile updated successfully!");
 
-                    // রিডাইরেক্ট করা
                     if (data.redirect_url) {
                         window.location.href = data.redirect_url;
                     } else {
@@ -251,11 +227,22 @@
                     alert(data.error || "Failed to update profile.");
                 }
             } catch (error) {
-                console.error("Save Profile Error:", error);
+                console.error("Save Error:", error);
                 alert("Server error updating profile.");
             }
         }
 
+        // ৪. নিখুঁত লগআউট
+        function handleLogout() {
+            if (confirm("Are you sure you want to log out?")) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = '/logout';
+            }
+        }
+
+        // পেজ লোড কল
+        window.onload = loadUserProfile;
     </script>
 </body>
 </html>
