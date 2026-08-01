@@ -35,6 +35,22 @@
             padding: 10px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
         }
 
+        /* Unread Notification Red Dot Style */
+        .bell-icon {
+            position: relative;
+        }
+        .bell-icon.has-unread::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            background-color: #ef4444; /* লাল রং */
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+        }
+
         /* My Progress Grid */
         .section-title { font-size: 1.05rem; font-weight: 700; color: #1f2937; margin: 1.5rem 0 0.8rem 0; display: flex; align-items: center; gap: 6px; }
         .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
