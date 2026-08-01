@@ -563,6 +563,7 @@ def update_profile():
     except Exception as e:
         print(f"Profile Update Error: {e}")
         return jsonify({"success": False, "error": "Database update failed!"}), 500
+
 # ==========================================
 # Teacher Full Analytics Real Data API
 # ==========================================
@@ -713,7 +714,7 @@ def teacher_full_analytics():
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 # ==========================================
-# Check Unread Notifications API
+# Check Unread Notifications API (Fixed)
 # ==========================================
 @app.route('/api/check-unread-notifications', methods=['POST'])
 def check_unread_notifications():
@@ -727,21 +728,22 @@ def check_unread_notifications():
         conn = sqlite3.connect('ExamMate.db')
         cursor = conn.cursor()
 
-        # ইউজারের ক্যাটাগরি জানা
-        cursor.execute("SELECT category FROM users WHERE email = ?", (email,))
+        # users টেবিলে last_notif_read কলাম না থাকলে তৈরি করে নেওয়া
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN last_notif_read TIMESTAMP DEFAULT '1970-01-01 00:00:00'")
+            conn.commit()
+        except:
+            pass
+
+        cursor.execute("SELECT category, last_notif_read FROM users WHERE email = ?", (email,))
         user = cursor.fetchone()
         role = user[0] if user else 'All'
+        last_read = user[1] if (user and user[1]) else '1970-01-01 00:00:00'
 
-        # ইউজারের লাস্ট দেখা নোটিফিকেশনের সময় চেক করা
-        cursor.execute("SELECT last_notif_read FROM users WHERE email = ?", (email,))
-        row = cursor.fetchone()
-        last_read = row[0] if row and row[0] else '1970-01-01 00:00:00'
-
-        # নতুন কোনো নোটিফিকেশন আছে কিনা খোঁজা
         cursor.execute("""
             SELECT COUNT(*) FROM notifications 
             WHERE (target_role = 'All' OR target_role = ?) 
-            AND date_sent > ?
+            AND datetime(date_sent) > datetime(?)
         """, (role, last_read))
         
         unread_count = cursor.fetchone()[0]
@@ -753,10 +755,8 @@ def check_unread_notifications():
         return jsonify({"success": False, "has_unread": False})
 
 # ==========================================
-# Notification Page & Mark as Read APIs
+# Notification Page & Mark as Read APIs (Fixed)
 # ==========================================
-
-# ১. নোটিফিকেশন লিস্ট আনরিড (Green Dot) স্ট্যাটাসসহ ফেচ করা
 @app.route('/api/get-notifications-page', methods=['POST'])
 def get_notifications_page():
     data = request.get_json()
@@ -769,13 +769,18 @@ def get_notifications_page():
         conn = sqlite3.connect('ExamMate.db')
         cursor = conn.cursor()
 
-        # ইউজারের রোল ও লাস্ট দেখার সময় বের করা
+        # users টেবিলে last_notif_read কলাম না থাকলে তৈরি করা
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN last_notif_read TIMESTAMP DEFAULT '1970-01-01 00:00:00'")
+            conn.commit()
+        except:
+            pass
+
         cursor.execute("SELECT category, last_notif_read FROM users WHERE email = ?", (email,))
         user = cursor.fetchone()
         role = user[0] if user else 'All'
-        last_read = user[1] if user and user[1] else '1970-01-01 00:00:00'
+        last_read = str(user[1]) if (user and user[1]) else '1970-01-01 00:00:00'
 
-        # ইউজারের জন্য প্রযোজ্য নোটিফিকেশন আনা
         cursor.execute("""
             SELECT id, message, target_role, date_sent 
             FROM notifications 
@@ -788,8 +793,7 @@ def get_notifications_page():
         notifs = []
         for r in rows:
             date_sent = str(r[3])
-            # যদি নোটিফিকেশনের ডেট লাস্ট রিড টাইমের চেয়ে নতুন হয় তবে unread=True
-            is_unread = date_sent > str(last_read)
+            is_unread = date_sent > last_read
             notifs.append({
                 "id": r[0],
                 "message": r[1],
@@ -803,7 +807,6 @@ def get_notifications_page():
         print("Get Notif Page Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ২. পেজ থেকে বের হওয়ার সময় বা লোড হলে লাস্ট রিড টাইম আপডেট করা
 @app.route('/api/mark-notifications-read', methods=['POST'])
 def mark_notifications_read():
     data = request.get_json()
@@ -816,7 +819,6 @@ def mark_notifications_read():
         conn = sqlite3.connect('ExamMate.db')
         cursor = conn.cursor()
         
-        # বর্তমান সময়ের টাইমে last_notif_read আপডেট করে দেওয়া
         cursor.execute("UPDATE users SET last_notif_read = CURRENT_TIMESTAMP WHERE email = ?", (email,))
         conn.commit()
         conn.close()
@@ -829,4 +831,3 @@ def mark_notifications_read():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
