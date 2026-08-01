@@ -3,124 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Admin Panel</title>
+    <title>ExamMate | Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
         :root { color-scheme: light; }
-        body { background-color: #f1f5f9; color: #1e293b; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .admin-box { 
+        body { 
+            background-color: #f1f5f9; color: #1e293b; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; 
+        }
+        .admin-container { 
             background: #ffffff; width: 100%; max-width: 450px; 
-            height: 90vh; display: flex; flex-direction: column; 
-            border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); 
-            box-sizing: border-box; overflow: hidden;
+            min-height: 90vh; border-radius: 20px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); 
+            padding: 1.5rem; box-sizing: border-box; display: flex; flex-direction: column;
+        }
+
+        .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+        .admin-header h1 { font-size: 1.4rem; margin: 0; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+        .admin-header h1 i { color: #3b82f6; }
+        .back-menu-btn { background: #f1f5f9; border: none; padding: 8px 12px; border-radius: 10px; font-weight: bold; color: #3b82f6; cursor: pointer; display: none; }
+
+        /* -------------------------------------- */
+        /* GRID BUTTONS (MAIN DASHBOARD MENU)     */
+        /* -------------------------------------- */
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        
+        .admin-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0; border-radius: 18px; padding: 20px 15px;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .admin-card:hover {
+            transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.15);
+            border-color: #3b82f6;
         }
         
-        /* Header */
-        .header { padding: 1rem 1.2rem; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
-        .header h1 { font-size: 1.3rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px; }
-        .header h1 i { color: #3b82f6; }
-        
-        .audience-selector { margin-top: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
-        .audience-selector select { padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 600; outline: none; background: #f8fafc; }
-
-        /* Notification Feed (Chat Area) */
-        .chat-feed { flex: 1; padding: 1rem; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 12px; }
-        
-        .msg-bubble {
-            align-self: flex-end; background: #3b82f6; color: white;
-            padding: 10px 14px; border-radius: 16px 16px 2px 16px;
-            max-width: 85%; font-size: 0.9rem; position: relative;
-            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2); cursor: pointer; transition: 0.2s;
-        }
-        .msg-bubble:hover { background: #2563eb; }
-        .msg-info { font-size: 0.7rem; color: #dbeafe; margin-top: 4px; display: flex; justify-content: space-between; gap: 10px; }
-        .target-badge { background: rgba(255, 255, 255, 0.2); padding: 2px 6px; border-radius: 4px; }
-
-        /* Action Modal/Pop-up Menu for Edit/Delete */
-        .msg-actions { display: none; gap: 10px; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 6px; }
-        .act-btn { background: transparent; border: none; color: white; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-        .act-btn:hover { text-decoration: underline; }
-
-        /* Bottom Input Bar (Gemini Style) */
-        .chat-input-bar {
-            padding: 10px; background: #ffffff; border-top: 1px solid #e2e8f0;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .btn-plus {
-            background: #f1f5f9; border: none; color: #64748b;
-            width: 40px; height: 40px; border-radius: 50%;
+        .card-icon {
+            width: 55px; height: 55px; border-radius: 14px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 1.1rem; cursor: pointer; transition: 0.2s;
+            font-size: 1.5rem; margin-bottom: 12px; color: white;
         }
-        .btn-plus:hover { background: #e2e8f0; color: #1e293b; }
+        .card-notif .card-icon { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .card-upload .card-icon { background: linear-gradient(135deg, #22c55e 0%, #15803d 100%); }
+        
+        .card-title { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .card-desc { font-size: 0.75rem; color: #64748b; }
 
-        .input-box {
-            flex: 1; background: #f8fafc; border: 1px solid #cbd5e1;
-            border-radius: 20px; padding: 10px 14px; font-size: 0.95rem;
-            outline: none; transition: 0.2s; max-height: 80px; resize: none;
-        }
-        .input-box:focus { border-color: #3b82f6; background: #ffffff; }
+        /* -------------------------------------- */
+        /* VIEWS (NOTIFICATION & UPLOAD PANELS)   */
+        /* -------------------------------------- */
+        .panel-view { display: none; flex: 1; flex-direction: column; }
+        .panel-view.active { display: flex; }
 
-        .btn-send {
-            background: #3b82f6; color: white; border: none;
-            width: 40px; height: 40px; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 1rem; cursor: pointer; transition: 0.2s;
-        }
-        .btn-send:hover { background: #2563eb; }
-        .btn-send:disabled { background: #cbd5e1; cursor: not-allowed; }
+        /* Notification Chat Feed */
+        .chat-feed { flex: 1; padding: 10px; overflow-y: auto; background: #f8fafc; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 400px; margin-bottom: 10px; }
+        .msg-bubble { background: #3b82f6; color: white; padding: 10px 14px; border-radius: 14px 14px 2px 14px; align-self: flex-end; max-width: 85%; font-size: 0.88rem; position: relative; }
+        .msg-info { font-size: 0.7rem; color: #dbeafe; margin-top: 4px; display: flex; justify-content: space-between; gap: 8px; }
+        .msg-actions { display: none; gap: 8px; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 4px; }
+        .act-btn { background: none; border: none; color: white; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
 
-        /* Hidden File Input */
-        #media-upload { display: none; }
+        .chat-input-bar { display: flex; gap: 8px; align-items: center; }
+        .input-box { flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px; font-size: 0.9rem; outline: none; }
+        .btn-send { background: #3b82f6; color: white; border: none; width: 42px; height: 42px; border-radius: 12px; cursor: pointer; font-size: 1rem; }
+
+        /* Upload Form */
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 0.9rem; outline: none; box-sizing: border-box; }
+        .btn-submit-upload { width: 100%; background: #22c55e; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.95rem; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="admin-box">
-        <!-- Header -->
-        <div class="header">
-            <h1><i class="fas fa-user-shield"></i> Admin Broadcast</h1>
-            <div class="audience-selector">
-                <span>Audience:</span>
-                <select id="target-role">
-                    <option value="All">All Users (Everyone)</option>
+    <div class="admin-container">
+        
+        <div class="admin-header">
+            <h1 id="admin-title"><i class="fas fa-user-shield"></i> Admin Panel</h1>
+            <button class="back-menu-btn" id="back-btn" onclick="showDashboardMenu()"><i class="fas fa-th-large"></i> Menu</button>
+        </div>
+
+        <!-- MAIN DASHBOARD MENU (2 CURVED BUTTONS) -->
+        <div id="dashboard-menu">
+            <div class="admin-grid">
+                
+                <!-- Button 1: Notification -->
+                <div class="admin-card card-notif" onclick="openPanel('notif-panel', '📢 Send Notification')">
+                    <div class="card-icon"><i class="fas fa-bullhorn"></i></div>
+                    <div class="card-title">Send Notification</div>
+                    <div class="card-desc">Broadcast messages to students & teachers</div>
+                </div>
+
+                <!-- Button 2: Upload Content -->
+                <div class="admin-card card-upload" onclick="openPanel('upload-panel', '📚 Upload Content')">
+                    <div class="card-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="card-title">Upload Content</div>
+                    <div class="card-desc">Add PDFs, Notes & Mind Maps</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- VIEW 1: NOTIFICATION PANEL -->
+        <div id="notif-panel" class="panel-view">
+            <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
+                <label>Target:</label>
+                <select id="target-role" style="padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                    <option value="All">All Users</option>
                     <option value="Student">Students Only</option>
                     <option value="Teacher">Teachers Only</option>
                 </select>
             </div>
+
+            <div class="chat-feed" id="chat-feed"></div>
+
+            <div class="chat-input-bar">
+                <input type="text" class="input-box" id="notif-message" placeholder="Type announcement...">
+                <button class="btn-send" id="send-btn" onclick="submitNotification()"><i class="fas fa-paper-plane"></i></button>
+            </div>
         </div>
 
-        <!-- Sent Notifications List -->
-        <div class="chat-feed" id="chat-feed">
-            <!-- Dynamic Messages Load Here -->
+        <!-- VIEW 2: UPLOAD CONTENT PANEL -->
+        <div id="upload-panel" class="panel-view">
+            <form id="upload-form" onsubmit="handleResourceUpload(event)">
+                <div class="form-group">
+                    <label>Select Class Folder</label>
+                    <select id="res-class" required>
+                        <option value="Class 9">Class 9</option>
+                        <option value="Class 10">Class 10</option>
+                        <option value="Class 11">Class 11</option>
+                        <option value="Class 12">Class 12</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Subject</label>
+                    <select id="res-subject" required>
+                        <option value="Physics">Physics ⚛️</option>
+                        <option value="Chemistry">Chemistry 🧪</option>
+                        <option value="Mathematics">Mathematics 📐</option>
+                        <option value="Biology">Biology 🧬</option>
+                        <option value="Bengali">Bengali 📖</option>
+                        <option value="English">English 🔤</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Content Type</label>
+                    <select id="res-type" required>
+                        <option value="Notes">Full Chapter Notes 📑</option>
+                        <option value="Short Notes">Short Notes 📝</option>
+                        <option value="Mind Map">Mind Map 🧠</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Title / Topic Name</label>
+                    <input type="text" id="res-title" placeholder="e.g. Organic Chemistry Chapter 1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Select PDF / File</label>
+                    <input type="file" id="res-file" accept=".pdf,.doc,.docx,.png,.jpg" required>
+                </div>
+
+                <button type="submit" class="btn-submit-upload" id="upload-btn">Upload Material 🚀</button>
+            </form>
         </div>
 
-        <!-- Bottom Input Bar -->
-        <div class="chat-input-bar">
-            <!-- Plus Icon for Attachments -->
-            <button class="btn-plus" onclick="clickPlusIcon()" title="Attach link or image">
-                <i class="fas fa-plus"></i>
-            </button>
-            <input type="file" id="media-upload" onchange="handleFileUpload(event)">
-
-            <!-- Input Box -->
-            <textarea class="input-box" id="notif-message" rows="1" placeholder="Type notification..." onkeydown="handleKeyPress(event)"></textarea>
-
-            <!-- Send Button -->
-            <button class="btn-send" id="send-btn" onclick="submitNotification()" title="Send">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
     </div>
 
     <script>
-        let editingNotifId = null; // এডিট ট্র্যাকিং করার জন্য
+        let editingNotifId = null;
 
-        window.onload = () => {
-            loadNotifications();
-        };
+        function openPanel(panelId, titleText) {
+            document.getElementById('dashboard-menu').style.display = 'none';
+            document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
+            
+            document.getElementById(panelId).classList.add('active');
+            document.getElementById('admin-title').innerHTML = titleText;
+            document.getElementById('back-btn').style.display = 'block';
 
-        // ১. নোটিফিকেশন লোড করা
+            if (panelId === 'notif-panel') loadNotifications();
+        }
+
+        function showDashboardMenu() {
+            document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
+            document.getElementById('dashboard-menu').style.display = 'block';
+            
+            document.getElementById('admin-title').innerHTML = '<i class="fas fa-user-shield"></i> Admin Panel';
+            document.getElementById('back-btn').style.display = 'none';
+        }
+
+        // --- NOTIFICATION LOGIC ---
         async function loadNotifications() {
             const feed = document.getElementById('chat-feed');
             try {
@@ -130,156 +208,107 @@
                 if (data.success) {
                     feed.innerHTML = "";
                     if (data.notifications.length === 0) {
-                        feed.innerHTML = '<div style="text-align:center; color:#94a3b8; margin-top:20px; font-size:0.85rem;">No notifications sent yet.</div>';
+                        feed.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:15px; font-size:0.8rem;">No notifications sent yet.</div>';
                         return;
                     }
 
                     data.notifications.forEach(n => {
                         const msgDiv = document.createElement('div');
                         msgDiv.className = 'msg-bubble';
-                        msgDiv.onclick = (e) => toggleActions(e, n.id);
+                        msgDiv.onclick = (e) => {
+                            const act = document.getElementById(`act-${n.id}`);
+                            act.style.display = act.style.display === 'flex' ? 'none' : 'flex';
+                        };
                         
                         msgDiv.innerHTML = `
-                            <div>${escapeHTML(n.message)}</div>
-                            <div class="msg-info">
-                                <span class="target-badge"><i class="fas fa-users"></i> ${n.target_role}</span>
-                                <span>${n.date ? n.date.split(' ')[1] || n.date : ''}</span>
-                            </div>
-                            <div class="msg-actions" id="actions-${n.id}">
-                                <button class="act-btn" onclick="prepareEdit(event, ${n.id}, '${escapeQuotes(n.message)}', '${n.target_role}')"><i class="fas fa-edit"></i> Edit</button>
-                                <button class="act-btn" style="color:#fca5a5;" onclick="confirmDelete(event, ${n.id})"><i class="fas fa-trash"></i> Delete</button>
+                            <div>${n.message}</div>
+                            <div class="msg-info"><span>${n.target_role}</span><span>${n.date ? n.date.split(' ')[1] || '' : ''}</span></div>
+                            <div class="msg-actions" id="act-${n.id}">
+                                <button class="act-btn" onclick="prepareEdit(event, ${n.id}, '${n.message}', '${n.target_role}')">Edit</button>
+                                <button class="act-btn" style="color:#fca5a5;" onclick="confirmDelete(event, ${n.id})">Delete</button>
                             </div>
                         `;
                         feed.appendChild(msgDiv);
                     });
                 }
-            } catch (error) {
-                console.error("Error loading notifications:", error);
-            }
+            } catch (e) { console.error("Error loading notifs:", e); }
         }
 
-        // ২. প্লাস আইকন অপশন (ছবি/লিংক যোগ করার সুবিধা)
-        function clickPlusIcon() {
-            const choice = confirm("Press OK to Upload Photo/File OR Cancel to add a Link.");
-            if (choice) {
-                document.getElementById('media-upload').click();
-            } else {
-                const link = prompt("Enter Link URL (e.g. https://exammate.com):");
-                if (link) {
-                    const txtBox = document.getElementById('notif-message');
-                    txtBox.value += ` ${link}`;
-                }
-            }
-        }
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const txtBox = document.getElementById('notif-message');
-                txtBox.value += ` [Attached File: ${file.name}]`;
-            }
-        }
-
-        // ৩. সেন্ড অথবা এডিট সাবমিট করা
         async function submitNotification() {
-            const targetRole = document.getElementById('target-role').value;
+            const role = document.getElementById('target-role').value;
             const message = document.getElementById('notif-message').value.trim();
-            const sendBtn = document.getElementById('send-btn');
-
             if (!message) return;
 
-            sendBtn.disabled = true;
+            let url = editingNotifId ? '/api/admin/edit-notification' : '/api/admin/send-notification';
+            let payload = editingNotifId ? { id: editingNotifId, message: message, target_role: role } : { message: message, target_role: role };
 
             try {
-                let url = '/api/admin/send-notification';
-                let payload = { message: message, target_role: targetRole };
-
-                if (editingNotifId) {
-                    url = '/api/admin/edit-notification';
-                    payload.id = editingNotifId;
-                }
-
-                const response = await fetch(url, {
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                const data = await response.json();
-
-                if (response.ok && data.success) {
+                const data = await res.json();
+                if (data.success) {
                     document.getElementById('notif-message').value = "";
-                    editingNotifId = null; // রিসেট
-                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                    loadNotifications(); // রিলোড
-                } else {
-                    alert(data.error || "Failed!");
+                    editingNotifId = null;
+                    loadNotifications();
                 }
-            } catch (error) {
-                alert("Server error.");
-            } finally {
-                sendBtn.disabled = false;
-            }
+            } catch (e) { alert("Server error"); }
         }
 
-        // ৪. এডিটের প্রিপারেশন নেওয়া
         function prepareEdit(e, id, msg, role) {
             e.stopPropagation();
             editingNotifId = id;
             document.getElementById('notif-message').value = msg;
             document.getElementById('target-role').value = role;
-            document.getElementById('send-btn').innerHTML = '<i class="fas fa-check"></i>';
             document.getElementById('notif-message').focus();
         }
 
-        // ৫. ডিলিট কনফার্মেশন পপআপ
         function confirmDelete(e, id) {
             e.stopPropagation();
-            const isConfirmed = confirm("⚠️ Are you sure you want to delete this notification?");
-            if (isConfirmed) {
-                deleteNotification(id);
-            }
-        }
-
-        async function deleteNotification(id) {
-            try {
-                const response = await fetch('/api/admin/delete-notification', {
+            if (confirm("Delete this notification?")) {
+                fetch('/api/admin/delete-notification', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: id })
+                }).then(() => loadNotifications());
+            }
+        }
+
+        // --- UPLOAD RESOURCE LOGIC ---
+        async function handleResourceUpload(e) {
+            e.preventDefault();
+            const btn = document.getElementById('upload-btn');
+            btn.disabled = true;
+            btn.innerText = "Uploading File...";
+
+            const formData = new FormData();
+            formData.append('class_name', document.getElementById('res-class').value);
+            formData.append('subject_name', document.getElementById('res-subject').value);
+            formData.append('resource_type', document.getElementById('res-type').value);
+            formData.append('title', document.getElementById('res-title').value);
+            formData.append('file', document.getElementById('res-file').files[0]);
+
+            try {
+                const response = await fetch('/api/admin/upload-resource', {
+                    method: 'POST',
+                    body: formData
                 });
                 const data = await response.json();
-                if (data.success) {
-                    loadNotifications();
+
+                if (response.ok && data.success) {
+                    alert("🎉 " + data.message);
+                    document.getElementById('upload-form').reset();
                 } else {
-                    alert(data.error || "Could not delete!");
+                    alert(data.error || "Upload failed!");
                 }
-            } catch (error) {
-                alert("Server error!");
+            } catch (err) {
+                alert("Server error uploading resource.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Upload Material 🚀";
             }
-        }
-
-        function toggleActions(e, id) {
-            const actDiv = document.getElementById(`actions-${id}`);
-            const isVisible = actDiv.style.display === 'flex';
-            document.querySelectorAll('.msg-actions').forEach(d => d.style.display = 'none');
-            if (!isVisible) actDiv.style.display = 'flex';
-        }
-
-        function handleKeyPress(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                submitNotification();
-            }
-        }
-
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-            );
-        }
-
-        function escapeQuotes(str) {
-            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
     </script>
 </body>
