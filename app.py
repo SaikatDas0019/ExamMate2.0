@@ -11,30 +11,23 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026")
 
-# 🎯 [FIX 1] পারমানেন্ট সেশন (৩০ দিনের জন্য লগইন সেভ থাকবে)
+# 🎯 [FIX] পারমানেন্ট সেশন (৩০ দিন পর্যন্ত ব্রাউজারে লগইন থাকবে, Amazon/Flipkart এর মতো)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 
 # ফাইল আপলোড ফোল্ডার কনফিগারেশন
 UPLOAD_FOLDER = 'static/uploads/resources'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# 🎯 [FIX 1] গ্লোবাল এরর হ্যান্ডলার (সেশন শেষ হলে বা কোনো এরর হলে ক্র্যাশ না করে লগইন পেজে পাঠাবে)
-@app.errorhandler(500)
-def handle_internal_error(e):
-    session.clear()
-    return redirect(url_for('auth_page'))
-
-@app.errorhandler(404)
-def handle_not_found(e):
-    return redirect(url_for('home'))
 
 # ==========================================
 # ১. HTML পেজের রুট (Protected Routes with Permanent Session)
 # ==========================================
 @app.route('/')
 def home():
-    if 'user' in session:
+    # ইউজার লগইন থাকলে সরাসরি তার নিজ ড্যাশবোর্ডে যাবে
+    if 'user' in session and isinstance(session['user'], dict):
         role = session['user'].get('role')
         if role == 'Student':
             return redirect(url_for('student_dashboard'))
@@ -53,53 +46,60 @@ def signin_page():
 @app.route('/auth.html')
 @app.route('/login.html')
 def auth_page():
+    # যদি আগে থেকেই লগইন থাকে তবে আবার লগইন পেজে না রেখে ড্যাশবোর্ডে পাঠাবে
+    if 'user' in session and isinstance(session['user'], dict):
+        role = session['user'].get('role')
+        if role == 'Student':
+            return redirect(url_for('student_dashboard'))
+        elif role == 'Teacher':
+            return redirect(url_for('teacher_dashboard'))
     return render_template('auth.html')
 
 @app.route('/student_dashboard.html')
 def student_dashboard():
-    if 'user' not in session or session['user'].get('role') != 'Student':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Student':
         return redirect(url_for('auth_page'))
     return render_template('student_dashboard.html')
 
 @app.route('/teacher_dashboard.html')
 def teacher_dashboard():
-    if 'user' not in session or session['user'].get('role') != 'Teacher':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Teacher':
         return redirect(url_for('auth_page'))
     return render_template('teacher_dashboard.html')
 
 @app.route('/teacher_profile.html')
 def teacher_profile():
-    if 'user' not in session or session['user'].get('role') != 'Teacher':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Teacher':
         return redirect(url_for('auth_page'))
     return render_template('teacher_profile.html')
 
 @app.route('/student_exam.html')
 def student_exam():
-    if 'user' not in session or session['user'].get('role') != 'Student':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Student':
         return redirect(url_for('auth_page'))
     return render_template('student_exam.html')
 
 @app.route('/student_profile.html')
 def student_profile():
-    if 'user' not in session or session['user'].get('role') != 'Student':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Student':
         return redirect(url_for('auth_page'))
     return render_template('student_profile.html')
 
 @app.route('/create_exam.html')
 def create_exam():
-    if 'user' not in session or session['user'].get('role') != 'Teacher':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Teacher':
         return redirect(url_for('auth_page'))
     return render_template('create_exam.html')
 
 @app.route('/teacher_analytics.html')
 def teacher_analytics():
-    if 'user' not in session or session['user'].get('role') != 'Teacher':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Teacher':
         return redirect(url_for('auth_page'))
     return render_template('teacher_analytics.html')
 
 @app.route('/notification.html')
 def notification():
-    if 'user' not in session:
+    if 'user' not in session or not isinstance(session['user'], dict):
         return redirect(url_for('auth_page'))
     return render_template('notification.html')
 
@@ -109,19 +109,15 @@ def admin_page():
 
 @app.route('/student_analytics.html')
 def student_analytics():
-    if 'user' not in session or session['user'].get('role') != 'Student':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Student':
         return redirect(url_for('auth_page'))
     return render_template('student_analytics.html')
 
 @app.route('/student_resources.html')
 def student_resources():
-    try:
-        if 'user' not in session or session['user'].get('role') != 'Student':
-            return redirect(url_for('auth_page'))
-        return render_template('student_resources.html')
-    except Exception as e:
-        print("Template Render Error:", e)
-        return "<h3>Resource page loading error. Check template file.</h3>"
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Student':
+        return redirect(url_for('auth_page'))
+    return render_template('student_resources.html')
 
 @app.route('/logout')
 def logout():
@@ -129,7 +125,7 @@ def logout():
     return redirect(url_for('auth_page'))
 
 # ==========================================
-# ২. Google Auth Sync API (পারমানেন্ট সেশন সেটিং সহ)
+# ২. Google Auth Sync API (পারমানেন্ট সেশন সেটিং)
 # ==========================================
 @app.route('/api/google-auth-sync', methods=['POST'])
 def google_auth_sync():
@@ -166,7 +162,7 @@ def google_auth_sync():
 
         conn.close()
 
-        # 🎯 [FIX 1] সেশন স্থায়ী করা হলো
+        # 🎯 সেশন পারমানেন্ট করা হচ্ছে
         session.permanent = True
         session['user'] = {'email': email, 'name': name, 'role': user_role}
 
@@ -477,40 +473,6 @@ def admin_get_notifications():
         print("Fetch Notif Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
-@app.route('/api/admin/edit-notification', methods=['POST'])
-def admin_edit_notification():
-    data = request.get_json()
-    notif_id = data.get('id')
-    new_message = data.get('message')
-    target_role = data.get('target_role')
-
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        cursor = conn.cursor()
-        cursor.execute("UPDATE notifications SET message = ?, target_role = ? WHERE id = ?", (new_message, target_role, notif_id))
-        conn.commit()
-        conn.close()
-        return jsonify({"success": True, "message": "Notification updated!"})
-    except Exception as e:
-        print("Edit Notif Error:", e)
-        return jsonify({"success": False, "error": "Failed to update"}), 500
-
-@app.route('/api/admin/delete-notification', methods=['POST'])
-def admin_delete_notification():
-    data = request.get_json()
-    notif_id = data.get('id')
-
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM notifications WHERE id = ?", (notif_id,))
-        conn.commit()
-        conn.close()
-        return jsonify({"success": True, "message": "Notification deleted!"})
-    except Exception as e:
-        print("Delete Notif Error:", e)
-        return jsonify({"success": False, "error": "Failed to delete"}), 500
-
 # ==========================================
 # ১২. Check Unread & Notification Page APIs
 # ==========================================
@@ -794,7 +756,7 @@ def teacher_full_analytics():
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 # ==========================================
-# ১৫. 📂 Google Drive Style Nested Folder & File APIs (Unified)
+# ১৫. 📂 Google Drive Style Nested Folder & File APIs
 # ==========================================
 @app.route('/api/admin/get-drive-contents', methods=['POST'])
 @app.route('/api/get-student-drive-contents', methods=['POST'])
