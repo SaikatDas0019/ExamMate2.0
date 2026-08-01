@@ -503,7 +503,155 @@ def update_profile():
     except Exception as e:
         print(f"Profile Update Error: {e}")
         return jsonify({"success": False, "error": "Database update failed!"}), 500
+# ==========================================
+# Teacher Full Analytics Real Data API
+# ==========================================
+@app.route('/api/teacher-full-analytics', methods=['POST'])
+def teacher_full_analytics():
+    data = request.get_json()
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"success": False, "error": "Email is required!"}), 400
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # ১. শিক্ষকের তৈরি সমস্ত এক্সাম আনা
+        cursor.execute("SELECT exam_code, exam_name FROM exams WHERE teacher_email = ?", (email,))
+        teacher_exams = cursor.fetchall()
+
+        if not teacher_exams:
+            conn.close()
+            return jsonify({
+                "success": True,
+                "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": 0},
+                "examStats": [], "leaderboard": [], "studentProgress": {}
+            })
+
+        exam_codes = [e['exam_code'] for e in teacher_exams]
+        placeholders = ','.join(['?'] * len(exam_codes))
+
+        # ২. ওই পরীক্ষাগুলোর সমস্ত রেজাল্ট আনা (Users টেবিল জয়েন করে স্টুডেন্টের নামসহ)
+        query = f"""
+            SELECT r.student_email, u.name as student_name, r.exam_code, r.exam_name, r.score, r.total_questions, r.date_taken
+            FROM results r
+            LEFT JOIN users u ON r.student_email = u.email
+            WHERE r.exam_code IN ({placeholders})
+        """
+        cursor.execute(query, exam_codes)
+        results = cursor.fetchall()
+        conn.close()
+
+        if not results:
+            return jsonify({
+                "success": True,
+                "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": len(teacher_exams)},
+                "examStats": [{"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0} for e in teacher_exams],
+                "leaderboard": [], "studentProgress": {}
+            })
+
+        # ৩. ডেটা প্রসেসিং (Calculations)
+        total_attempts = len(results)
+        unique_students = len(set(r['student_email'] for r in results))
         
+        all_percentages = [round((r['score'] / r['total_questions']) * 100, 1) for r in results if r['total_questions'] > 0]
+        class_avg = round(sum(all_percentages) / len(all_percentages), 1) if all_percentages else 0.0
+        highest_score = max(all_percentages) if all_percentages else 0.0
+
+        # ৪. Exam-wise Performance
+        exam_map = {}
+        for r in results:
+            code = r['exam_code']
+            perf = round((r['score'] / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
+            if code not in exam_map:
+                exam_map[code] = {"name": r['exam_name'], "perfs": [], "attempts": 0}
+            exam_map[code]["perfs"].append(perf)
+            exam_map[code]["attempts"] += 1
+
+        exam_stats = []
+        for e in teacher_exams:
+            code = e['exam_code']
+            if code in exam_map:
+                perfs = exam_map[code]["perfs"]
+                exam_stats.append({
+                    "name": exam_map[code]["name"],
+                    "avg": round(sum(perfs) / len(perfs), 1),
+                    "high": max(perfs),
+                    "low": min(perfs),
+                    "attempts": exam_map[code]["attempts"]
+                })
+            else:
+                exam_stats.append({"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0})
+
+        # ৫. Student Leaderboard & Progress Data
+        student_map = {}
+        for r in results:
+            s_email = r['student_email']
+            s_name = r['student_name'] if r['student_name'] else s_email.split('@')[0]
+            perf = round((r['score'] / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
+            score = r['score']
+
+            if s_email not in student_map:
+                student_map[s_email] = {
+                    "name": s_name,
+                    "perfs": [],
+                    "scores": [],
+                    "exams_taken": [],
+                    "exam_names": []
+                }
+            student_map[s_email]["perfs"].append(perf)
+            student_map[s_email]["scores"].append(score)
+            student_map[s_email]["exam_names"].append(r['exam_name'])
+
+        leaderboard = []
+        student_progress = {}
+
+        for email_key, data in student_map.items():
+            s_avg = round(sum(data["perfs"]) / len(data["perfs"]), 1)
+            s_best = max(data["perfs"])
+            s_taken = len(data["perfs"])
+            s_total_score = sum(data["scores"])
+
+            leaderboard.append({
+                "name": data["name"],
+                "avg": s_avg,
+                "best": s_best,
+                "taken": s_taken,
+                "totalScore": s_total_score
+            })
+
+            student_progress[data["name"]] = {
+                "avg": s_avg,
+                "best": s_best,
+                "taken": s_taken,
+                "labels": data["exam_names"],
+                "data": data["perfs"]
+            }
+
+        # টপ স্কোর অনুযায়ী লিডারবোর্ড সর্ট করা
+        leaderboard = sorted(leaderboard, key=lambda x: x['avg'], reverse=True)
+
+        return jsonify({
+            "success": True,
+            "overall": {
+                "students": unique_students,
+                "attempts": total_attempts,
+                "avg": class_avg,
+                "high": highest_score,
+                "exams": len(teacher_exams)
+            },
+            "examStats": exam_stats,
+            "leaderboard": leaderboard,
+            "studentProgress": student_progress
+        })
+
+    except Exception as e:
+        print("DB Error (Teacher Full Analytics):", e)
+        return jsonify({"success": False, "error": "Database error occurred."}), 500
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
