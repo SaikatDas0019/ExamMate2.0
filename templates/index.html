@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* আপনার Streamlit এর CSS এখানে HTML এর জন্য অপ্টিমাইজ করা হয়েছে */
+        /* Streamlit style HTML Optimization */
         :root {
             color-scheme: dark;
         }
@@ -51,12 +51,10 @@
         /* Sign up / Sign in Section */
         .auth-card {
             background: rgba(17, 29, 52, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 26px;
             padding: 30px;
             margin-bottom: 1.8rem;
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
-            /* স্ক্রিনশটের মতো সবুজ বর্ডার দেওয়া হলো */
             border: 2px solid rgba(34, 192, 93, 0.5); 
         }
         .auth-card h2 {
@@ -69,7 +67,7 @@
         }
         .buttons-container {
             display: flex;
-            flex-direction: column; /* মোবাইলের জন্য বাটন নিচে নিচে থাকবে */
+            flex-direction: column;
             gap: 15px;
         }
         
@@ -108,7 +106,7 @@
             margin-bottom: 1.5rem;
         }
         .feature-card {
-            background: rgba(30, 166, 77, 0.2); /* স্ক্রিনশটের মতো সবুজ আভা */
+            background: rgba(30, 166, 77, 0.2);
             border: 1px solid rgba(34, 192, 93, 0.4);
             border-radius: 15px;
             padding: 1.2rem;
@@ -137,14 +135,12 @@
             font-size: 0.95rem;
         }
 
-        /* Desktop View Adjustments */
         @media (min-width: 600px) {
             .buttons-container {
-                flex-direction: row; /* বড় স্ক্রিনে বাটন পাশাপাশি থাকবে */
+                flex-direction: row;
             }
         }
         
-        /* স্পেশাল আইকন কালার */
         .icon-green { color: #81c784; }
     </style>
 </head>
@@ -202,22 +198,13 @@
     </div>
 
     <script>
-        // সাইন আপ পেজে যাওয়ার ফাংশন
+        // রুট পাথে স্লেশ (/) যুক্ত করে রিডাইরেক্ট ঠিক করা হলো
         function goToSignUp() {
-            // alert() দিয়ে চেক করা হচ্ছে বাটন কাজ করছে কিনা। 
-            // পরবর্তীতে এখানে আমরা সিঙ্গেল পেজ লজিক বসাবো।
-            window.location.href = "signup.html";
-            
-            // যদি আলাদা ফাইল থাকতো, তাহলে আমরা এই কোডটি ব্যবহার করতাম:
-            // window.location.href = "signup.html"; 
+            window.location.href = "/signup.html"; 
         }
 
-        // সাইন ইন পেজে যাওয়ার ফাংশন
         function goToSignIn() {
-            window.location.href = "signin.html";
-            
-            // যদি আলাদা ফাইল থাকতো, তাহলে আমরা এই কোডটি ব্যবহার করতাম:
-            // window.location.href = "signin.html";
+            window.location.href = "/signin.html";
         }
     </script>
 
