@@ -188,12 +188,38 @@
     <script>
         let currentCategory = "";
         let currentSubject = "";
+        // অনরিড নোটিফিকেশন থাকলে লাল ডট দেখানোর ফাংশন
+        async function checkUnreadNotifications() {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) return;
 
+            try {
+                const response = await fetch('/api/check-unread-notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
+                const data = await response.json();
+
+                const bellIcon = document.querySelector('.bell-icon');
+                if (data.success && data.has_unread) {
+                    bellIcon.classList.add('has-unread'); // লাল ডট দেখাবে
+                } else {
+                    bellIcon.classList.remove('has-unread'); // লাল ডট সরাবে
+                }
+            }             
+            catch (error) {
+                console.log("Notif check error:", error);
+            }
+        }
+        
         window.onload = async () => {
             const userName = localStorage.getItem('userName') || "Student";
             const userEmail = localStorage.getItem('userEmail');
             document.getElementById('student-name').innerText = "Hi, " + userName.split(' ')[0];
 
+            checkUnreadNotifications();
+            
             if (userEmail) {
                 try {
                     const response = await fetch('/api/get-student-progress', {
