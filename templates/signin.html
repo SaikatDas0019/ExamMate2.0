@@ -4,241 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExamMate | Sign In</title>
-    
-    <script src="https://control.msg91.com/app/assets/otp-provider/otp-provider.js"></script>
 
     <style>
-        /* Universal Box-Sizing to prevent layout overflow */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
-        /* Global Theme (Pure White) */
-        :root { 
-            color-scheme: light; 
-        }
-
-        html {
-            width: 100%;
-            overflow-x: hidden;
-        }
-
+        *, *::before, *::after { box-sizing: border-box; }
+        :root { color-scheme: light; }
+        html, body { width: 100%; overflow-x: hidden; }
         body { 
             background-color: #ffffff; 
             color: #333333; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            overflow-x: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            margin: 0; padding: 0;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
         }
+        .container { width: 100%; max-width: 450px; padding: 1.5rem; margin: auto; }
+        .custom-title { text-align: center; font-size: 2rem; font-weight: 800; margin-bottom: 5px; color: #000000; }
+        .custom-subtitle { text-align: center; color: #4b5563; font-size: 1rem; margin-bottom: 2rem; }
+        
+        .input-group { margin-bottom: 1.2rem; display: flex; flex-direction: column; width: 100%; }
+        .input-group label { color: #333333; font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+        .input-group select { 
+            width: 100%; background-color: #ffffff; border: 1px solid #d1d5db; color: #000000; 
+            border-radius: 12px; padding: 14px 16px; font-size: 1rem; outline: none; transition: all 0.3s ease;
+        }
+        .input-group select:focus { border: 1px solid #3b82f6; box-shadow: 0 0 5px rgba(59, 130, 246, 0.4); }
 
-        /* Single Centered Container */
-        .container { 
-            width: 100%;
-            max-width: 450px; 
-            padding: 1.5rem; 
-            margin: auto;
+        .btn-google { 
+            width: 100%; background: #ffffff; color: #374151; border: 1px solid #d1d5db; 
+            border-radius: 25px; padding: 0.85rem 1rem; font-size: 1.05rem; font-weight: 700; 
+            cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;
+            gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 10px;
         }
-        
-        /* Titles */
-        .custom-title { 
-            text-align: center; 
-            font-size: 2rem; 
-            font-weight: 800; 
-            margin-bottom: 5px; 
-            color: #000000; 
-        }
-        .custom-subtitle { 
-            text-align: center; 
-            color: #4b5563; 
-            font-size: 1rem; 
-            margin-bottom: 2rem; 
-            word-wrap: break-word;
-        }
-        
-        /* Input Fields */
-        .input-group {
-            margin-bottom: 1.2rem;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-        .input-group label {
-            color: #333333; 
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-        .input-group input { 
-            width: 100%;
-            background-color: #ffffff; 
-            border: 1px solid #d1d5db; 
-            color: #000000; 
-            border-radius: 12px; 
-            padding: 14px 16px; 
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        .input-group input:focus {
-            border: 1px solid #3b82f6;
-            box-shadow: 0 0 5px rgba(59, 130, 246, 0.4);
-        }
-        
-        /* Buttons */
-        .btn-primary { 
-            width: 100%; 
-            background: #3b82f6; 
-            color: #ffffff; 
-            border-radius: 25px; 
-            padding: 0.85rem 1rem; 
-            font-size: 1.1rem; 
-            font-weight: 700; 
-            border: none; 
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
-            margin-top: 10px;
-        }
-        .btn-primary:hover { 
-            background: #2563eb;
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3); 
-        }
+        .btn-google:hover { background: #f9fafb; border-color: #9ca3af; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .btn-google img { width: 22px; height: 22px; }
 
         .btn-secondary { 
-            width: 100%;
-            background: #f8fafc; 
-            color: #4b5563; 
-            border: 1px solid #cbd5e1; 
-            border-radius: 25px; 
-            padding: 0.85rem 1rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-            text-align: center;
+            width: 100%; background: #f8fafc; color: #4b5563; border: 1px solid #cbd5e1; 
+            border-radius: 25px; padding: 0.85rem 1rem; font-size: 0.95rem; font-weight: 600; 
+            cursor: pointer; transition: all 0.3s ease; margin-top: 15px; text-align: center;
         }
-        .btn-secondary:hover { 
-            background: #f1f5f9; 
-            color: #1e293b;
-            border: 1px solid #94a3b8;
-        }
+        .btn-secondary:hover { background: #f1f5f9; color: #1e293b; border: 1px solid #94a3b8; }
 
-        .btn-green {
-            background: #10b981; 
-            color: #ffffff;
-            border: none;
-            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
-        }
-        .btn-green:hover {
-            background: #059669;
-            transform: translateY(-2px);
-        }
-
-        /* Responsive Action Row */
-        .btn-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            width: 100%;
-        }
-
-        .btn-row .btn-secondary {
-            flex: 1;
-            min-width: 0; /* Prevents button text overflow on small screens */
-            margin-top: 0;
-        }
-
-        /* Stack buttons vertically on small mobile displays */
-        @media (max-width: 380px) {
-            .btn-row {
-                flex-direction: column;
-                gap: 5px;
-            }
-            .btn-row .btn-secondary {
-                margin-top: 5px;
-            }
-        }
-
-        /* Section Visibility */
-        #forgot-password-section { display: none; }
-        #otp-reset-fields { display: none; }
-        
         #signin-error {
-            width: 100%;
-            word-wrap: break-word;
+            width: 100%; word-wrap: break-word; color: #ef4444; font-size: 0.95rem; margin-bottom: 15px; 
+            display: none; font-weight: bold; text-align: center; background: #fef2f2; padding: 10px; 
+            border-radius: 8px; border: 1px solid #fee2e2;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div id="signin-error" style="color: #ef4444; font-size: 0.95rem; margin-bottom: 15px; display: none; font-weight: bold; text-align: center; background: #fef2f2; padding: 10px; border-radius: 8px; border: 1px solid #fee2e2;"></div>
+        <div id="signin-error"></div>
         
-        <div id="signin-section">
-            <div class="custom-title">Sign In</div>
-            <div class="custom-subtitle">Welcome back to ExamMate</div>
-            
-            <form id="signin-form" onsubmit="handleSignIn(event)">
-                <div class="input-group">
-                    <label>📧 Username / Email</label>
-                    <input type="email" id="email" required placeholder="Enter your email">
-                </div>
-                
-                <div class="input-group">
-                    <label>🔒 Password</label>
-                    <input type="password" id="password" required placeholder="Enter your password">
-                </div>
-                
-                <button type="submit" class="btn-primary">Sign In</button>
-            </form>
-
-            <div class="btn-row">
-                <button type="button" class="btn-secondary" onclick="showForgotPassword()">Forget Password?</button>
-                <button type="button" class="btn-secondary btn-green" onclick="window.location.href='signup.html'">Create Account</button>
-            </div>
+        <div class="custom-title">Sign In</div>
+        <div class="custom-subtitle">Welcome back to ExamMate</div>
+        
+        <div class="input-group">
+            <label>🎓 Select Your Role</label>
+            <select id="role">
+                <option value="Student">Student</option>
+                <option value="Teacher">Teacher</option>
+            </select>
         </div>
 
-        <div id="forgot-password-section">
-            <div class="custom-title">Reset Password</div>
-            <div class="custom-subtitle" id="reset-subtitle">Enter your email to verify identity</div>
+        <button type="button" class="btn-google" id="btn-google-signin">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo">
+            Sign In with Google
+        </button>
 
-            <div id="email-submit-fields">
-                <div class="input-group">
-                    <label>📧 Registered Email</label>
-                    <input type="email" id="reset-email" placeholder="Enter your email address">
-                </div>
-                <button type="button" class="btn-primary" id="btn-send-reset-otp" onclick="sendResetOTP()">Verify Email 📨</button>
-            </div>
-
-            <form id="reset-final-form" onsubmit="handleResetPassword(event)">
-                <div id="otp-reset-fields">
-                    <div class="input-group">
-                        <label>🔒 New Password</label>
-                        <input type="password" id="new-password" placeholder="Create new password">
-                    </div>
-                    <button type="submit" class="btn-primary">Update Password 🚀</button>
-                </div>
-            </form>
-
-            <button type="button" class="btn-secondary" style="margin-top: 15px;" onclick="hideForgotPassword()">Back to Sign In</button>
-        </div>
-
+        <button type="button" class="btn-secondary" onclick="window.location.href='signup.html'">Don't have an account? Create Account</button>
     </div>
 
-    <script>
-        let verifiedOtpToken = "";
-        let verifiedReqId = "";
+    <!-- Firebase Authentication SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const MSG91_WIDGET_ID = "YOUR_MSG91_WIDGET_ID";
-        const MSG91_TOKEN_AUTH = "YOUR_MSG91_TOKEN_AUTH";
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
+            authDomain: "exammate-4dfa2.firebaseapp.com",
+            projectId: "exammate-4dfa2",
+            storageBucket: "exammate-4dfa2.firebasestorage.app",
+            messagingSenderId: "424847388051",
+            appId: "1:424847388051:web:73730432aaddc54e48c66"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
         function showErr(msg) {
             const box = document.getElementById('signin-error');
@@ -246,173 +99,38 @@
             box.style.display = 'block';
         }
 
-        function clearErr() {
-            document.getElementById('signin-error').style.display = 'none';
-        }
-
-        async function handleSignIn(event) {
-            event.preventDefault();
-            clearErr();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const submitBtn = document.querySelector('#signin-form button[type="submit"]');
+        document.getElementById('btn-google-signin').addEventListener('click', async () => {
+            const role = document.getElementById('role').value;
             
-            submitBtn.innerText = "Signing In...";
-            submitBtn.disabled = true;
-
             try {
-                const response = await fetch('/api/signin', {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                // ব্যাকএন্ডের সাথে তথ্য সিঙ্ক করা
+                const response = await fetch('/api/google-auth-sync', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, password: password })
-                });
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    if (data.role === "Student") {
-                        localStorage.setItem('userEmail', email);
-                        localStorage.setItem('userName', data.name);
-                        window.location.href = "student_dashboard.html"; 
-                    } else {
-                        window.location.href = "teacher_dashboard.html"; 
-                    }
-                } else {
-                    showErr(data.error || "Invalid email or password!");
-                }
-            } catch (error) {
-                showErr("Server connection error.");
-            } finally {
-                submitBtn.innerText = "Sign In";
-                submitBtn.disabled = false;
-            }
-        }
-
-        function showForgotPassword() {
-            clearErr();
-            document.getElementById('signin-section').style.display = 'none';
-            document.getElementById('forgot-password-section').style.display = 'block';
-            document.getElementById('email-submit-fields').style.display = 'block';
-            document.getElementById('otp-reset-fields').style.display = 'none';
-            verifiedOtpToken = "";
-            verifiedReqId = "";
-        }
-
-        function hideForgotPassword() {
-            clearErr();
-            document.getElementById('forgot-password-section').style.display = 'none';
-            document.getElementById('signin-section').style.display = 'block';
-            document.getElementById('reset-email').value = '';
-            document.getElementById('new-password').value = '';
-            document.getElementById('reset-subtitle').innerText = "Enter your email to verify identity";
-            verifiedOtpToken = "";
-            verifiedReqId = "";
-        }
-
-        async function sendResetOTP() {
-            clearErr();
-            const email = document.getElementById('reset-email').value.trim();
-            const sendBtn = document.getElementById('btn-send-reset-otp');
-                
-            if(!email) {
-                showErr("Please enter your registered email address.");
-                return;
-            }
-        
-            sendBtn.innerText = "Verifying Email...";
-            sendBtn.disabled = true;
-        
-            try {
-                const response = await fetch('/api/forgot-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email })
-                });
-                const data = await response.json();
-            
-                if (response.ok && data.success) {
-                    document.getElementById('reset-subtitle').innerText = "Complete OTP verification via MSG91";
-                    
-                    const configuration = {
-                        widgetId: MSG91_WIDGET_ID,
-                        tokenAuth: MSG91_TOKEN_AUTH,
-                        identifier: email,
-                        exposeMethods: true,
-                        success: (data) => {
-                            verifiedOtpToken = data.message || data.token || "VERIFIED";
-                            verifiedReqId = data.reqId || data.req_id || "";
-                            
-                            document.getElementById('email-submit-fields').style.display = 'none';
-                            document.getElementById('otp-reset-fields').style.display = 'block';
-                            document.getElementById('reset-subtitle').innerText = "Email Verified! Set your new password.";
-                            clearErr();
-                        },
-                        failure: (error) => {
-                            console.error("MSG91 OTP Verification Failed:", error);
-                            showErr(error.message || "OTP Verification failed via MSG91. Please try again.");
-                        }
-                    };
-
-                    if (window.sendOtp) {
-                        window.sendOtp.init(configuration);
-                    } else {
-                        showErr("MSG91 SDK failed to load. Please refresh and try again.");
-                    }
-                } else {
-                    showErr(data.error || "This email is not registered with us!"); 
-                }
-            } catch (error) {
-                console.error(error);
-                showErr("Network error or server down.");
-            } finally {
-                sendBtn.innerText = "Verify Email 📨";
-                sendBtn.disabled = false;
-            }
-        }
-
-        async function handleResetPassword(event) {
-            event.preventDefault();
-            clearErr();
-            const newPassword = document.getElementById('new-password').value;
-            const submitBtn = document.querySelector('#reset-final-form button[type="submit"]');
-
-            if(!newPassword) {
-                showErr("Please enter your new password.");
-                return;
-            }
-
-            if(!verifiedOtpToken) {
-                showErr("OTP verification incomplete. Please verify your email first.");
-                return;
-            }
-
-            submitBtn.innerText = "Updating...";
-            submitBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/reset-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        otp: verifiedOtpToken, 
-                        new_password: newPassword,
-                        req_id: verifiedReqId
+                    body: JSON.stringify({
+                        name: user.displayName,
+                        email: user.email,
+                        role: role
                     })
                 });
+
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    alert("Success! Your password has been changed. You can now log in.");
-                    hideForgotPassword();
+                    localStorage.setItem('userEmail', user.email);
+                    localStorage.setItem('userName', user.displayName);
+                    window.location.href = data.redirect_url;
                 } else {
-                    showErr(data.error || "Password reset failed!");
+                    showErr(data.error || "Login sync failed!");
                 }
             } catch (error) {
-                showErr("Server communication error.");
-            } finally {
-                submitBtn.innerText = "Update Password 🚀";
-                submitBtn.disabled = false;
+                console.error("Firebase Login Error:", error);
+                showErr("Google Sign-In failed or was cancelled.");
             }
-        }
+        });
     </script>
 </body>
 </html>
