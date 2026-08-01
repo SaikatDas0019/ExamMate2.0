@@ -16,7 +16,14 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026"
 def home():
     return render_template('index.html')
 
-# একক অ্যাথেনটিকেশন পেজ (Signup/Signin দুটোর কাজ এক পেজেই হবে)
+@app.route('/signup.html')
+def signup_page():
+    return render_template('signup.html')
+
+@app.route('/signin.html')
+def signin_page():
+    return render_template('signin.html')
+    
 @app.route('/auth.html')
 @app.route('/login.html')
 def auth_page():
