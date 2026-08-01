@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Profile</title>
+    <title>ExamMate | Student Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -14,45 +14,52 @@
             margin: 0; display: flex; justify-content: center;
         }
         .container { 
-            width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh;
-            padding: 1.5rem 1.5rem 5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh;
+            padding: 1.5rem 1.5rem 6rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
         .page-title { font-size: 1.8rem; font-weight: 800; text-align: center; margin-bottom: 1.5rem; color: #111827; }
+        
         .profile-pic-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
-        .profile-image { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #4CAF50; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .profile-image { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #22c55e; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         #file-upload { display: none; }
-        .btn-upload, .btn-edit { background: #3b82f6; color: white; padding: 8px 20px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .btn-upload:hover { background: #2563eb; }
-        .btn-edit { background: #6b7280; }
-        .user-info { text-align: center; margin-bottom: 20px; font-size: 1.1rem; }
-        .user-info p { margin: 5px 0; color: #4b5563; }
-        .user-info strong { color: #111827; }
+        .btn-upload, .btn-edit { background: #3b82f6; color: white; padding: 8px 18px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 0.85rem; }
+        
+        .edit-form-group { margin-bottom: 12px; text-align: left; }
+        .edit-form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 5px; }
+        .edit-form-group input, .edit-form-group select {
+            width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1;
+            font-size: 0.95rem; outline: none; box-sizing: border-box; background: #fff;
+        }
+        .edit-form-group input[readonly] { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
+        
+        .btn-save-profile {
+            width: 100%; background: #22c55e; color: white; border: none; padding: 12px;
+            border-radius: 8px; font-weight: bold; font-size: 0.95rem; cursor: pointer; margin-top: 10px;
+            transition: 0.2s; box-shadow: 0 4px 6px rgba(34, 197, 94, 0.2);
+        }
+        .btn-save-profile:hover { background: #16a34a; }
+
         hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
-        .section-title { font-size: 1.2rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; }
         .teachers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .teacher-btn { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 5px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-align: center; }
-        .table-responsive { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid #e5e7eb; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 400px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        th { background-color: #f3f4f6; color: #374151; font-weight: 600; }
-        td { color: #4b5563; }
-        .perf-excellent { color: #16a34a; font-weight: bold; }
-        .perf-avg { color: #ca8a04; font-weight: bold; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #e5e7eb; padding: 10px 0; z-index: 999; display: flex; justify-content: space-around; max-width: 450px; margin: 0 auto; box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.75rem; color: #9ca3af; cursor: pointer; font-weight: 600; }
-        .nav-item.active { color: #22c55e; }
-        .nav-icon { font-size: 1.3rem; }
+
+        /* Fixed 3-Item Bottom Navigation Bar */
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb; padding: 8px 0; z-index: 1000; display: flex; justify-content: space-around; box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
+        .nav-item.active { color: #3b82f6; font-weight: bold; }
+        .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="page-title">Profile</div>
+        <div class="page-title">Profile Settings</div>
 
         <div class="profile-pic-container">
             <img id="profile-img" src="https://ui-avatars.com/api/?name=Student&background=random&size=180" alt="Profile Picture" class="profile-image">
             <div id="upload-controls">
-                <label for="file-upload" class="btn-upload"><i class="fas fa-camera"></i> Upload Photo</label>
+                <label for="file-upload" class="btn-upload"><i class="fas fa-camera"></i> Change Photo</label>
                 <input type="file" id="file-upload" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(event)">
             </div>
             <div id="edit-controls" style="display: none;">
@@ -60,9 +67,26 @@
             </div>
         </div>
 
-        <div class="user-info">
-            <p><strong>Name:</strong> <span id="display-name">Loading...</span></p>
-            <p><strong>Email:</strong> <span id="display-email">Loading...</span></p>
+        <div class="user-info-form">
+            <div class="edit-form-group">
+                <label>👤 Name (You can change)</label>
+                <input type="text" id="input-name" placeholder="Enter full name">
+            </div>
+
+            <div class="edit-form-group">
+                <label>📧 Email (Cannot be changed)</label>
+                <input type="email" id="input-email" readonly>
+            </div>
+
+            <div class="edit-form-group">
+                <label>🎓 Role (Account Type)</label>
+                <select id="input-role">
+                    <option value="Student" selected>Student</option>
+                    <option value="Teacher">Teacher (Switch Account)</option>
+                </select>
+            </div>
+
+            <button type="button" class="btn-save-profile" onclick="saveProfileChanges()">Save Changes 💾</button>
         </div>
 
         <hr>
@@ -75,39 +99,19 @@
             <button class="teacher-btn">Manash Sir</button>
             <button class="teacher-btn">Mithun Sir</button>
         </div>
-
-        <hr>
-        <div class="section-title">Exam History</div>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Exam Name</th>
-                        <th>Score</th>
-                        <th>Total</th>
-                        <th>Date Taken</th>
-                        <th>Performance</th>
-                    </tr>
-                </thead>
-                <tbody id="history-table-body"></tbody>
-            </table>
-        </div>
     </div>
 
+    <!-- Fixed 3-Item Bottom Nav -->
     <div class="bottom-nav">
-        <div class="nav-item" onclick="window.location.href='student_dashboard.html'">
+        <div class="nav-item" onclick="window.location.href='/student_dashboard.html'">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
             <span>Home</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='student_dashboard.html'">
-            <div class="nav-icon"><i class="far fa-file-alt"></i></div>
-            <span>Tests</span>
-        </div>
-        <div class="nav-item active" onclick="window.location.href='student_profile.html'">
+        <div class="nav-item" onclick="window.location.href='/student_analytics.html'">
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
             <span>Analytics</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='student_profile.html'">
+        <div class="nav-item active" onclick="window.location.href='/student_profile.html'">
             <div class="nav-icon"><i class="far fa-user"></i></div>
             <span>Profile</span>
         </div>
@@ -131,47 +135,50 @@
             document.getElementById('edit-controls').style.display = 'none';
         }
 
-        // রিয়েল ডেটাবেস থেকে স্টুডেন্টের হিস্ট্রি লোড করা
-        window.onload = async () => {
+        window.onload = () => {
             const userName = localStorage.getItem('userName') || "Student";
-            const userEmail = localStorage.getItem('userEmail') || "student@email.com";
+            const userEmail = localStorage.getItem('userEmail') || "";
             
-            document.getElementById('display-name').innerText = userName;
-            document.getElementById('display-email').innerText = userEmail;
-            
-            const tbody = document.getElementById('history-table-body');
+            document.getElementById('input-name').value = userName;
+            document.getElementById('input-email').value = userEmail;
+        };
+
+        async function saveProfileChanges() {
+            const name = document.getElementById('input-name').value.trim();
+            const email = document.getElementById('input-email').value.trim();
+            const role = document.getElementById('input-role').value;
+
+            if (!name) {
+                alert("Please enter your name!");
+                return;
+            }
 
             try {
-                const response = await fetch('/api/get-student-history', {
+                const response = await fetch('/api/update-profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail })
+                    body: JSON.stringify({ email: email, name: name, role: role })
                 });
+
                 const data = await response.json();
 
-                if (data.success && data.history.length > 0) {
-                    tbody.innerHTML = "";
-                    data.history.forEach(row => {
-                        const performance = ((row.score / row.total) * 100).toFixed(2);
-                        let perfClass = performance >= 80 ? "perf-excellent" : (performance >= 50 ? "perf-avg" : "");
+                if (response.ok && data.success) {
+                    localStorage.setItem('userName', name);
+                    alert("Profile updated successfully!");
 
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${row.exam_name}</td>
-                            <td>${row.score}</td>
-                            <td>${row.total}</td>
-                            <td>${row.date}</td>
-                            <td class="${perfClass}">${performance}%</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+                    if (role === 'Teacher') {
+                        alert("Switching your account to Teacher...");
+                        window.location.href = "/teacher_dashboard.html";
+                    } else {
+                        location.reload();
+                    }
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px;">No exam history found. Take some exams first!</td></tr>`;
+                    alert(data.error || "Failed to update profile.");
                 }
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px; color: red;">Error loading database data.</td></tr>`;
+                alert("Server error updating profile.");
             }
-        };
+        }
     </script>
 </body>
 </html>
