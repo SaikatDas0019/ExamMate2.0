@@ -8,28 +8,18 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        /* Global Theme */
         :root { color-scheme: light; }
         body { 
-            background-color: #f3f4f6; 
-            color: #1a1a1a; 
+            background-color: #f3f4f6; color: #1a1a1a; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
+            margin: 0; padding: 0; display: flex; justify-content: center;
         }
         .container { 
-            width: 100%;
-            max-width: 480px; /* Mobile First Layout aligned with Teacher Dashboard */
-            background-color: #ffffff;
-            min-height: 100vh;
-            padding: 1.5rem 1rem 6rem 1rem; 
-            box-sizing: border-box;
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            width: 100%; max-width: 480px; background-color: #ffffff;
+            min-height: 100vh; padding: 1.5rem 1rem 6rem 1rem; 
+            box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
 
-        /* Top Back Button */
         .back-btn {
             background: transparent; color: #1ea64d; border: none; 
             font-weight: bold; font-size: 14px; cursor: pointer; 
@@ -41,94 +31,49 @@
         .page-header h1 { font-size: 24px; color: #1a1a1a; margin: 0 0 5px 0; }
         .page-header p { color: #4b5563; margin: 0; font-size: 0.85rem; }
 
-        /* Key Metrics Grid */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 1.5rem;
-        }
+        .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
         .metric-card {
             background: #f0fdf4; border: 1px solid #bbf7d0;
             border-radius: 12px; padding: 12px; text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
         .metric-card.full-width { grid-column: span 2; }
         .metric-card span { display: block; font-size: 0.8rem; color: #4b5563; font-weight: 600; margin-bottom: 5px; }
         .metric-card strong { font-size: 1.3rem; color: #111827; }
 
-        /* Section Titles */
         .section-title { font-size: 1.05rem; font-weight: 700; color: #111827; margin: 1.5rem 0 0.8rem 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px;}
 
-        /* Tables */
         .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
         th { background-color: #f8fafc; color: #374151; font-weight: 600; }
         td { color: #4b5563; }
-        tr:hover { background-color: #f1f5f9; }
 
-        /* Charts Container */
-        .chart-box {
-            background: #ffffff; border: 1px solid #e5e7eb;
-            border-radius: 12px; padding: 12px; margin-bottom: 1.5rem;
-        }
-        .chart-container { position: relative; height: 220px; width: 100%; }
+        .chart-box { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; margin-bottom: 1.5rem; }
+        .chart-container { position: relative; height: 260px; width: 100%; }
 
-        /* Individual Student Analysis */
-        .student-select-box {
-            width: 100%; padding: 10px; border-radius: 8px; 
-            border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px;
-            box-sizing: border-box;
-        }
+        .student-select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px; box-sizing: border-box; }
         .student-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
         
-        /* Insights Alerts */
         .alert { padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.4; }
         .alert-warning { background-color: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
         .alert-success { background-color: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
         .alert-info { background-color: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
 
-        /* FIXED BOTTOM NAVIGATION BAR STYLING */
+        /* FIXED 3-ITEM BOTTOM NAVIGATION BAR */
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 480px;
-            background: #ffffff;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-            z-index: 1000;
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
+            display: flex; justify-content: space-around; padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
         }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #6b7280;
-            font-size: 0.75rem;
-            cursor: pointer;
-            text-decoration: none;
-            flex: 1;
-        }
-        .nav-item.active {
-            color: #3b82f6;
-            font-weight: bold;
-        }
-        .nav-icon {
-            font-size: 1.2rem;
-            margin-bottom: 3px;
-        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
+        .nav-item.active { color: #3b82f6; font-weight: bold; }
+        .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        
         <button class="back-btn" onclick="window.location.href='/teacher_dashboard.html'">⬅️ Back to Dashboard</button>
         
         <div class="page-header">
@@ -202,18 +147,13 @@
 
         <h2 class="section-title">💡 Teaching Insights</h2>
         <div id="insights-container"></div>
-
     </div>
 
-    <!-- Fixed Bottom Navigation -->
+    <!-- 3-Item Clean Bottom Nav -->
     <div class="bottom-nav">
         <div class="nav-item" onclick="window.location.href='/teacher_dashboard.html'">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
             <span>Home</span>
-        </div>
-        <div class="nav-item" onclick="window.location.href='/teacher_dashboard.html'">
-            <div class="nav-icon"><i class="far fa-file-alt"></i></div>
-            <span>Tests</span>
         </div>
         <div class="nav-item active" onclick="window.location.href='/teacher_analytics.html'">
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
@@ -248,14 +188,12 @@
                         const overall = data.overall;
                         classAvg = overall.avg;
 
-                        // ১. Load Metrics
                         document.getElementById('m-students').innerText = overall.students;
                         document.getElementById('m-attempts').innerText = overall.attempts;
                         document.getElementById('m-avg').innerText = overall.avg + '%';
                         document.getElementById('m-high').innerText = overall.high + '%';
                         document.getElementById('m-exams').innerText = overall.exams;
 
-                        // ২. Load Exam Stats Table
                         const examBody = document.getElementById('exam-stats-body');
                         if (data.examStats.length === 0) {
                             examBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No exams created yet.</td></tr>';
@@ -265,10 +203,8 @@
                             ).join('');
                         }
 
-                        // ৩. Load Exam Chart
                         renderExamChart(data.examStats);
 
-                        // ৪. Load Leaderboard
                         const leaderBody = document.getElementById('leaderboard-body');
                         if (data.leaderboard.length === 0) {
                             leaderBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No students have taken exams yet.</td></tr>';
@@ -278,7 +214,6 @@
                             ).join('');
                         }
 
-                        // ৫. Populate Student Selector & Save Global Progress
                         globalStudentProgressData = data.studentProgress;
                         const selector = document.getElementById('student-selector');
                         selector.innerHTML = '<option value="" disabled selected>Select a student...</option>';
@@ -289,7 +224,6 @@
                             selector.appendChild(opt);
                         });
 
-                        // ৬. Load Insights
                         loadInsights(data.leaderboard, data.examStats, overall.attempts);
                     }
                 } catch (error) {
@@ -298,9 +232,14 @@
             }
         };
 
+        // Graph Formatting Logic Fix
         function renderExamChart(examStats) {
             const ctx = document.getElementById('examChart').getContext('2d');
-            const labels = examStats.map(e => e.name);
+            
+            // নাম বেশি লম্বা হলে সংক্ষিপ্ত (...) করবে
+            const labels = examStats.map(e => {
+                return e.name.length > 15 ? e.name.substring(0, 15) + '...' : e.name;
+            });
             const data = examStats.map(e => e.avg);
 
             if (examChart !== null) { examChart.destroy(); }
@@ -318,7 +257,17 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, max: 100 } }
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100 },
+                        x: {
+                            ticks: {
+                                maxRotation: 0, // সোজা দেখাবে
+                                minRotation: 0,
+                                font: { size: 10 }
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -339,7 +288,6 @@
             document.getElementById('s-best').innerText = data.best + '%';
             document.getElementById('s-taken').innerText = data.taken;
 
-            // Render Progress Chart
             const ctx = document.getElementById('progressChart').getContext('2d');
             if(progressChart !== null) progressChart.destroy();
 
