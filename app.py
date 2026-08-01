@@ -910,6 +910,140 @@ def get_resources():
         print("Get Resources Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
+# ==========================================
+# 📂 Google Drive Style Nested Folder & File APIs
+# ==========================================
+import os
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = 'static/uploads/resources'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# ১. ড্রাইভ স্ট্রাকচার লোড করা (বর্তমান ফোল্ডারের ভেতরের ফোল্ডার ও ফাইল আনা)
+@app.route('/api/admin/get-drive-contents', methods=['POST'])
+def get_drive_contents():
+    data = request.get_json() if request.is_json else {}
+    parent_id = data.get('parent_id', 0) # 0 মানে মেইন Root ফোল্ডার
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # ফোল্ডার টেবিল তৈরি
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS drive_folders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                folder_name TEXT NOT NULL,
+                parent_id INTEGER DEFAULT 0
+            )
+        ''')
+
+        # ফাইল টেবিল তৈরি
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS drive_files (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                folder_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                file_url TEXT NOT NULL,
+                resource_type TEXT DEFAULT 'PDF',
+                date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # ভেতরের সাব-ফোল্ডারগুলো আনা
+        cursor.execute("SELECT * FROM drive_folders WHERE parent_id = ? ORDER BY id DESC", (parent_id,))
+        folders = [{"id": r["id"], "name": r["folder_name"]} for r in cursor.fetchall()]
+
+        # ভেতরের ফাইলগুলো আনা
+        cursor.execute("SELECT * FROM drive_files WHERE folder_id = ? ORDER BY id DESC", (parent_id,))
+        files = [{
+            "id": r["id"],
+            "title": r["title"],
+            "file_url": r["file_url"],
+            "type": r["resource_type"],
+            "date": str(r["date_uploaded"]).split(' ')[0]
+        } for r in cursor.fetchall()]
+
+        conn.close()
+        return jsonify({"success": True, "folders": folders, "files": files})
+
+    except Exception as e:
+        print("Drive Fetch Error:", e)
+        return jsonify({"success": False, "error": "Database Error"}), 500
+
+# ২. নতুন ফোল্ডার তৈরি করার API (Nested)
+@app.route('/api/admin/create-drive-folder', methods=['POST'])
+def create_drive_folder():
+    data = request.get_json()
+    folder_name = data.get('folder_name')
+    parent_id = data.get('parent_id', 0)
+
+    if not folder_name:
+        return jsonify({"success": False, "error": "Folder name missing!"}), 400
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO drive_folders (folder_name, parent_id) VALUES (?, ?)", (folder_name, parent_id))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Folder created! 📁"})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
+
+# ৩. বর্তমান ফোল্ডারে ফাইল আপলোড API
+@app.route('/api/admin/upload-drive-file', methods=['POST'])
+def upload_drive_file():
+    try:
+        folder_id = request.form.get('folder_id', 0)
+        title = request.form.get('title')
+        resource_type = request.form.get('resource_type', 'Notes')
+        file = request.files.get('file')
+
+        if not file:
+            return jsonify({"success": False, "error": "No file chosen!"}), 400
+
+        filename = secure_filename(file.filename)
+        unique_filename = f"{resource_type}_{folder_id}_{filename}"
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+        file.save(file_path)
+        file_url = f"/static/uploads/resources/{unique_filename}"
+
+        conn = sqlite3.connect('ExamMate.db')
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO drive_files (folder_id, title, file_url, resource_type) VALUES (?, ?, ?, ?)",
+                       (folder_id, title, file_url, resource_type))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"success": True, "message": "File uploaded! 🚀"})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Upload error"}), 500
+
+# ৪. ফাইল বা ফোল্ডার ডিলিট করার API
+@app.route('/api/admin/delete-drive-item', methods=['POST'])
+def delete_drive_item():
+    data = request.get_json()
+    item_type = data.get('type') # 'folder' or 'file'
+    item_id = data.get('id')
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        cursor = conn.cursor()
+        if item_type == 'folder':
+            cursor.execute("DELETE FROM drive_folders WHERE id = ?", (item_id,))
+            cursor.execute("DELETE FROM drive_files WHERE folder_id = ?", (item_id,))
+        else:
+            cursor.execute("DELETE FROM drive_files WHERE id = ?", (item_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Deleted successfully!"})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Delete error"}), 500
+
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
