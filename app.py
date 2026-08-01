@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import os
 import sqlite3
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 # .env ফাইল লোড করা
@@ -8,6 +9,11 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026")
+
+# ফাইল আপলোড ফোল্ডার কনফিগারেশন
+UPLOAD_FOLDER = 'static/uploads/resources'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # ==========================================
 # ১. HTML পেজের রুট (Single Auth Page & Dashboard Protection)
@@ -81,17 +87,23 @@ def notification():
 def admin_page():
     return render_template('admin.html')
 
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect(url_for('auth_page'))
-
 @app.route('/student_analytics.html')
 def student_analytics():
     if 'user' not in session or session['user']['role'] != 'Student':
         return redirect(url_for('auth_page'))
     return render_template('student_analytics.html')
-    
+
+# 🎯 [FIXED] রিসোর্স পেজ রুট যোগ করা হয়েছে
+@app.route('/student_resources.html')
+def student_resources():
+    if 'user' not in session or session['user']['role'] != 'Student':
+        return redirect(url_for('auth_page'))
+    return render_template('student_resources.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('auth_page'))
 
 # ==========================================
 # ২. Google Auth Sync API (ফায়ারবেস লগইনের পর ব্যাকএন্ডে ডেটা সেভ রাখা)
@@ -101,7 +113,7 @@ def google_auth_sync():
     data = request.get_json()
     email = data.get('email')
     name = data.get('name')
-    role = data.get('role', 'Student') # ডিফল্ট রোল Student
+    role = data.get('role', 'Student')
 
     if not email or not name:
         return jsonify({"success": False, "error": "Missing user details!"}), 400
@@ -110,7 +122,6 @@ def google_auth_sync():
         conn = sqlite3.connect('ExamMate.db')
         cursor = conn.cursor()
         
-        # ইউজার টেবিল চেক
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 email TEXT PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL
@@ -121,10 +132,8 @@ def google_auth_sync():
         existing_user = cursor.fetchone()
 
         if existing_user:
-            # আগে থেকে থাকলে বিদ্যমান Role ব্যবহার করা হবে
             user_role = existing_user[0]
         else:
-            # নতুন ইউজার হলে সিস্টেমে সেভ হবে
             user_role = role
             cursor.execute(
                 "INSERT INTO users (email, name, category) VALUES (?, ?, ?)",
@@ -134,7 +143,6 @@ def google_auth_sync():
 
         conn.close()
 
-        # ফ্ল্যাঙ্ক সেসন সেট করা
         session['user'] = {'email': email, 'name': name, 'role': user_role}
 
         return jsonify({
@@ -407,52 +415,7 @@ def get_teacher_analysis():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ১১. Notifications - নোটিফিকেশন রিকভার করা
-# ==========================================
-@app.route('/api/notifications', methods=['POST'])
-def get_notifications():
-    data = request.get_json()
-    email = data.get('email')
-
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        cursor = conn.cursor()
-        
-        cursor.execute("SELECT category FROM users WHERE email = ?", (email,))
-        user = cursor.fetchone()
-        role = user[0] if user else 'All'
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS notifications (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                message TEXT NOT NULL,
-                target_role TEXT NOT NULL,
-                date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-
-        cursor.execute("SELECT COUNT(*) FROM notifications")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("INSERT INTO notifications (message, target_role) VALUES ('Welcome to ExamMate! Ensure your profile is updated.', 'All')")
-            conn.commit()
-
-        cursor.execute("""
-            SELECT message, date_sent FROM notifications 
-            WHERE target_role = 'All' OR target_role = ? 
-            ORDER BY id DESC
-        """, (role,))
-        
-        notifs = cursor.fetchall()
-        conn.close()
-
-        notifs_list = [{"msg": n[0], "date": n[1].split(' ')[0]} for n in notifs]
-        return jsonify({"success": True, "notifications": notifs_list})
-    except Exception as e:
-        print("DB Error (Notifications):", e)
-        return jsonify({"success": False, "error": "Database error"}), 500
-
-# ==========================================
-# ১২. Send Notification (Admin Only)
+# ১১. Admin Notifications APIs
 # ==========================================
 @app.route('/api/admin/send-notification', methods=['POST'])
 def admin_send_notification():
@@ -474,7 +437,6 @@ def admin_send_notification():
         print("Admin Notification Error:", e)
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
-# ১. আগের পাঠানো সব নোটিফিকেশন লিস্ট আনা
 @app.route('/api/admin/get-notifications', methods=['GET'])
 def admin_get_notifications():
     try:
@@ -490,7 +452,6 @@ def admin_get_notifications():
         print("Fetch Notif Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ২. নোটিফিকেশন এডিট করা
 @app.route('/api/admin/edit-notification', methods=['POST'])
 def admin_edit_notification():
     data = request.get_json()
@@ -509,7 +470,6 @@ def admin_edit_notification():
         print("Edit Notif Error:", e)
         return jsonify({"success": False, "error": "Failed to update"}), 500
 
-# ৩. নোটিফিকেশন ডিলিট করা
 @app.route('/api/admin/delete-notification', methods=['POST'])
 def admin_delete_notification():
     data = request.get_json()
@@ -526,195 +486,8 @@ def admin_delete_notification():
         print("Delete Notif Error:", e)
         return jsonify({"success": False, "error": "Failed to delete"}), 500
 
-
 # ==========================================
-# প্রোফাইল আপডেট ও রোল পরিবর্তনের API
-# ==========================================
-@app.route('/api/update-profile', methods=['POST'])
-def update_profile():
-    data = request.get_json()
-    email = data.get('email')
-    new_name = data.get('name')
-    new_role = data.get('role')
-
-    if not email or not new_name or not new_role:
-        return jsonify({"success": False, "error": "Incomplete data!"}), 400
-
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        cursor = conn.cursor()
-        
-        # ডেটাবেসে নাম ও ক্যাটাগরি/রোল আপডেট করা
-        cursor.execute("UPDATE users SET name = ?, category = ? WHERE email = ?", (new_name, new_role, email))
-        conn.commit()
-        conn.close()
-
-        # ফ্ল্যাঙ্ক সেশন আপডেট করা
-        session['user'] = {'email': email, 'name': new_name, 'role': new_role}
-
-        redirect_url = "/student_dashboard.html" if new_role == "Student" else "/teacher_profile.html"
-
-        return jsonify({
-            "success": True, 
-            "message": "Profile updated successfully!",
-            "new_role": new_role,
-            "redirect_url": redirect_url
-        })
-    except Exception as e:
-        print(f"Profile Update Error: {e}")
-        return jsonify({"success": False, "error": "Database update failed!"}), 500
-
-# ==========================================
-# Teacher Full Analytics Real Data API
-# ==========================================
-@app.route('/api/teacher-full-analytics', methods=['POST'])
-def teacher_full_analytics():
-    data = request.get_json()
-    email = data.get('email')
-
-    if not email:
-        return jsonify({"success": False, "error": "Email is required!"}), 400
-
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-
-        # ১. শিক্ষকের তৈরি সমস্ত এক্সাম আনা
-        cursor.execute("SELECT exam_code, exam_name FROM exams WHERE teacher_email = ?", (email,))
-        teacher_exams = cursor.fetchall()
-
-        if not teacher_exams:
-            conn.close()
-            return jsonify({
-                "success": True,
-                "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": 0},
-                "examStats": [], "leaderboard": [], "studentProgress": {}
-            })
-
-        exam_codes = [e['exam_code'] for e in teacher_exams]
-        placeholders = ','.join(['?'] * len(exam_codes))
-
-        # ২. ওই পরীক্ষাগুলোর সমস্ত রেজাল্ট আনা (Users টেবিল জয়েন করে স্টুডেন্টের নামসহ)
-        query = f"""
-            SELECT r.student_email, u.name as student_name, r.exam_code, r.exam_name, r.score, r.total_questions, r.date_taken
-            FROM results r
-            LEFT JOIN users u ON r.student_email = u.email
-            WHERE r.exam_code IN ({placeholders})
-        """
-        cursor.execute(query, exam_codes)
-        results = cursor.fetchall()
-        conn.close()
-
-        if not results:
-            return jsonify({
-                "success": True,
-                "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": len(teacher_exams)},
-                "examStats": [{"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0} for e in teacher_exams],
-                "leaderboard": [], "studentProgress": {}
-            })
-
-        # ৩. ডেটা প্রসেসিং (Calculations)
-        total_attempts = len(results)
-        unique_students = len(set(r['student_email'] for r in results))
-        
-        all_percentages = [round((r['score'] / r['total_questions']) * 100, 1) for r in results if r['total_questions'] > 0]
-        class_avg = round(sum(all_percentages) / len(all_percentages), 1) if all_percentages else 0.0
-        highest_score = max(all_percentages) if all_percentages else 0.0
-
-        # ৪. Exam-wise Performance
-        exam_map = {}
-        for r in results:
-            code = r['exam_code']
-            perf = round((r['score'] / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
-            if code not in exam_map:
-                exam_map[code] = {"name": r['exam_name'], "perfs": [], "attempts": 0}
-            exam_map[code]["perfs"].append(perf)
-            exam_map[code]["attempts"] += 1
-
-        exam_stats = []
-        for e in teacher_exams:
-            code = e['exam_code']
-            if code in exam_map:
-                perfs = exam_map[code]["perfs"]
-                exam_stats.append({
-                    "name": exam_map[code]["name"],
-                    "avg": round(sum(perfs) / len(perfs), 1),
-                    "high": max(perfs),
-                    "low": min(perfs),
-                    "attempts": exam_map[code]["attempts"]
-                })
-            else:
-                exam_stats.append({"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0})
-
-        # ৫. Student Leaderboard & Progress Data
-        student_map = {}
-        for r in results:
-            s_email = r['student_email']
-            s_name = r['student_name'] if r['student_name'] else s_email.split('@')[0]
-            perf = round((r['score'] / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
-            score = r['score']
-
-            if s_email not in student_map:
-                student_map[s_email] = {
-                    "name": s_name,
-                    "perfs": [],
-                    "scores": [],
-                    "exams_taken": [],
-                    "exam_names": []
-                }
-            student_map[s_email]["perfs"].append(perf)
-            student_map[s_email]["scores"].append(score)
-            student_map[s_email]["exam_names"].append(r['exam_name'])
-
-        leaderboard = []
-        student_progress = {}
-
-        for email_key, data in student_map.items():
-            s_avg = round(sum(data["perfs"]) / len(data["perfs"]), 1)
-            s_best = max(data["perfs"])
-            s_taken = len(data["perfs"])
-            s_total_score = sum(data["scores"])
-
-            leaderboard.append({
-                "name": data["name"],
-                "avg": s_avg,
-                "best": s_best,
-                "taken": s_taken,
-                "totalScore": s_total_score
-            })
-
-            student_progress[data["name"]] = {
-                "avg": s_avg,
-                "best": s_best,
-                "taken": s_taken,
-                "labels": data["exam_names"],
-                "data": data["perfs"]
-            }
-
-        # টপ স্কোর অনুযায়ী লিডারবোর্ড সর্ট করা
-        leaderboard = sorted(leaderboard, key=lambda x: x['avg'], reverse=True)
-
-        return jsonify({
-            "success": True,
-            "overall": {
-                "students": unique_students,
-                "attempts": total_attempts,
-                "avg": class_avg,
-                "high": highest_score,
-                "exams": len(teacher_exams)
-            },
-            "examStats": exam_stats,
-            "leaderboard": leaderboard,
-            "studentProgress": student_progress
-        })
-
-    except Exception as e:
-        print("DB Error (Teacher Full Analytics):", e)
-        return jsonify({"success": False, "error": "Database error occurred."}), 500
-
-# ==========================================
-# Check Unread Notifications API (Fixed)
+# ১২. Check Unread & Notification Page APIs
 # ==========================================
 @app.route('/api/check-unread-notifications', methods=['POST'])
 def check_unread_notifications():
@@ -728,7 +501,6 @@ def check_unread_notifications():
         conn = sqlite3.connect('ExamMate.db')
         cursor = conn.cursor()
 
-        # users টেবিলে last_notif_read কলাম না থাকলে তৈরি করে নেওয়া
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN last_notif_read TIMESTAMP DEFAULT '1970-01-01 00:00:00'")
             conn.commit()
@@ -754,9 +526,6 @@ def check_unread_notifications():
         print("Check Unread Notif Error:", e)
         return jsonify({"success": False, "has_unread": False})
 
-# ==========================================
-# Notification Page & Mark as Read APIs (Fixed)
-# ==========================================
 @app.route('/api/get-notifications-page', methods=['POST'])
 def get_notifications_page():
     data = request.get_json()
@@ -769,7 +538,6 @@ def get_notifications_page():
         conn = sqlite3.connect('ExamMate.db')
         cursor = conn.cursor()
 
-        # users টেবিলে last_notif_read কলাম না থাকলে তৈরি করা
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN last_notif_read TIMESTAMP DEFAULT '1970-01-01 00:00:00'")
             conn.commit()
@@ -818,7 +586,6 @@ def mark_notifications_read():
     try:
         conn = sqlite3.connect('ExamMate.db')
         cursor = conn.cursor()
-        
         cursor.execute("UPDATE users SET last_notif_read = CURRENT_TIMESTAMP WHERE email = ?", (email,))
         conn.commit()
         conn.close()
@@ -826,21 +593,187 @@ def mark_notifications_read():
     except Exception as e:
         print("Mark Read Error:", e)
         return jsonify({"success": False})
-# ==========================================
-# 📂 Dynamic Study Resources & Folder APIs
-# ==========================================
-import os
-from werkzeug.utils import secure_filename
 
-UPLOAD_FOLDER = 'static/uploads/resources'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# ==========================================
+# ১৩. প্রোফাইল আপডেট ও রোল পরিবর্তনের API
+# ==========================================
+@app.route('/api/update-profile', methods=['POST'])
+def update_profile():
+    data = request.get_json()
+    email = data.get('email')
+    new_name = data.get('name')
+    new_role = data.get('role')
 
-# ১. নতুন ক্লাস/ফোল্ডার বা সাবজেক্ট ফোল্ডার ডাটাবেসে সেভ করা
+    if not email or not new_name or not new_role:
+        return jsonify({"success": False, "error": "Incomplete data!"}), 400
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET name = ?, category = ? WHERE email = ?", (new_name, new_role, email))
+        conn.commit()
+        conn.close()
+
+        session['user'] = {'email': email, 'name': new_name, 'role': new_role}
+        redirect_url = "/student_dashboard.html" if new_role == "Student" else "/teacher_profile.html"
+
+        return jsonify({
+            "success": True, 
+            "message": "Profile updated successfully!",
+            "new_role": new_role,
+            "redirect_url": redirect_url
+        })
+    except Exception as e:
+        print(f"Profile Update Error: {e}")
+        return jsonify({"success": False, "error": "Database update failed!"}), 500
+
+# ==========================================
+# ১৪. Teacher Full Analytics Real Data API
+# ==========================================
+@app.route('/api/teacher-full-analytics', methods=['POST'])
+def teacher_full_analytics():
+    data = request.get_json()
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"success": False, "error": "Email is required!"}), 400
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT exam_code, exam_name FROM exams WHERE teacher_email = ?", (email,))
+        teacher_exams = cursor.fetchall()
+
+        if not teacher_exams:
+            conn.close()
+            return jsonify({
+                "success": True,
+                "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": 0},
+                "examStats": [], "leaderboard": [], "studentProgress": {}
+            })
+
+        exam_codes = [e['exam_code'] for e in teacher_exams]
+        placeholders = ','.join(['?'] * len(exam_codes))
+
+        query = f"""
+            SELECT r.student_email, u.name as student_name, r.exam_code, r.exam_name, r.score, r.total_questions, r.date_taken
+            FROM results r
+            LEFT JOIN users u ON r.student_email = u.email
+            WHERE r.exam_code IN ({placeholders})
+        """
+        cursor.execute(query, exam_codes)
+        results = cursor.fetchall()
+        conn.close()
+
+        if not results:
+            return jsonify({
+                "success": True,
+                "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": len(teacher_exams)},
+                "examStats": [{"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0} for e in teacher_exams],
+                "leaderboard": [], "studentProgress": {}
+            })
+
+        total_attempts = len(results)
+        unique_students = len(set(r['student_email'] for r in results))
+        all_percentages = [round((r['score'] / r['total_questions']) * 100, 1) for r in results if r['total_questions'] > 0]
+        class_avg = round(sum(all_percentages) / len(all_percentages), 1) if all_percentages else 0.0
+        highest_score = max(all_percentages) if all_percentages else 0.0
+
+        exam_map = {}
+        for r in results:
+            code = r['exam_code']
+            perf = round((r['score'] / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
+            if code not in exam_map:
+                exam_map[code] = {"name": r['exam_name'], "perfs": [], "attempts": 0}
+            exam_map[code]["perfs"].append(perf)
+            exam_map[code]["attempts"] += 1
+
+        exam_stats = []
+        for e in teacher_exams:
+            code = e['exam_code']
+            if code in exam_map:
+                perfs = exam_map[code]["perfs"]
+                exam_stats.append({
+                    "name": exam_map[code]["name"],
+                    "avg": round(sum(perfs) / len(perfs), 1),
+                    "high": max(perfs),
+                    "low": min(perfs),
+                    "attempts": exam_map[code]["attempts"]
+                })
+            else:
+                exam_stats.append({"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0})
+
+        student_map = {}
+        for r in results:
+            s_email = r['student_email']
+            s_name = r['student_name'] if r['student_name'] else s_email.split('@')[0]
+            perf = round((r['score'] / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
+            score = r['score']
+
+            if s_email not in student_map:
+                student_map[s_email] = {
+                    "name": s_name,
+                    "perfs": [],
+                    "scores": [],
+                    "exam_names": []
+                }
+            student_map[s_email]["perfs"].append(perf)
+            student_map[s_email]["scores"].append(score)
+            student_map[s_email]["exam_names"].append(r['exam_name'])
+
+        leaderboard = []
+        student_progress = {}
+
+        for email_key, data in student_map.items():
+            s_avg = round(sum(data["perfs"]) / len(data["perfs"]), 1)
+            s_best = max(data["perfs"])
+            s_taken = len(data["perfs"])
+            s_total_score = sum(data["scores"])
+
+            leaderboard.append({
+                "name": data["name"],
+                "avg": s_avg,
+                "best": s_best,
+                "taken": s_taken,
+                "totalScore": s_total_score
+            })
+
+            student_progress[data["name"]] = {
+                "avg": s_avg,
+                "best": s_best,
+                "taken": s_taken,
+                "labels": data["exam_names"],
+                "data": data["perfs"]
+            }
+
+        leaderboard = sorted(leaderboard, key=lambda x: x['avg'], reverse=True)
+
+        return jsonify({
+            "success": True,
+            "overall": {
+                "students": unique_students,
+                "attempts": total_attempts,
+                "avg": class_avg,
+                "high": highest_score,
+                "exams": len(teacher_exams)
+            },
+            "examStats": exam_stats,
+            "leaderboard": leaderboard,
+            "studentProgress": student_progress
+        })
+
+    except Exception as e:
+        print("DB Error (Teacher Full Analytics):", e)
+        return jsonify({"success": False, "error": "Database error occurred."}), 500
+
+# ==========================================
+# ১৫. 📂 Dynamic Study Resources & Folder APIs
+# ==========================================
 @app.route('/api/admin/create-folder', methods=['POST'])
 def create_folder():
     data = request.get_json()
-    folder_type = data.get('type') # 'class' or 'subject'
     class_name = data.get('class_name')
     subject_name = data.get('subject_name', '')
 
@@ -848,7 +781,6 @@ def create_folder():
         conn = sqlite3.connect('ExamMate.db')
         cursor = conn.cursor()
         
-        # ডাইনামিক ফোল্ডার টেবিল
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS folders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -857,7 +789,6 @@ def create_folder():
             )
         ''')
         
-        # ডুপ্লিকেট চেক
         cursor.execute("SELECT * FROM folders WHERE class_name = ? AND subject_name = ?", (class_name, subject_name))
         if cursor.fetchone():
             conn.close()
@@ -871,7 +802,6 @@ def create_folder():
         print("Folder Create Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ২. সব ডাইনামিক ক্লাসের লিস্ট আনা
 @app.route('/api/get-dynamic-folders', methods=['GET', 'POST'])
 def get_dynamic_folders():
     data = request.get_json() if request.is_json else {}
@@ -890,13 +820,11 @@ def get_dynamic_folders():
         ''')
 
         if req_class:
-            # ওই ক্লাসের আন্ডারে থাকা সাবজেক্টগুলো আনা
             cursor.execute("SELECT DISTINCT subject_name FROM folders WHERE class_name = ? AND subject_name != ''", (req_class,))
             subs = [r[0] for r in cursor.fetchall()]
             conn.close()
             return jsonify({"success": True, "subjects": subs})
         else:
-            # সমস্ত ক্লাসের ইউনিক লিস্ট আনা
             cursor.execute("SELECT DISTINCT class_name FROM folders ORDER BY class_name ASC")
             classes = [r[0] for r in cursor.fetchall()]
             conn.close()
@@ -906,7 +834,6 @@ def get_dynamic_folders():
         print("Get Dynamic Folders Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ৩. ফাইল আপলোড API
 @app.route('/api/admin/upload-resource', methods=['POST'])
 def upload_resource():
     try:
@@ -948,7 +875,6 @@ def upload_resource():
         print("Upload Error:", e)
         return jsonify({"success": False, "error": "Upload Failed"}), 500
 
-# ৪. স্টুডেন্টের জন্য কন্টেন্ট লোড API
 @app.route('/api/get-resources', methods=['POST'])
 def get_resources():
     data = request.get_json()
@@ -975,8 +901,6 @@ def get_resources():
     except Exception as e:
         print("Get Resources Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
-
-
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
