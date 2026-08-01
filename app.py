@@ -7,17 +7,14 @@ from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-# .env ফাইল লোড করা
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026")
 
-# 🎯 পারমানেন্ট সেশন (৩০ দিন পর্যন্ত)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 
-# ফাইল আপলোড ফোল্ডার কনফিগারেশন
 UPLOAD_FOLDER = 'static/uploads/resources'
 PROFILE_UPLOAD_FOLDER = 'static/uploads/profiles'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -25,7 +22,6 @@ os.makedirs(PROFILE_UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PROFILE_UPLOAD_FOLDER'] = PROFILE_UPLOAD_FOLDER
 
-# 🐘 PostgreSQL Database Connection Helper
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 def get_db_connection():
@@ -37,7 +33,6 @@ def get_db_connection():
         conn.row_factory = sqlite3.Row
         return conn, 'sqlite'
 
-# 🐘 অটোমেটিক টেবিল ক্রিয়েশন (photo_url কলাম সহ)
 def init_db():
     try:
         conn, db_type = get_db_connection()
@@ -204,18 +199,18 @@ def student_resources():
         return redirect(url_for('auth_page'))
     return render_template('student_resources.html')
 
-# 🎯 সম্পূর্ণ সেশন ক্লিয়ার করে লগআউট করা
+# 🎯 নিরাপদ লগআউট
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('auth_page'))
+    return redirect('/auth.html')
 
 # ==========================================
-# ২. Google Auth Sync API (প্রোফাইল ছবিসহ)
+# ২. Google Auth Sync & Profile APIs (FIXED)
 # ==========================================
 @app.route('/api/google-auth-sync', methods=['POST'])
 def google_auth_sync():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
     name = data.get('name')
     role = data.get('role', 'Student')
@@ -259,13 +254,13 @@ def google_auth_sync():
         print(f"Auth Sync Error: {e}")
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
-# ==========================================
-# ৩. প্রোফাইল ডাটা আনা ও আপডেট
-# ==========================================
 @app.route('/api/get-profile-data', methods=['POST'])
 def get_profile_data():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
+
+    if not email:
+        return jsonify({"success": False, "error": "Email required"}), 400
 
     try:
         conn, db_type = get_db_connection()
@@ -283,15 +278,20 @@ def get_profile_data():
         else:
             return jsonify({"success": False, "error": "User not found"})
     except Exception as e:
+        print("Get Profile Error:", e)
         return jsonify({"success": False, "error": "Database error"})
 
+# 🎯 [FIXED] প্রোফাইল আপডেট API (নিরাপদভাবে ফটো ও রোল আপডেট করবে)
 @app.route('/api/update-profile', methods=['POST'])
 def update_profile():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
     new_name = data.get('name')
     new_role = data.get('role')
     photo_url = data.get('photo_url', '')
+
+    if not email or not new_name or not new_role:
+        return jsonify({"success": False, "error": "Incomplete data!"}), 400
 
     try:
         conn, db_type = get_db_connection()
@@ -308,13 +308,11 @@ def update_profile():
         conn.commit()
         conn.close()
 
-        if 'user' in session:
-            session['user']['name'] = new_name
-            session['user']['role'] = new_role
-            if photo_url:
-                session['user']['photo_url'] = photo_url
+        # সেশন ক্লিয়ার/আপডেট লজিক
+        session.permanent = True
+        session['user'] = {'email': email, 'name': new_name, 'role': new_role, 'photo_url': photo_url}
 
-        redirect_url = "/student_dashboard.html" if new_role == "Student" else "/teacher_profile.html"
+        redirect_url = "/student_dashboard.html" if new_role == "Student" else "/teacher_dashboard.html"
 
         return jsonify({
             "success": True, 
@@ -323,15 +321,15 @@ def update_profile():
             "redirect_url": redirect_url
         })
     except Exception as e:
-        return jsonify({"success": False, "error": "Database error"})
+        print("Update Profile Error:", e)
+        return jsonify({"success": False, "error": "Database error occurred."}), 500
 
-# [অন্যান্য সমস্ত ড্যাশবোর্ড, ড্রাইভ, পরীক্ষা সংক্রান্ত সমস্ত API অক্ষুণ্ণ রয়েছে...]
 # ==========================================
-# ৪. স্টুডেন্ট ড্যাশবোর্ড - প্রগ্রেস ও রেজাল্ট আনা
+# ৩. স্টুডেন্ট ড্যাশবোর্ড - প্রগ্রেস ও রেজাল্ট আনা
 # ==========================================
 @app.route('/api/get-student-progress', methods=['POST'])
 def get_student_progress():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
 
     try:
@@ -370,7 +368,7 @@ def get_student_progress():
 
 @app.route('/api/check-exam', methods=['POST'])
 def check_exam():
-    data = request.get_json()
+    data = request.get_json() or {}
     exam_code = data.get('exam_code')
 
     try:
@@ -391,7 +389,7 @@ def check_exam():
 
 @app.route('/api/get-exam-questions', methods=['POST'])
 def get_exam_questions():
-    data = request.get_json()
+    data = request.get_json() or {}
     exam_code = data.get('exam_code')
 
     try:
@@ -436,7 +434,7 @@ def get_exam_questions():
 
 @app.route('/api/submit-exam-result', methods=['POST'])
 def submit_exam_result():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
     exam_code = data.get('exam_code')
     exam_name = data.get('exam_name')
@@ -459,7 +457,7 @@ def submit_exam_result():
 
 @app.route('/api/get-student-history', methods=['POST'])
 def get_student_history():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
 
     try:
@@ -480,7 +478,7 @@ def get_student_history():
 
 @app.route('/api/create-exam', methods=['POST'])
 def create_exam_api():
-    data = request.get_json()
+    data = request.get_json() or {}
     exam_code = data.get('exam_code')
     exam_name = data.get('exam_name')
     timer = data.get('timer')
@@ -506,7 +504,7 @@ def create_exam_api():
 
 @app.route('/api/teacher-dashboard', methods=['POST'])
 def get_teacher_dashboard():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
     
     try:
@@ -539,7 +537,7 @@ def get_teacher_dashboard():
 
 @app.route('/api/teacher-analysis', methods=['POST'])
 def get_teacher_analysis():
-    data = request.get_json()
+    data = request.get_json() or {}
     exam_code = data.get('exam_code')
     
     try:
@@ -577,7 +575,7 @@ def get_teacher_analysis():
 
 @app.route('/api/teacher-full-analytics', methods=['POST'])
 def teacher_full_analytics():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
 
     if not email:
@@ -709,7 +707,7 @@ def teacher_full_analytics():
 
 @app.route('/api/admin/send-notification', methods=['POST'])
 def admin_send_notification():
-    data = request.get_json()
+    data = request.get_json() or {}
     message = data.get('message')
     target_role = data.get('target_role')
 
@@ -740,7 +738,7 @@ def admin_get_notifications():
 
 @app.route('/api/check-unread-notifications', methods=['POST'])
 def check_unread_notifications():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
 
     if not email:
@@ -772,7 +770,7 @@ def check_unread_notifications():
 
 @app.route('/api/get-notifications-page', methods=['POST'])
 def get_notifications_page():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
 
     try:
@@ -811,7 +809,7 @@ def get_notifications_page():
 
 @app.route('/api/mark-notifications-read', methods=['POST'])
 def mark_notifications_read():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
 
     try:
@@ -855,7 +853,7 @@ def get_drive_contents_api():
 
 @app.route('/api/admin/create-drive-folder', methods=['POST'])
 def create_drive_folder():
-    data = request.get_json()
+    data = request.get_json() or {}
     folder_name = data.get('folder_name')
     parent_id = data.get('parent_id', 0)
 
@@ -901,7 +899,7 @@ def upload_drive_file():
 
 @app.route('/api/admin/delete-drive-item', methods=['POST'])
 def delete_drive_item():
-    data = request.get_json()
+    data = request.get_json() or {}
     item_type = data.get('type')
     item_id = data.get('id')
 
