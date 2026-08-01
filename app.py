@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import os
 import sqlite3
+from datetime import timedelta
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
@@ -10,16 +11,35 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026")
 
+# 🎯 [FIX 1] পারমানেন্ট সেশন (৩০ দিনের জন্য লগইন সেভ থাকবে)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+
 # ফাইল আপলোড ফোল্ডার কনফিগারেশন
 UPLOAD_FOLDER = 'static/uploads/resources'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# 🎯 [FIX 1] গ্লোবাল এরর হ্যান্ডলার (সেশন শেষ হলে বা কোনো এরর হলে ক্র্যাশ না করে লগইন পেজে পাঠাবে)
+@app.errorhandler(500)
+def handle_internal_error(e):
+    session.clear()
+    return redirect(url_for('auth_page'))
+
+@app.errorhandler(404)
+def handle_not_found(e):
+    return redirect(url_for('home'))
+
 # ==========================================
-# ১. HTML পেজের রুট (Single Auth Page & Dashboard Protection)
+# ১. HTML পেজের রুট (Protected Routes with Permanent Session)
 # ==========================================
 @app.route('/')
 def home():
+    if 'user' in session:
+        role = session['user'].get('role')
+        if role == 'Student':
+            return redirect(url_for('student_dashboard'))
+        elif role == 'Teacher':
+            return redirect(url_for('teacher_dashboard'))
     return render_template('index.html')
 
 @app.route('/signup.html')
@@ -37,43 +57,43 @@ def auth_page():
 
 @app.route('/student_dashboard.html')
 def student_dashboard():
-    if 'user' not in session or session['user']['role'] != 'Student':
+    if 'user' not in session or session['user'].get('role') != 'Student':
         return redirect(url_for('auth_page'))
     return render_template('student_dashboard.html')
 
 @app.route('/teacher_dashboard.html')
 def teacher_dashboard():
-    if 'user' not in session or session['user']['role'] != 'Teacher':
+    if 'user' not in session or session['user'].get('role') != 'Teacher':
         return redirect(url_for('auth_page'))
     return render_template('teacher_dashboard.html')
 
 @app.route('/teacher_profile.html')
 def teacher_profile():
-    if 'user' not in session or session['user']['role'] != 'Teacher':
+    if 'user' not in session or session['user'].get('role') != 'Teacher':
         return redirect(url_for('auth_page'))
     return render_template('teacher_profile.html')
 
 @app.route('/student_exam.html')
 def student_exam():
-    if 'user' not in session or session['user']['role'] != 'Student':
+    if 'user' not in session or session['user'].get('role') != 'Student':
         return redirect(url_for('auth_page'))
     return render_template('student_exam.html')
 
 @app.route('/student_profile.html')
 def student_profile():
-    if 'user' not in session or session['user']['role'] != 'Student':
+    if 'user' not in session or session['user'].get('role') != 'Student':
         return redirect(url_for('auth_page'))
     return render_template('student_profile.html')
 
 @app.route('/create_exam.html')
 def create_exam():
-    if 'user' not in session or session['user']['role'] != 'Teacher':
+    if 'user' not in session or session['user'].get('role') != 'Teacher':
         return redirect(url_for('auth_page'))
     return render_template('create_exam.html')
 
 @app.route('/teacher_analytics.html')
 def teacher_analytics():
-    if 'user' not in session or session['user']['role'] != 'Teacher':
+    if 'user' not in session or session['user'].get('role') != 'Teacher':
         return redirect(url_for('auth_page'))
     return render_template('teacher_analytics.html')
 
@@ -89,32 +109,27 @@ def admin_page():
 
 @app.route('/student_analytics.html')
 def student_analytics():
-    if 'user' not in session or session['user']['role'] != 'Student':
+    if 'user' not in session or session['user'].get('role') != 'Student':
         return redirect(url_for('auth_page'))
     return render_template('student_analytics.html')
 
-# ==========================================
-# 📂 Safe Student Resource Page Route
-# ==========================================
 @app.route('/student_resources.html')
 def student_resources():
     try:
-        # লগইন না থাকলে সরাসরি অথ পেজে রিডাইরেক্ট
-        if 'user' not in session:
+        if 'user' not in session or session['user'].get('role') != 'Student':
             return redirect(url_for('auth_page'))
         return render_template('student_resources.html')
     except Exception as e:
         print("Template Render Error:", e)
-        # টেমপ্লেট ফাইলে কোনো সমস্যা থাকলেও ক্র্যাশ করবে না
-        return "<h3>Resource page is loading, please ensure student_resources.html is uploaded in templates folder.</h3>"
+        return "<h3>Resource page loading error. Check template file.</h3>"
 
 @app.route('/logout')
 def logout():
-    session.pop('user', None)
+    session.clear()
     return redirect(url_for('auth_page'))
 
 # ==========================================
-# ২. Google Auth Sync API (ফায়ারবেস লগইনের পর ব্যাকএন্ডে ডেটা সেভ রাখা)
+# ২. Google Auth Sync API (পারমানেন্ট সেশন সেটিং সহ)
 # ==========================================
 @app.route('/api/google-auth-sync', methods=['POST'])
 def google_auth_sync():
@@ -151,6 +166,8 @@ def google_auth_sync():
 
         conn.close()
 
+        # 🎯 [FIX 1] সেশন স্থায়ী করা হলো
+        session.permanent = True
         session['user'] = {'email': email, 'name': name, 'role': user_role}
 
         return jsonify({
@@ -319,7 +336,7 @@ def get_student_history():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ৮. Create Exam (Teacher) - প্রশ্ন ও পরীক্ষা সেভ করা
+# ৮. Create Exam (Teacher)
 # ==========================================
 @app.route('/api/create-exam', methods=['POST'])
 def create_exam_api():
@@ -352,7 +369,7 @@ def create_exam_api():
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 # ==========================================
-# ৯. Teacher Dashboard - ম্যাট্রিক্স ও এক্সাম লিস্ট
+# ৯. Teacher Dashboard
 # ==========================================
 @app.route('/api/teacher-dashboard', methods=['POST'])
 def get_teacher_dashboard():
@@ -777,161 +794,19 @@ def teacher_full_analytics():
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 # ==========================================
-# ১৫. 📂 Dynamic Study Resources & Folder APIs
+# ১৫. 📂 Google Drive Style Nested Folder & File APIs (Unified)
 # ==========================================
-@app.route('/api/admin/create-folder', methods=['POST'])
-def create_folder():
-    data = request.get_json()
-    class_name = data.get('class_name')
-    subject_name = data.get('subject_name', '')
-
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        cursor = conn.cursor()
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS folders (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                class_name TEXT NOT NULL,
-                subject_name TEXT DEFAULT ''
-            )
-        ''')
-        
-        cursor.execute("SELECT * FROM folders WHERE class_name = ? AND subject_name = ?", (class_name, subject_name))
-        if cursor.fetchone():
-            conn.close()
-            return jsonify({"success": False, "error": "This Folder already exists!"}), 400
-
-        cursor.execute("INSERT INTO folders (class_name, subject_name) VALUES (?, ?)", (class_name, subject_name))
-        conn.commit()
-        conn.close()
-        return jsonify({"success": True, "message": "Folder created successfully! 📁"})
-    except Exception as e:
-        print("Folder Create Error:", e)
-        return jsonify({"success": False, "error": "Database error"}), 500
-
-@app.route('/api/get-dynamic-folders', methods=['GET', 'POST'])
-def get_dynamic_folders():
-    data = request.get_json() if request.is_json else {}
-    req_class = data.get('class_name')
-
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        cursor = conn.cursor()
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS folders (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                class_name TEXT NOT NULL,
-                subject_name TEXT DEFAULT ''
-            )
-        ''')
-
-        if req_class:
-            cursor.execute("SELECT DISTINCT subject_name FROM folders WHERE class_name = ? AND subject_name != ''", (req_class,))
-            subs = [r[0] for r in cursor.fetchall()]
-            conn.close()
-            return jsonify({"success": True, "subjects": subs})
-        else:
-            cursor.execute("SELECT DISTINCT class_name FROM folders ORDER BY class_name ASC")
-            classes = [r[0] for r in cursor.fetchall()]
-            conn.close()
-            return jsonify({"success": True, "classes": classes})
-
-    except Exception as e:
-        print("Get Dynamic Folders Error:", e)
-        return jsonify({"success": False, "error": "Database error"}), 500
-
-@app.route('/api/admin/upload-resource', methods=['POST'])
-def upload_resource():
-    try:
-        class_name = request.form.get('class_name')
-        subject_name = request.form.get('subject_name')
-        resource_type = request.form.get('resource_type')
-        title = request.form.get('title')
-        file = request.files.get('file')
-
-        if not file:
-            return jsonify({"success": False, "error": "No file uploaded!"}), 400
-
-        filename = secure_filename(file.filename)
-        unique_filename = f"{resource_type}_{class_name}_{subject_name}_{filename}"
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-        file.save(file_path)
-        file_url = f"/static/uploads/resources/{unique_filename}"
-
-        conn = sqlite3.connect('ExamMate.db')
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS resources (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                class_name TEXT NOT NULL,
-                subject_name TEXT NOT NULL,
-                resource_type TEXT NOT NULL,
-                title TEXT NOT NULL,
-                file_url TEXT NOT NULL,
-                date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        cursor.execute("INSERT INTO resources (class_name, subject_name, resource_type, title, file_url) VALUES (?, ?, ?, ?, ?)",
-                       (class_name, subject_name, resource_type, title, file_url))
-        conn.commit()
-        conn.close()
-
-        return jsonify({"success": True, "message": "Material published successfully! 🚀"})
-    except Exception as e:
-        print("Upload Error:", e)
-        return jsonify({"success": False, "error": "Upload Failed"}), 500
-
-@app.route('/api/get-resources', methods=['POST'])
-def get_resources():
-    data = request.get_json()
-    class_name = data.get('class_name')
-    subject_name = data.get('subject_name')
-
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM resources WHERE class_name = ? AND subject_name = ? ORDER BY id DESC", (class_name, subject_name))
-        rows = cursor.fetchall()
-        conn.close()
-
-        res_list = [{
-            "id": r["id"],
-            "resource_type": r["resource_type"],
-            "title": r["title"],
-            "file_url": r["file_url"],
-            "date": str(r["date_uploaded"]).split(' ')[0]
-        } for r in rows]
-
-        return jsonify({"success": True, "resources": res_list})
-    except Exception as e:
-        print("Get Resources Error:", e)
-        return jsonify({"success": False, "error": "Database error"}), 500
-
-# ==========================================
-# 📂 Google Drive Style Nested Folder & File APIs
-# ==========================================
-import os
-from werkzeug.utils import secure_filename
-
-UPLOAD_FOLDER = 'static/uploads/resources'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# ১. ড্রাইভ স্ট্রাকচার লোড করা (বর্তমান ফোল্ডারের ভেতরের ফোল্ডার ও ফাইল আনা)
 @app.route('/api/admin/get-drive-contents', methods=['POST'])
-def get_drive_contents():
+@app.route('/api/get-student-drive-contents', methods=['POST'])
+def get_drive_contents_api():
     data = request.get_json() if request.is_json else {}
-    parent_id = data.get('parent_id', 0) # 0 মানে মেইন Root ফোল্ডার
+    parent_id = data.get('parent_id', 0)
 
     try:
         conn = sqlite3.connect('ExamMate.db')
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        
-        # ফোল্ডার টেবিল তৈরি
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS drive_folders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -940,24 +815,21 @@ def get_drive_contents():
             )
         ''')
 
-        # ফাইল টেবিল তৈরি
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS drive_files (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 folder_id INTEGER NOT NULL,
                 title TEXT NOT NULL,
                 file_url TEXT NOT NULL,
-                resource_type TEXT DEFAULT 'PDF',
+                resource_type TEXT DEFAULT 'Notes',
                 date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
 
-        # ভেতরের সাব-ফোল্ডারগুলো আনা
-        cursor.execute("SELECT * FROM drive_folders WHERE parent_id = ? ORDER BY id DESC", (parent_id,))
+        cursor.execute("SELECT id, folder_name FROM drive_folders WHERE parent_id = ? ORDER BY id DESC", (parent_id,))
         folders = [{"id": r["id"], "name": r["folder_name"]} for r in cursor.fetchall()]
 
-        # ভেতরের ফাইলগুলো আনা
-        cursor.execute("SELECT * FROM drive_files WHERE folder_id = ? ORDER BY id DESC", (parent_id,))
+        cursor.execute("SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = ? ORDER BY id DESC", (parent_id,))
         files = [{
             "id": r["id"],
             "title": r["title"],
@@ -968,20 +840,15 @@ def get_drive_contents():
 
         conn.close()
         return jsonify({"success": True, "folders": folders, "files": files})
-
     except Exception as e:
         print("Drive Fetch Error:", e)
-        return jsonify({"success": False, "error": "Database Error"}), 500
+        return jsonify({"success": False, "error": "Database error"}), 500
 
-# ২. নতুন ফোল্ডার তৈরি করার API (Nested)
 @app.route('/api/admin/create-drive-folder', methods=['POST'])
 def create_drive_folder():
     data = request.get_json()
     folder_name = data.get('folder_name')
     parent_id = data.get('parent_id', 0)
-
-    if not folder_name:
-        return jsonify({"success": False, "error": "Folder name missing!"}), 400
 
     try:
         conn = sqlite3.connect('ExamMate.db')
@@ -989,11 +856,11 @@ def create_drive_folder():
         cursor.execute("INSERT INTO drive_folders (folder_name, parent_id) VALUES (?, ?)", (folder_name, parent_id))
         conn.commit()
         conn.close()
-        return jsonify({"success": True, "message": "Folder created! 📁"})
+        return jsonify({"success": True, "message": "Folder created!"})
     except Exception as e:
+        print("Folder Create Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ৩. বর্তমান ফোল্ডারে ফাইল আপলোড API
 @app.route('/api/admin/upload-drive-file', methods=['POST'])
 def upload_drive_file():
     try:
@@ -1018,15 +885,15 @@ def upload_drive_file():
         conn.commit()
         conn.close()
 
-        return jsonify({"success": True, "message": "File uploaded! 🚀"})
+        return jsonify({"success": True, "message": "File uploaded!"})
     except Exception as e:
-        return jsonify({"success": False, "error": "Upload error"}), 500
+        print("Upload Error:", e)
+        return jsonify({"success": False, "error": "Upload Failed"}), 500
 
-# ৪. ফাইল বা ফোল্ডার ডিলিট করার API
 @app.route('/api/admin/delete-drive-item', methods=['POST'])
 def delete_drive_item():
     data = request.get_json()
-    item_type = data.get('type') # 'folder' or 'file'
+    item_type = data.get('type')
     item_id = data.get('id')
 
     try:
@@ -1039,43 +906,10 @@ def delete_drive_item():
             cursor.execute("DELETE FROM drive_files WHERE id = ?", (item_id,))
         conn.commit()
         conn.close()
-        return jsonify({"success": True, "message": "Deleted successfully!"})
+        return jsonify({"success": True, "message": "Deleted!"})
     except Exception as e:
-        return jsonify({"success": False, "error": "Delete error"}), 500
-
-# ==========================================
-# 📂 Student Drive Resources Fetch API
-# ==========================================
-@app.route('/api/get-student-drive-contents', methods=['POST'])
-def get_student_drive_contents():
-    data = request.get_json() if request.is_json else {}
-    parent_id = data.get('parent_id', 0)
-
-    try:
-        conn = sqlite3.connect('ExamMate.db')
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-
-        # এডমিনের তৈরি ফোল্ডার আনা
-        cursor.execute("SELECT id, folder_name FROM drive_folders WHERE parent_id = ? ORDER BY id DESC", (parent_id,))
-        folders = [{"id": r["id"], "name": r["folder_name"]} for r in cursor.fetchall()]
-
-        # এডমিনের আপলোড করা ফাইল আনা
-        cursor.execute("SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = ? ORDER BY id DESC", (parent_id,))
-        files = [{
-            "id": r["id"],
-            "title": r["title"],
-            "file_url": r["file_url"],
-            "type": r["resource_type"],
-            "date": str(r["date_uploaded"]).split(' ')[0]
-        } for r in cursor.fetchall()]
-
-        conn.close()
-        return jsonify({"success": True, "folders": folders, "files": files})
-    except Exception as e:
-        print("Student Drive Fetch Error:", e)
-        return jsonify({"success": False, "error": "Database Error"}), 500
-
+        print("Delete Error:", e)
+        return jsonify({"success": False, "error": "Delete Failed"}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
