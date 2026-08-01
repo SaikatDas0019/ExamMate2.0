@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Study Resources</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { color-scheme: light; }
+        body { background-color: #f8fafc; color: #1e293b; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem 1rem 6rem 1rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+
+        .page-header { margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 1.5rem; color: #0f172a; margin: 0 0 4px 0; font-weight: 800; }
+        .page-header p { color: #64748b; margin: 0; font-size: 0.85rem; }
+        
+        .breadcrumb { font-size: 0.85rem; color: #3b82f6; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
+        .back-folder-btn { background: #f1f5f9; border: none; color: #3b82f6; font-weight: bold; padding: 6px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-size: 0.85rem; }
+
+        /* 🎨 CREATIVE 3D FOLDERS */
+        .folder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1.5rem; }
+        
+        .folder-card {
+            border-radius: 18px; padding: 18px 14px; position: relative;
+            cursor: pointer; transition: all 0.25s ease;
+            box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+            display: flex; flex-direction: column; justify-content: space-between;
+            min-height: 100px; box-sizing: border-box; color: white;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        .folder-card:hover { transform: translateY(-4px) scale(1.02); }
+
+        .folder-icon { font-size: 1.8rem; opacity: 0.9; margin-bottom: 8px; }
+        .folder-title { font-size: 1.05rem; font-weight: 800; line-height: 1.2; }
+
+        /* RESOURCE CARDS */
+        .resource-list { display: flex; flex-direction: column; gap: 12px; }
+        .res-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+        .res-info { display: flex; align-items: center; gap: 12px; }
+        .res-icon-box { width: 42px; height: 42px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; color: white; background: #3b82f6; }
+        .btn-view { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; text-decoration: none; }
+
+        #subjects-view, #materials-view { display: none; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; padding: 8px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
+        .nav-item.active { color: #3b82f6; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="page-header">
+            <h1>📂 Study Hub</h1>
+            <p>Access Chapter Notes, Short Notes & Mind Maps</p>
+        </div>
+
+        <div class="breadcrumb" id="bc-text"><i class="fas fa-folder-open"></i> Root / Classes</div>
+
+        <!-- VIEW 1: DYNAMIC CLASS FOLDERS -->
+        <div id="classes-view">
+            <div class="folder-grid" id="class-grid-container">
+                <p style="text-align:center; grid-column:span 2; color:#94a3b8;">Loading Folders...</p>
+            </div>
+        </div>
+
+        <!-- VIEW 2: DYNAMIC SUBJECT FOLDERS -->
+        <div id="subjects-view">
+            <button class="back-folder-btn" onclick="showClasses()"><i class="fas fa-arrow-left"></i> Change Class</button>
+            <div class="folder-grid" id="subject-grid-container"></div>
+        </div>
+
+        <!-- VIEW 3: MATERIALS LIST -->
+        <div id="materials-view">
+            <button class="back-folder-btn" onclick="showSubjects()"><i class="fas fa-arrow-left"></i> Change Subject</button>
+            <div class="resource-list" id="res-list-container"></div>
+        </div>
+
+    </div>
+
+    <!-- Fixed Bottom Nav -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="window.location.href='/student_dashboard.html'"><div><i class="fas fa-home"></i></div><span>Home</span></div>
+        <div class="nav-item" onclick="window.location.href='/student_analytics.html'"><div><i class="fas fa-chart-bar"></i></div><span>Analytics</span></div>
+        <div class="nav-item" onclick="window.location.href='/student_profile.html'"><div><i class="far fa-user"></i></div><span>Profile</span></div>
+    </div>
+
+    <script>
+        let selectedClass = "";
+        let selectedSubject = "";
+
+        window.onload = () => {
+            loadClasses();
+        };
+
+        // ১. ডাইনামিক ক্লাসের ফোল্ডার লোড করা
+        async function loadClasses() {
+            const container = document.getElementById('class-grid-container');
+            try {
+                const res = await fetch('/api/get-dynamic-folders');
+                const data = await res.json();
+
+                if (data.success && data.classes.length > 0) {
+                    container.innerHTML = "";
+                    const colors = [
+                        'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+                        'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                        'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                        'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
+                        'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+                    ];
+
+                    data.classes.forEach((c, index) => {
+                        const bg = colors[index % colors.length];
+                        const card = document.createElement('div');
+                        card.className = 'folder-card';
+                        card.style.background = bg;
+                        card.onclick = () => openClass(c);
+                        card.innerHTML = `
+                            <div class="folder-icon"><i class="fas fa-folder"></i></div>
+                            <div class="folder-title">${c}</div>
+                        `;
+                        container.appendChild(card);
+                    });
+                } else {
+                    container.innerHTML = '<p style="text-align:center; grid-column:span 2; color:#94a3b8; padding:20px;">No Folders created yet by Admin.</p>';
+                }
+            } catch(e) { container.innerHTML = 'Error loading folders.'; }
+        }
+
+        // ২. ক্লাসে ক্লিক করলে ওই ক্লাসের সাবজেক্ট ফোল্ডার লোড করা
+        async function openClass(className) {
+            selectedClass = className;
+            document.getElementById('classes-view').style.display = 'none';
+            document.getElementById('subjects-view').style.display = 'block';
+            document.getElementById('bc-text').innerHTML = `<i class="fas fa-folder-open"></i> ${selectedClass}`;
+
+            const container = document.getElementById('subject-grid-container');
+            container.innerHTML = '<p style="text-align:center; grid-column:span 2; color:#94a3b8;">Loading Subjects...</p>';
+
+            try {
+                const res = await fetch('/api/get-dynamic-folders', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ class_name: selectedClass })
+                });
+                const data = await res.json();
+
+                if (data.success && data.subjects.length > 0) {
+                    container.innerHTML = "";
+                    data.subjects.forEach(s => {
+                        const card = document.createElement('div');
+                        card.className = 'folder-card';
+                        card.style.background = 'linear-gradient(135deg, #10b981 0%, #047857 100%)';
+                        card.onclick = () => openSubject(s);
+                        card.innerHTML = `
+                            <div class="folder-icon">📚</div>
+                            <div class="folder-title">${s}</div>
+                        `;
+                        container.appendChild(card);
+                    });
+                } else {
+                    container.innerHTML = '<p style="text-align:center; grid-column:span 2; color:#94a3b8;">No subjects added to this class yet.</p>';
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function showClasses() {
+            document.getElementById('subjects-view').style.display = 'none';
+            document.getElementById('classes-view').style.display = 'block';
+            document.getElementById('bc-text').innerHTML = `<i class="fas fa-folder-open"></i> Root / Classes`;
+        }
+
+        function openSubject(subjectName) {
+            selectedSubject = subjectName;
+            document.getElementById('subjects-view').style.display = 'none';
+            document.getElementById('materials-view').style.display = 'block';
+            document.getElementById('bc-text').innerHTML = `<i class="fas fa-folder-open"></i> ${selectedClass} > ${selectedSubject}`;
+
+            fetchMaterials();
+        }
+
+        function showSubjects() {
+            document.getElementById('materials-view').style.display = 'none';
+            document.getElementById('subjects-view').style.display = 'block';
+            document.getElementById('bc-text').innerHTML = `<i class="fas fa-folder-open"></i> ${selectedClass}`;
+        }
+
+        // ৩. চ্যাপ্টার/ফাইল লোড করা
+        async function fetchMaterials() {
+            const container = document.getElementById('res-list-container');
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Loading materials...</p>';
+
+            try {
+                const response = await fetch('/api/get-resources', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ class_name: selectedClass, subject_name: selectedSubject })
+                });
+                const data = await response.json();
+
+                if (data.success && data.resources.length > 0) {
+                    container.innerHTML = "";
+                    data.resources.forEach(res => {
+                        const card = document.createElement('div');
+                        card.className = 'res-card';
+                        card.innerHTML = `
+                            <div class="res-info">
+                                <div class="res-icon-box">📄</div>
+                                <div>
+                                    <strong>${res.title}</strong>
+                                    <span style="font-size:0.75rem; color:#64748b;">${res.resource_type} • ${res.date}</span>
+                                </div>
+                            </div>
+                            <a href="${res.file_url}" target="_blank" class="btn-view">View 👁️</a>
+                        `;
+                        container.appendChild(card);
+                    });
+                } else {
+                    container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:30px;">No materials uploaded here yet.</p>';
+                }
+            } catch (error) {
+                container.innerHTML = 'Error loading files.';
+            }
+        }
+    </script>
+</body>
+</html>
