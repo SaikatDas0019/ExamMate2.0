@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Student Analytics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root { color-scheme: light; }
+        body { 
+            background-color: #f3f4f6; color: #1a1a1a; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 0; display: flex; justify-content: center;
+        }
+        .container { 
+            width: 100%; max-width: 480px; background-color: #ffffff;
+            min-height: 100vh; padding: 1.5rem 1rem 6rem 1rem; 
+            box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+
+        .page-header { margin-bottom: 20px; }
+        .page-header h1 { font-size: 24px; color: #1a1a1a; margin: 0 0 5px 0; }
+        .page-header p { color: #4b5563; margin: 0; font-size: 0.85rem; }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+        .metric-card {
+            background: #f0fdf4; border: 1px solid #bbf7d0;
+            border-radius: 12px; padding: 12px; text-align: center;
+        }
+        .metric-card.full-width { grid-column: span 2; }
+        .metric-card span { display: block; font-size: 0.8rem; color: #4b5563; font-weight: 600; margin-bottom: 5px; }
+        .metric-card strong { font-size: 1.3rem; color: #111827; }
+
+        .section-title { font-size: 1.05rem; font-weight: 700; color: #111827; margin: 1.5rem 0 0.8rem 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px;}
+
+        .chart-box { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; margin-bottom: 1.5rem; }
+        .chart-container { position: relative; height: 220px; width: 100%; }
+
+        .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+        th { background-color: #f8fafc; color: #374151; font-weight: 600; }
+        td { color: #4b5563; }
+        
+        .perf-high { color: #16a34a; font-weight: bold; }
+        .perf-mid { color: #ca8a04; font-weight: bold; }
+        .perf-low { color: #dc2626; font-weight: bold; }
+
+        /* Fixed 3-Item Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
+            display: flex; justify-content: space-around; padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
+        .nav-item.active { color: #3b82f6; font-weight: bold; }
+        .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="page-header">
+            <h1>📊 My Performance Analytics</h1>
+            <p>Track your score trends and exam history</p>
+        </div>
+
+        <h2 class="section-title">📈 Score Summary</h2>
+        <div class="metrics-grid">
+            <div class="metric-card"><span>Exams Given</span><strong id="m-total">0</strong></div>
+            <div class="metric-card"><span>Highest Score</span><strong id="m-high">0</strong></div>
+            <div class="metric-card"><span>Total Marks</span><strong id="m-sum">0</strong></div>
+            <div class="metric-card"><span>Average Score</span><strong id="m-avg">0%</strong></div>
+        </div>
+
+        <h2 class="section-title">📉 Exam Progress Graph</h2>
+        <div class="chart-box">
+            <div class="chart-container"><canvas id="progressChart"></canvas></div>
+        </div>
+
+        <h2 class="section-title">📋 Detailed Exam History</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exam Name</th>
+                        <th>Score</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                        <th>Accuracy</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Fixed 3-Item Bottom Nav -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="window.location.href='/student_dashboard.html'">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span>Home</span>
+        </div>
+        <div class="nav-item active" onclick="window.location.href='/student_analytics.html'">
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+            <span>Analytics</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='/student_profile.html'">
+            <div class="nav-icon"><i class="far fa-user"></i></div>
+            <span>Profile</span>
+        </div>
+    </div>
+
+    <script>
+        let progressChart = null;
+
+        window.onload = async () => {
+            const userEmail = localStorage.getItem('userEmail');
+
+            if (userEmail) {
+                try {
+                    const response = await fetch('/api/get-student-history', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: userEmail })
+                    });
+                    const data = await response.json();
+
+                    if (data.success && data.history.length > 0) {
+                        const history = data.history;
+                        
+                        let totalExams = history.length;
+                        let highest = Math.max(...history.map(h => h.score));
+                        let sumScore = history.reduce((acc, curr) => acc + curr.score, 0);
+                        let avgAcc = (history.reduce((acc, curr) => acc + ((curr.score / curr.total) * 100), 0) / totalExams).toFixed(1);
+
+                        document.getElementById('m-total').innerText = totalExams;
+                        document.getElementById('m-high').innerText = highest;
+                        document.getElementById('m-sum').innerText = sumScore;
+                        document.getElementById('m-avg').innerText = avgAcc + '%';
+
+                        // Table Population
+                        const tbody = document.getElementById('history-table-body');
+                        tbody.innerHTML = history.map(h => {
+                            let acc = ((h.score / h.total) * 100).toFixed(1);
+                            let perfClass = acc >= 75 ? "perf-high" : (acc >= 40 ? "perf-mid" : "perf-low");
+                            return `<tr><td>${h.exam_name}</td><td>${h.score}</td><td>${h.total}</td><td>${h.date}</td><td class="${perfClass}">${acc}%</td></tr>`;
+                        }).join('');
+
+                        // Chart Population
+                        renderChart(history);
+                    } else {
+                        document.getElementById('history-table-body').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px;">No exam history found yet.</td></tr>';
+                    }
+                } catch (error) {
+                    console.error("Error fetching student history:", error);
+                }
+            }
+        };
+
+        function renderChart(history) {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            
+            // সাম্প্রতিক থেকে পুরোনো হিসেবে রিভার্স করা গ্রাফ সাজানোর জন্য
+            const reversedHistory = [...history].reverse();
+            const labels = reversedHistory.map(h => h.exam_name.length > 12 ? h.exam_name.substring(0, 12) + '...' : h.exam_name);
+            const dataScores = reversedHistory.map(h => ((h.score / h.total) * 100).toFixed(1));
+
+            if (progressChart !== null) { progressChart.destroy(); }
+
+            progressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Accuracy (%)',
+                        data: dataScores,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 },
+                        x: { ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
