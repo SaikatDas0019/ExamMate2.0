@@ -8,77 +8,278 @@
     <style>
         :root { color-scheme: light; }
         body { background-color: #f1f5f9; color: #1e293b; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .admin-box { background: #ffffff; width: 100%; max-width: 450px; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); box-sizing: border-box; }
-        h1 { font-size: 1.75rem; font-weight: 800; color: #0f172a; margin-top: 0; display: flex; align-items: center; gap: 10px; }
-        h1 i { color: #3b82f6; }
-        p { color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 6px; }
-        label { font-size: 0.85rem; font-weight: 700; color: #475569; text-transform: uppercase; }
-        select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; outline: none; transition: all 0.2s; }
-        select:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
-        textarea { resize: none; height: 100px; }
-        .btn-send { background-color: #3b82f6; color: white; border: none; width: 100%; padding: 14px; font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: background 0.2s; }
-        .btn-send:hover { background-color: #2563eb; }
-        .btn-send:disabled { background-color: #94a3b8; cursor: not-allowed; }
+        .admin-box { 
+            background: #ffffff; width: 100%; max-width: 450px; 
+            height: 90vh; display: flex; flex-direction: column; 
+            border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); 
+            box-sizing: border-box; overflow: hidden;
+        }
+        
+        /* Header */
+        .header { padding: 1rem 1.2rem; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+        .header h1 { font-size: 1.3rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px; }
+        .header h1 i { color: #3b82f6; }
+        
+        .audience-selector { margin-top: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+        .audience-selector select { padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 600; outline: none; background: #f8fafc; }
+
+        /* Notification Feed (Chat Area) */
+        .chat-feed { flex: 1; padding: 1rem; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 12px; }
+        
+        .msg-bubble {
+            align-self: flex-end; background: #3b82f6; color: white;
+            padding: 10px 14px; border-radius: 16px 16px 2px 16px;
+            max-width: 85%; font-size: 0.9rem; position: relative;
+            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2); cursor: pointer; transition: 0.2s;
+        }
+        .msg-bubble:hover { background: #2563eb; }
+        .msg-info { font-size: 0.7rem; color: #dbeafe; margin-top: 4px; display: flex; justify-content: space-between; gap: 10px; }
+        .target-badge { background: rgba(255, 255, 255, 0.2); padding: 2px 6px; border-radius: 4px; }
+
+        /* Action Modal/Pop-up Menu for Edit/Delete */
+        .msg-actions { display: none; gap: 10px; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 6px; }
+        .act-btn { background: transparent; border: none; color: white; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .act-btn:hover { text-decoration: underline; }
+
+        /* Bottom Input Bar (Gemini Style) */
+        .chat-input-bar {
+            padding: 10px; background: #ffffff; border-top: 1px solid #e2e8f0;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .btn-plus {
+            background: #f1f5f9; border: none; color: #64748b;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.1rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-plus:hover { background: #e2e8f0; color: #1e293b; }
+
+        .input-box {
+            flex: 1; background: #f8fafc; border: 1px solid #cbd5e1;
+            border-radius: 20px; padding: 10px 14px; font-size: 0.95rem;
+            outline: none; transition: 0.2s; max-height: 80px; resize: none;
+        }
+        .input-box:focus { border-color: #3b82f6; background: #ffffff; }
+
+        .btn-send {
+            background: #3b82f6; color: white; border: none;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-send:hover { background: #2563eb; }
+        .btn-send:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+        /* Hidden File Input */
+        #media-upload { display: none; }
     </style>
 </head>
 <body>
 
     <div class="admin-box">
-        <h1><i class="fas fa-user-shield"></i> Admin Panel</h1>
-        <p>Send a global notification or announcement to ExamMate users.</p>
-
-        <div class="form-group">
-            <label for="target-role">Target Audience</label>
-            <select id="target-role">
-                <option value="All">All Users (Everyone)</option>
-                <option value="Student">Students Only</option>
-                <option value="Teacher">Teachers Only</option>
-            </select>
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-user-shield"></i> Admin Broadcast</h1>
+            <div class="audience-selector">
+                <span>Audience:</span>
+                <select id="target-role">
+                    <option value="All">All Users (Everyone)</option>
+                    <option value="Student">Students Only</option>
+                    <option value="Teacher">Teachers Only</option>
+                </select>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="notif-message">Notification Message</label>
-            <textarea id="notif-message" placeholder="Type your announcement here..."></textarea>
+        <!-- Sent Notifications List -->
+        <div class="chat-feed" id="chat-feed">
+            <!-- Dynamic Messages Load Here -->
         </div>
 
-        <button class="btn-send" id="send-btn" onclick="sendNotification()">Broadcast Announcement <i class="fas fa-paper-plane"></i></button>
+        <!-- Bottom Input Bar -->
+        <div class="chat-input-bar">
+            <!-- Plus Icon for Attachments -->
+            <button class="btn-plus" onclick="clickPlusIcon()" title="Attach link or image">
+                <i class="fas fa-plus"></i>
+            </button>
+            <input type="file" id="media-upload" onchange="handleFileUpload(event)">
+
+            <!-- Input Box -->
+            <textarea class="input-box" id="notif-message" rows="1" placeholder="Type notification..." onkeydown="handleKeyPress(event)"></textarea>
+
+            <!-- Send Button -->
+            <button class="btn-send" id="send-btn" onclick="submitNotification()" title="Send">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
     </div>
 
     <script>
-        async function sendNotification() {
+        let editingNotifId = null; // এডিট ট্র্যাকিং করার জন্য
+
+        window.onload = () => {
+            loadNotifications();
+        };
+
+        // ১. নোটিফিকেশন লোড করা
+        async function loadNotifications() {
+            const feed = document.getElementById('chat-feed');
+            try {
+                const response = await fetch('/api/admin/get-notifications');
+                const data = await response.json();
+
+                if (data.success) {
+                    feed.innerHTML = "";
+                    if (data.notifications.length === 0) {
+                        feed.innerHTML = '<div style="text-align:center; color:#94a3b8; margin-top:20px; font-size:0.85rem;">No notifications sent yet.</div>';
+                        return;
+                    }
+
+                    data.notifications.forEach(n => {
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = 'msg-bubble';
+                        msgDiv.onclick = (e) => toggleActions(e, n.id);
+                        
+                        msgDiv.innerHTML = `
+                            <div>${escapeHTML(n.message)}</div>
+                            <div class="msg-info">
+                                <span class="target-badge"><i class="fas fa-users"></i> ${n.target_role}</span>
+                                <span>${n.date ? n.date.split(' ')[1] || n.date : ''}</span>
+                            </div>
+                            <div class="msg-actions" id="actions-${n.id}">
+                                <button class="act-btn" onclick="prepareEdit(event, ${n.id}, '${escapeQuotes(n.message)}', '${n.target_role}')"><i class="fas fa-edit"></i> Edit</button>
+                                <button class="act-btn" style="color:#fca5a5;" onclick="confirmDelete(event, ${n.id})"><i class="fas fa-trash"></i> Delete</button>
+                            </div>
+                        `;
+                        feed.appendChild(msgDiv);
+                    });
+                }
+            } catch (error) {
+                console.error("Error loading notifications:", error);
+            }
+        }
+
+        // ২. প্লাস আইকন অপশন (ছবি/লিংক যোগ করার সুবিধা)
+        function clickPlusIcon() {
+            const choice = confirm("Press OK to Upload Photo/File OR Cancel to add a Link.");
+            if (choice) {
+                document.getElementById('media-upload').click();
+            } else {
+                const link = prompt("Enter Link URL (e.g. https://exammate.com):");
+                if (link) {
+                    const txtBox = document.getElementById('notif-message');
+                    txtBox.value += ` ${link}`;
+                }
+            }
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const txtBox = document.getElementById('notif-message');
+                txtBox.value += ` [Attached File: ${file.name}]`;
+            }
+        }
+
+        // ৩. সেন্ড অথবা এডিট সাবমিট করা
+        async function submitNotification() {
             const targetRole = document.getElementById('target-role').value;
             const message = document.getElementById('notif-message').value.trim();
             const sendBtn = document.getElementById('send-btn');
 
-            if (!message) {
-                alert("Please enter a message before sending!");
-                return;
-            }
+            if (!message) return;
 
             sendBtn.disabled = true;
-            sendBtn.innerHTML = 'Broadcasting... <i class="fas fa-spinner fa-spin"></i>';
 
             try {
-                const response = await fetch('/api/admin/send-notification', {
+                let url = '/api/admin/send-notification';
+                let payload = { message: message, target_role: targetRole };
+
+                if (editingNotifId) {
+                    url = '/api/admin/edit-notification';
+                    payload.id = editingNotifId;
+                }
+
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message, target_role: targetRole })
+                    body: JSON.stringify(payload)
                 });
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    alert("🎉 Success! " + data.message);
-                    document.getElementById('notif-message').value = ""; // ক্লিয়ার ইনপুট
+                    document.getElementById('notif-message').value = "";
+                    editingNotifId = null; // রিসেট
+                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                    loadNotifications(); // রিলোড
                 } else {
-                    alert("Error: " + (data.error || "Failed to send."));
+                    alert(data.error || "Failed!");
                 }
             } catch (error) {
-                alert("Server connection error.");
+                alert("Server error.");
             } finally {
                 sendBtn.disabled = false;
-                sendBtn.innerHTML = 'Broadcast Announcement <i class="fas fa-paper-plane"></i>';
             }
+        }
+
+        // ৪. এডিটের প্রিপারেশন নেওয়া
+        function prepareEdit(e, id, msg, role) {
+            e.stopPropagation();
+            editingNotifId = id;
+            document.getElementById('notif-message').value = msg;
+            document.getElementById('target-role').value = role;
+            document.getElementById('send-btn').innerHTML = '<i class="fas fa-check"></i>';
+            document.getElementById('notif-message').focus();
+        }
+
+        // ৫. ডিলিট কনফার্মেশন পপআপ
+        function confirmDelete(e, id) {
+            e.stopPropagation();
+            const isConfirmed = confirm("⚠️ Are you sure you want to delete this notification?");
+            if (isConfirmed) {
+                deleteNotification(id);
+            }
+        }
+
+        async function deleteNotification(id) {
+            try {
+                const response = await fetch('/api/admin/delete-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    loadNotifications();
+                } else {
+                    alert(data.error || "Could not delete!");
+                }
+            } catch (error) {
+                alert("Server error!");
+            }
+        }
+
+        function toggleActions(e, id) {
+            const actDiv = document.getElementById(`actions-${id}`);
+            const isVisible = actDiv.style.display === 'flex';
+            document.querySelectorAll('.msg-actions').forEach(d => d.style.display = 'none');
+            if (!isVisible) actDiv.style.display = 'flex';
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitNotification();
+            }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        function escapeQuotes(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
     </script>
 </body>
