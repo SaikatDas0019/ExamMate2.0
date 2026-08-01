@@ -1043,6 +1043,39 @@ def delete_drive_item():
     except Exception as e:
         return jsonify({"success": False, "error": "Delete error"}), 500
 
+# ==========================================
+# 📂 Student Drive Resources Fetch API
+# ==========================================
+@app.route('/api/get-student-drive-contents', methods=['POST'])
+def get_student_drive_contents():
+    data = request.get_json() if request.is_json else {}
+    parent_id = data.get('parent_id', 0)
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # এডমিনের তৈরি ফোল্ডার আনা
+        cursor.execute("SELECT id, folder_name FROM drive_folders WHERE parent_id = ? ORDER BY id DESC", (parent_id,))
+        folders = [{"id": r["id"], "name": r["folder_name"]} for r in cursor.fetchall()]
+
+        # এডমিনের আপলোড করা ফাইল আনা
+        cursor.execute("SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = ? ORDER BY id DESC", (parent_id,))
+        files = [{
+            "id": r["id"],
+            "title": r["title"],
+            "file_url": r["file_url"],
+            "type": r["resource_type"],
+            "date": str(r["date_uploaded"]).split(' ')[0]
+        } for r in cursor.fetchall()]
+
+        conn.close()
+        return jsonify({"success": True, "folders": folders, "files": files})
+    except Exception as e:
+        print("Student Drive Fetch Error:", e)
+        return jsonify({"success": False, "error": "Database Error"}), 500
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
