@@ -15,6 +15,7 @@
             color: #333333; 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
         }
@@ -137,9 +138,7 @@
         .btn-jee { background: #ef4444; } .btn-neet { background: #f97316; }
         .btn-wbjee { background: #0ea5e9; } .btn-adv { background: #8b5cf6; }
 
-        /* -------------------------------------- */
         /* ANALYSIS VIEW SPECIFIC STYLES */
-        /* -------------------------------------- */
         .back-btn { background: none; border: none; color: #3b82f6; font-weight: bold; cursor: pointer; padding: 0; margin-bottom: 15px; font-size: 1rem;}
         
         .analysis-metrics { display: flex; justify-content: space-between; margin: 15px 0; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;}
@@ -161,6 +160,43 @@
         #dashboard-view { display: block; }
         #analysis-view { display: none; }
         #all-exams-view { display: none; }
+
+        /* -------------------------------------- */
+        /* FIXED BOTTOM NAVIGATION BAR STYLING    */
+        /* -------------------------------------- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #6b7280;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+            flex: 1;
+        }
+        .nav-item.active {
+            color: #3b82f6;
+            font-weight: bold;
+        }
+        .nav-icon {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
+        }
     </style>
 </head>
 <body>
@@ -196,8 +232,7 @@
                 <button class="view-all-btn" onclick="showAllExams()">View All ➡️</button>
             </div>
             
-            <div class="exam-grid" id="recent-exams-container">
-                </div>
+            <div class="exam-grid" id="recent-exams-container"></div>
 
             <h2 class="section-title" style="margin-top: 1rem; margin-bottom: 10px;">Student Results & Analytics</h2>
             <div class="analytics-grid">
@@ -208,15 +243,12 @@
             </div>
         </div>
 
-
         <div id="all-exams-view">
             <button class="back-btn" onclick="showDashboard()">⬅️ Back to Dashboard</button>
             <h1 style="font-size: 1.5rem; margin-bottom: 15px;">All Created Exams</h1>
             
-            <div class="exam-grid" id="all-exams-container">
-                </div>
+            <div class="exam-grid" id="all-exams-container"></div>
         </div>
-
 
         <div id="analysis-view">
             <button class="back-btn" onclick="showDashboard()">⬅️ Back to Dashboard</button>
@@ -233,13 +265,11 @@
             <div class="rank-grid">
                 <div class="rank-box">
                     <h3>🏆 Top Students</h3>
-                    <ul class="rank-list" id="top-students-list">
-                        </ul>
+                    <ul class="rank-list" id="top-students-list"></ul>
                 </div>
                 <div class="rank-box">
                     <h3>📉 Bottom Students</h3>
-                    <ul class="rank-list" id="bottom-students-list">
-                        </ul>
+                    <ul class="rank-list" id="bottom-students-list"></ul>
                 </div>
             </div>
 
@@ -251,20 +281,21 @@
 
     </div>
 
+    <!-- Fixed Bottom Navigation -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="window.location.href='student_dashboard.html'">
+        <div class="nav-item active" onclick="showDashboard()">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
             <span>Home</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='student_dashboard.html'">
+        <div class="nav-item" onclick="showAllExams()">
             <div class="nav-icon"><i class="far fa-file-alt"></i></div>
             <span>Tests</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='student_profile.html'">
+        <div class="nav-item" onclick="window.location.href='teacher_analytics.html'">
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
             <span>Analytics</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='student_profile.html'">
+        <div class="nav-item" onclick="window.location.href='teacher_profile.html'">
             <div class="nav-icon"><i class="far fa-user"></i></div>
             <span>Profile</span>
         </div>
