@@ -41,6 +41,12 @@ def teacher_dashboard():
         return redirect(url_for('auth_page'))
     return render_template('teacher_dashboard.html')
 
+@app.route('/teacher_profile.html')
+def teacher_profile():
+    if 'user' not in session or session['user']['role'] != 'Teacher':
+        return redirect(url_for('auth_page'))
+    return render_template('teacher_profile.html')
+
 @app.route('/student_exam.html')
 def student_exam():
     if 'user' not in session or session['user']['role'] != 'Student':
