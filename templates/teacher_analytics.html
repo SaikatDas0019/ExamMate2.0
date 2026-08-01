@@ -129,7 +129,7 @@
 
     <div class="container">
         
-        <button class="back-btn" onclick="window.location.href='teacher_dashboard.html'">⬅️ Back to Dashboard</button>
+        <button class="back-btn" onclick="window.location.href='/teacher_dashboard.html'">⬅️ Back to Dashboard</button>
         
         <div class="page-header">
             <h1 id="teacher-name">📊 Class Analytics</h1>
@@ -207,93 +207,103 @@
 
     <!-- Fixed Bottom Navigation -->
     <div class="bottom-nav">
-        <div class="nav-item" onclick="window.location.href='teacher_dashboard.html'">
+        <div class="nav-item" onclick="window.location.href='/teacher_dashboard.html'">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
             <span>Home</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='teacher_dashboard.html'">
+        <div class="nav-item" onclick="window.location.href='/teacher_dashboard.html'">
             <div class="nav-icon"><i class="far fa-file-alt"></i></div>
             <span>Tests</span>
         </div>
-        <div class="nav-item active" onclick="window.location.href='teacher_analytics.html'">
+        <div class="nav-item active" onclick="window.location.href='/teacher_analytics.html'">
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
             <span>Analytics</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='teacher_profile.html'">
+        <div class="nav-item" onclick="window.location.href='/teacher_profile.html'">
             <div class="nav-icon"><i class="far fa-user"></i></div>
             <span>Profile</span>
         </div>
     </div>
 
     <script>
-        // --- Mock Data ---
-        const classAvg = 76.5;
-        
-        const overallMetrics = {
-            students: 45, attempts: 120, avg: 76.5, high: 98.0, exams: 5
-        };
-
-        const examStats = [
-            { name: "Physics Sem 1", avg: 82.5, high: 98, low: 45, attempts: 40 },
-            { name: "Chemistry Grp 18", avg: 71.0, high: 90, low: 30, attempts: 35 },
-            { name: "Math Integration", avg: 76.0, high: 95, low: 40, attempts: 45 }
-        ];
-
-        const leaderboard = [
-            { name: "Saikat Das", avg: 94.5, best: 98, taken: 3, totalScore: 285 },
-            { name: "Rahul Sharma", avg: 88.0, best: 92, taken: 3, totalScore: 264 },
-            { name: "Priya Roy", avg: 85.5, best: 90, taken: 3, totalScore: 256 },
-            { name: "Amit Kumar", avg: 45.0, best: 55, taken: 2, totalScore: 90 }
-        ];
-
-        const studentProgressData = {
-            "Saikat Das": { avg: 94.5, best: 98, taken: 3, labels: ['Physics', 'Chemistry', 'Math'], data: [98, 90, 95] },
-            "Amit Kumar": { avg: 45.0, best: 55, taken: 2, labels: ['Physics', 'Chemistry'], data: [55, 35] }
-        };
-
         let examChart = null;
         let progressChart = null;
+        let globalStudentProgressData = {};
+        let classAvg = 0;
 
-        window.onload = () => {
-            // Load Metrics
-            document.getElementById('m-students').innerText = overallMetrics.students;
-            document.getElementById('m-attempts').innerText = overallMetrics.attempts;
-            document.getElementById('m-avg').innerText = overallMetrics.avg + '%';
-            document.getElementById('m-high').innerText = overallMetrics.high + '%';
-            document.getElementById('m-exams').innerText = overallMetrics.exams;
+        window.onload = async () => {
+            const userName = localStorage.getItem('userName') || "Teacher";
+            const userEmail = localStorage.getItem('userEmail');
 
-            // Load Exam Stats Table
-            const examBody = document.getElementById('exam-stats-body');
-            examBody.innerHTML = examStats.map(e => 
-                `<tr><td>${e.name}</td><td>${e.avg}%</td><td>${e.high}%</td><td>${e.low}%</td><td>${e.attempts}</td></tr>`
-            ).join('');
+            if (userEmail) {
+                try {
+                    const response = await fetch('/api/teacher-full-analytics', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: userEmail })
+                    });
+                    const data = await response.json();
 
-            // Load Exam Chart
-            renderExamChart();
+                    if (data.success) {
+                        const overall = data.overall;
+                        classAvg = overall.avg;
 
-            // Load Leaderboard
-            const leaderBody = document.getElementById('leaderboard-body');
-            leaderBody.innerHTML = leaderboard.map(s => 
-                `<tr><td>${s.name}</td><td>${s.avg}%</td><td>${s.best}%</td><td>${s.taken}</td><td>${s.totalScore}</td></tr>`
-            ).join('');
+                        // ১. Load Metrics
+                        document.getElementById('m-students').innerText = overall.students;
+                        document.getElementById('m-attempts').innerText = overall.attempts;
+                        document.getElementById('m-avg').innerText = overall.avg + '%';
+                        document.getElementById('m-high').innerText = overall.high + '%';
+                        document.getElementById('m-exams').innerText = overall.exams;
 
-            // Populate Student Selector
-            const selector = document.getElementById('student-selector');
-            leaderboard.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.name;
-                opt.innerText = s.name;
-                selector.appendChild(opt);
-            });
+                        // ২. Load Exam Stats Table
+                        const examBody = document.getElementById('exam-stats-body');
+                        if (data.examStats.length === 0) {
+                            examBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No exams created yet.</td></tr>';
+                        } else {
+                            examBody.innerHTML = data.examStats.map(e => 
+                                `<tr><td>${e.name}</td><td>${e.avg}%</td><td>${e.high}%</td><td>${e.low}%</td><td>${e.attempts}</td></tr>`
+                            ).join('');
+                        }
 
-            // Load Insights
-            loadInsights();
+                        // ৩. Load Exam Chart
+                        renderExamChart(data.examStats);
+
+                        // ৪. Load Leaderboard
+                        const leaderBody = document.getElementById('leaderboard-body');
+                        if (data.leaderboard.length === 0) {
+                            leaderBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No students have taken exams yet.</td></tr>';
+                        } else {
+                            leaderBody.innerHTML = data.leaderboard.map(s => 
+                                `<tr><td>${s.name}</td><td>${s.avg}%</td><td>${s.best}%</td><td>${s.taken}</td><td>${s.totalScore}</td></tr>`
+                            ).join('');
+                        }
+
+                        // ৫. Populate Student Selector & Save Global Progress
+                        globalStudentProgressData = data.studentProgress;
+                        const selector = document.getElementById('student-selector');
+                        selector.innerHTML = '<option value="" disabled selected>Select a student...</option>';
+                        data.leaderboard.forEach(s => {
+                            const opt = document.createElement('option');
+                            opt.value = s.name;
+                            opt.innerText = s.name;
+                            selector.appendChild(opt);
+                        });
+
+                        // ৬. Load Insights
+                        loadInsights(data.leaderboard, data.examStats, overall.attempts);
+                    }
+                } catch (error) {
+                    console.error("Error fetching analytics:", error);
+                }
+            }
         };
 
-        function renderExamChart() {
+        function renderExamChart(examStats) {
             const ctx = document.getElementById('examChart').getContext('2d');
             const labels = examStats.map(e => e.name);
             const data = examStats.map(e => e.avg);
+
+            if (examChart !== null) { examChart.destroy(); }
 
             examChart = new Chart(ctx, {
                 type: 'bar',
@@ -317,12 +327,12 @@
             const name = document.getElementById('student-selector').value;
             const container = document.getElementById('student-details');
             
-            if(!name || !studentProgressData[name]) {
+            if(!name || !globalStudentProgressData[name]) {
                 container.style.display = 'none';
                 return;
             }
             
-            const data = studentProgressData[name];
+            const data = globalStudentProgressData[name];
             container.style.display = 'block';
 
             document.getElementById('s-avg').innerText = data.avg + '%';
@@ -344,7 +354,7 @@
                         backgroundColor: 'rgba(30, 166, 77, 0.1)',
                         fill: true,
                         tension: 0.3,
-                        markerSize: 8
+                        pointRadius: 4
                     }]
                 },
                 options: {
@@ -354,19 +364,30 @@
             });
         }
 
-        function loadInsights() {
+        function loadInsights(leaderboard, examStats, totalAttempts) {
             const container = document.getElementById('insights-container');
             let html = '';
 
+            if (leaderboard.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">ℹ️ No exam submission data available yet.</div>';
+                return;
+            }
+
             const struggling = leaderboard.filter(s => s.avg < classAvg - 10);
             if(struggling.length > 0) {
-                html += `<div class="alert alert-warning">⚠️ <strong>${struggling.length} students</strong> are performing below class average (e.g. ${struggling[0].name}).</div>`;
+                html += `<div class="alert alert-warning">⚠️ <strong>${struggling.length} student(s)</strong> are performing below class average (${classAvg}%).</div>`;
             } else {
                 html += `<div class="alert alert-success">✅ All students are performing close to or above class average!</div>`;
             }
 
-            html += `<div class="alert alert-info">📊 <strong>Easiest exam:</strong> Physics Sem 1 (82.5%) | <strong>Hardest exam:</strong> Chemistry Grp 18 (71.0%)</div>`;
-            html += `<div class="alert alert-success">📈 15 exam attempts in the last 7 days.</div>`;
+            if (examStats.length > 0) {
+                const sortedExams = [...examStats].sort((a, b) => b.avg - a.avg);
+                const easiest = sortedExams[0];
+                const hardest = sortedExams[sortedExams.length - 1];
+                html += `<div class="alert alert-info">📊 <strong>Highest Avg Exam:</strong> ${easiest.name} (${easiest.avg}%) | <strong>Lowest Avg Exam:</strong> ${hardest.name} (${hardest.avg}%)</div>`;
+            }
+
+            html += `<div class="alert alert-success">📈 Total <strong>${totalAttempts} exam attempt(s)</strong> recorded in database.</div>`;
 
             container.innerHTML = html;
         }
