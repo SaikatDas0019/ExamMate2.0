@@ -86,6 +86,13 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('auth_page'))
 
+@app.route('/student_analytics.html')
+def student_analytics():
+    if 'user' not in session or session['user']['role'] != 'Student':
+        return redirect(url_for('auth_page'))
+    return render_template('student_analytics.html')
+    
+
 # ==========================================
 # ২. Google Auth Sync API (ফায়ারবেস লগইনের পর ব্যাকএন্ডে ডেটা সেভ রাখা)
 # ==========================================
