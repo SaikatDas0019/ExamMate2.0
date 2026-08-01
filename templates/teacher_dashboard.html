@@ -48,6 +48,22 @@
             padding: 10px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
         }
 
+        /* Unread Notification Red Dot Style */
+        .bell-icon {
+            position: relative;
+        }
+        .bell-icon.has-unread::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            background-color: #ef4444; /* লাল রং */
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+        }
+        
         /* Metrics */
         .metrics-grid { 
             display: grid; 
