@@ -15,6 +15,7 @@
             color: #333333; 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
         }
@@ -34,8 +35,8 @@
         /* Profile Picture Section */
         .profile-pic-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
         .profile-image {
-            width: 150px; height: 150px; border-radius: 50%; object-fit: cover;
-            border: 4px solid #4CAF50; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 130px; height: 130px; border-radius: 50%; object-fit: cover;
+            border: 4px solid #3b82f6; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         #file-upload { display: none; }
         .btn-upload, .btn-edit {
@@ -47,7 +48,7 @@
         .btn-edit:hover { background: #4b5563; }
 
         /* User Info */
-        .user-info { text-align: center; margin-bottom: 20px; font-size: 1.1rem; }
+        .user-info { text-align: center; margin-bottom: 20px; font-size: 1.05rem; }
         .user-info p { margin: 5px 0; color: #4b5563; }
         .user-info strong { color: #111827; }
 
@@ -57,7 +58,8 @@
         /* Exam Selection Dropdown */
         .exam-select-box {
             width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d1d5db;
-            font-size: 1rem; color: #111827; margin-bottom: 1.5rem; outline: none; background: #f8fafc;
+            font-size: 0.95rem; color: #111827; margin-bottom: 1.5rem; outline: none; background: #f8fafc;
+            box-sizing: border-box;
         }
         .exam-select-box:focus { border-color: #3b82f6; box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
 
@@ -65,12 +67,12 @@
         .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
         .metric-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 10px; text-align: center; }
         .metric-box span { display: block; font-size: 0.75rem; color: #4b5563; margin-bottom: 5px; }
-        .metric-box strong { font-size: 1.2rem; color: #111827; }
+        .metric-box strong { font-size: 1.1rem; color: #111827; }
 
         /* Top / Bottom Students */
         .rank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
         .rank-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
-        .rank-box h3 { margin: 0 0 10px 0; font-size: 0.9rem; text-align: center; }
+        .rank-box h3 { margin: 0 0 10px 0; font-size: 0.85rem; text-align: center; }
         .top-title { color: #16a34a; }
         .bottom-title { color: #dc2626; }
         .rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.8rem; }
@@ -81,21 +83,45 @@
 
         /* Full Table */
         .table-responsive { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid #e5e7eb; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 400px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 350px; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
         th { background-color: #f3f4f6; color: #374151; font-weight: 600; }
         td { color: #4b5563; }
 
-        /* Bottom Nav */
+        /* FIXED BOTTOM NAVIGATION BAR STYLING */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff;
-            border-top: 1px solid #e5e7eb; padding: 10px 0; z-index: 999;
-            display: flex; justify-content: space-around; max-width: 480px; margin: 0 auto;
-            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.75rem; color: #9ca3af; cursor: pointer; font-weight: 600; }
-        .nav-item.active { color: #22c55e; }
-        .nav-icon { font-size: 1.3rem; }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #6b7280;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+            flex: 1;
+        }
+        .nav-item.active {
+            color: #3b82f6; /* Active Blue Highlight Color */
+            font-weight: bold;
+        }
+        .nav-icon {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
+        }
 
         /* Hide analysis container initially */
         #analysis-container { display: none; }
@@ -119,8 +145,8 @@
         </div>
 
         <div class="user-info">
-            <p><strong>Name:</strong> <span id="display-name">Suman Sir</span></p>
-            <p><strong>Email:</strong> <span id="display-email">suman.teacher@exam.com</span></p>
+            <p><strong>Name:</strong> <span id="display-name">Loading...</span></p>
+            <p><strong>Email:</strong> <span id="display-email">Loading...</span></p>
         </div>
 
         <hr>
@@ -129,13 +155,10 @@
         
         <select id="exam-selector" class="exam-select-box" onchange="loadExamAnalysis()">
             <option value="" disabled selected>Select an exam to view analysis...</option>
-            <option value="EXAM-101">Physics HS Sem-3 2025 (EXAM-101)</option>
-            <option value="EXAM-205">Chemistry Group 18 (EXAM-205)</option>
-            <option value="EXAM-301">Math Integration Test (EXAM-301)</option>
         </select>
 
         <div id="analysis-container">
-            <h3 style="font-size: 1.1rem; color: #111827; margin-top: 0;">📊 Exam Summary Metrics</h3>
+            <h3 style="font-size: 1.05rem; color: #111827; margin-top: 0;">📊 Exam Summary Metrics</h3>
             <div class="metrics-grid">
                 <div class="metric-box"><span>Total Students</span><strong id="m-students">0</strong></div>
                 <div class="metric-box"><span>Avg Score</span><strong id="m-avg">0</strong></div>
@@ -153,12 +176,12 @@
                 </div>
             </div>
 
-            <h3 style="font-size: 1rem; color: #111827;">📊 Score Distribution Graph</h3>
+            <h3 style="font-size: 0.95rem; color: #111827;">📊 Score Distribution Graph</h3>
             <div class="chart-container">
                 <canvas id="scoreChart"></canvas>
             </div>
 
-            <h3 style="font-size: 1rem; color: #111827;">📋 All Students List</h3>
+            <h3 style="font-size: 0.95rem; color: #111827;">📋 All Students List</h3>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -169,28 +192,28 @@
                             <th>Perf. (%)</th>
                         </tr>
                     </thead>
-                    <tbody id="full-table-body">
-                        </tbody>
+                    <tbody id="full-table-body"></tbody>
                 </table>
             </div>
         </div>
 
     </div>
 
+    <!-- Fixed Teacher Bottom Navigation -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="window.location.href='student_dashboard.html'">
+        <div class="nav-item" onclick="window.location.href='/teacher_dashboard.html'">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
             <span>Home</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='student_dashboard.html'">
+        <div class="nav-item" onclick="window.location.href='/teacher_dashboard.html'">
             <div class="nav-icon"><i class="far fa-file-alt"></i></div>
             <span>Tests</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='student_profile.html'">
+        <div class="nav-item" onclick="window.location.href='/teacher_analytics.html'">
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
             <span>Analytics</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='student_profile.html'">
+        <div class="nav-item active" onclick="window.location.href='/teacher_profile.html'">
             <div class="nav-icon"><i class="far fa-user"></i></div>
             <span>Profile</span>
         </div>
@@ -208,6 +231,7 @@
             }
             if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
         }
+
         function removeImage() {
             document.getElementById('profile-img').src = defaultImageSrc;
             document.getElementById('file-upload').value = "";
@@ -215,7 +239,6 @@
             document.getElementById('edit-controls').style.display = 'none';
         }
 
-        // Mock Data for Analysis
         let scoreChart = null;
 
         window.onload = async () => {
@@ -223,9 +246,8 @@
             const userEmail = localStorage.getItem('userEmail');
             
             document.getElementById('display-name').innerText = userName;
-            document.getElementById('display-email').innerText = userEmail;
+            document.getElementById('display-email').innerText = userEmail || "Not logged in";
 
-            // ড্রপডাউনে এক্সামের লিস্ট আনা
             if (userEmail) {
                 try {
                     const response = await fetch('/api/teacher-dashboard', {
@@ -237,6 +259,7 @@
                     
                     if (data.success && data.all_exams.length > 0) {
                         const selector = document.getElementById('exam-selector');
+                        selector.innerHTML = '<option value="" disabled selected>Select an exam to view analysis...</option>';
                         data.all_exams.forEach(ex => {
                             const opt = document.createElement('option');
                             opt.value = ex.code;
@@ -298,7 +321,7 @@
                     datasets: [{
                         label: 'Students',
                         data: data,
-                        backgroundColor: '#4CAF50',
+                        backgroundColor: '#3b82f6',
                         borderRadius: 4
                     }]
                 },
