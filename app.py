@@ -199,14 +199,13 @@ def student_resources():
         return redirect(url_for('auth_page'))
     return render_template('student_resources.html')
 
-# 🎯 নিরাপদ লগআউট (সেশন পারফেক্টলি ক্লিয়ার করে পাঠাবে)
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('auth_page'))
 
 # ==========================================
-# ২. Google Auth Sync & Profile APIs
+# ২. Google Auth Sync API (FIXED FOR POSTGRES & SQLITE)
 # ==========================================
 @app.route('/api/google-auth-sync', methods=['POST'])
 def google_auth_sync():
@@ -228,14 +227,21 @@ def google_auth_sync():
         existing_user = cursor.fetchone()
 
         if existing_user:
-            user_role = existing_user['category'] if isinstance(existing_user, dict) else existing_user[0]
-            db_photo = existing_user['photo_url'] if isinstance(existing_user, dict) else existing_user[1]
+            if isinstance(existing_user, dict):
+                user_role = existing_user['category']
+                db_photo = existing_user['photo_url']
+            else:
+                user_role = existing_user[0]
+                db_photo = existing_user[1]
+                
             if db_photo:
                 photo_url = db_photo
         else:
             user_role = role
-            cursor.execute(f"INSERT INTO users (email, name, category, photo_url) VALUES ({ph}, {ph}, {ph}, {ph})", 
-                           (email, name, user_role, photo_url))
+            cursor.execute(
+                f"INSERT INTO users (email, name, category, photo_url) VALUES ({ph}, {ph}, {ph}, {ph})", 
+                (email, name, user_role, photo_url)
+            )
             conn.commit()
 
         conn.close()
@@ -251,7 +257,7 @@ def google_auth_sync():
         })
 
     except Exception as e:
-        print(f"Auth Sync Error: {e}")
+        print(f"❌ Auth Sync Error: {e}")
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 @app.route('/api/get-profile-data', methods=['POST'])
