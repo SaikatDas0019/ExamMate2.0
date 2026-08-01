@@ -827,87 +827,106 @@ def mark_notifications_read():
         print("Mark Read Error:", e)
         return jsonify({"success": False})
 # ==========================================
-# 📂 Study Resources & Folder Management APIs
+# 📂 Dynamic Study Resources & Folder APIs
 # ==========================================
 import os
 from werkzeug.utils import secure_filename
 
-# ফাইল আপলোড ফোল্ডার সেটআপ
 UPLOAD_FOLDER = 'static/uploads/resources'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'ppt', 'pptx'}
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# ১. নতুন ক্লাস/ফোল্ডার বা সাবজেক্ট ফোল্ডার ডাটাবেসে সেভ করা
+@app.route('/api/admin/create-folder', methods=['POST'])
+def create_folder():
+    data = request.get_json()
+    folder_type = data.get('type') # 'class' or 'subject'
+    class_name = data.get('class_name')
+    subject_name = data.get('subject_name', '')
 
-# ১. ফাইল আপলোড ও রিসোর্স সেভ করার API (Admin Only)
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        cursor = conn.cursor()
+        
+        # ডাইনামিক ফোল্ডার টেবিল
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS folders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                class_name TEXT NOT NULL,
+                subject_name TEXT DEFAULT ''
+            )
+        ''')
+        
+        # ডুপ্লিকেট চেক
+        cursor.execute("SELECT * FROM folders WHERE class_name = ? AND subject_name = ?", (class_name, subject_name))
+        if cursor.fetchone():
+            conn.close()
+            return jsonify({"success": False, "error": "This Folder already exists!"}), 400
+
+        cursor.execute("INSERT INTO folders (class_name, subject_name) VALUES (?, ?)", (class_name, subject_name))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Folder created successfully! 📁"})
+    except Exception as e:
+        print("Folder Create Error:", e)
+        return jsonify({"success": False, "error": "Database error"}), 500
+
+# ২. সব ডাইনামিক ক্লাসের লিস্ট আনা
+@app.route('/api/get-dynamic-folders', methods=['GET', 'POST'])
+def get_dynamic_folders():
+    data = request.get_json() if request.is_json else {}
+    req_class = data.get('class_name')
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS folders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                class_name TEXT NOT NULL,
+                subject_name TEXT DEFAULT ''
+            )
+        ''')
+
+        if req_class:
+            # ওই ক্লাসের আন্ডারে থাকা সাবজেক্টগুলো আনা
+            cursor.execute("SELECT DISTINCT subject_name FROM folders WHERE class_name = ? AND subject_name != ''", (req_class,))
+            subs = [r[0] for r in cursor.fetchall()]
+            conn.close()
+            return jsonify({"success": True, "subjects": subs})
+        else:
+            # সমস্ত ক্লাসের ইউনিক লিস্ট আনা
+            cursor.execute("SELECT DISTINCT class_name FROM folders ORDER BY class_name ASC")
+            classes = [r[0] for r in cursor.fetchall()]
+            conn.close()
+            return jsonify({"success": True, "classes": classes})
+
+    except Exception as e:
+        print("Get Dynamic Folders Error:", e)
+        return jsonify({"success": False, "error": "Database error"}), 500
+
+# ৩. ফাইল আপলোড API
 @app.route('/api/admin/upload-resource', methods=['POST'])
 def upload_resource():
     try:
         class_name = request.form.get('class_name')
         subject_name = request.form.get('subject_name')
-        resource_type = request.form.get('resource_type') # Notes, Short Notes, Mind Map
+        resource_type = request.form.get('resource_type')
         title = request.form.get('title')
-        
-        if 'file' not in request.files:
+        file = request.files.get('file')
+
+        if not file:
             return jsonify({"success": False, "error": "No file uploaded!"}), 400
-            
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({"success": False, "error": "No selected file!"}), 400
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            # ইউনিক ফাইল নেম তৈরি
-            unique_filename = f"{resource_type}_{class_name}_{subject_name}_{filename}"
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            file.save(file_path)
-            
-            file_url = f"/static/uploads/resources/{unique_filename}"
+        filename = secure_filename(file.filename)
+        unique_filename = f"{resource_type}_{class_name}_{subject_name}_{filename}"
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+        file.save(file_path)
+        file_url = f"/static/uploads/resources/{unique_filename}"
 
-            conn = sqlite3.connect('ExamMate.db')
-            cursor = conn.cursor()
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS resources (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    class_name TEXT NOT NULL,
-                    subject_name TEXT NOT NULL,
-                    resource_type TEXT NOT NULL,
-                    title TEXT NOT NULL,
-                    file_url TEXT NOT NULL,
-                    date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-            
-            cursor.execute("""
-                INSERT INTO resources (class_name, subject_name, resource_type, title, file_url)
-                VALUES (?, ?, ?, ?, ?)
-            """, (class_name, subject_name, resource_type, title, file_url))
-            
-            conn.commit()
-            conn.close()
-
-            return jsonify({"success": True, "message": "Resource uploaded successfully! 🎉"})
-        else:
-            return jsonify({"success": False, "error": "Invalid file type!"}), 400
-
-    except Exception as e:
-        print("Upload Error:", e)
-        return jsonify({"success": False, "error": "Database/File Error"}), 500
-
-# ২. স্টুডেন্টের জন্য ক্লাসের রিসোর্স লোড করার API
-@app.route('/api/get-resources', methods=['POST'])
-def get_resources():
-    data = request.get_json()
-    class_name = data.get('class_name')
-    subject_name = data.get('subject_name')
-
-    try:
         conn = sqlite3.connect('ExamMate.db')
-        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS resources (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -919,26 +938,33 @@ def get_resources():
                 date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        cursor.execute("INSERT INTO resources (class_name, subject_name, resource_type, title, file_url) VALUES (?, ?, ?, ?, ?)",
+                       (class_name, subject_name, resource_type, title, file_url))
+        conn.commit()
+        conn.close()
 
-        query = "SELECT * FROM resources WHERE 1=1"
-        params = []
+        return jsonify({"success": True, "message": "Material published successfully! 🚀"})
+    except Exception as e:
+        print("Upload Error:", e)
+        return jsonify({"success": False, "error": "Upload Failed"}), 500
 
-        if class_name:
-            query += " AND class_name = ?"
-            params.append(class_name)
-        if subject_name:
-            query += " AND subject_name = ?"
-            params.append(subject_name)
+# ৪. স্টুডেন্টের জন্য কন্টেন্ট লোড API
+@app.route('/api/get-resources', methods=['POST'])
+def get_resources():
+    data = request.get_json()
+    class_name = data.get('class_name')
+    subject_name = data.get('subject_name')
 
-        query += " ORDER BY id DESC"
-        cursor.execute(query, params)
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM resources WHERE class_name = ? AND subject_name = ? ORDER BY id DESC", (class_name, subject_name))
         rows = cursor.fetchall()
         conn.close()
 
         res_list = [{
             "id": r["id"],
-            "class_name": r["class_name"],
-            "subject_name": r["subject_name"],
             "resource_type": r["resource_type"],
             "title": r["title"],
             "file_url": r["file_url"],
@@ -946,17 +972,10 @@ def get_resources():
         } for r in rows]
 
         return jsonify({"success": True, "resources": res_list})
-
     except Exception as e:
         print("Get Resources Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ৩. রিসোর্স রুট
-@app.route('/student_resources.html')
-def student_resources():
-    if 'user' not in session or session['user']['role'] != 'Student':
-        return redirect(url_for('auth_page'))
-    return render_template('student_resources.html')
 
 
 if __name__ == '__main__':
