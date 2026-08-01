@@ -467,6 +467,44 @@ def admin_send_notification():
         print("Admin Notification Error:", e)
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
+# ==========================================
+# প্রোফাইল আপডেট ও রোল পরিবর্তনের API
+# ==========================================
+@app.route('/api/update-profile', methods=['POST'])
+def update_profile():
+    data = request.get_json()
+    email = data.get('email')
+    new_name = data.get('name')
+    new_role = data.get('role')
+
+    if not email or not new_name or not new_role:
+        return jsonify({"success": False, "error": "Incomplete data!"}), 400
+
+    try:
+        conn = sqlite3.connect('ExamMate.db')
+        cursor = conn.cursor()
+        
+        # ডেটাবেসে নাম ও ক্যাটাগরি/রোল আপডেট করা
+        cursor.execute("UPDATE users SET name = ?, category = ? WHERE email = ?", (new_name, new_role, email))
+        conn.commit()
+        conn.close()
+
+        # ফ্ল্যাঙ্ক সেশন আপডেট করা
+        session['user'] = {'email': email, 'name': new_name, 'role': new_role}
+
+        redirect_url = "/student_dashboard.html" if new_role == "Student" else "/teacher_profile.html"
+
+        return jsonify({
+            "success": True, 
+            "message": "Profile updated successfully!",
+            "new_role": new_role,
+            "redirect_url": redirect_url
+        })
+    except Exception as e:
+        print(f"Profile Update Error: {e}")
+        return jsonify({"success": False, "error": "Database update failed!"}), 500
+        
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
