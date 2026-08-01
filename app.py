@@ -13,30 +13,31 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026")
 
-# 🎯 পারমানেন্ট সেশন (৩০ দিন পর্যন্ত সেশন থাকবে)
+# 🎯 পারমানেন্ট সেশন (৩০ দিন পর্যন্ত)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 
 # ফাইল আপলোড ফোল্ডার কনফিগারেশন
 UPLOAD_FOLDER = 'static/uploads/resources'
+PROFILE_UPLOAD_FOLDER = 'static/uploads/profiles'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(PROFILE_UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['PROFILE_UPLOAD_FOLDER'] = PROFILE_UPLOAD_FOLDER
 
 # 🐘 PostgreSQL Database Connection Helper
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 def get_db_connection():
     if DATABASE_URL:
-        # Render PostgreSQL
         conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
         return conn, 'postgres'
     else:
-        # Fallback to local SQLite
         conn = sqlite3.connect('ExamMate.db')
         conn.row_factory = sqlite3.Row
         return conn, 'sqlite'
 
-# 🐘 অটোমেটিক টেবিল ক্রিয়েশন
+# 🐘 অটোমেটিক টেবিল ক্রিয়েশন (photo_url কলাম সহ)
 def init_db():
     try:
         conn, db_type = get_db_connection()
@@ -48,6 +49,7 @@ def init_db():
                     email VARCHAR(255) PRIMARY KEY, 
                     name VARCHAR(255) NOT NULL, 
                     category VARCHAR(50) NOT NULL,
+                    photo_url TEXT DEFAULT '',
                     last_notif_read TIMESTAMP DEFAULT '1970-01-01 00:00:00'
                 );
                 CREATE TABLE IF NOT EXISTS results (
@@ -97,7 +99,13 @@ def init_db():
             ''')
         else:
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, last_notif_read TIMESTAMP DEFAULT '1970-01-01 00:00:00');
+                CREATE TABLE IF NOT EXISTS users (
+                    email TEXT PRIMARY KEY, 
+                    name TEXT NOT NULL, 
+                    category TEXT NOT NULL, 
+                    photo_url TEXT DEFAULT '',
+                    last_notif_read TIMESTAMP DEFAULT '1970-01-01 00:00:00'
+                );
                 CREATE TABLE IF NOT EXISTS results (id INTEGER PRIMARY KEY AUTOINCREMENT, student_email TEXT NOT NULL, exam_code TEXT NOT NULL, exam_name TEXT NOT NULL, score INTEGER NOT NULL, total_questions INTEGER NOT NULL, date_taken TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
                 CREATE TABLE IF NOT EXISTS exams (exam_code TEXT PRIMARY KEY, exam_name TEXT NOT NULL, teacher_email TEXT NOT NULL, timer_minutes INTEGER NOT NULL);
                 CREATE TABLE IF NOT EXISTS questions (id INTEGER PRIMARY KEY AUTOINCREMENT, exam_code TEXT, question_text TEXT NOT NULL, option_a TEXT NOT NULL, option_b TEXT NOT NULL, option_c TEXT NOT NULL, option_d TEXT NOT NULL, correct_option TEXT NOT NULL);
@@ -110,11 +118,10 @@ def init_db():
     except Exception as e:
         print("DB Init Exception:", e)
 
-# ডাটাবেস টেবিল ইনিশিয়ালাইজেশন
 init_db()
 
 # ==========================================
-# ১. HTML পেজের রুট (Page Routing)
+# ১. HTML পেজের রুট
 # ==========================================
 @app.route('/')
 def home():
@@ -197,13 +204,14 @@ def student_resources():
         return redirect(url_for('auth_page'))
     return render_template('student_resources.html')
 
+# 🎯 সম্পূর্ণ সেশন ক্লিয়ার করে লগআউট করা
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('auth_page'))
 
 # ==========================================
-# ২. Google Auth Sync API
+# ২. Google Auth Sync API (প্রোফাইল ছবিসহ)
 # ==========================================
 @app.route('/api/google-auth-sync', methods=['POST'])
 def google_auth_sync():
@@ -211,6 +219,7 @@ def google_auth_sync():
     email = data.get('email')
     name = data.get('name')
     role = data.get('role', 'Student')
+    photo_url = data.get('photo_url', '')
 
     if not email or not name:
         return jsonify({"success": False, "error": "Missing user details!"}), 400
@@ -220,24 +229,29 @@ def google_auth_sync():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        cursor.execute(f"SELECT category FROM users WHERE email = {ph}", (email,))
+        cursor.execute(f"SELECT category, photo_url FROM users WHERE email = {ph}", (email,))
         existing_user = cursor.fetchone()
 
         if existing_user:
             user_role = existing_user['category'] if isinstance(existing_user, dict) else existing_user[0]
+            db_photo = existing_user['photo_url'] if isinstance(existing_user, dict) else existing_user[1]
+            if db_photo:
+                photo_url = db_photo
         else:
             user_role = role
-            cursor.execute(f"INSERT INTO users (email, name, category) VALUES ({ph}, {ph}, {ph})", (email, name, user_role))
+            cursor.execute(f"INSERT INTO users (email, name, category, photo_url) VALUES ({ph}, {ph}, {ph}, {ph})", 
+                           (email, name, user_role, photo_url))
             conn.commit()
 
         conn.close()
 
         session.permanent = True
-        session['user'] = {'email': email, 'name': name, 'role': user_role}
+        session['user'] = {'email': email, 'name': name, 'role': user_role, 'photo_url': photo_url}
 
         return jsonify({
             "success": True, 
             "role": user_role, 
+            "photo_url": photo_url,
             "redirect_url": "/student_dashboard.html" if user_role == "Student" else "/teacher_dashboard.html"
         })
 
@@ -246,7 +260,74 @@ def google_auth_sync():
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 # ==========================================
-# ৩. স্টুডেন্ট ড্যাশবোর্ড - প্রগ্রেস ও রেজাল্ট আনা
+# ৩. প্রোফাইল ডাটা আনা ও আপডেট
+# ==========================================
+@app.route('/api/get-profile-data', methods=['POST'])
+def get_profile_data():
+    data = request.get_json()
+    email = data.get('email')
+
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT name, category, photo_url FROM users WHERE email = {ph}", (email,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            u_name = user['name'] if isinstance(user, dict) else user[0]
+            u_role = user['category'] if isinstance(user, dict) else user[1]
+            u_photo = user['photo_url'] if isinstance(user, dict) else user[2]
+            return jsonify({"success": True, "name": u_name, "role": u_role, "photo_url": u_photo})
+        else:
+            return jsonify({"success": False, "error": "User not found"})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"})
+
+@app.route('/api/update-profile', methods=['POST'])
+def update_profile():
+    data = request.get_json()
+    email = data.get('email')
+    new_name = data.get('name')
+    new_role = data.get('role')
+    photo_url = data.get('photo_url', '')
+
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        if photo_url:
+            cursor.execute(f"UPDATE users SET name = {ph}, category = {ph}, photo_url = {ph} WHERE email = {ph}", 
+                           (new_name, new_role, photo_url, email))
+        else:
+            cursor.execute(f"UPDATE users SET name = {ph}, category = {ph} WHERE email = {ph}", 
+                           (new_name, new_role, email))
+            
+        conn.commit()
+        conn.close()
+
+        if 'user' in session:
+            session['user']['name'] = new_name
+            session['user']['role'] = new_role
+            if photo_url:
+                session['user']['photo_url'] = photo_url
+
+        redirect_url = "/student_dashboard.html" if new_role == "Student" else "/teacher_profile.html"
+
+        return jsonify({
+            "success": True, 
+            "message": "Profile updated successfully!",
+            "new_role": new_role,
+            "redirect_url": redirect_url
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"})
+
+# [অন্যান্য সমস্ত ড্যাশবোর্ড, ড্রাইভ, পরীক্ষা সংক্রান্ত সমস্ত API অক্ষুণ্ণ রয়েছে...]
+# ==========================================
+# ৪. স্টুডেন্ট ড্যাশবোর্ড - প্রগ্রেস ও রেজাল্ট আনা
 # ==========================================
 @app.route('/api/get-student-progress', methods=['POST'])
 def get_student_progress():
@@ -285,12 +366,8 @@ def get_student_progress():
             "score": f"{s_sc:02d}"
         })
     except Exception as e:
-        print("Student Progress Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ==========================================
-# ৪. এক্সাম সার্চ ও প্রশ্ন আনা
-# ==========================================
 @app.route('/api/check-exam', methods=['POST'])
 def check_exam():
     data = request.get_json()
@@ -355,12 +432,8 @@ def get_exam_questions():
             "questions": questions_list
         })
     except Exception as e:
-        print("Get Questions Error:", e)
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
-# ==========================================
-# ৫. পরীক্ষার রেজাল্ট ও হিস্ট্রি API
-# ==========================================
 @app.route('/api/submit-exam-result', methods=['POST'])
 def submit_exam_result():
     data = request.get_json()
@@ -405,9 +478,6 @@ def get_student_history():
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ==========================================
-# ৬. Teacher Create Exam & Dashboard
-# ==========================================
 @app.route('/api/create-exam', methods=['POST'])
 def create_exam_api():
     data = request.get_json()
@@ -465,12 +535,8 @@ def get_teacher_dashboard():
         exams_list = [{"name": r["exam_name"], "code": r["exam_code"]} for r in all_exams]
         return jsonify({"success": True, "total_exams": total_exams, "total_students": total_students, "avg_score": avg_score, "all_exams": exams_list})
     except Exception as e:
-        print("Teacher Dashboard Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ==========================================
-# ৭. Teacher Profile & Full Analytics
-# ==========================================
 @app.route('/api/teacher-analysis', methods=['POST'])
 def get_teacher_analysis():
     data = request.get_json()
@@ -639,12 +705,8 @@ def teacher_full_analytics():
         })
 
     except Exception as e:
-        print("Analytics Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ==========================================
-# ৮. Notifications & Profile APIs
-# ==========================================
 @app.route('/api/admin/send-notification', methods=['POST'])
 def admin_send_notification():
     data = request.get_json()
@@ -763,36 +825,6 @@ def mark_notifications_read():
     except Exception as e:
         return jsonify({"success": False})
 
-@app.route('/api/update-profile', methods=['POST'])
-def update_profile():
-    data = request.get_json()
-    email = data.get('email')
-    new_name = data.get('name')
-    new_role = data.get('role')
-
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"UPDATE users SET name = {ph}, category = {ph} WHERE email = {ph}", (new_name, new_role, email))
-        conn.commit()
-        conn.close()
-
-        session['user'] = {'email': email, 'name': new_name, 'role': new_role}
-        redirect_url = "/student_dashboard.html" if new_role == "Student" else "/teacher_profile.html"
-
-        return jsonify({
-            "success": True, 
-            "message": "Profile updated successfully!",
-            "new_role": new_role,
-            "redirect_url": redirect_url
-        })
-    except Exception as e:
-        return jsonify({"success": False, "error": "Database error"}), 500
-
-# ==========================================
-# ৯. 📂 Google Drive Style APIs
-# ==========================================
 @app.route('/api/admin/get-drive-contents', methods=['POST'])
 @app.route('/api/get-student-drive-contents', methods=['POST'])
 def get_drive_contents_api():
