@@ -199,14 +199,14 @@ def student_resources():
         return redirect(url_for('auth_page'))
     return render_template('student_resources.html')
 
-# 🎯 নিরাপদ লগআউট
+# 🎯 নিরাপদ লগআউট (সেশন পারফেক্টলি ক্লিয়ার করে পাঠাবে)
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect('/auth.html')
+    return redirect(url_for('auth_page'))
 
 # ==========================================
-# ২. Google Auth Sync & Profile APIs (FIXED)
+# ২. Google Auth Sync & Profile APIs
 # ==========================================
 @app.route('/api/google-auth-sync', methods=['POST'])
 def google_auth_sync():
@@ -281,7 +281,6 @@ def get_profile_data():
         print("Get Profile Error:", e)
         return jsonify({"success": False, "error": "Database error"})
 
-# 🎯 [FIXED] প্রোফাইল আপডেট API (নিরাপদভাবে ফটো ও রোল আপডেট করবে)
 @app.route('/api/update-profile', methods=['POST'])
 def update_profile():
     data = request.get_json() or {}
@@ -308,7 +307,6 @@ def update_profile():
         conn.commit()
         conn.close()
 
-        # সেশন ক্লিয়ার/আপডেট লজিক
         session.permanent = True
         session['user'] = {'email': email, 'name': new_name, 'role': new_role, 'photo_url': photo_url}
 
