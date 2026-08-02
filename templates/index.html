@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExamMate | Welcome</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
         :root { color-scheme: dark; }
@@ -28,7 +26,18 @@
         }
         .auth-card h2 { margin: 0 0 1.5rem 0; color: #f2f7ff; font-size: 1.4rem; }
         
-        .google-btn-wrapper { display: flex; justify-content: center; margin-top: 20px; }
+        /* Custom Google Button */
+        .btn-google { 
+            width: 100%; max-width: 320px; margin: 0 auto;
+            background: #ffffff; color: #374151; border: none; 
+            border-radius: 25px; padding: 0.85rem 1rem; font-size: 1.05rem; font-weight: 700; 
+            cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;
+            gap: 10px; box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+        }
+        .btn-google:hover { 
+            background: #f9fafb; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,255,255,0.2); 
+        }
+        .btn-google img { width: 22px; height: 22px; }
 
         .divider { height: 1px; background: rgba(255,255,255,0.2); margin: 2.5rem 0 1.5rem 0; }
         .features-header { font-size: 1.3rem; color: #f2f7ff; margin-bottom: 1.5rem; text-align: left; }
@@ -40,6 +49,10 @@
         .feature-icon { font-size: 1.2rem; color: #81c784; background: rgba(255, 255, 255, 0.05); border-radius: 50%; padding: 10px; width: 24px; text-align: center; }
         .feature-text strong { color: #f4fbff; font-size: 1rem; }
         .feature-text p { margin: 5px 0 0 0; color: #c8d3ea; font-size: 0.85rem; }
+
+        #error-msg {
+            color: #ef4444; font-size: 0.95rem; margin-top: 15px; display: none; font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -53,18 +66,12 @@
         <div class="auth-card">
             <h2>Get Started with ExamMate</h2>
             
-            <!-- Google Sign-In Div -->
-            <div id="g_id_onload"
-                 data-client_id="YOUR_GOOGLE_CLIENT_ID_HERE"
-                 data-context="signin"
-                 data-ux_mode="popup"
-                 data-callback="handleCredentialResponse"
-                 data-auto_prompt="false">
-            </div>
-            
-            <div class="google-btn-wrapper">
-                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_black" data-text="continue_with" data-size="large" data-logo_alignment="left"></div>
-            </div>
+            <!-- Firebase Custom Google Button -->
+            <button type="button" class="btn-google" id="btn-google-login">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo">
+                Continue with Google
+            </button>
+            <div id="error-msg"></div>
 
             <div class="divider"></div>
             <h2 class="features-header"><i class="fas fa-star" style="color: #f59e0b;"></i> Core Features</h2>
@@ -80,37 +87,51 @@
         </div>
     </div>
 
-    <script>
-        // JWT টোকেন ডিকোড করার ফাংশন
-        function parseJwt(token) {
-            var base64Url = token.split('.')[1];
-            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        }
+    <!-- Firebase Authentication SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // গুগল লগিন সফল হলে এই ফাংশনটি কল হবে
-        function handleCredentialResponse(response) {
-            const data = parseJwt(response.credential);
-            
-            const userData = {
-                email: data.email,
-                name: data.name,
-                photo_url: data.picture
-            };
+        // আপনার পুরোনো সাইন-ইন পেজ থেকে নেওয়া Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
+            authDomain: "exammate-4dfa2.firebaseapp.com",
+            projectId: "exammate-4dfa2",
+            storageBucket: "exammate-4dfa2.firebasestorage.app",
+            messagingSenderId: "424847388051",
+            appId: "1:424847388051:web:73730432aaddc54e48c66"
+        };
 
-            // ব্যাকএন্ডে চেক করা হচ্ছে ইউজার নতুন নাকি পুরোনো
-            fetch('/api/google-login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(userData)
-            })
-            .then(res => res.json())
-            .then(result => {
-                if(result.success) {
-                    if(result.is_new) {
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        document.getElementById('btn-google-login').addEventListener('click', async () => {
+            const errorBox = document.getElementById('error-msg');
+            errorBox.style.display = 'none';
+
+            try {
+                // Firebase দিয়ে গুগলে লগিন করানো হচ্ছে
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                const userData = {
+                    email: user.email,
+                    name: user.displayName,
+                    photo_url: user.photoURL
+                };
+
+                // ব্যাকএন্ডে চেক করা হচ্ছে ইউজার নতুন নাকি পুরোনো
+                const response = await fetch('/api/google-login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+
+                if(data.success) {
+                    if(data.is_new) {
                         // নতুন ইউজার: প্রোফাইল সেটআপ পেজে পাঠানো হচ্ছে
                         localStorage.setItem('temp_user', JSON.stringify(userData));
                         window.location.href = '/setup_profile.html';
@@ -118,19 +139,24 @@
                         // পুরোনো ইউজার: সরাসরি ড্যাশবোর্ডে পাঠানো হচ্ছে
                         localStorage.setItem('user', JSON.stringify({
                             email: userData.email, 
-                            name: result.name, 
-                            role: result.role
+                            name: data.name, 
+                            role: data.role
                         }));
-                        localStorage.setItem('userName', result.name);
+                        localStorage.setItem('userName', data.name);
                         localStorage.setItem('userEmail', userData.email);
-                        window.location.href = result.redirect_url;
+                        window.location.href = data.redirect_url;
                     }
                 } else {
-                    alert("Authentication Failed: " + result.error);
+                    errorBox.innerText = "Authentication Failed: " + data.error;
+                    errorBox.style.display = 'block';
                 }
-            })
-            .catch(err => console.error("Login Error:", err));
-        }
+
+            } catch (error) {
+                console.error("Firebase Login Error:", error);
+                errorBox.innerText = "Google Sign-In failed or was cancelled.";
+                errorBox.style.display = 'block';
+            }
+        });
     </script>
 </body>
 </html>
