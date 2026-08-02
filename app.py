@@ -3,6 +3,7 @@ import os
 import sqlite3
 from datetime import timedelta
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import HTTPException  # 👈 নতুন ইমপোর্ট যোগ করা হয়েছে
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -135,43 +136,44 @@ def auth_page():
 
 @app.route('/student_dashboard.html')
 def student_dashboard():
-    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Student':
+    # 👈 .lower() ব্যবহার করে Case Insensitive করা হয়েছে
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
         return redirect(url_for('auth_page'))
     return render_template('student_dashboard.html')
 
 @app.route('/teacher_dashboard.html')
 def teacher_dashboard():
-    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Teacher':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'teacher':
         return redirect(url_for('auth_page'))
     return render_template('teacher_dashboard.html')
 
 @app.route('/teacher_profile.html')
 def teacher_profile():
-    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Teacher':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'teacher':
         return redirect(url_for('auth_page'))
     return render_template('teacher_profile.html')
 
 @app.route('/student_exam.html')
 def student_exam():
-    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Student':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
         return redirect(url_for('auth_page'))
     return render_template('student_exam.html')
 
 @app.route('/student_profile.html')
 def student_profile():
-    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Student':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
         return redirect(url_for('auth_page'))
     return render_template('student_profile.html')
 
 @app.route('/create_exam.html')
 def create_exam():
-    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Teacher':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'teacher':
         return redirect(url_for('auth_page'))
     return render_template('create_exam.html')
 
 @app.route('/teacher_analytics.html')
 def teacher_analytics():
-    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Teacher':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'teacher':
         return redirect(url_for('auth_page'))
     return render_template('teacher_analytics.html')
 
@@ -187,17 +189,17 @@ def admin_page():
 
 @app.route('/student_analytics.html')
 def student_analytics():
-    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Student':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
         return redirect(url_for('auth_page'))
     return render_template('student_analytics.html')
 
 @app.route('/student_resources.html')
 def student_resources():
-    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role') != 'Student':
+    if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
         return redirect(url_for('auth_page'))
     return render_template('student_resources.html')
 
-# 🎯 গ্লোবাল এরর হ্যান্ডলার (ভাঙা কুকি বা সেশনের কারণে সার্ভার ক্র্যাশ করা বন্ধ করবে)
+# 🎯 গ্লোবাল এরর হ্যান্ডলার (সংশোধিত)
 @app.errorhandler(500)
 def internal_error(e):
     session.pop('user', None)
@@ -205,6 +207,10 @@ def internal_error(e):
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    # 👈 404 বা অন্যান্য HTTP Error হলে সেশন ডিলিট করবে না
+    if isinstance(e, HTTPException):
+        return e
+        
     session.pop('user', None)
     return redirect('/')
 
@@ -251,7 +257,7 @@ def google_auth_sync():
         return jsonify({
             "success": True, 
             "role": user_role, 
-            "redirect_url": "/student_dashboard.html" if user_role == "Student" else "/teacher_dashboard.html"
+            "redirect_url": "/student_dashboard.html" if user_role.lower() == "student" else "/teacher_dashboard.html"
         })
 
     except Exception as e:
@@ -792,7 +798,7 @@ def update_profile():
         conn.close()
 
         session['user'] = {'email': email, 'name': new_name, 'role': new_role}
-        redirect_url = "/student_dashboard.html" if new_role == "Student" else "/teacher_profile.html"
+        redirect_url = "/student_dashboard.html" if new_role.lower() == "student" else "/teacher_profile.html"
 
         return jsonify({
             "success": True, 
