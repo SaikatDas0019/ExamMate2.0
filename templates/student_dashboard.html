@@ -33,22 +33,12 @@
         .bell-icon { 
             font-size: 1.2rem; color: #4b5563; background: #f3f4f6; 
             padding: 10px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
-        }
-
-        /* Unread Notification Red Dot Style */
-        .bell-icon {
             position: relative;
         }
         .bell-icon.has-unread::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 10px;
-            height: 10px;
-            background-color: #ef4444; /* লাল রং */
-            border-radius: 50%;
-            border: 2px solid #ffffff;
+            content: ''; position: absolute; top: 2px; right: 2px;
+            width: 10px; height: 10px; background-color: #ef4444; 
+            border-radius: 50%; border: 2px solid #ffffff;
         }
 
         /* My Progress Grid */
@@ -69,17 +59,17 @@
         .search-box button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
         /* Dynamic Exam Navigation Flow */
-        .nav-breadcrumb { font-size: 0.85rem; color: #6b7280; margin-bottom: 10px; font-weight: 600; }
+        .nav-breadcrumb { font-size: 0.9rem; color: #1e3a8a; margin-bottom: 10px; font-weight: bold; background: #eff6ff; padding: 10px; border-radius: 8px;}
         .flow-btn {
-            width: 100%; background: #f8fafc; border: 1px solid #cbd5e1; color: #334155;
-            padding: 12px; border-radius: 12px; font-size: 1rem; font-weight: 600;
+            width: 100%; background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b;
+            padding: 14px 15px; border-radius: 12px; font-size: 0.95rem; font-weight: 600;
             margin-bottom: 10px; cursor: pointer; text-align: left; transition: 0.2s;
             display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
-        .flow-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .flow-btn i { color: #64748b; }
-        
-        .back-btn { background: transparent; color: #3b82f6; border: none; font-weight: bold; cursor: pointer; padding: 0; margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
+        .flow-btn:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-2px);}
+        .back-btn { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: bold; cursor: pointer; padding: 8px 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; transition: 0.2s;}
+        .back-btn:hover { background: #e2e8f0; }
 
         /* Fixed 3-Item Bottom Navigation Bar */
         .bottom-nav {
@@ -92,7 +82,6 @@
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
 
-        #subjects-section, #exams-section { display: none; }
         hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
     </style>
 </head>
@@ -144,27 +133,20 @@
 
         <div class="section-title">Explore Exams &nbsp; <span style="color:#22c55e;"><i class="fas fa-chevron-right"></i></span></div>
 
-        <div id="categories-section">
-            <button class="flow-btn" onclick="selectCategory('Class-11 Sem-1')">Class-11 Sem-1 <i class="fas fa-book"></i></button>
-            <button class="flow-btn" onclick="selectCategory('Class-12 Sem-3')">Class-12 Sem-3 <i class="fas fa-book"></i></button>
+        <!-- Dynamic Exams Section -->
+        <div id="dynamic-exams-section">
+            <div class="nav-breadcrumb" id="bc-folder"><i class="fas fa-folder-open"></i> Available Exams</div>
             
-            <div class="section-title" style="font-size:0.9rem; margin-top:1rem;">Popular Exams</div>
-            <button class="flow-btn" style="border-left: 4px solid #ef4444;" onclick="selectCategory('JEE Main')">JEE Main <i class="fas fa-arrow-right"></i></button>
-            <button class="flow-btn" style="border-left: 4px solid #f97316;" onclick="selectCategory('NEET')">NEET <i class="fas fa-arrow-right"></i></button>
-            <button class="flow-btn" style="border-left: 4px solid #0ea5e9;" onclick="selectCategory('WBJEE')">WBJEE <i class="fas fa-arrow-right"></i></button>
-            <button class="flow-btn" style="border-left: 4px solid #8b5cf6;" onclick="selectCategory('JEE Advance')">JEE Advance <i class="fas fa-arrow-right"></i></button>
-        </div>
-
-        <div id="subjects-section">
-            <div class="nav-breadcrumb" id="bc-category">Selected: Category</div>
-            <button class="back-btn" onclick="goBack('categories')"><i class="fas fa-arrow-left"></i> Change Category</button>
-            <div id="subject-list"></div>
-        </div>
-
-        <div id="exams-section">
-            <div class="nav-breadcrumb" id="bc-subject">Selected: Category > Subject</div>
-            <button class="back-btn" onclick="goBack('subjects')"><i class="fas fa-arrow-left"></i> Change Subject</button>
-            <div id="exam-list"></div>
+            <button class="back-btn" id="btn-back-folder" onclick="goBackFolder()" style="display:none;"><i class="fas fa-arrow-left"></i> Go Back</button>
+            
+            <div id="folder-list">
+                <!-- Folders will load here -->
+                <p style="text-align:center; color:#6b7280;">Loading exams...</p>
+            </div>
+            
+            <div id="exam-list" style="margin-top: 15px;">
+                <!-- Exams will load here -->
+            </div>
         </div>
 
     </div>
@@ -191,9 +173,10 @@
 
 
     <script>
-        let currentCategory = "";
-        let currentSubject = "";
-        // অনরিড নোটিফিকেশন থাকলে লাল ডট দেখানোর ফাংশন
+        let currentFolderId = 0;
+        let folderHistory = [];
+
+        // অনরিড নোটিফিকেশন চেক
         async function checkUnreadNotifications() {
             const userEmail = localStorage.getItem('userEmail');
             if (!userEmail) return;
@@ -208,14 +191,12 @@
 
                 const bellIcon = document.querySelector('.bell-icon');
                 if (data.success && data.has_unread) {
-                    bellIcon.classList.add('has-unread'); // লাল ডট দেখাবে
+                    bellIcon.classList.add('has-unread');
                 } else {
-                    bellIcon.classList.remove('has-unread'); // লাল ডট সরাবে
+                    bellIcon.classList.remove('has-unread');
                 }
             }             
-            catch (error) {
-                console.log("Notif check error:", error);
-            }
+            catch (error) { console.log("Notif check error:", error); }
         }
         
         window.onload = async () => {
@@ -224,7 +205,9 @@
             document.getElementById('student-name').innerText = "Hi, " + userName.split(' ')[0];
 
             checkUnreadNotifications();
+            loadExamFolders(); // 🆕 ডাইনামিক ফোল্ডার লোড
             
+            // প্রগ্রেস ডেটা লোড
             if (userEmail) {
                 try {
                     const response = await fetch('/api/get-student-progress', {
@@ -240,12 +223,89 @@
                         document.getElementById('stat-high').innerText = data.highest;
                         document.getElementById('stat-low').innerText = data.lowest;
                     }
-                } catch (error) {
-                    console.log("Error fetching progress:", error);
-                }
+                } catch (error) { console.log("Error fetching progress:", error); }
             }
         };
 
+        // 🆕 ডাইনামিক ফোল্ডার এবং এক্সাম লোড করার ফাংশন
+        async function loadExamFolders() {
+            const folderList = document.getElementById('folder-list');
+            const examList = document.getElementById('exam-list');
+            folderList.innerHTML = '<p style="text-align:center; color:#6b7280;">Loading data...</p>';
+            examList.innerHTML = '';
+
+            try {
+                // Backend থেকে 'exam' টাইপের ফোল্ডার আনা হচ্ছে
+                const res = await fetch('/api/get-student-drive-contents', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ parent_id: currentFolderId, folder_type: 'exam' })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    folderList.innerHTML = '';
+                    examList.innerHTML = '';
+
+                    if (data.folders.length === 0 && data.exams.length === 0) {
+                        folderList.innerHTML = '<div style="text-align:center; padding:20px; color:#6b7280; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">No exams available here yet.</div>';
+                    }
+
+                    // ফোল্ডার রেন্ডারিং
+                    data.folders.forEach(f => {
+                        const btn = document.createElement('button');
+                        btn.className = "flow-btn";
+                        btn.innerHTML = `<span><i class="fas fa-folder" style="color:#f59e0b; margin-right:8px;"></i> ${f.name}</span> <i class="fas fa-chevron-right" style="color:#94a3b8; font-size:0.8rem;"></i>`;
+                        btn.onclick = () => openFolder(f.id, f.name);
+                        folderList.appendChild(btn);
+                    });
+
+                    // এক্সাম রেন্ডারিং
+                    data.exams.forEach(ex => {
+                        const btn = document.createElement('button');
+                        btn.className = "flow-btn";
+                        btn.style.borderLeft = "4px solid #10b981";
+                        btn.innerHTML = `
+                            <div style="text-align: left;">
+                                <strong style="color:#0f172a; font-size: 1rem;">${ex.name}</strong><br>
+                                <span style="font-size: 0.75rem; color: #64748b;">Code: ${ex.code} • ${ex.timer} Mins</span>
+                            </div>
+                            <i class="fas fa-play-circle" style="color:#10b981; font-size: 1.8rem; transition: 0.2s;"></i>
+                        `;
+                        // সরাসরি এক্সাম পেজে পাঠিয়ে দেওয়া হবে
+                        btn.onclick = () => window.location.href = "student_exam.html?code=" + ex.code;
+                        examList.appendChild(btn);
+                    });
+                }
+            } catch (error) {
+                folderList.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load data. Check connection.</p>';
+            }
+        }
+
+        // ফোল্ডার ওপেন করা
+        function openFolder(id, name) {
+            folderHistory.push({ id: currentFolderId, name: document.getElementById('bc-folder').innerText.replace('<i class="fas fa-folder-open"></i> ', '') });
+            currentFolderId = id;
+            document.getElementById('bc-folder').innerHTML = `<i class="fas fa-folder-open"></i> Selected: ${name}`;
+            document.getElementById('btn-back-folder').style.display = 'flex';
+            loadExamFolders();
+        }
+
+        // ফোল্ডার থেকে ব্যাক করা
+        function goBackFolder() {
+            if (folderHistory.length > 0) {
+                const prev = folderHistory.pop();
+                currentFolderId = prev.id;
+                document.getElementById('bc-folder').innerHTML = `<i class="fas fa-folder-open"></i> ${prev.name}`;
+                if (folderHistory.length === 0) {
+                    document.getElementById('btn-back-folder').style.display = 'none';
+                    document.getElementById('bc-folder').innerHTML = `<i class="fas fa-folder-open"></i> Available Exams`;
+                }
+                loadExamFolders();
+            }
+        }
+
+        // ম্যানুয়াল এক্সাম সার্চ (যদি স্টুডেন্ট কোড টাইপ করে ঢুকতে চায়)
         async function searchExam() {
             const code = document.getElementById('exam-code-input').value.trim().toUpperCase();
             const errorMsg = document.getElementById('search-error');
@@ -281,71 +341,6 @@
             } finally {
                 searchBtn.innerText = "🔍 Search";
                 searchBtn.disabled = false;
-            }
-        }
-
-        const subjectsData = {
-            "JEE Main": [ { name: "Physics", icon: "⚛️", code: "PHY" }, { name: "Chemistry", icon: "🧪", code: "CHEM" }, { name: "Math", icon: "📐", code: "MATH" } ],
-            "NEET": [ { name: "Physics", icon: "⚛️", code: "PHY" }, { name: "Chemistry", icon: "🧪", code: "CHEM" }, { name: "Biology", icon: "🧬", code: "BIO" } ],
-            "Class-12 Sem-3": [ { name: "Bengali", icon: "📖", code: "BEN" }, { name: "Physics", icon: "⚛️", code: "PHY" }, { name: "Chemistry", icon: "🧪", code: "CHEM" } ]
-        };
-
-        const examsData = {
-            "Class-12 Sem-3_CHEM": [ { title: "Class 12 Chemistry - Group 18", code: "EXAM-1723" } ],
-            "Class-12 Sem-3_BEN": [ { title: "Class 12 Bengali HS 2025", code: "EXAM-1818" } ]
-        };
-
-        function selectCategory(category) {
-            currentCategory = category;
-            document.getElementById('categories-section').style.display = 'none';
-            document.getElementById('subjects-section').style.display = 'block';
-            document.getElementById('bc-category').innerText = "Selected: " + category;
-
-            const subList = document.getElementById('subject-list');
-            subList.innerHTML = ""; 
-            
-            const subs = subjectsData[category] || [{name: "General", icon: "📚", code: "GEN"}]; 
-            subs.forEach(sub => {
-                const btn = document.createElement('button');
-                btn.className = "flow-btn";
-                btn.innerHTML = `${sub.name} ${sub.icon} <i class="fas fa-chevron-right" style="font-size:0.8rem;"></i>`;
-                btn.onclick = () => selectSubject(sub.name, sub.code);
-                subList.appendChild(btn);
-            });
-        }
-
-        function selectSubject(subjectName, subjectCode) {
-            currentSubject = subjectName;
-            document.getElementById('subjects-section').style.display = 'none';
-            document.getElementById('exams-section').style.display = 'block';
-            document.getElementById('bc-subject').innerText = `Selected: ${currentCategory} > ${currentSubject}`;
-
-            const examList = document.getElementById('exam-list');
-            examList.innerHTML = ""; 
-
-            const lookupKey = `${currentCategory}_${subjectCode}`;
-            const exams = examsData[lookupKey];
-
-            if (exams && exams.length > 0) {
-                exams.forEach(ex => {
-                    const btn = document.createElement('button');
-                    btn.className = "flow-btn";
-                    btn.innerHTML = `<strong>${ex.title}</strong> <i class="fas fa-play-circle" style="color:#3b82f6;"></i>`;
-                    btn.onclick = () => window.location.href = "student_exam.html?code=" + ex.code;
-                    examList.appendChild(btn);
-                });
-            } else {
-                examList.innerHTML = `<div style="text-align:center; padding:20px; color:#6b7280;">No Exams available for this subject yet.</div>`;
-            }
-        }
-
-        function goBack(toSection) {
-            if(toSection === 'categories') {
-                document.getElementById('subjects-section').style.display = 'none';
-                document.getElementById('categories-section').style.display = 'block';
-            } else if (toSection === 'subjects') {
-                document.getElementById('exams-section').style.display = 'none';
-                document.getElementById('subjects-section').style.display = 'block';
             }
         }
     </script>
