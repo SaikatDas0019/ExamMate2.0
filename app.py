@@ -3,7 +3,7 @@ import os
 import sqlite3
 from datetime import timedelta
 from werkzeug.utils import secure_filename
-from werkzeug.exceptions import HTTPException  # 👈 নতুন ইমপোর্ট যোগ করা হয়েছে
+from werkzeug.exceptions import HTTPException
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -107,16 +107,18 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS drive_files (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_id INTEGER NOT NULL, title TEXT NOT NULL, file_url TEXT NOT NULL, resource_type TEXT DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             ''')
         conn.commit()
+        
+        # Profile Picture Column
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN photo_url TEXT;")
             conn.commit()
         except Exception:
-            if db_type == 'postgres': conn.rollback() # কলাম আগে থেকে থাকলে এরর ইগনোর করবে
+            if db_type == 'postgres': conn.rollback()
+            
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
 
-# ডাটাবেস টেবিল ইনিশিয়ালাইজেশন
 init_db()
 
 # ==========================================
@@ -141,7 +143,6 @@ def auth_page():
 
 @app.route('/student_dashboard.html')
 def student_dashboard():
-    # 👈 .lower() ব্যবহার করে Case Insensitive করা হয়েছে
     if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
         return redirect(url_for('auth_page'))
     return render_template('student_dashboard.html')
@@ -204,7 +205,7 @@ def student_resources():
         return redirect(url_for('auth_page'))
     return render_template('student_resources.html')
 
-# 🎯 গ্লোবাল এরর হ্যান্ডলার (সংশোধিত)
+# 🎯 গ্লোবাল এরর হ্যান্ডলার
 @app.errorhandler(500)
 def internal_error(e):
     session.pop('user', None)
@@ -212,19 +213,16 @@ def internal_error(e):
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    # 👈 404 বা অন্যান্য HTTP Error হলে সেশন ডিলিট করবে না
     if isinstance(e, HTTPException):
         return e
-        
     session.pop('user', None)
     return redirect('/')
 
-# 🎯 নিরাপদ লগআউট (পারমানেন্ট সেশন ভাঙবে না এবং ইনডেক্স পেজে পাঠাবে)
+# 🎯 নিরাপদ লগআউট
 @app.route('/logout')
 def logout():
-    # session.clear() এর বদলে শুধু ইউজারের ডেটা নিরাপদে মোছা হচ্ছে
     session.pop('user', None)
-    return redirect('/')  # 👈 এটি আপনাকে সরাসরি একদম প্রথম পেজে (index.html) পাঠিয়ে দেবে
+    return redirect('/')
 
 # ==========================================
 # ২. Google Auth Sync API
@@ -309,7 +307,6 @@ def get_student_progress():
             "score": f"{s_sc:02d}"
         })
     except Exception as e:
-        print("Student Progress Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
@@ -379,7 +376,6 @@ def get_exam_questions():
             "questions": questions_list
         })
     except Exception as e:
-        print("Get Questions Error:", e)
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 # ==========================================
@@ -489,7 +485,6 @@ def get_teacher_dashboard():
         exams_list = [{"name": r["exam_name"], "code": r["exam_code"]} for r in all_exams]
         return jsonify({"success": True, "total_exams": total_exams, "total_students": total_students, "avg_score": avg_score, "all_exams": exams_list})
     except Exception as e:
-        print("Teacher Dashboard Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
@@ -663,7 +658,6 @@ def teacher_full_analytics():
         })
 
     except Exception as e:
-        print("Analytics Error:", e)
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
@@ -911,6 +905,7 @@ def delete_drive_item():
         return jsonify({"success": True, "message": "Deleted!"})
     except Exception as e:
         return jsonify({"success": False, "error": "Delete Failed"}), 500
+
 # ==========================================
 # ১০. Profile Picture APIs
 # ==========================================
@@ -955,10 +950,14 @@ def upload_profile_pic():
             os.makedirs(PROFILE_PICS_FOLDER, exist_ok=True)
             filename = secure_filename(file.filename)
             unique_filename = f"profile_{email.replace('@','_').replace('.','_')}_{filename}"
+            
+            # ফিজিক্যাল পাথে সেভ করা হচ্ছে
             file_path = os.path.join(PROFILE_PICS_FOLDER, unique_filename)
             file.save(file_path)
             
-            file_url = f"/{file_path}"
+            # 👈 এখানে URL তৈরি করার সময় সরাসরি ফরোয়ার্ড স্ল্যাশ ব্যবহার করা হলো
+            file_url = f"/static/uploads/profiles/{unique_filename}"
+            
             cursor.execute(f"UPDATE users SET photo_url = {ph} WHERE email = {ph}", (file_url, email))
             conn.commit()
             conn.close()
