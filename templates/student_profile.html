@@ -133,6 +133,9 @@
     </div>
 
     <script>
+        // 👈 গ্লোবাল ভেরিয়েবলগুলো শুধুমাত্র একবার ডিক্লেয়ার করা হলো
+        let imageFileToUpload = null;
+        let removePhotoFlag = false;
         const defaultImageSrc = "https://ui-avatars.com/api/?name=Student&background=random&size=180";
 
         // ১. নিরাপদ লোড প্রোফাইল
@@ -166,11 +169,7 @@
             }
         }
 
-        // ২. ফটো প্রিভিউ (শুধুমাত্র লোকাল দেখার জন্য)
-                let imageFileToUpload = null;
-        let removePhotoFlag = false;
-        const defaultImageSrc = "https://ui-avatars.com/api/?name=Student&background=random&size=180";
-
+        // ২. ফটো প্রিভিউ 
         function previewImage(event) {
             const reader = new FileReader();
             reader.onload = function() {
@@ -185,6 +184,7 @@
             }
         }
 
+        // ছবি রিমুভ করা
         function removeImage() {
             document.getElementById('profile-img').src = defaultImageSrc;
             document.getElementById('file-upload').value = "";
@@ -194,6 +194,7 @@
             removePhotoFlag = true;
         }
 
+        // ৩. প্রোফাইল আপডেট
         async function saveProfileChanges() {
             const name = document.getElementById('input-name').value.trim();
             const email = document.getElementById('input-email').value.trim();
@@ -252,7 +253,6 @@
                 alert("Server error updating profile.");
             }
         }
-
 
         // ৪. নিখুঁত লগআউট
         function handleLogout() {
