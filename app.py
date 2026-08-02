@@ -224,48 +224,90 @@ def logout():
     session.pop('user', None)
     return redirect('/')
 
-# ==========================================
-# ২. Google Auth Sync API
-# ==========================================
-@app.route('/api/google-auth-sync', methods=['POST'])
-def google_auth_sync():
+# ---------------------------------------------
+# পেজ রাউট (নতুন সেটআপ)
+# ---------------------------------------------
+@app.route('/setup_profile.html')
+def setup_profile_page():
+    return render_template('setup_profile.html')
+
+# ---------------------------------------------
+# Google Login & Signup APIs
+# ---------------------------------------------
+@app.route('/api/google-login', methods=['POST'])
+def google_login():
     data = request.get_json()
     email = data.get('email')
-    name = data.get('name')
-    role = data.get('role', 'Student')
-
-    if not email or not name:
-        return jsonify({"success": False, "error": "Missing user details!"}), 400
+    
+    if not email:
+        return jsonify({"success": False, "error": "Email missing!"}), 400
 
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        cursor.execute(f"SELECT category FROM users WHERE email = {ph}", (email,))
-        existing_user = cursor.fetchone()
-
-        if existing_user:
-            user_role = existing_user['category'] if isinstance(existing_user, dict) else existing_user[0]
+        # ডাটাবেসে চেক করা হচ্ছে ইউজার আগে থেকেই আছে কি না
+        cursor.execute(f"SELECT name, category, photo_url FROM users WHERE email = {ph}", (email,))
+        user = cursor.fetchone()
+        
+        if user:
+            # পুরোনো ইউজার হলে সেশন তৈরি করে ড্যাশবোর্ডে পাঠিয়ে দেওয়া হবে
+            user_role = user['category'] if isinstance(user, dict) else user[1]
+            user_name = user['name'] if isinstance(user, dict) else user[0]
+            
+            session.permanent = True
+            session['user'] = {'email': email, 'name': user_name, 'role': user_role}
+            conn.close()
+            
+            return jsonify({
+                "success": True, 
+                "is_new": False,
+                "name": user_name,
+                "role": user_role,
+                "redirect_url": "/student_dashboard.html" if user_role.lower() == "student" else "/teacher_dashboard.html"
+            })
         else:
-            user_role = role
-            cursor.execute(f"INSERT INTO users (email, name, category) VALUES ({ph}, {ph}, {ph})", (email, name, user_role))
-            conn.commit()
+            # নতুন ইউজার হলে ডাটাবেসে সেভ না করে ফ্রন্টএন্ডকে সিগন্যাল দেওয়া হবে
+            conn.close()
+            return jsonify({"success": True, "is_new": True})
+            
+    except Exception as e:
+        print("Google Login Error:", e)
+        return jsonify({"success": False, "error": "Database error occurred."}), 500
 
+
+@app.route('/api/complete-signup', methods=['POST'])
+def complete_signup():
+    data = request.get_json()
+    email = data.get('email')
+    name = data.get('name')
+    role = data.get('role', 'Student')
+    photo_url = data.get('photo_url') # গুগল থেকে পাওয়া ছবি
+
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # নতুন ইউজারের ডাটা পার্মানেন্টলি ডাটাবেসে সেভ করা
+        cursor.execute(
+            f"INSERT INTO users (email, name, category, photo_url) VALUES ({ph}, {ph}, {ph}, {ph})", 
+            (email, name, role, photo_url)
+        )
+        conn.commit()
         conn.close()
 
         session.permanent = True
-        session['user'] = {'email': email, 'name': name, 'role': user_role}
+        session['user'] = {'email': email, 'name': name, 'role': role}
 
         return jsonify({
             "success": True, 
-            "role": user_role, 
-            "redirect_url": "/student_dashboard.html" if user_role.lower() == "student" else "/teacher_dashboard.html"
+            "redirect_url": "/student_dashboard.html" if role.lower() == "student" else "/teacher_dashboard.html"
         })
-
     except Exception as e:
-        print(f"Auth Sync Error: {e}")
-        return jsonify({"success": False, "error": "Database error occurred."}), 500
+        print("Signup Completion Error:", e)
+        return jsonify({"success": False, "error": "Failed to create account."}), 500
 
 # ==========================================
 # ৩. স্টুডেন্ট ড্যাশবোর্ড - প্রগ্রেস ও রেজাল্ট আনা
