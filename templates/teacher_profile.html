@@ -257,22 +257,7 @@
 
 
         const defaultImageSrc = "https://ui-avatars.com/api/?name=Teacher&background=random&size=180";
-        function previewImage(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                document.getElementById('profile-img').src = reader.result;
-                document.getElementById('upload-controls').style.display = 'none';
-                document.getElementById('edit-controls').style.display = 'block';
-            }
-            if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
-        }
-
-        function removeImage() {
-            document.getElementById('profile-img').src = defaultImageSrc;
-            document.getElementById('file-upload').value = "";
-            document.getElementById('upload-controls').style.display = 'block';
-            document.getElementById('edit-controls').style.display = 'none';
-        }
+        
 
         let scoreChart = null;
 
@@ -308,6 +293,34 @@
 
         // প্রোফাইল আপডেট ও রোল সুইচিং করার ফাংশন
         async function saveProfileChanges() {
+                let imageFileToUpload = null;
+        let removePhotoFlag = false;
+        const defaultImageSrc = "https://ui-avatars.com/api/?name=Teacher&background=random&size=180";
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById('profile-img').src = reader.result;
+                document.getElementById('upload-controls').style.display = 'none';
+                document.getElementById('edit-controls').style.display = 'block';
+            }
+            if(event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+                imageFileToUpload = event.target.files[0];
+                removePhotoFlag = false;
+            }
+        }
+
+        function removeImage() {
+            document.getElementById('profile-img').src = defaultImageSrc;
+            document.getElementById('file-upload').value = "";
+            document.getElementById('upload-controls').style.display = 'block';
+            document.getElementById('edit-controls').style.display = 'none';
+            imageFileToUpload = null;
+            removePhotoFlag = true;
+        }
+
+        async function saveProfileChanges() {
             const name = document.getElementById('input-name').value.trim();
             const email = document.getElementById('input-email').value.trim();
             const role = document.getElementById('input-role').value;
@@ -318,6 +331,20 @@
             }
 
             try {
+                // ১. প্রোফাইল পিকচার আপলোড বা রিমুভ করার রিকোয়েস্ট
+                if (imageFileToUpload || removePhotoFlag) {
+                    const formData = new FormData();
+                    formData.append('email', email);
+                    if (removePhotoFlag) {
+                        formData.append('action', 'remove');
+                    } else if (imageFileToUpload) {
+                        formData.append('action', 'upload');
+                        formData.append('file', imageFileToUpload);
+                    }
+                    await fetch('/api/upload-profile-pic', { method: 'POST', body: formData });
+                }
+
+                // ২. মূল প্রোফাইল আপডেট রিকোয়েস্ট
                 const response = await fetch('/api/update-profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -330,7 +357,6 @@
                     localStorage.setItem('userName', name);
                     alert("Profile updated successfully!");
 
-                    // যদি রোল Student সিলেক্ট করে তবে স্টুডেন্ট ড্যাশবোর্ডে পাঠাবে
                     if (role === 'Student') {
                         alert("Switching your account to Student...");
                         window.location.href = "/student_dashboard.html";
@@ -344,6 +370,7 @@
                 alert("Server error updating profile.");
             }
         }
+
 
         async function loadExamAnalysis() {
             const selectedCode = document.getElementById('exam-selector').value;
