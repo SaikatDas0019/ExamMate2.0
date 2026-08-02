@@ -213,54 +213,23 @@
         </div>
     </div>
     
-
-
     <script>
+        // গ্লোবাল ভেরিয়েবল সেটআপ
+        let imageFileToUpload = null;
+        let removePhotoFlag = false;
+        const defaultImageSrc = "https://ui-avatars.com/api/?name=Teacher&background=random&size=180";
+        let scoreChart = null;
+
         // লগআউট হ্যান্ডলার ফাংশন
         function handleLogout() {
             if (confirm("Are you sure you want to log out?")) {
-                // LocalStorage পরিষ্কার করা
                 localStorage.clear();
                 sessionStorage.clear();
-                // ব্যাকএন্ডে সেশন মুছে ফেলা এবং লগইন পেজে রিডাইরেক্ট
                 window.location.href = '/logout';
             }
         }
 
-        // পেজ লোড হলে ডাটাবেস থেকে ছবি ও নাম আনা
-        async function loadUserProfile() {
-            const user = JSON.parse(localStorage.getItem('user')) || {};
-            if (!user.email) return;
-
-            try {
-                const res = await fetch('/api/get-profile-data', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: user.email })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    if(document.getElementById('profile-name')) {
-                        document.getElementById('profile-name').innerText = data.name;
-                    }
-                    if (data.photo_url && document.getElementById('profile-img')) {
-                        document.getElementById('profile-img').src = data.photo_url;
-                    }
-                }
-            } catch(err) {
-                console.error("Profile Load Error:", err);
-            }
-        }
-
-        window.onload = loadUserProfile;
-
-
-        const defaultImageSrc = "https://ui-avatars.com/api/?name=Teacher&background=random&size=180";
-        
-
-        let scoreChart = null;
-
+        // পেজ লোড হলে প্রোফাইল ডেটা এবং এক্সাম ডাটা আনা
         window.onload = async () => {
             const userName = localStorage.getItem('userName') || "Teacher";
             const userEmail = localStorage.getItem('userEmail');
@@ -270,33 +239,48 @@
 
             if (userEmail) {
                 try {
+                    // ১. প্রোফাইল পিকচার ও নাম ফেচ করা
+                    const res = await fetch('/api/get-profile-data', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ email: userEmail })
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        if(document.getElementById('input-name') && data.name) {
+                            document.getElementById('input-name').value = data.name;
+                        }
+                        if (data.photo_url && document.getElementById('profile-img')) {
+                            document.getElementById('profile-img').src = data.photo_url;
+                        }
+                    }
+
+                    // ২. এক্সাম লিস্ট ফেচ করা অ্যানালাইসিসের জন্য
                     const response = await fetch('/api/teacher-dashboard', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: userEmail })
                     });
-                    const data = await response.json();
+                    const dashData = await response.json();
                     
-                    if (data.success && data.all_exams.length > 0) {
+                    if (dashData.success && dashData.all_exams.length > 0) {
                         const selector = document.getElementById('exam-selector');
                         selector.innerHTML = '<option value="" disabled selected>Select an exam to view analysis...</option>';
-                        data.all_exams.forEach(ex => {
+                        dashData.all_exams.forEach(ex => {
                             const opt = document.createElement('option');
                             opt.value = ex.code;
                             opt.innerText = `${ex.name} (${ex.code})`;
                             selector.appendChild(opt);
                         });
                     }
-                } catch (error) { console.log("Error loading exams for profile."); }
+                } catch (error) { 
+                    console.error("Initialization Error:", error); 
+                }
             }
         };
 
-        // প্রোফাইল আপডেট ও রোল সুইচিং করার ফাংশন
-        async function saveProfileChanges() {
-                let imageFileToUpload = null;
-        let removePhotoFlag = false;
-        const defaultImageSrc = "https://ui-avatars.com/api/?name=Teacher&background=random&size=180";
-
+        // ফটো প্রিভিউ ফাংশন
         function previewImage(event) {
             const reader = new FileReader();
             reader.onload = function() {
@@ -311,6 +295,7 @@
             }
         }
 
+        // ছবি রিমুভ ফাংশন
         function removeImage() {
             document.getElementById('profile-img').src = defaultImageSrc;
             document.getElementById('file-upload').value = "";
@@ -320,12 +305,13 @@
             removePhotoFlag = true;
         }
 
+        // প্রোফাইল আপডেট ও রোল সুইচিং করার ফাংশন
         async function saveProfileChanges() {
             const name = document.getElementById('input-name').value.trim();
             const email = document.getElementById('input-email').value.trim();
             const role = document.getElementById('input-role').value;
 
-            if (!name) {
+            if (!name || !email) {
                 alert("Please enter your name!");
                 return;
             }
@@ -368,10 +354,11 @@
                 }
             } catch (error) {
                 alert("Server error updating profile.");
+                console.error(error);
             }
         }
 
-
+        // এক্সাম অ্যানালাইসিস লোড করার ফাংশন
         async function loadExamAnalysis() {
             const selectedCode = document.getElementById('exam-selector').value;
             const container = document.getElementById('analysis-container');
@@ -411,6 +398,7 @@
             }
         }
 
+        // চার্ট রেন্ডার করার ফাংশন
         function renderChart(labels, data) {
             const ctx = document.getElementById('scoreChart').getContext('2d');
             if(scoreChart !== null) scoreChart.destroy();
