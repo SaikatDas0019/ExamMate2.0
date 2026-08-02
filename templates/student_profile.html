@@ -39,6 +39,14 @@
         }
         .btn-save-profile:hover { background: #16a34a; }
 
+        /* Logout Button Style */
+        .btn-logout {
+            width: 100%; background: #ff4d4d; color: white; border: none; padding: 12px;
+            border-radius: 8px; font-weight: bold; font-size: 0.95rem; cursor: pointer; margin-top: 15px;
+            transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-logout:hover { background: #e60000; }
+
         hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
         .section-title { font-size: 1.1rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; }
         .teachers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -87,13 +95,9 @@
             </div>
 
             <button type="button" class="btn-save-profile" onclick="saveProfileChanges()">Save Changes 💾</button>
-        </div>
-
-        <!-- Logout Button -->
-        <div style="margin-top: 20px; text-align: center;">
-            <button onclick="handleLogout()" style="background-color: #ff4d4d; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; max-width: 250px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                🚪 Logout
-            </button>
+            
+            <!-- 🎯 Logout Button -->
+            <button type="button" class="btn-logout" onclick="handleLogout()">🚪 Logout</button>
         </div>
 
         <hr>
@@ -152,6 +156,7 @@
 
                 if (data.success) {
                     if (data.name) document.getElementById('input-name').value = data.name;
+                    // প্রোফাইল পিকচার ডাটাবেস থেকে আসলে সেটি দেখাবে, না আসলে ডিফল্ট থাকবে
                     if (data.photo_url) {
                         document.getElementById('profile-img').src = data.photo_url;
                     }
@@ -161,7 +166,7 @@
             }
         }
 
-        // ২. ফটো প্রিভিউ
+        // ২. ফটো প্রিভিউ (শুধুমাত্র লোকাল দেখার জন্য)
         function previewImage(event) {
             const reader = new FileReader();
             reader.onload = function() {
@@ -179,12 +184,11 @@
             document.getElementById('edit-controls').style.display = 'none';
         }
 
-        // ৩. নিরাপদ সেভ প্রোফাইল
+        // ৩. নিরাপদ সেভ প্রোফাইল (photo_url পাঠানো বন্ধ করা হয়েছে যাতে পুরোনো ব্যাকএন্ড ক্র্যাশ না করে)
         async function saveProfileChanges() {
             const name = document.getElementById('input-name').value.trim();
             const email = document.getElementById('input-email').value.trim();
             const role = document.getElementById('input-role').value;
-            const photoUrl = document.getElementById('profile-img').src;
 
             if (!name || !email) {
                 alert("Name or Email missing!");
@@ -198,8 +202,7 @@
                     body: JSON.stringify({ 
                         email: email, 
                         name: name, 
-                        role: role,
-                        photo_url: photoUrl
+                        role: role
                     })
                 });
 
@@ -210,7 +213,6 @@
                     userObj.email = email;
                     userObj.name = name;
                     userObj.role = role;
-                    userObj.photo_url = photoUrl;
 
                     localStorage.setItem('user', JSON.stringify(userObj));
                     localStorage.setItem('userName', name);
