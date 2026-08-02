@@ -115,9 +115,16 @@ def init_db():
         except Exception:
             if db_type == 'postgres': conn.rollback()
             
-        # 🆕 Folder ID Column for Exams (To link exams inside folders)
+        # Folder ID Column for Exams
         try:
             cursor.execute("ALTER TABLE exams ADD COLUMN folder_id INT DEFAULT 0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+
+        # 🆕 Folder Type Column (To separate Content and Exam folders)
+        try:
+            cursor.execute("ALTER TABLE drive_folders ADD COLUMN folder_type VARCHAR(50) DEFAULT 'content';")
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
@@ -216,7 +223,6 @@ def handle_exception(e):
     session.pop('user', None)
     return redirect('/')
 
-# 🎯 নিরাপদ লগআউট
 @app.route('/logout')
 def logout():
     session.pop('user', None)
@@ -294,7 +300,7 @@ def complete_signup():
         return jsonify({"success": False, "error": "Failed to create account."}), 500
 
 # ==========================================
-# ৩. স্টুডেন্ট ড্যাশবোর্ড - প্রগ্রেস ও রেজাল্ট আনা
+# ৩-৫. Exam Result, Progress, History APIs
 # ==========================================
 @app.route('/api/get-student-progress', methods=['POST'])
 def get_student_progress():
@@ -305,44 +311,23 @@ def get_student_progress():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-
-        cursor.execute(f'''
-            SELECT COUNT(id) as count_id, MAX(score) as max_score, MIN(score) as min_score, SUM(score) as sum_score 
-            FROM results WHERE student_email = {ph}
-        ''', (email,))
-        
+        cursor.execute(f"SELECT COUNT(id) as count_id, MAX(score) as max_score, MIN(score) as min_score, SUM(score) as sum_score FROM results WHERE student_email = {ph}", (email,))
         stats = cursor.fetchone()
         conn.close()
 
-        if isinstance(stats, dict):
-            c_id = stats['count_id'] or 0
-            m_sc = stats['max_score'] or 0
-            mn_sc = stats['min_score'] or 0
-            s_sc = stats['sum_score'] or 0
-        else:
-            c_id = stats[0] if stats and stats[0] else 0
-            m_sc = stats[1] if stats and stats[1] else 0
-            mn_sc = stats[2] if stats and stats[2] else 0
-            s_sc = stats[3] if stats and stats[3] else 0
+        c_id = (stats['count_id'] if isinstance(stats, dict) else stats[0]) or 0
+        m_sc = (stats['max_score'] if isinstance(stats, dict) else stats[1]) or 0
+        mn_sc = (stats['min_score'] if isinstance(stats, dict) else stats[2]) or 0
+        s_sc = (stats['sum_score'] if isinstance(stats, dict) else stats[3]) or 0
 
-        return jsonify({
-            "success": True,
-            "total_exams": f"{c_id:02d}",
-            "highest": f"{m_sc:02d}",
-            "lowest": f"{mn_sc:02d}",
-            "score": f"{s_sc:02d}"
-        })
+        return jsonify({ "success": True, "total_exams": f"{c_id:02d}", "highest": f"{m_sc:02d}", "lowest": f"{mn_sc:02d}", "score": f"{s_sc:02d}" })
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ==========================================
-# ৪. এক্সাম সার্চ ও প্রশ্ন আনা
-# ==========================================
 @app.route('/api/check-exam', methods=['POST'])
 def check_exam():
     data = request.get_json()
     exam_code = data.get('exam_code')
-
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
@@ -350,12 +335,9 @@ def check_exam():
         cursor.execute(f"SELECT exam_name FROM exams WHERE exam_code = {ph}", (exam_code,))
         exam = cursor.fetchone()
         conn.close()
-
         if exam:
-            e_name = exam['exam_name'] if isinstance(exam, dict) else exam[0]
-            return jsonify({"success": True, "exam_name": e_name})
-        else:
-            return jsonify({"success": False, "error": f"No Exam Found with code: {exam_code}"})
+            return jsonify({"success": True, "exam_name": exam['exam_name'] if isinstance(exam, dict) else exam[0]})
+        return jsonify({"success": False, "error": "No Exam Found!"})
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
@@ -363,50 +345,25 @@ def check_exam():
 def get_exam_questions():
     data = request.get_json()
     exam_code = data.get('exam_code')
-
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-
         cursor.execute(f"SELECT exam_name, timer_minutes FROM exams WHERE exam_code = {ph}", (exam_code,))
         exam_info = cursor.fetchone()
-
         if not exam_info:
             conn.close()
-            return jsonify({"success": False, "error": "Exam not found in database!"}), 404
+            return jsonify({"success": False, "error": "Exam not found!"}), 404
 
-        cursor.execute(f"""
-            SELECT id, question_text, option_a, option_b, option_c, option_d, correct_option 
-            FROM questions WHERE exam_code = {ph}
-        """, (exam_code,))
+        cursor.execute(f"SELECT id, question_text, option_a, option_b, option_c, option_d, correct_option FROM questions WHERE exam_code = {ph}", (exam_code,))
         questions_rows = cursor.fetchall()
         conn.close()
 
-        questions_list = []
-        for q in questions_rows:
-            questions_list.append({
-                "id": q["id"], "q_text": q["question_text"], 
-                "opt_a": q["option_a"], "opt_b": q["option_b"], 
-                "opt_c": q["option_c"], "opt_d": q["option_d"], 
-                "correct": q["correct_option"]
-            })
-
-        e_name = exam_info['exam_name'] if isinstance(exam_info, dict) else exam_info[0]
-        t_min = exam_info['timer_minutes'] if isinstance(exam_info, dict) else exam_info[1]
-
-        return jsonify({
-            "success": True,
-            "exam_name": e_name,
-            "timer_minutes": t_min,
-            "questions": questions_list
-        })
+        questions_list = [{"id": q["id"], "q_text": q["question_text"], "opt_a": q["option_a"], "opt_b": q["option_b"], "opt_c": q["option_c"], "opt_d": q["option_d"], "correct": q["correct_option"]} for q in questions_rows]
+        return jsonify({ "success": True, "exam_name": exam_info['exam_name'] if isinstance(exam_info, dict) else exam_info[0], "timer_minutes": exam_info['timer_minutes'] if isinstance(exam_info, dict) else exam_info[1], "questions": questions_list })
     except Exception as e:
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
-# ==========================================
-# ৫. পরীক্ষার রেজাল্ট ও হিস্ট্রি API
-# ==========================================
 @app.route('/api/submit-exam-result', methods=['POST'])
 def submit_exam_result():
     data = request.get_json()
@@ -420,10 +377,7 @@ def submit_exam_result():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f'''
-            INSERT INTO results (student_email, exam_code, exam_name, score, total_questions) 
-            VALUES ({ph}, {ph}, {ph}, {ph}, {ph})
-        ''', (email, exam_code, exam_name, score, total_q))
+        cursor.execute(f"INSERT INTO results (student_email, exam_code, exam_name, score, total_questions) VALUES ({ph}, {ph}, {ph}, {ph}, {ph})", (email, exam_code, exam_name, score, total_q))
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Result saved successfully!"})
@@ -434,25 +388,20 @@ def submit_exam_result():
 def get_student_history():
     data = request.get_json()
     email = data.get('email')
-
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"""
-            SELECT exam_name, score, total_questions, date_taken 
-            FROM results WHERE student_email = {ph} ORDER BY date_taken DESC
-        """, (email,))
+        cursor.execute(f"SELECT exam_name, score, total_questions, date_taken FROM results WHERE student_email = {ph} ORDER BY date_taken DESC", (email,))
         rows = cursor.fetchall()
         conn.close()
-
         history_list = [{"exam_name": r["exam_name"], "score": r["score"], "total": r["total_questions"], "date": str(r["date_taken"]).split(' ')[0]} for r in rows]
         return jsonify({"success": True, "history": history_list})
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ৬. Teacher Create Exam & Dashboard
+# ৬-৭. Teacher Create Exam & Analytics
 # ==========================================
 @app.route('/api/create-exam', methods=['POST'])
 def create_exam_api():
@@ -460,8 +409,8 @@ def create_exam_api():
     exam_code = data.get('exam_code')
     exam_name = data.get('exam_name')
     timer = data.get('timer')
-    teacher_email = data.get('teacher_email', 'dasbabu938207@gmail.com') # 🆕 Default Teacher Email
-    folder_id = data.get('folder_id', 0) # 🆕 Folder ID for exams inside folders
+    teacher_email = data.get('teacher_email', 'dasbabu938207@gmail.com')
+    folder_id = data.get('folder_id', 0)
     questions = data.get('questions')
 
     try:
@@ -486,12 +435,10 @@ def create_exam_api():
 def get_teacher_dashboard():
     data = request.get_json()
     email = data.get('email')
-    
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        
         cursor.execute(f"SELECT COUNT(*) as count FROM exams WHERE teacher_email = {ph}", (email,))
         row = cursor.fetchone()
         total_exams = (row['count'] if isinstance(row, dict) else row[0]) or 0
@@ -499,12 +446,9 @@ def get_teacher_dashboard():
         cursor.execute(f"SELECT COUNT(DISTINCT student_email) as std_count, AVG(CAST(score AS FLOAT) / total_questions * 100) as avg_sc FROM results WHERE exam_code IN (SELECT exam_code FROM exams WHERE teacher_email = {ph})", (email,))
         stats = cursor.fetchone()
         
-        if isinstance(stats, dict):
-            total_students = stats['std_count'] or 0
-            avg_score = round(stats['avg_sc'], 1) if stats['avg_sc'] else 0.0
-        else:
-            total_students = stats[0] or 0
-            avg_score = round(stats[1], 1) if stats[1] else 0.0
+        total_students = (stats['std_count'] if isinstance(stats, dict) else stats[0]) or 0
+        avg_sc_val = (stats['avg_sc'] if isinstance(stats, dict) else stats[1])
+        avg_score = round(avg_sc_val, 1) if avg_sc_val else 0.0
         
         cursor.execute(f"SELECT exam_name, exam_code FROM exams WHERE teacher_email = {ph} ORDER BY exam_code DESC", (email,))
         all_exams = cursor.fetchall()
@@ -515,14 +459,10 @@ def get_teacher_dashboard():
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
-# ==========================================
-# ৭. Teacher Profile & Full Analytics
-# ==========================================
 @app.route('/api/teacher-analysis', methods=['POST'])
 def get_teacher_analysis():
     data = request.get_json()
     exam_code = data.get('exam_code')
-    
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
@@ -548,11 +488,7 @@ def get_teacher_analysis():
             chart_data[s['score']] += 1
         labels = [str(i) for i in range(total_q + 1)]
             
-        return jsonify({
-            "success": True, "total_students": total_students, "avg_score": avg_score, "total_q": total_q,
-            "top": top_students, "bottom": bottom_students, "all_students": sorted_students,
-            "chartLabels": labels, "chartData": chart_data
-        })
+        return jsonify({ "success": True, "total_students": total_students, "avg_score": avg_score, "total_q": total_q, "top": top_students, "bottom": bottom_students, "all_students": sorted_students, "chartLabels": labels, "chartData": chart_data })
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
@@ -560,46 +496,28 @@ def get_teacher_analysis():
 def teacher_full_analytics():
     data = request.get_json()
     email = data.get('email')
-
-    if not email:
-        return jsonify({"success": False, "error": "Email is required!"}), 400
+    if not email: return jsonify({"success": False, "error": "Email is required!"}), 400
 
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-
         cursor.execute(f"SELECT exam_code, exam_name FROM exams WHERE teacher_email = {ph}", (email,))
         teacher_exams = cursor.fetchall()
 
         if not teacher_exams:
             conn.close()
-            return jsonify({
-                "success": True,
-                "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": 0},
-                "examStats": [], "leaderboard": [], "studentProgress": {}
-            })
+            return jsonify({"success": True, "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": 0}, "examStats": [], "leaderboard": [], "studentProgress": {}})
 
         exam_codes = [e['exam_code'] for e in teacher_exams]
         placeholders = ','.join([ph] * len(exam_codes))
-
-        query = f"""
-            SELECT r.student_email, u.name as student_name, r.exam_code, r.exam_name, r.score, r.total_questions, r.date_taken
-            FROM results r
-            LEFT JOIN users u ON r.student_email = u.email
-            WHERE r.exam_code IN ({placeholders})
-        """
+        query = f"SELECT r.student_email, u.name as student_name, r.exam_code, r.exam_name, r.score, r.total_questions, r.date_taken FROM results r LEFT JOIN users u ON r.student_email = u.email WHERE r.exam_code IN ({placeholders})"
         cursor.execute(query, exam_codes)
         results = cursor.fetchall()
         conn.close()
 
         if not results:
-            return jsonify({
-                "success": True,
-                "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": len(teacher_exams)},
-                "examStats": [{"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0} for e in teacher_exams],
-                "leaderboard": [], "studentProgress": {}
-            })
+            return jsonify({"success": True, "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": len(teacher_exams)}, "examStats": [{"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0} for e in teacher_exams], "leaderboard": [], "studentProgress": {}})
 
         total_attempts = len(results)
         unique_students = len(set(r['student_email'] for r in results))
@@ -611,8 +529,7 @@ def teacher_full_analytics():
         for r in results:
             code = r['exam_code']
             perf = round((r['score'] / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
-            if code not in exam_map:
-                exam_map[code] = {"name": r['exam_name'], "perfs": [], "attempts": 0}
+            if code not in exam_map: exam_map[code] = {"name": r['exam_name'], "perfs": [], "attempts": 0}
             exam_map[code]["perfs"].append(perf)
             exam_map[code]["attempts"] += 1
 
@@ -621,13 +538,7 @@ def teacher_full_analytics():
             code = e['exam_code']
             if code in exam_map:
                 perfs = exam_map[code]["perfs"]
-                exam_stats.append({
-                    "name": exam_map[code]["name"],
-                    "avg": round(sum(perfs) / len(perfs), 1),
-                    "high": max(perfs),
-                    "low": min(perfs),
-                    "attempts": exam_map[code]["attempts"]
-                })
+                exam_stats.append({"name": exam_map[code]["name"], "avg": round(sum(perfs) / len(perfs), 1), "high": max(perfs), "low": min(perfs), "attempts": exam_map[code]["attempts"]})
             else:
                 exam_stats.append({"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0})
 
@@ -637,66 +548,31 @@ def teacher_full_analytics():
             s_name = r['student_name'] if r['student_name'] else s_email.split('@')[0]
             perf = round((r['score'] / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
             score = r['score']
-
-            if s_email not in student_map:
-                student_map[s_email] = {"name": s_name, "perfs": [], "scores": [], "exam_names": []}
+            if s_email not in student_map: student_map[s_email] = {"name": s_name, "perfs": [], "scores": [], "exam_names": []}
             student_map[s_email]["perfs"].append(perf)
             student_map[s_email]["scores"].append(score)
             student_map[s_email]["exam_names"].append(r['exam_name'])
 
         leaderboard = []
         student_progress = {}
-
         for email_key, data in student_map.items():
             s_avg = round(sum(data["perfs"]) / len(data["perfs"]), 1)
-            s_best = max(data["perfs"])
-            s_taken = len(data["perfs"])
-            s_total_score = sum(data["scores"])
-
-            leaderboard.append({
-                "name": data["name"],
-                "avg": s_avg,
-                "best": s_best,
-                "taken": s_taken,
-                "totalScore": s_total_score
-            })
-
-            student_progress[data["name"]] = {
-                "avg": s_avg,
-                "best": s_best,
-                "taken": s_taken,
-                "labels": data["exam_names"],
-                "data": data["perfs"]
-            }
+            leaderboard.append({"name": data["name"], "avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "totalScore": sum(data["scores"])})
+            student_progress[data["name"]] = {"avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "labels": data["exam_names"], "data": data["perfs"]}
 
         leaderboard = sorted(leaderboard, key=lambda x: x['avg'], reverse=True)
-
-        return jsonify({
-            "success": True,
-            "overall": {
-                "students": unique_students,
-                "attempts": total_attempts,
-                "avg": class_avg,
-                "high": highest_score,
-                "exams": len(teacher_exams)
-            },
-            "examStats": exam_stats,
-            "leaderboard": leaderboard,
-            "studentProgress": student_progress
-        })
-
+        return jsonify({"success": True, "overall": {"students": unique_students, "attempts": total_attempts, "avg": class_avg, "high": highest_score, "exams": len(teacher_exams)}, "examStats": exam_stats, "leaderboard": leaderboard, "studentProgress": student_progress})
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ৮. Notifications & Profile APIs
+# ৮. Notifications APIs (+ Edit & Delete)
 # ==========================================
 @app.route('/api/admin/send-notification', methods=['POST'])
 def admin_send_notification():
     data = request.get_json()
     message = data.get('message')
     target_role = data.get('target_role')
-
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
@@ -716,123 +592,8 @@ def admin_get_notifications():
         cursor.execute("SELECT id, message, target_role, date_sent FROM notifications ORDER BY id DESC")
         rows = cursor.fetchall()
         conn.close()
-
         notifs = [{"id": r["id"], "message": r["message"], "target_role": r["target_role"], "date": str(r["date_sent"])} for r in rows]
         return jsonify({"success": True, "notifications": notifs})
-    except Exception as e:
-        return jsonify({"success": False, "error": "Database error"}), 500
-
-@app.route('/api/check-unread-notifications', methods=['POST'])
-def check_unread_notifications():
-    data = request.get_json()
-    email = data.get('email')
-
-    if not email:
-        return jsonify({"success": False, "has_unread": False})
-
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-
-        cursor.execute(f"SELECT category, last_notif_read FROM users WHERE email = {ph}", (email,))
-        user = cursor.fetchone()
-        role = user["category"] if user else 'All'
-        last_read = user["last_notif_read"] if (user and user["last_notif_read"]) else '1970-01-01 00:00:00'
-
-        cursor.execute(f"""
-            SELECT COUNT(*) as count FROM notifications 
-            WHERE (target_role = 'All' OR target_role = {ph}) 
-            AND date_sent > {ph}
-        """, (role, last_read))
-        
-        row = cursor.fetchone()
-        conn.close()
-
-        unread_count = row['count'] if isinstance(row, dict) else row[0]
-        return jsonify({"success": True, "has_unread": unread_count > 0})
-    except Exception as e:
-        return jsonify({"success": False, "has_unread": False})
-
-@app.route('/api/get-notifications-page', methods=['POST'])
-def get_notifications_page():
-    data = request.get_json()
-    email = data.get('email')
-
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-
-        cursor.execute(f"SELECT category, last_notif_read FROM users WHERE email = {ph}", (email,))
-        user = cursor.fetchone()
-        role = user["category"] if user else 'All'
-        last_read = str(user["last_notif_read"]) if (user and user["last_notif_read"]) else '1970-01-01 00:00:00'
-
-        cursor.execute(f"""
-            SELECT id, message, target_role, date_sent 
-            FROM notifications 
-            WHERE target_role = 'All' OR target_role = {ph} 
-            ORDER BY id DESC
-        """, (role,))
-        rows = cursor.fetchall()
-        conn.close()
-
-        notifs = []
-        for r in rows:
-            date_sent = str(r["date_sent"])
-            is_unread = date_sent > last_read
-            notifs.append({
-                "id": r["id"], "message": r["message"], 
-                "target_role": r["target_role"], 
-                "date": date_sent.split('.')[0], 
-                "is_unread": is_unread
-            })
-
-        return jsonify({"success": True, "notifications": notifs})
-    except Exception as e:
-        return jsonify({"success": False, "error": "Database error"}), 500
-
-@app.route('/api/mark-notifications-read', methods=['POST'])
-def mark_notifications_read():
-    data = request.get_json()
-    email = data.get('email')
-
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"UPDATE users SET last_notif_read = CURRENT_TIMESTAMP WHERE email = {ph}", (email,))
-        conn.commit()
-        conn.close()
-        return jsonify({"success": True})
-    except Exception as e:
-        return jsonify({"success": False})
-
-@app.route('/api/update-profile', methods=['POST'])
-def update_profile():
-    data = request.get_json()
-    email = data.get('email')
-    new_name = data.get('name')
-    new_role = data.get('role')
-
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"UPDATE users SET name = {ph}, category = {ph} WHERE email = {ph}", (new_name, new_role, email))
-        conn.commit()
-        conn.close()
-
-        session['user'] = {'email': email, 'name': new_name, 'role': new_role}
-        redirect_url = "/student_dashboard.html" if new_role.lower() == "student" else "/teacher_profile.html"
-
-        return jsonify({
-            "success": True, 
-            "message": "Profile updated successfully!",
-            "new_role": new_role,
-            "redirect_url": redirect_url
-        })
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
@@ -866,40 +627,92 @@ def delete_notification():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"})
-        
+
+@app.route('/api/check-unread-notifications', methods=['POST'])
+def check_unread_notifications():
+    data = request.get_json()
+    email = data.get('email')
+    if not email: return jsonify({"success": False, "has_unread": False})
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT category, last_notif_read FROM users WHERE email = {ph}", (email,))
+        user = cursor.fetchone()
+        role = user["category"] if user else 'All'
+        last_read = user["last_notif_read"] if (user and user["last_notif_read"]) else '1970-01-01 00:00:00'
+        cursor.execute(f"SELECT COUNT(*) as count FROM notifications WHERE (target_role = 'All' OR target_role = {ph}) AND date_sent > {ph}", (role, last_read))
+        row = cursor.fetchone()
+        conn.close()
+        unread_count = row['count'] if isinstance(row, dict) else row[0]
+        return jsonify({"success": True, "has_unread": unread_count > 0})
+    except Exception as e:
+        return jsonify({"success": False, "has_unread": False})
+
+@app.route('/api/get-notifications-page', methods=['POST'])
+def get_notifications_page():
+    data = request.get_json()
+    email = data.get('email')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT category, last_notif_read FROM users WHERE email = {ph}", (email,))
+        user = cursor.fetchone()
+        role = user["category"] if user else 'All'
+        last_read = str(user["last_notif_read"]) if (user and user["last_notif_read"]) else '1970-01-01 00:00:00'
+        cursor.execute(f"SELECT id, message, target_role, date_sent FROM notifications WHERE target_role = 'All' OR target_role = {ph} ORDER BY id DESC", (role,))
+        rows = cursor.fetchall()
+        conn.close()
+        notifs = [{"id": r["id"], "message": r["message"], "target_role": r["target_role"], "date": str(r["date_sent"]).split('.')[0], "is_unread": str(r["date_sent"]) > last_read} for r in rows]
+        return jsonify({"success": True, "notifications": notifs})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
+
+@app.route('/api/mark-notifications-read', methods=['POST'])
+def mark_notifications_read():
+    data = request.get_json()
+    email = data.get('email')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"UPDATE users SET last_notif_read = CURRENT_TIMESTAMP WHERE email = {ph}", (email,))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False})
+
 # ==========================================
-# ৯. 📂 Google Drive Style APIs + Exam Support
+# ৯. 📂 Google Drive Style APIs (Separated Folders)
 # ==========================================
 @app.route('/api/admin/get-drive-contents', methods=['POST'])
 @app.route('/api/get-student-drive-contents', methods=['POST'])
 def get_drive_contents_api():
     data = request.get_json() if request.is_json else {}
     parent_id = data.get('parent_id', 0)
+    folder_type = data.get('folder_type', 'content') # 🆕 Separated type
 
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
 
-        cursor.execute(f"SELECT id, folder_name FROM drive_folders WHERE parent_id = {ph} ORDER BY id DESC", (parent_id,))
+        # Fetch Folders by type
+        cursor.execute(f"SELECT id, folder_name FROM drive_folders WHERE parent_id = {ph} AND folder_type = {ph} ORDER BY id DESC", (parent_id, folder_type))
         folders = [{"id": r["id"], "name": r["folder_name"]} for r in cursor.fetchall()]
 
-        cursor.execute(f"SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = {ph} ORDER BY id DESC", (parent_id,))
-        files = [{
-            "id": r["id"],
-            "title": r["title"],
-            "file_url": r["file_url"],
-            "type": r["resource_type"],
-            "date": str(r["date_uploaded"]).split(' ')[0]
-        } for r in cursor.fetchall()]
-
-        # 🆕 Fetch exams linked to this folder
-        cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY exam_code DESC", (parent_id,))
-        exams = [{
-            "code": r["exam_code"],
-            "name": r["exam_name"],
-            "timer": r["timer_minutes"]
-        } for r in cursor.fetchall()]
+        if folder_type == 'content':
+            # Fetch Notes/Files
+            cursor.execute(f"SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = {ph} ORDER BY id DESC", (parent_id,))
+            files = [{"id": r["id"], "title": r["title"], "file_url": r["file_url"], "type": r["resource_type"], "date": str(r["date_uploaded"]).split(' ')[0]} for r in cursor.fetchall()]
+            exams = []
+        else:
+            # Fetch Exams
+            files = []
+            cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY exam_code DESC", (parent_id,))
+            exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"]} for r in cursor.fetchall()]
 
         conn.close()
         return jsonify({"success": True, "folders": folders, "files": files, "exams": exams})
@@ -911,12 +724,13 @@ def create_drive_folder():
     data = request.get_json()
     folder_name = data.get('folder_name')
     parent_id = data.get('parent_id', 0)
+    folder_type = data.get('folder_type', 'content') # 🆕 Save by type
 
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"INSERT INTO drive_folders (folder_name, parent_id) VALUES ({ph}, {ph})", (folder_name, parent_id))
+        cursor.execute(f"INSERT INTO drive_folders (folder_name, parent_id, folder_type) VALUES ({ph}, {ph}, {ph})", (folder_name, parent_id, folder_type))
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Folder created!"})
@@ -930,9 +744,7 @@ def upload_drive_file():
         title = request.form.get('title')
         resource_type = request.form.get('resource_type', 'Notes')
         file = request.files.get('file')
-
-        if not file:
-            return jsonify({"success": False, "error": "No file chosen!"}), 400
+        if not file: return jsonify({"success": False, "error": "No file chosen!"}), 400
 
         filename = secure_filename(file.filename)
         unique_filename = f"{resource_type}_{folder_id}_{filename}"
@@ -943,11 +755,9 @@ def upload_drive_file():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"INSERT INTO drive_files (folder_id, title, file_url, resource_type) VALUES ({ph}, {ph}, {ph}, {ph})",
-                       (folder_id, title, file_url, resource_type))
+        cursor.execute(f"INSERT INTO drive_files (folder_id, title, file_url, resource_type) VALUES ({ph}, {ph}, {ph}, {ph})", (folder_id, title, file_url, resource_type))
         conn.commit()
         conn.close()
-
         return jsonify({"success": True, "message": "File uploaded!"})
     except Exception as e:
         return jsonify({"success": False, "error": "Upload Failed"}), 500
@@ -966,7 +776,7 @@ def delete_drive_item():
         if item_type == 'folder':
             cursor.execute(f"DELETE FROM drive_folders WHERE id = {ph}", (item_id,))
             cursor.execute(f"DELETE FROM drive_files WHERE folder_id = {ph}", (item_id,))
-            cursor.execute(f"DELETE FROM exams WHERE folder_id = {ph}", (item_id,)) # Delete exams inside folder
+            cursor.execute(f"DELETE FROM exams WHERE folder_id = {ph}", (item_id,))
         elif item_type == 'exam':
             cursor.execute(f"DELETE FROM exams WHERE exam_code = {ph}", (item_id,))
         else:
@@ -978,9 +788,36 @@ def delete_drive_item():
     except Exception as e:
         return jsonify({"success": False, "error": "Delete Failed"}), 500
 
-# ==========================================
-# ১০. Profile Picture APIs
-# ==========================================
+@app.route('/api/upload-profile-pic', methods=['POST'])
+def upload_profile_pic():
+    email = request.form.get('email')
+    action = request.form.get('action')
+    file = request.files.get('file')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        if action == 'remove':
+            cursor.execute(f"UPDATE users SET photo_url = NULL WHERE email = {ph}", (email,))
+            conn.commit()
+            conn.close()
+            return jsonify({"success": True})
+        if file:
+            PROFILE_PICS_FOLDER = 'static/uploads/profiles'
+            os.makedirs(PROFILE_PICS_FOLDER, exist_ok=True)
+            filename = secure_filename(file.filename)
+            unique_filename = f"profile_{email.replace('@','_').replace('.','_')}_{filename}"
+            file_path = os.path.join(PROFILE_PICS_FOLDER, unique_filename)
+            file.save(file_path)
+            file_url = f"/static/uploads/profiles/{unique_filename}"
+            cursor.execute(f"UPDATE users SET photo_url = {ph} WHERE email = {ph}", (file_url, email))
+            conn.commit()
+            conn.close()
+            return jsonify({"success": True, "photo_url": file_url})
+        return jsonify({"success": False, "error": "No file uploaded"})
+    except Exception as e:
+        return jsonify({"success": False})
+        
 @app.route('/api/get-profile-data', methods=['POST'])
 def get_profile_data():
     data = request.get_json()
@@ -992,47 +829,11 @@ def get_profile_data():
         cursor.execute(f"SELECT name, photo_url FROM users WHERE email = {ph}", (email,))
         user = cursor.fetchone()
         conn.close()
-        if user:
-            return jsonify({"success": True, "name": user['name'], "photo_url": user['photo_url']})
+        if user: return jsonify({"success": True, "name": user['name'], "photo_url": user['photo_url']})
         return jsonify({"success": False})
     except Exception as e:
         return jsonify({"success": False})
 
-@app.route('/api/upload-profile-pic', methods=['POST'])
-def upload_profile_pic():
-    email = request.form.get('email')
-    action = request.form.get('action')
-    file = request.files.get('file')
-
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-
-        if action == 'remove':
-            cursor.execute(f"UPDATE users SET photo_url = NULL WHERE email = {ph}", (email,))
-            conn.commit()
-            conn.close()
-            return jsonify({"success": True})
-
-        if file:
-            PROFILE_PICS_FOLDER = 'static/uploads/profiles'
-            os.makedirs(PROFILE_PICS_FOLDER, exist_ok=True)
-            filename = secure_filename(file.filename)
-            unique_filename = f"profile_{email.replace('@','_').replace('.','_')}_{filename}"
-            file_path = os.path.join(PROFILE_PICS_FOLDER, unique_filename)
-            file.save(file_path)
-            
-            file_url = f"/static/uploads/profiles/{unique_filename}"
-            cursor.execute(f"UPDATE users SET photo_url = {ph} WHERE email = {ph}", (file_url, email))
-            conn.commit()
-            conn.close()
-            return jsonify({"success": True, "photo_url": file_url})
-        
-        return jsonify({"success": False, "error": "No file uploaded"})
-    except Exception as e:
-        return jsonify({"success": False})
-        
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
