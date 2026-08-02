@@ -107,6 +107,11 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS drive_files (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_id INTEGER NOT NULL, title TEXT NOT NULL, file_url TEXT NOT NULL, resource_type TEXT DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             ''')
         conn.commit()
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN photo_url TEXT;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback() # কলাম আগে থেকে থাকলে এরর ইগনোর করবে
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
@@ -906,7 +911,64 @@ def delete_drive_item():
         return jsonify({"success": True, "message": "Deleted!"})
     except Exception as e:
         return jsonify({"success": False, "error": "Delete Failed"}), 500
+# ==========================================
+# ১০. Profile Picture APIs
+# ==========================================
+@app.route('/api/get-profile-data', methods=['POST'])
+def get_profile_data():
+    data = request.get_json()
+    email = data.get('email')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT name, photo_url FROM users WHERE email = {ph}", (email,))
+        user = cursor.fetchone()
+        conn.close()
+        if user:
+            return jsonify({"success": True, "name": user['name'], "photo_url": user['photo_url']})
+        return jsonify({"success": False})
+    except Exception as e:
+        return jsonify({"success": False})
 
+@app.route('/api/upload-profile-pic', methods=['POST'])
+def upload_profile_pic():
+    email = request.form.get('email')
+    action = request.form.get('action')
+    file = request.files.get('file')
+
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+
+        # যদি ছবি রিমুভ করতে চায়
+        if action == 'remove':
+            cursor.execute(f"UPDATE users SET photo_url = NULL WHERE email = {ph}", (email,))
+            conn.commit()
+            conn.close()
+            return jsonify({"success": True})
+
+        # যদি নতুন ছবি আপলোড করে
+        if file:
+            PROFILE_PICS_FOLDER = 'static/uploads/profiles'
+            os.makedirs(PROFILE_PICS_FOLDER, exist_ok=True)
+            filename = secure_filename(file.filename)
+            unique_filename = f"profile_{email.replace('@','_').replace('.','_')}_{filename}"
+            file_path = os.path.join(PROFILE_PICS_FOLDER, unique_filename)
+            file.save(file_path)
+            
+            file_url = f"/{file_path}"
+            cursor.execute(f"UPDATE users SET photo_url = {ph} WHERE email = {ph}", (file_url, email))
+            conn.commit()
+            conn.close()
+            return jsonify({"success": True, "photo_url": file_url})
+        
+        return jsonify({"success": False, "error": "No file uploaded"})
+    except Exception as e:
+        print("Upload Pic Error:", e)
+        return jsonify({"success": False})
+        
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
