@@ -115,6 +115,13 @@ def init_db():
         except Exception:
             if db_type == 'postgres': conn.rollback()
             
+        # 🆕 Folder ID Column for Exams (To link exams inside folders)
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN folder_id INT DEFAULT 0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
@@ -128,65 +135,56 @@ init_db()
 def home():
     return render_template('index.html')
 
-@app.route('/signup.html')
-def signup_page():
-    return render_template('signup.html')
-
-@app.route('/signin.html')
-def signin_page():
-    return render_template('signin.html')
-    
-@app.route('/auth.html')
-@app.route('/login.html')
-def auth_page():
-    return render_template('auth.html')
+@app.route('/setup_profile.html')
+def setup_profile_page():
+    return render_template('setup_profile.html')
 
 @app.route('/student_dashboard.html')
 def student_dashboard():
     if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
-        return redirect(url_for('auth_page'))
+        return redirect('/')
     return render_template('student_dashboard.html')
 
 @app.route('/teacher_dashboard.html')
 def teacher_dashboard():
     if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'teacher':
-        return redirect(url_for('auth_page'))
+        return redirect('/')
     return render_template('teacher_dashboard.html')
 
 @app.route('/teacher_profile.html')
 def teacher_profile():
     if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'teacher':
-        return redirect(url_for('auth_page'))
+        return redirect('/')
     return render_template('teacher_profile.html')
 
 @app.route('/student_exam.html')
 def student_exam():
     if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
-        return redirect(url_for('auth_page'))
+        return redirect('/')
     return render_template('student_exam.html')
 
 @app.route('/student_profile.html')
 def student_profile():
     if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
-        return redirect(url_for('auth_page'))
+        return redirect('/')
     return render_template('student_profile.html')
 
 @app.route('/create_exam.html')
 def create_exam():
     if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'teacher':
-        return redirect(url_for('auth_page'))
+        return redirect('/')
     return render_template('create_exam.html')
 
 @app.route('/teacher_analytics.html')
 def teacher_analytics():
     if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'teacher':
-        return redirect(url_for('auth_page'))
+        return redirect('/')
     return render_template('teacher_analytics.html')
 
 @app.route('/notification.html')
 def notification():
     if 'user' not in session or not isinstance(session['user'], dict):
-        return redirect(url_for('auth_page'))
+        return redirect('/')
     return render_template('notification.html')
 
 @app.route('/admin.html')
@@ -196,13 +194,13 @@ def admin_page():
 @app.route('/student_analytics.html')
 def student_analytics():
     if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
-        return redirect(url_for('auth_page'))
+        return redirect('/')
     return render_template('student_analytics.html')
 
 @app.route('/student_resources.html')
 def student_resources():
     if 'user' not in session or not isinstance(session['user'], dict) or session['user'].get('role', '').lower() != 'student':
-        return redirect(url_for('auth_page'))
+        return redirect('/')
     return render_template('student_resources.html')
 
 # 🎯 গ্লোবাল এরর হ্যান্ডলার
@@ -224,16 +222,9 @@ def logout():
     session.pop('user', None)
     return redirect('/')
 
-# ---------------------------------------------
-# পেজ রাউট (নতুন সেটআপ)
-# ---------------------------------------------
-@app.route('/setup_profile.html')
-def setup_profile_page():
-    return render_template('setup_profile.html')
-
-# ---------------------------------------------
-# Google Login & Signup APIs
-# ---------------------------------------------
+# ==========================================
+# ২. Google Login & Signup APIs
+# ==========================================
 @app.route('/api/google-login', methods=['POST'])
 def google_login():
     data = request.get_json()
@@ -247,12 +238,10 @@ def google_login():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # ডাটাবেসে চেক করা হচ্ছে ইউজার আগে থেকেই আছে কি না
         cursor.execute(f"SELECT name, category, photo_url FROM users WHERE email = {ph}", (email,))
         user = cursor.fetchone()
         
         if user:
-            # পুরোনো ইউজার হলে সেশন তৈরি করে ড্যাশবোর্ডে পাঠিয়ে দেওয়া হবে
             user_role = user['category'] if isinstance(user, dict) else user[1]
             user_name = user['name'] if isinstance(user, dict) else user[0]
             
@@ -268,14 +257,11 @@ def google_login():
                 "redirect_url": "/student_dashboard.html" if user_role.lower() == "student" else "/teacher_dashboard.html"
             })
         else:
-            # নতুন ইউজার হলে ডাটাবেসে সেভ না করে ফ্রন্টএন্ডকে সিগন্যাল দেওয়া হবে
             conn.close()
             return jsonify({"success": True, "is_new": True})
             
     except Exception as e:
-        print("Google Login Error:", e)
         return jsonify({"success": False, "error": "Database error occurred."}), 500
-
 
 @app.route('/api/complete-signup', methods=['POST'])
 def complete_signup():
@@ -283,14 +269,13 @@ def complete_signup():
     email = data.get('email')
     name = data.get('name')
     role = data.get('role', 'Student')
-    photo_url = data.get('photo_url') # গুগল থেকে পাওয়া ছবি
+    photo_url = data.get('photo_url')
 
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # নতুন ইউজারের ডাটা পার্মানেন্টলি ডাটাবেসে সেভ করা
         cursor.execute(
             f"INSERT INTO users (email, name, category, photo_url) VALUES ({ph}, {ph}, {ph}, {ph})", 
             (email, name, role, photo_url)
@@ -306,7 +291,6 @@ def complete_signup():
             "redirect_url": "/student_dashboard.html" if role.lower() == "student" else "/teacher_dashboard.html"
         })
     except Exception as e:
-        print("Signup Completion Error:", e)
         return jsonify({"success": False, "error": "Failed to create account."}), 500
 
 # ==========================================
@@ -476,7 +460,8 @@ def create_exam_api():
     exam_code = data.get('exam_code')
     exam_name = data.get('exam_name')
     timer = data.get('timer')
-    teacher_email = data.get('teacher_email')
+    teacher_email = data.get('teacher_email', 'dasbabu938207@gmail.com') # 🆕 Default Teacher Email
+    folder_id = data.get('folder_id', 0) # 🆕 Folder ID for exams inside folders
     questions = data.get('questions')
 
     try:
@@ -484,7 +469,8 @@ def create_exam_api():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
 
-        cursor.execute(f"INSERT INTO exams (exam_code, exam_name, teacher_email, timer_minutes) VALUES ({ph}, {ph}, {ph}, {ph})", (exam_code, exam_name, teacher_email, timer))
+        cursor.execute(f"INSERT INTO exams (exam_code, exam_name, teacher_email, timer_minutes, folder_id) VALUES ({ph}, {ph}, {ph}, {ph}, {ph})", 
+                       (exam_code, exam_name, teacher_email, timer, folder_id))
         
         for q in questions:
             cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
@@ -851,7 +837,7 @@ def update_profile():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 # ==========================================
-# ৯. 📂 Google Drive Style APIs
+# ৯. 📂 Google Drive Style APIs + Exam Support
 # ==========================================
 @app.route('/api/admin/get-drive-contents', methods=['POST'])
 @app.route('/api/get-student-drive-contents', methods=['POST'])
@@ -876,8 +862,16 @@ def get_drive_contents_api():
             "date": str(r["date_uploaded"]).split(' ')[0]
         } for r in cursor.fetchall()]
 
+        # 🆕 Fetch exams linked to this folder
+        cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY exam_code DESC", (parent_id,))
+        exams = [{
+            "code": r["exam_code"],
+            "name": r["exam_name"],
+            "timer": r["timer_minutes"]
+        } for r in cursor.fetchall()]
+
         conn.close()
-        return jsonify({"success": True, "folders": folders, "files": files})
+        return jsonify({"success": True, "folders": folders, "files": files, "exams": exams})
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
@@ -937,11 +931,16 @@ def delete_drive_item():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
+        
         if item_type == 'folder':
             cursor.execute(f"DELETE FROM drive_folders WHERE id = {ph}", (item_id,))
             cursor.execute(f"DELETE FROM drive_files WHERE folder_id = {ph}", (item_id,))
+            cursor.execute(f"DELETE FROM exams WHERE folder_id = {ph}", (item_id,)) # Delete exams inside folder
+        elif item_type == 'exam':
+            cursor.execute(f"DELETE FROM exams WHERE exam_code = {ph}", (item_id,))
         else:
             cursor.execute(f"DELETE FROM drive_files WHERE id = {ph}", (item_id,))
+            
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Deleted!"})
@@ -979,27 +978,21 @@ def upload_profile_pic():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
 
-        # যদি ছবি রিমুভ করতে চায়
         if action == 'remove':
             cursor.execute(f"UPDATE users SET photo_url = NULL WHERE email = {ph}", (email,))
             conn.commit()
             conn.close()
             return jsonify({"success": True})
 
-        # যদি নতুন ছবি আপলোড করে
         if file:
             PROFILE_PICS_FOLDER = 'static/uploads/profiles'
             os.makedirs(PROFILE_PICS_FOLDER, exist_ok=True)
             filename = secure_filename(file.filename)
             unique_filename = f"profile_{email.replace('@','_').replace('.','_')}_{filename}"
-            
-            # ফিজিক্যাল পাথে সেভ করা হচ্ছে
             file_path = os.path.join(PROFILE_PICS_FOLDER, unique_filename)
             file.save(file_path)
             
-            # 👈 এখানে URL তৈরি করার সময় সরাসরি ফরোয়ার্ড স্ল্যাশ ব্যবহার করা হলো
             file_url = f"/static/uploads/profiles/{unique_filename}"
-            
             cursor.execute(f"UPDATE users SET photo_url = {ph} WHERE email = {ph}", (file_url, email))
             conn.commit()
             conn.close()
@@ -1007,7 +1000,6 @@ def upload_profile_pic():
         
         return jsonify({"success": False, "error": "No file uploaded"})
     except Exception as e:
-        print("Upload Pic Error:", e)
         return jsonify({"success": False})
         
 if __name__ == '__main__':
