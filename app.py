@@ -836,6 +836,37 @@ def update_profile():
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
+@app.route('/api/admin/edit-notification', methods=['POST'])
+def edit_notification():
+    data = request.get_json()
+    notif_id = data.get('id')
+    new_message = data.get('message')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"UPDATE notifications SET message = {ph} WHERE id = {ph}", (new_message, notif_id))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"})
+
+@app.route('/api/admin/delete-notification', methods=['POST'])
+def delete_notification():
+    data = request.get_json()
+    notif_id = data.get('id')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"DELETE FROM notifications WHERE id = {ph}", (notif_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"})
+        
 # ==========================================
 # ৯. 📂 Google Drive Style APIs + Exam Support
 # ==========================================
