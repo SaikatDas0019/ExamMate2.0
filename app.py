@@ -197,10 +197,23 @@ def student_resources():
         return redirect(url_for('auth_page'))
     return render_template('student_resources.html')
 
+# 🎯 গ্লোবাল এরর হ্যান্ডলার (ভাঙা কুকি বা সেশনের কারণে সার্ভার ক্র্যাশ করা বন্ধ করবে)
+@app.errorhandler(500)
+def internal_error(e):
+    session.pop('user', None)
+    return redirect('/')
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    session.pop('user', None)
+    return redirect('/')
+
+# 🎯 নিরাপদ লগআউট (পারমানেন্ট সেশন ভাঙবে না এবং ইনডেক্স পেজে পাঠাবে)
 @app.route('/logout')
 def logout():
-    session.clear()
-    return redirect(url_for('auth_page'))
+    # session.clear() এর বদলে শুধু ইউজারের ডেটা নিরাপদে মোছা হচ্ছে
+    session.pop('user', None)
+    return redirect('/')  # 👈 এটি আপনাকে সরাসরি একদম প্রথম পেজে (index.html) পাঠিয়ে দেবে
 
 # ==========================================
 # ২. Google Auth Sync API
