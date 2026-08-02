@@ -167,6 +167,10 @@
         }
 
         // ২. ফটো প্রিভিউ (শুধুমাত্র লোকাল দেখার জন্য)
+                let imageFileToUpload = null;
+        let removePhotoFlag = false;
+        const defaultImageSrc = "https://ui-avatars.com/api/?name=Student&background=random&size=180";
+
         function previewImage(event) {
             const reader = new FileReader();
             reader.onload = function() {
@@ -174,7 +178,11 @@
                 document.getElementById('upload-controls').style.display = 'none';
                 document.getElementById('edit-controls').style.display = 'block';
             }
-            if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+            if(event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+                imageFileToUpload = event.target.files[0];
+                removePhotoFlag = false;
+            }
         }
 
         function removeImage() {
@@ -182,9 +190,10 @@
             document.getElementById('file-upload').value = "";
             document.getElementById('upload-controls').style.display = 'block';
             document.getElementById('edit-controls').style.display = 'none';
+            imageFileToUpload = null;
+            removePhotoFlag = true;
         }
 
-        // ৩. নিরাপদ সেভ প্রোফাইল (photo_url পাঠানো বন্ধ করা হয়েছে যাতে পুরোনো ব্যাকএন্ড ক্র্যাশ না করে)
         async function saveProfileChanges() {
             const name = document.getElementById('input-name').value.trim();
             const email = document.getElementById('input-email').value.trim();
@@ -196,14 +205,24 @@
             }
 
             try {
+                // ১. ছবি আপডেট বা রিমুভ
+                if (imageFileToUpload || removePhotoFlag) {
+                    const formData = new FormData();
+                    formData.append('email', email);
+                    if (removePhotoFlag) {
+                        formData.append('action', 'remove');
+                    } else if (imageFileToUpload) {
+                        formData.append('action', 'upload');
+                        formData.append('file', imageFileToUpload);
+                    }
+                    await fetch('/api/upload-profile-pic', { method: 'POST', body: formData });
+                }
+
+                // ২. ইউজার ইনফো আপডেট
                 const response = await fetch('/api/update-profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email: email, 
-                        name: name, 
-                        role: role
-                    })
+                    body: JSON.stringify({ email: email, name: name, role: role })
                 });
 
                 const data = await response.json();
@@ -233,6 +252,7 @@
                 alert("Server error updating profile.");
             }
         }
+
 
         // ৪. নিখুঁত লগআউট
         function handleLogout() {
