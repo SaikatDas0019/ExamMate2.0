@@ -885,7 +885,8 @@ def extract_pdf_gemini():
         """ + extracted_text
 
         # Gemini 1.5 Flash মডেল কল করা
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-pro')
+
         response = model.generate_content(prompt)
         
         response_text = response.text.strip()
