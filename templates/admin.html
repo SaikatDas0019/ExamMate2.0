@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExamMate | Admin Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <!-- Tesseract.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root { color-scheme: light; }
         body { background-color: #f1f5f9; color: #1e293b; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -50,7 +51,7 @@
         .modal-box { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); box-sizing: border-box; }
         .modal-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #0f172a; text-align: center;}
         
-        .modal-btn { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: bold; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; color: #334155; transition: 0.2s;}
+        .modal-btn { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: bold; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; color: #334155; transition: 0.2s; box-sizing: border-box;}
         .modal-btn:hover { background: #f1f5f9; border-color: #3b82f6; color: #0f172a; transform: translateY(-2px);}
 
         /* Form & Create Exam UI */
@@ -183,7 +184,7 @@
                 <select id="exam-method" onchange="toggleExamMethod()">
                     <option value="json">Upload JSON File 📁</option>
                     <option value="manual">Add Manually 📝</option>
-                    <option value="ai">AI PDF Scan 🪄</option>
+                    <option value="ai">Smart Mobile Scanner 📸</option>
                 </select>
             </div>
 
@@ -229,11 +230,28 @@
                 <button class="modal-btn" style="background: #3b82f6; color: white; justify-content: center; border: none;" onclick="addManualQuestion()">Add Question ➕</button>
             </div>
 
-            <!-- AI Upload Section (Updated for PDF & Gemini) -->
-            <div id="method-ai" class="hidden" style="text-align: center; padding: 20px; border: 2px dashed #a855f7; border-radius: 12px; background: #faf5ff;">
-                <p style="margin-top: 0; color: #7e22ce; font-weight: bold; font-size: 0.9rem;">Upload Question Paper PDF</p>
-                <input type="file" id="ai-pdf" accept=".pdf" style="margin-bottom: 15px;">
-                <button class="modal-btn" id="btn-scan-ai" style="background: #a855f7; color: white; justify-content: center; border: none;" onclick="scanPDFWithAI()">Extract Questions with Gemini ✨</button>
+            <!-- Smart Scanner Section (Replaces the old AI Section) -->
+            <div id="method-ai" class="hidden" style="padding: 20px; border: 2px dashed #a855f7; border-radius: 12px; background: #faf5ff;">
+                <p style="margin-top: 0; color: #7e22ce; font-weight: bold; font-size: 0.9rem; text-align: center;">📸 Smart Mobile Scanner</p>
+                <p style="font-size: 0.8rem; color: #64748b; text-align: center; margin-bottom: 15px;">ক্যামেরা দিয়ে ছবি তুলুন বা গ্যালারি থেকে ফাইল সিলেক্ট করুন</p>
+                
+                <div class="grid-2x2" style="margin-bottom: 15px;">
+                    <label class="modal-btn" style="background: #a855f7; color: white; justify-content: center; border: none; cursor: pointer; margin: 0;">
+                        <i class="fas fa-camera"></i> ক্যামেরা
+                        <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleImageScan(event)">
+                    </label>
+                    <label class="modal-btn" style="background: #f59e0b; color: white; justify-content: center; border: none; cursor: pointer; margin: 0;">
+                        <i class="fas fa-images"></i> গ্যালারি
+                        <input type="file" accept="image/*, .pdf" class="hidden" onchange="handleImageScan(event)">
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <textarea id="scanned-text-result" rows="5" placeholder="স্ক্যান করা টেক্সট এখানে আসবে, অথবা আপনি চাইলে সরাসরি কপি-পেস্টও করতে পারেন..."></textarea>
+                </div>
+                
+                <button class="btn-submit" onclick="processScannedText()" style="background: #8b5cf6; margin-top: 5px;">Extract Questions 🚀</button>
+                <div id="scan-loading" class="hidden" style="text-align: center; color: #8b5cf6; font-weight: bold; font-size: 0.9rem; margin-top: 10px;">Scanning directly on your device... ⏳</div>
             </div>
 
             <div style="margin-top: 15px; font-weight: bold; color: #16a34a; font-size: 0.9rem;">
@@ -306,7 +324,6 @@
             if (panelId === 'notif-panel') loadNotifications();
         }
 
-        // Custom Drive Opener based on type
         function openDrivePanel(type, titleText) {
             currentDriveType = type;
             currentFolderId = 0;
@@ -329,7 +346,7 @@
         }
 
         // ==========================================
-        // 2. NOTIFICATION LOGIC (Edit & Delete)
+        // 2. NOTIFICATION LOGIC
         // ==========================================
         async function loadNotifications() {
             const feed = document.getElementById('chat-feed');
@@ -500,11 +517,8 @@
             }
         }
 
-        // --- Modals ---
         function openPlusModal() { 
             document.getElementById('plus-modal').style.display = 'flex'; 
-            
-            // Toggle buttons based on drive type
             if (currentDriveType === 'content') {
                 document.getElementById('btn-upload-file').style.display = 'flex';
                 document.getElementById('btn-create-exam').style.display = 'none';
@@ -598,7 +612,6 @@
             document.getElementById('q-count').innerText = tempExamQuestions.length;
         }
 
-        // --- JSON Parsing ---
         function handleJsonUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -620,7 +633,6 @@
             reader.readAsText(file);
         }
 
-        // --- Manual Add ---
         function addManualQuestion() {
             const q = document.getElementById('q-text').value;
             const a = document.getElementById('opt-a').value;
@@ -639,48 +651,46 @@
             document.getElementById('opt-d').value = '';
         }
 
-        // --- Gemini PDF API ---
-        async function scanPDFWithAI() {
-            const fileInput = document.getElementById('ai-pdf');
-            if (fileInput.files.length === 0) {
-                alert("Please upload a PDF question paper first.");
+        // 🔄 ছবি থেকে টেক্সট বের করার ফাংশন (Tesseract.js)
+        async function handleImageScan(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.type === "application/pdf") {
+                alert("পিডিএফ স্ক্যান করার ফিচারটি আমরা পরবর্তী ধাপে যুক্ত করছি! আপাতত একটি ছবি সিলেক্ট করুন বা টেক্সট পেস্ট করুন।");
+                event.target.value = ""; 
                 return;
             }
 
-            const aiBtn = document.getElementById('btn-scan-ai');
-            const originalText = aiBtn.innerHTML;
-            aiBtn.innerHTML = "Scanning PDF with Gemini... ⏳";
-            aiBtn.disabled = true;
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
+            const loadingDiv = document.getElementById('scan-loading');
+            const resultBox = document.getElementById('scanned-text-result');
+            
+            loadingDiv.classList.remove('hidden');
+            resultBox.value = "Scanning your image... ⏳";
 
             try {
-                const response = await fetch('/api/extract-pdf-gemini', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    tempExamQuestions = tempExamQuestions.concat(data.questions);
-                    updateQCount();
-                    alert(`🎉 Success! Gemini extracted ${data.questions.length} questions from the PDF.`);
-                } else {
-                    alert(data.error || "Failed to extract questions from PDF.");
-                }
+                const result = await Tesseract.recognize(file, 'eng');
+                resultBox.value = result.data.text;
+                alert("✅ স্ক্যান সফল হয়েছে! আপনি চাইলে লেখাগুলো এডিট করতে পারেন।");
             } catch (error) {
-                alert("Server connection error while contacting Gemini API.");
-                console.error(error);
+                alert("❌ স্ক্যান করতে সমস্যা হয়েছে: " + error.message);
+                resultBox.value = "";
             } finally {
-                aiBtn.innerHTML = originalText;
-                aiBtn.disabled = false;
-                fileInput.value = ""; // Clear file
+                loadingDiv.classList.add('hidden');
+                event.target.value = ""; 
             }
         }
 
-        // --- Publish Exam ---
+        // 🔄 ৩য় ধাপের জন্য ফাঁকা ফাংশন (আপাতত)
+        function processScannedText() {
+            const text = document.getElementById('scanned-text-result').value;
+            if (!text.trim()) {
+                alert("Please scan an image or paste some text first!");
+                return;
+            }
+            alert("এই ফাংশনটি ৩য় ধাপে তৈরি করা হবে, যা টেক্সট থেকে অটোমেটিক প্রশ্ন আলাদা করবে!");
+        }
+
         async function publishExam() {
             const name = document.getElementById('exam-name').value.trim();
             const code = document.getElementById('exam-code').value.trim().toUpperCase();
@@ -689,16 +699,10 @@
             if(!name || !code) { alert("Exam Name and Code are required!"); return; }
             if(tempExamQuestions.length === 0) { alert("Add at least 1 question before publishing!"); return; }
 
-            // আপনার দেওয়া নির্দিষ্ট ইমেইল
             const teacherEmail = "dasbabu938207@gmail.com";
-
             const payload = {
-                exam_code: code,
-                exam_name: name,
-                timer: timer,
-                teacher_email: teacherEmail,
-                folder_id: currentFolderId, 
-                questions: tempExamQuestions
+                exam_code: code, exam_name: name, timer: timer,
+                teacher_email: teacherEmail, folder_id: currentFolderId, questions: tempExamQuestions
             };
 
             try {
@@ -711,7 +715,6 @@
                 
                 if(data.success) {
                     alert(`🎉 Exam created successfully in the folder!\nCode: ${code}`);
-                    // Go back to folder view
                     document.getElementById('back-btn').onclick = showDashboardMenu;
                     openDrivePanel('exam', '📝 Create Exam Folders');
                 } else {
