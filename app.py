@@ -7,6 +7,12 @@ from werkzeug.exceptions import HTTPException
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import json
+import google.generativeai as genai
+import PyPDF2
+
+# Gemini API কনফিগারেশন (Environment Variable থেকে API Key নেবে)
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # .env ফাইল লোড করা
 load_dotenv()
@@ -833,6 +839,73 @@ def get_profile_data():
         return jsonify({"success": False})
     except Exception as e:
         return jsonify({"success": False})
+
+# ==========================================
+# ১০. Gemini AI PDF Extraction API
+# ==========================================
+@app.route('/api/extract-pdf-gemini', methods=['POST'])
+def extract_pdf_gemini():
+    # ফাইল আপলোড হয়েছে কি না চেক করা
+    if 'file' not in request.files:
+        return jsonify({"success": False, "error": "No file uploaded!"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"success": False, "error": "No selected file!"}), 400
+
+    try:
+        # PDF থেকে টেক্সট পড়া
+        reader = PyPDF2.PdfReader(file)
+        extracted_text = ""
+        for page in reader.pages:
+            text = page.extract_text()
+            if text:
+                extracted_text += text
+
+        if not extracted_text.strip():
+            return jsonify({"success": False, "error": "No readable text found in the PDF!"}), 400
+
+        # Gemini-কে দেওয়ার জন্য প্রম্পট
+        prompt = """
+        Extract all the multiple-choice questions from the following text. 
+        You must respond ONLY with a valid JSON array of objects. Do not include markdown formatting like ```json or ```.
+        Each object must strictly follow this exact structure:
+        [
+            {
+                "question_text": "The question here?",
+                "option_a": "Option A text",
+                "option_b": "Option B text",
+                "option_c": "Option C text",
+                "option_d": "Option D text",
+                "correct_option": "A" 
+            }
+        ]
+        Make sure 'correct_option' only contains A, B, C, or D.
+        Text to analyze:
+        """ + extracted_text
+
+        # Gemini 1.5 Flash মডেল কল করা
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
+        
+        response_text = response.text.strip()
+        
+        # যদি Gemini এক্সট্রা ব্যাকটিক (```json) দেয়, তা মুছে ফেলা
+        if response_text.startswith("```json"):
+            response_text = response_text[7:-3].strip()
+        elif response_text.startswith("```"):
+            response_text = response_text[3:-3].strip()
+
+        # টেক্সটকে জেসন বা ডিকশনারিতে রূপান্তর
+        questions_json = json.loads(response_text)
+        
+        return jsonify({"success": True, "questions": questions_json})
+        
+    except json.JSONDecodeError:
+        return jsonify({"success": False, "error": "AI could not generate valid questions. Please try a clearer PDF."}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
