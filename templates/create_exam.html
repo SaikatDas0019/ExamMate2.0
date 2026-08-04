@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExamMate | Create Custom Exam</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Tesseract.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         /* Global Theme (Pure White) */
         :root { color-scheme: light; }
@@ -71,16 +73,12 @@
         .btn-publish { background: linear-gradient(135deg, #10b981, #059669); padding: 15px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin-top: 20px;}
         .btn-publish:hover { opacity: 0.9; }
 
-        /* File Upload styling */
-        .file-upload-wrapper { margin-bottom: 15px; }
-        .file-upload-wrapper input[type="file"] { font-size: 0.85rem; }
-
         /* Preview List */
         .preview-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-top: 15px;}
         .preview-item { border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px; font-size: 0.9rem;}
         .preview-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
         
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .loading-text { text-align: center; color: #8b5cf6; font-weight: bold; font-size: 0.9rem; margin-top: 10px;}
     </style>
 </head>
@@ -108,16 +106,33 @@
             </div>
         </div>
 
-        <!-- 🔄 আপডেট করা জেমিনি পিডিএফ স্ক্যানার সেকশন -->
-        <div class="card-ai">
-            <h3 class="ai-title">✨ AI Question PDF Scanner</h3>
-            <div class="file-upload-wrapper">
-                <label style="font-size: 0.85rem; font-weight: 600; color: #333;">Upload Question Paper PDF</label><br>
-                <input type="file" id="ai-pdf" accept=".pdf" style="margin-top: 5px;">
-            </div>
+        <!-- 📸 Smart Mobile Scanner Section -->
+        <div class="card-ai" id="smart-scanner-section">
+            <h3 class="ai-title">📸 Smart Mobile Scanner</h3>
+            <p style="font-size: 0.85rem; color: #64748b;">ক্যামেরা দিয়ে ছবি তুলুন বা গ্যালারি থেকে ছবি/ফাইল সিলেক্ট করুন</p>
             
-            <button class="btn btn-ai" onclick="scanPDFWithAI()">Extract Questions with Gemini 🪄</button>
-            <div id="ai-loading" class="loading-text hidden">Gemini is reading the PDF and generating JSON questions...</div>
+            <div class="grid-2x2" style="margin-bottom: 15px;">
+                <!-- Camera Button -->
+                <label class="btn btn-ai" style="text-align: center; cursor: pointer; display: block; box-sizing: border-box;">
+                    <i class="fas fa-camera"></i> ক্যামেরা ওপেন
+                    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageScan(event)">
+                </label>
+                
+                <!-- Gallery/File Button -->
+                <label class="btn btn-add" style="text-align: center; cursor: pointer; display: block; background: #f59e0b; margin-top: 0; box-sizing: border-box;">
+                    <i class="fas fa-images"></i> গ্যালারি / ফাইল
+                    <input type="file" id="gallery-input" accept="image/*, .pdf" class="hidden" onchange="handleImageScan(event)">
+                </label>
+            </div>
+
+            <!-- Text Result / Paste Area -->
+            <div class="input-group">
+                <label>Scanned Text / Copy-Paste Area</label>
+                <textarea id="scanned-text-result" rows="6" placeholder="স্ক্যান করা টেক্সট এখানে আসবে, অথবা আপনি চাইলে সরাসরি কপি-পেস্টও করতে পারেন..."></textarea>
+            </div>
+
+            <button class="btn btn-publish" style="padding: 10px; font-size: 1rem;" onclick="processScannedText()">Extract Questions 🚀</button>
+            <div id="scan-loading" class="loading-text hidden">Scanning directly on your device... Please wait ⏳</div>
         </div>
 
         <div class="card-basic">
@@ -221,47 +236,48 @@
             updateUI();
         }
 
-        // 🔄 আসল Gemini PDF ব্যাকএন্ড কল ফাংশন
-        async function scanPDFWithAI() {
-            const fileInput = document.getElementById('ai-pdf');
-            if (fileInput.files.length === 0) {
-                alert("Please upload a PDF question paper first.");
+        // 🔄 ছবি থেকে টেক্সট বের করার ফাংশন (Tesseract.js)
+        async function handleImageScan(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // পিডিএফ এর কাজ আমরা ২য় ধাপে করব
+            if (file.type === "application/pdf") {
+                alert("পিডিএফ স্ক্যান করার ফিচারটি আমরা পরবর্তী ধাপে যুক্ত করছি! আপাতত একটি ছবি সিলেক্ট করুন বা টেক্সট পেস্ট করুন।");
+                event.target.value = ""; // Reset
                 return;
             }
 
-            const loadingDiv = document.getElementById('ai-loading');
-            const aiBtn = document.querySelector('.btn-ai');
+            const loadingDiv = document.getElementById('scan-loading');
+            const resultBox = document.getElementById('scanned-text-result');
             
             loadingDiv.classList.remove('hidden');
-            aiBtn.disabled = true;
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
+            resultBox.value = "Scanning your image... ⏳";
 
             try {
-                const response = await fetch('/api/extract-pdf-gemini', {
-                    method: 'POST',
-                    body: formData
-                });
+                // Tesseract.js দিয়ে স্ক্যান করা (ফোনের ব্রাউজারেই কাজ করবে)
+                const result = await Tesseract.recognize(file, 'eng');
                 
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    // জেমিনি থেকে আসা JSON প্রশ্নগুলো অ্যারেতে যুক্ত করা
-                    tempQuestions = tempQuestions.concat(data.questions);
-                    alert(`🎉 Success! Gemini extracted ${data.questions.length} questions from the PDF.`);
-                    updateUI();
-                } else {
-                    alert(data.error || "Failed to extract questions from PDF.");
-                }
+                // স্ক্যান করা টেক্সট বক্সে বসিয়ে দেওয়া
+                resultBox.value = result.data.text;
+                alert("✅ স্ক্যান সফল হয়েছে! আপনি চাইলে লেখাগুলো এডিট করতে পারেন।");
             } catch (error) {
-                alert("Server connection error while contacting Gemini API.");
-                console.error(error);
+                alert("❌ স্ক্যান করতে সমস্যা হয়েছে: " + error.message);
+                resultBox.value = "";
             } finally {
                 loadingDiv.classList.add('hidden');
-                aiBtn.disabled = false;
-                fileInput.value = ""; // Clear file input
+                event.target.value = ""; // Reset input for next time
             }
+        }
+
+        // 🔄 ৩য় ধাপের জন্য ফাঁকা ফাংশন (আপাতত)
+        function processScannedText() {
+            const text = document.getElementById('scanned-text-result').value;
+            if (!text.trim()) {
+                alert("Please scan an image or paste some text first!");
+                return;
+            }
+            alert("এই ফাংশনটি ৩য় ধাপে তৈরি করা হবে, যা টেক্সট থেকে অটোমেটিক প্রশ্ন আলাদা করবে!");
         }
 
         // Publish Exam
