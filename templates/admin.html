@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Tesseract.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    
     <style>
         :root { color-scheme: light; }
         body { background-color: #f1f5f9; color: #1e293b; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -17,6 +18,7 @@
         .back-menu-btn { background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 10px; font-weight: bold; color: #334155; cursor: pointer; display: none; transition: 0.2s;}
         .back-menu-btn:hover { background: #f1f5f9; }
 
+        /* MAIN DASHBOARD BUTTONS */
         .admin-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 10px; }
         .admin-card { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 20px; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .admin-card:hover { transform: translateY(-4px); border-color: #3b82f6; }
@@ -32,6 +34,7 @@
         .panel-view { display: none; flex: 1; flex-direction: column; }
         .panel-view.active { display: flex; }
 
+        /* DRIVE VIEW */
         .drive-breadcrumb { font-size: 0.9rem; color: #3b82f6; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; padding: 10px; background: #eff6ff; border-radius: 10px;}
         .drive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
         .folder-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
@@ -40,33 +43,44 @@
         .file-list { display: flex; flex-direction: column; gap: 10px; }
         .file-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
 
+        /* Floating Plus Button */
         .fab-plus { position: absolute; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #3b82f6; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); cursor: pointer; transition: 0.2s; z-index: 50;}
-        
+        .fab-plus:hover { transform: scale(1.08); background: #2563eb;}
+
+        /* Modal Popup Options */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px);}
         .modal-box { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); box-sizing: border-box; }
         .modal-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #0f172a; text-align: center;}
         
         .modal-btn { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: bold; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; color: #334155; transition: 0.2s; box-sizing: border-box;}
-        
+        .modal-btn:hover { background: #f1f5f9; border-color: #3b82f6; color: #0f172a; transform: translateY(-2px);}
+
+        /* Form & Create Exam UI */
         .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 6px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; outline: none; box-sizing: border-box; background: #f8fafc;}
+        .form-group input:focus, .form-group textarea:focus { border-color: #3b82f6; background: #fff;}
         .btn-submit { width: 100%; background: #22c55e; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; box-shadow: 0 4px 6px rgba(34,197,94,0.3);}
-        
+        .btn-submit:hover { background: #16a34a; }
+
+        /* NOTIFICATION UI */
         .chat-feed { flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; border-radius: 16px; display: flex; flex-direction: column; gap: 15px; max-height: 500px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
         .notif-wrapper { display: flex; flex-direction: column; align-items: flex-end;}
-        .msg-bubble { background: #3b82f6; color: white; padding: 12px 16px; border-radius: 16px; border-bottom-right-radius: 4px; max-width: 85%; font-size: 0.95rem; cursor: pointer; }
-        .msg-actions { display: none; gap: 15px; margin-top: 5px; margin-right: 5px; background: white; padding: 5px 15px; border-radius: 20px; border: 1px solid #e2e8f0;}
+        .msg-bubble { background: #3b82f6; color: white; padding: 12px 16px; border-radius: 16px; border-bottom-right-radius: 4px; max-width: 85%; font-size: 0.95rem; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(59,130,246,0.3);}
+        .msg-bubble:hover { background: #2563eb; }
+        .msg-actions { display: none; gap: 15px; margin-top: 5px; margin-right: 5px; background: white; padding: 5px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;}
         .msg-actions button { background: none; border: none; font-size: 0.8rem; font-weight: bold; cursor: pointer; padding: 5px; }
-        .btn-edit-notif { color: #f59e0b; } .btn-del-notif { color: #ef4444; }
+        .btn-edit-notif { color: #f59e0b; }
+        .btn-del-notif { color: #ef4444; }
 
-        .json-info { background: #eff6ff; border: 1px dashed #93c5fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;}
-        .json-info p { margin: 0 0 10px 0; font-size: 0.85rem; color: #1e3a8a; font-weight: 600;}
-        .json-info pre { background: #1e293b; color: #e2e8f0; padding: 10px; border-radius: 8px; font-size: 0.75rem; overflow-x: auto; margin: 0;}
-        
+        /* Editable Question Card Styling */
         .q-card { background: #fff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
         .q-card textarea { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 8px; box-sizing: border-box; resize: vertical;}
         .q-card input { width: 100%; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;}
+        
+        .json-info { background: #eff6ff; border: 1px dashed #93c5fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;}
+        .json-info p { margin: 0 0 10px 0; font-size: 0.85rem; color: #1e3a8a; font-weight: 600;}
+        .json-info pre { background: #1e293b; color: #e2e8f0; padding: 10px; border-radius: 8px; font-size: 0.75rem; overflow-x: auto; margin: 0;}
         
         .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .hidden { display: none !important; }
@@ -80,45 +94,75 @@
             <button class="back-menu-btn" id="back-btn" onclick="showDashboardMenu()"><i class="fas fa-arrow-left"></i> Menu</button>
         </div>
 
+        <!-- MAIN DASHBOARD -->
         <div id="dashboard-menu">
             <div class="admin-grid">
                 <div class="admin-card card-notif" onclick="openPanel('notif-panel', '📢 Send Notification')">
                     <div class="card-icon"><i class="fas fa-bell"></i></div>
-                    <div class="card-info"><h3>Notifications</h3><p>Send, Edit or Delete alerts</p></div>
+                    <div class="card-info">
+                        <h3>Notifications</h3>
+                        <p>Send, Edit or Delete alerts</p>
+                    </div>
                 </div>
+
                 <div class="admin-card card-content" onclick="openDrivePanel('content', '📑 Content Upload')">
                     <div class="card-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                    <div class="card-info"><h3>Content Upload</h3><p>Manage Notes & PDFs in Drive</p></div>
+                    <div class="card-info">
+                        <h3>Content Upload</h3>
+                        <p>Manage Notes & PDFs in Drive</p>
+                    </div>
                 </div>
+
                 <div class="admin-card card-exam" onclick="openDrivePanel('exam', '📝 Create Exam Folders')">
                     <div class="card-icon"><i class="fas fa-clipboard-check"></i></div>
-                    <div class="card-info"><h3>Create Exam</h3><p>Upload exams inside folders</p></div>
+                    <div class="card-info">
+                        <h3>Create Exam</h3>
+                        <p>Upload exams inside folders</p>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- NOTIFICATION PANEL -->
         <div id="notif-panel" class="panel-view">
-            <!-- (অপরিবর্তিত নোটিফিকেশন প্যানেল) -->
             <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: bold; color: #334155;">
                 <label>Target Audience:</label>
-                <select id="target-role" style="padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none;"><option value="All">All Users</option><option value="Student">Students Only</option><option value="Teacher">Teachers Only</option></select>
+                <select id="target-role" style="padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none;">
+                    <option value="All">All Users</option>
+                    <option value="Student">Students Only</option>
+                    <option value="Teacher">Teachers Only</option>
+                </select>
             </div>
-            <div class="chat-feed" id="chat-feed"></div>
+            
+            <div class="chat-feed" id="chat-feed">
+                <!-- Notifications load here -->
+            </div>
+            
             <div style="display: flex; gap: 10px;">
                 <input type="text" id="notif-message" style="flex:1; padding:12px 15px; border-radius:12px; border:1px solid #cbd5e1; font-size: 0.95rem; outline: none;" placeholder="Type new message...">
                 <button onclick="submitNotification()" style="background:#3b82f6; color:white; border:none; padding:0 20px; border-radius:12px; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(59,130,246,0.3); transition: 0.2s;"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
 
+        <!-- GOOGLE DRIVE STYLE MANAGER PANEL -->
         <div id="drive-panel" class="panel-view">
-            <div class="drive-breadcrumb" id="drive-breadcrumb"><i class="fas fa-folder-open"></i> <span id="current-path">Root Folder</span></div>
-            <button id="up-folder-btn" style="display:none; margin-bottom:15px; background:#e2e8f0; color:#334155; border:none; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="navigateUp()"><i class="fas fa-level-up-alt"></i> Go Parent Folder</button>
+            <div class="drive-breadcrumb" id="drive-breadcrumb">
+                <i class="fas fa-folder-open"></i> <span id="current-path">Root Folder</span>
+            </div>
+
+            <button id="up-folder-btn" style="display:none; margin-bottom:15px; background:#e2e8f0; color:#334155; border:none; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer; transition: 0.2s;" onclick="navigateUp()"><i class="fas fa-level-up-alt"></i> Go Parent Folder</button>
+
+            <!-- Folders List -->
             <div class="drive-grid" id="drive-folder-container"></div>
+
+            <!-- Files & Exams List -->
             <div class="file-list" id="drive-file-container"></div>
+
+            <!-- Floating Plus Button -->
             <div class="fab-plus" onclick="openPlusModal()"><i class="fas fa-plus"></i></div>
         </div>
 
-        <!-- 🚀 CREATE EXAM PANEL (Updated with Smart Scanner & Editable Preview) -->
+        <!-- CREATE EXAM PANEL (INSIDE FOLDER) -->
         <div id="exam-create-panel" class="panel-view">
             <div style="background: #eff6ff; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #1e3a8a; font-weight: bold;">
                 <i class="fas fa-info-circle"></i> Creating exam inside: <span id="exam-folder-name"></span>
@@ -130,8 +174,14 @@
             </div>
             
             <div class="grid-2x2">
-                <div class="form-group"><label>Exam Code</label><input type="text" id="exam-code" placeholder="CH1-TEST" style="text-transform: uppercase;"></div>
-                <div class="form-group"><label>Timer (Mins)</label><input type="number" id="exam-timer" value="30"></div>
+                <div class="form-group">
+                    <label>Exam Code</label>
+                    <input type="text" id="exam-code" placeholder="CH1-TEST" style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                    <label>Timer (Mins)</label>
+                    <input type="number" id="exam-timer" value="30">
+                </div>
             </div>
 
             <div class="form-group">
@@ -143,13 +193,32 @@
                 </select>
             </div>
 
+            <!-- JSON Upload Section -->
             <div id="method-json">
-                <div class="json-info"><p>JSON File Format strictly required:</p><pre>[ { "question_text": "Q?", "option_a": "A", "option_b": "B", "option_c": "C", "option_d": "D", "correct_option": "A" } ]</pre></div>
-                <div class="form-group"><input type="file" id="exam-json-file" accept=".json" onchange="handleJsonUpload(event)" style="background: #fff;"></div>
+                <div class="json-info">
+                    <p>JSON File Format strictly required:</p>
+                    <pre>[
+  {
+    "question_text": "Question?",
+    "option_a": "A",
+    "option_b": "B",
+    "option_c": "C",
+    "option_d": "D",
+    "correct_option": "A"
+  }
+]</pre>
+                </div>
+                <div class="form-group">
+                    <input type="file" id="exam-json-file" accept=".json" onchange="handleJsonUpload(event)" style="background: #fff;">
+                </div>
             </div>
 
+            <!-- Manual Upload Section -->
             <div id="method-manual" class="hidden" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px;">
-                <div class="form-group"><label>Question</label><textarea id="q-text" rows="2" placeholder="Type question..."></textarea></div>
+                <div class="form-group">
+                    <label>Question</label>
+                    <textarea id="q-text" rows="2" placeholder="Type question..."></textarea>
+                </div>
                 <div class="grid-2x2">
                     <div class="form-group"><input type="text" id="opt-a" placeholder="Opt A"></div>
                     <div class="form-group"><input type="text" id="opt-b" placeholder="Opt B"></div>
@@ -174,11 +243,13 @@
                         <input type="file" accept="image/*" class="hidden" onchange="handleImageScan(event)">
                     </label>
                 </div>
+
                 <div class="form-group">
                     <textarea id="scanned-text-result" rows="4" placeholder="স্ক্যান করা টেক্সট এখানে আসবে, অথবা পেস্ট করুন..."></textarea>
                 </div>
+                
                 <button class="btn-submit" onclick="processScannedText()" style="background: #8b5cf6; margin-top: 5px;">অ্যাড করুন ➕</button>
-                <div id="scan-loading" class="hidden" style="text-align: center; color: #8b5cf6; font-weight: bold; font-size: 0.8rem; margin-top: 10px;">Scanning image... ⏳</div>
+                <div id="scan-loading" class="hidden" style="text-align: center; color: #8b5cf6; font-weight: bold; font-size: 0.8rem; margin-top: 10px;">Scanning image for Bengali & English... ⏳</div>
             </div>
 
             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
@@ -191,7 +262,7 @@
 
     </div>
 
-    <!-- Modals -->
+    <!-- 1. MAIN OPTIONS MODAL -->
     <div class="modal-overlay" id="plus-modal">
         <div class="modal-box">
             <div class="modal-title">Create or Upload</div>
@@ -202,13 +273,27 @@
         </div>
     </div>
 
+    <!-- 2. UPLOAD FILE MODAL -->
     <div class="modal-overlay" id="upload-file-modal">
         <div class="modal-box">
             <div class="modal-title">Upload File 📄</div>
             <form id="file-upload-form" onsubmit="submitDriveFileUpload(event)">
-                <div class="form-group"><label>File Title</label><input type="text" id="upload-file-title" required></div>
-                <div class="form-group"><label>Content Type</label><select id="upload-file-type" required><option value="Notes">Notes 📑</option><option value="Short Notes">Short Notes 📝</option><option value="Mind Map">Mind Map 🧠</option></select></div>
-                <div class="form-group"><label>Select File (PDF / Image)</label><input type="file" id="upload-file-input" accept=".pdf,.doc,.docx,.png,.jpg" required style="background: #fff;"></div>
+                <div class="form-group">
+                    <label>File Title</label>
+                    <input type="text" id="upload-file-title" placeholder="e.g. Chapter 1 Notes" required>
+                </div>
+                <div class="form-group">
+                    <label>Content Type</label>
+                    <select id="upload-file-type" required>
+                        <option value="Notes">Notes 📑</option>
+                        <option value="Short Notes">Short Notes 📝</option>
+                        <option value="Mind Map">Mind Map 🧠</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Select File (PDF / Image)</label>
+                    <input type="file" id="upload-file-input" accept=".pdf,.doc,.docx,.png,.jpg" required style="background: #fff;">
+                </div>
                 <button type="submit" class="btn-submit" id="upload-file-submit-btn">Start Upload 🚀</button>
                 <button type="button" class="modal-btn" style="margin-top:10px; justify-content: center;" onclick="closeAllModals()">Cancel</button>
             </form>
@@ -216,20 +301,29 @@
     </div>
 
     <script>
-        let currentFolderId = 0, folderHistory = [], tempExamQuestions = [], currentDriveType = 'content';
+        let currentFolderId = 0; 
+        let folderHistory = [];
+        let tempExamQuestions = [];
+        let currentDriveType = 'content';
 
+        // ==========================================
+        // 1. NAVIGATION & PANEL LOGIC
+        // ==========================================
         function openPanel(panelId, titleText) {
             document.getElementById('dashboard-menu').style.display = 'none';
             document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
             document.getElementById(panelId).classList.add('active');
             document.getElementById('admin-title').innerHTML = titleText;
             document.getElementById('back-btn').style.display = 'block';
+
             if (panelId === 'drive-panel') loadDriveContents();
             if (panelId === 'notif-panel') loadNotifications();
         }
 
         function openDrivePanel(type, titleText) {
-            currentDriveType = type; currentFolderId = 0; folderHistory = [];
+            currentDriveType = type;
+            currentFolderId = 0;
+            folderHistory = [];
             document.getElementById('current-path').innerText = 'Root Folder';
             document.getElementById('up-folder-btn').style.display = 'none';
             openPanel('drive-panel', titleText);
@@ -242,34 +336,264 @@
             document.getElementById('back-btn').style.display = 'none';
         }
 
-        function closeAllModals() { document.getElementById('plus-modal').style.display = 'none'; document.getElementById('upload-file-modal').style.display = 'none'; }
-        
-        // --- API Calls (Drive, Notif, etc.) remain unchanged ---
-        async function loadNotifications() { /* ... unchanged ... */ }
-        async function submitNotification() { /* ... unchanged ... */ }
-        function toggleNotifMenu(id) { /* ... unchanged ... */ }
-        async function editNotification(id, oldMessage) { /* ... unchanged ... */ }
-        async function deleteNotification(id) { /* ... unchanged ... */ }
-        async function loadDriveContents() { /* ... unchanged ... */ }
-        function openDriveFolder(folderId, folderName) { /* ... unchanged ... */ }
-        function navigateUp() { /* ... unchanged ... */ }
-        function openPlusModal() { /* ... unchanged ... */ }
-        function openUploadModal() { /* ... unchanged ... */ }
-        async function openFolderModal() { /* ... unchanged ... */ }
-        async function submitDriveFileUpload(e) { /* ... unchanged ... */ }
-        async function deleteDriveItem(e, type, id) { /* ... unchanged ... */ }
+        function closeAllModals() {
+            document.getElementById('plus-modal').style.display = 'none';
+            document.getElementById('upload-file-modal').style.display = 'none';
+        }
 
         // ==========================================
-        // 4. CREATE EXAM LOGIC (Updated)
+        // 2. NOTIFICATION LOGIC
+        // ==========================================
+        async function loadNotifications() {
+            const feed = document.getElementById('chat-feed');
+            feed.innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading...</p>';
+            try {
+                const res = await fetch('/api/admin/get-notifications');
+                const data = await res.json();
+                if(data.success) {
+                    feed.innerHTML = '';
+                    if(data.notifications.length === 0) {
+                        feed.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:0.9rem;">No notifications sent yet.</p>';
+                        return;
+                    }
+                    data.notifications.forEach(n => {
+                        feed.innerHTML += `
+                            <div class="notif-wrapper">
+                                <div class="msg-bubble" onclick="toggleNotifMenu(${n.id})" title="Click to Edit/Delete">
+                                    ${n.message}
+                                </div>
+                                <div class="msg-actions" id="notif-action-${n.id}">
+                                    <button class="btn-edit-notif" onclick="editNotification(${n.id}, '${n.message.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i> Edit</button>
+                                    <div style="width:1px; background:#e2e8f0; height:15px;"></div>
+                                    <button class="btn-del-notif" onclick="deleteNotification(${n.id})"><i class="fas fa-trash"></i> Delete</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function submitNotification() {
+            const msg = document.getElementById('notif-message').value.trim();
+            const role = document.getElementById('target-role').value;
+            if(!msg) return;
+            await fetch('/api/admin/send-notification', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: msg, target_role: role })
+            });
+            document.getElementById('notif-message').value = '';
+            loadNotifications();
+        }
+
+        function toggleNotifMenu(id) {
+            const menu = document.getElementById(`notif-action-${id}`);
+            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        async function editNotification(id, oldMessage) {
+            const newMsg = prompt("Edit your notification message:", oldMessage);
+            if(newMsg && newMsg.trim() !== "" && newMsg !== oldMessage) {
+                const res = await fetch('/api/admin/edit-notification', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ id: id, message: newMsg.trim() })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    loadNotifications();
+                } else {
+                    alert("Failed to edit notification.");
+                }
+            }
+        }
+
+        async function deleteNotification(id) {
+            if(confirm("Are you sure you want to delete this notification?")) {
+                const res = await fetch('/api/admin/delete-notification', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ id: id })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    loadNotifications();
+                } else {
+                    alert("Failed to delete notification.");
+                }
+            }
+        }
+
+        // ==========================================
+        // 3. DRIVE MANAGER LOGIC
+        // ==========================================
+        async function loadDriveContents() {
+            const folderBox = document.getElementById('drive-folder-container');
+            const fileBox = document.getElementById('drive-file-container');
+            folderBox.innerHTML = 'Loading...'; fileBox.innerHTML = '';
+
+            try {
+                const res = await fetch('/api/admin/get-drive-contents', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ parent_id: currentFolderId, folder_type: currentDriveType })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    folderBox.innerHTML = ''; fileBox.innerHTML = '';
+
+                    data.folders.forEach(f => {
+                        folderBox.innerHTML += `
+                            <div class="folder-card" onclick="openDriveFolder(${f.id}, '${f.name.replace(/'/g, "\\'")}')">
+                                <div><i class="fas fa-folder" style="color:#f59e0b; margin-right:8px; font-size:1.1rem;"></i> <span>${f.name}</span></div>
+                                <i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer; padding:5px;" onclick="deleteDriveItem(event, 'folder', ${f.id})"></i>
+                            </div>
+                        `;
+                    });
+
+                    if (currentDriveType === 'content') {
+                        data.files.forEach(file => {
+                            fileBox.innerHTML += `
+                                <div class="file-card">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="background:#eff6ff; padding:8px; border-radius:8px; color:#3b82f6;"><i class="fas fa-file-alt"></i></div>
+                                        <div style="font-size:0.9rem;">
+                                            <strong>${file.title}</strong><br>
+                                            <span style="font-size:0.75rem; color:#64748b;">${file.type}</span>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; gap:15px; align-items:center;">
+                                        <a href="${file.file_url}" target="_blank" style="color:#3b82f6;"><i class="fas fa-eye"></i></a>
+                                        <i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'file', ${file.id})"></i>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else if (currentDriveType === 'exam') {
+                        data.exams.forEach(exam => {
+                            fileBox.innerHTML += `
+                                <div class="file-card" style="border-color:#bbf7d0; background:#f0fdf4;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="background:#dcfce7; padding:8px; border-radius:8px; color:#16a34a;"><i class="fas fa-clipboard-check"></i></div>
+                                        <div style="font-size:0.9rem;">
+                                            <strong>${exam.name}</strong><br>
+                                            <span style="font-size:0.75rem; color:#16a34a; font-weight:bold;">Code: ${exam.code}</span>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'exam', '${exam.code}')"></i>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    if(folderBox.innerHTML === '' && fileBox.innerHTML === '') {
+                        folderBox.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem; grid-column:span 2; text-align:center; padding:20px 0;">Folder is empty. Click + to add content.</p>';
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function openDriveFolder(folderId, folderName) {
+            folderHistory.push({ id: currentFolderId, name: document.getElementById('current-path').innerText });
+            currentFolderId = folderId;
+            document.getElementById('current-path').innerText = folderName;
+            document.getElementById('up-folder-btn').style.display = 'inline-block';
+            loadDriveContents();
+        }
+
+        function navigateUp() {
+            if (folderHistory.length > 0) {
+                const prev = folderHistory.pop();
+                currentFolderId = prev.id;
+                document.getElementById('current-path').innerText = prev.name;
+                if(folderHistory.length === 0) document.getElementById('up-folder-btn').style.display = 'none';
+                loadDriveContents();
+            }
+        }
+
+        function openPlusModal() { 
+            document.getElementById('plus-modal').style.display = 'flex'; 
+            if (currentDriveType === 'content') {
+                document.getElementById('btn-upload-file').style.display = 'flex';
+                document.getElementById('btn-create-exam').style.display = 'none';
+            } else {
+                document.getElementById('btn-upload-file').style.display = 'none';
+                document.getElementById('btn-create-exam').style.display = 'flex';
+            }
+        }
+        
+        function openUploadModal() { closeAllModals(); document.getElementById('upload-file-modal').style.display = 'flex'; }
+        
+        async function openFolderModal() {
+            closeAllModals();
+            setTimeout(async () => {
+                const name = prompt("Enter New Folder Name:");
+                if (name && name.trim() !== "") {
+                    await fetch('/api/admin/create-drive-folder', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ folder_name: name.trim(), parent_id: currentFolderId, folder_type: currentDriveType })
+                    });
+                    loadDriveContents();
+                }
+            }, 100);
+        }
+
+        async function submitDriveFileUpload(e) {
+            e.preventDefault();
+            const title = document.getElementById('upload-file-title').value;
+            const resType = document.getElementById('upload-file-type').value;
+            const fileInput = document.getElementById('upload-file-input');
+            const submitBtn = document.getElementById('upload-file-submit-btn');
+
+            if (!fileInput.files[0]) { alert("Please choose a file!"); return; }
+
+            submitBtn.disabled = true; submitBtn.innerText = "Uploading... ⏳";
+            const formData = new FormData();
+            formData.append('title', title); formData.append('resource_type', resType);
+            formData.append('folder_id', currentFolderId); formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/api/admin/upload-drive-file', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('file-upload-form').reset();
+                    closeAllModals(); loadDriveContents();
+                } else { alert(data.error || "Upload failed!"); }
+            } catch (err) { alert("Server error."); } 
+            finally { submitBtn.disabled = false; submitBtn.innerText = "Start Upload 🚀"; }
+        }
+
+        async function deleteDriveItem(e, type, id) {
+            e.stopPropagation();
+            if (confirm("⚠️ Are you sure you want to delete this item?")) {
+                await fetch('/api/admin/delete-drive-item', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ type: type, id: id })
+                });
+                loadDriveContents();
+            }
+        }
+
+        // ==========================================
+        // 4. CREATE EXAM LOGIC
         // ==========================================
         function openExamCreator() {
             closeAllModals();
             document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
             document.getElementById('exam-create-panel').classList.add('active');
+            
             document.getElementById('admin-title').innerHTML = '<i class="fas fa-file-signature"></i> Create Exam';
             document.getElementById('exam-folder-name').innerText = document.getElementById('current-path').innerText;
-            document.getElementById('back-btn').onclick = () => openDrivePanel('exam', '📝 Create Exam Folders');
-            tempExamQuestions = []; updateAdminUI();
+            
+            const backBtn = document.getElementById('back-btn');
+            backBtn.onclick = () => openDrivePanel('exam', '📝 Create Exam Folders');
+            
+            tempExamQuestions = [];
+            updateAdminUI();
         }
 
         function toggleExamMethod() {
@@ -319,31 +643,44 @@
         function removeQuestion(index) { if(confirm("মুছে ফেলতে চান?")) { tempExamQuestions.splice(index, 1); updateAdminUI(); } }
 
         function handleJsonUpload(e) {
-            const file = e.target.files[0]; if (!file) return;
+            const file = e.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
                 try {
                     const parsed = JSON.parse(evt.target.result);
                     if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].question_text) {
-                        tempExamQuestions = tempExamQuestions.concat(parsed); updateAdminUI();
-                        alert(`✅ ${parsed.length} questions loaded!`);
-                    } else { alert("❌ Invalid JSON format!"); }
-                } catch(err) { alert("❌ Error reading JSON file."); }
+                        tempExamQuestions = tempExamQuestions.concat(parsed);
+                        updateAdminUI();
+                        alert(`✅ ${parsed.length} questions successfully loaded from JSON!`);
+                    } else {
+                        alert("❌ Invalid JSON format! Check the required format.");
+                    }
+                } catch(err) {
+                    alert("❌ Error reading JSON file. Make sure it is valid JSON.");
+                }
             };
             reader.readAsText(file);
         }
 
         function addManualQuestion() {
             const q = document.getElementById('q-text').value;
-            const a = document.getElementById('opt-a').value, b = document.getElementById('opt-b').value;
-            const c = document.getElementById('opt-c').value, d = document.getElementById('opt-d').value;
-            if (!q || !a || !b) { alert("Fill all fields!"); return; }
+            const a = document.getElementById('opt-a').value;
+            const b = document.getElementById('opt-b').value;
+            const c = document.getElementById('opt-c').value;
+            const d = document.getElementById('opt-d').value;
+
+            if (!q || !a || !b) { alert("Please fill all fields!"); return; }
+
             tempExamQuestions.push({ question_text: q, option_a: a, option_b: b, option_c: c, option_d: d, correct_option: "A" });
-            document.getElementById('q-text').value = ''; document.getElementById('opt-a').value = ''; document.getElementById('opt-b').value = ''; document.getElementById('opt-c').value = ''; document.getElementById('opt-d').value = '';
             updateAdminUI();
+
+            document.getElementById('q-text').value = ''; document.getElementById('opt-a').value = '';
+            document.getElementById('opt-b').value = ''; document.getElementById('opt-c').value = '';
+            document.getElementById('opt-d').value = '';
         }
 
-        // 🔄 ছবি থেকে টেক্সট বের করার ফাংশন (Tesseract.js - বাংলা ও ইংরেজি সাপোর্টসহ)
+        // Tesseract.js (Bengali & English)
         async function handleImageScan(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -361,13 +698,10 @@
             resultBox.value = "Scanning your image for Bengali & English... ⏳\n(বাংলা স্ক্যান হতে একটু বেশি সময় লাগতে পারে)";
 
             try {
-                // 'ben+eng' ব্যবহার করা হয়েছে যাতে বাংলা এবং ইংরেজি দুটোই একসাথে স্ক্যান করতে পারে
                 const result = await Tesseract.recognize(file, 'ben+eng');
-        
-                // স্ক্যান করা টেক্সট বক্সে বসিয়ে দেওয়া
                 resultBox.value = result.data.text;
                 alert("✅ স্ক্যান সফল হয়েছে! আপনি চাইলে লেখাগুলো এডিট করতে পারেন।");
-                } catch (error) {
+            } catch (error) {
                 alert("❌ স্ক্যান করতে সমস্যা হয়েছে: " + error.message);
                 resultBox.value = "";
             } finally {
@@ -375,7 +709,6 @@
                 event.target.value = ""; 
             }
         }
-
 
         function processScannedText() {
             const text = document.getElementById('scanned-text-result').value;
@@ -417,18 +750,37 @@
             const name = document.getElementById('exam-name').value.trim();
             const code = document.getElementById('exam-code').value.trim().toUpperCase();
             const timer = document.getElementById('exam-timer').value;
+            
             if(!name || !code || tempExamQuestions.length === 0) return;
 
             const teacherEmail = "dasbabu938207@gmail.com";
-            const payload = { exam_code: code, exam_name: name, timer: timer, teacher_email: teacherEmail, folder_id: currentFolderId, questions: tempExamQuestions };
+            const payload = {
+                exam_code: code,
+                exam_name: name,
+                timer: timer,
+                teacher_email: teacherEmail,
+                folder_id: currentFolderId, 
+                questions: tempExamQuestions
+            };
 
             try {
-                const res = await fetch('/api/create-exam', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const res = await fetch('/api/create-exam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
                 const data = await res.json();
+                
                 if(data.success) {
-                    alert(`🎉 Exam created successfully!`); document.getElementById('back-btn').onclick = showDashboardMenu; openDrivePanel('exam', '📝 Create Exam Folders');
-                } else { alert("Failed to publish exam."); }
-            } catch(e) { alert("Server error."); }
+                    alert(`🎉 Exam created successfully in the folder!\nCode: ${code}`);
+                    document.getElementById('back-btn').onclick = showDashboardMenu;
+                    openDrivePanel('exam', '📝 Create Exam Folders');
+                } else {
+                    alert(data.error || "Failed to publish exam.");
+                }
+            } catch(e) {
+                alert("Server error connecting to database.");
+            }
         }
     </script>
 </body>
