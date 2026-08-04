@@ -9,9 +9,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import json
 import PyPDF2
-
-# Gemini API কনফিগারেশন (Environment Variable থেকে API Key নেবে)
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+import requests
 
 # .env ফাইল লোড করা
 load_dotenv()
@@ -839,7 +837,6 @@ def get_profile_data():
     except Exception as e:
         return jsonify({"success": False})
 
-import requests # এটি app.py এর একদম উপরে ইমপোর্ট করে নেবেন (যদি না থাকে)
 
 # ==========================================
 # ১০. Gemini AI PDF Extraction API (REST API Method)
