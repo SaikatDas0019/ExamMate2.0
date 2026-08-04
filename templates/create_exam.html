@@ -108,15 +108,16 @@
             </div>
         </div>
 
+        <!-- 🔄 আপডেট করা জেমিনি পিডিএফ স্ক্যানার সেকশন -->
         <div class="card-ai">
-            <h3 class="ai-title">✨ AI Question Generator</h3>
+            <h3 class="ai-title">✨ AI Question PDF Scanner</h3>
             <div class="file-upload-wrapper">
-                <label style="font-size: 0.85rem; font-weight: 600; color: #333;">Upload Question Image (JPG/PNG)</label><br>
-                <input type="file" id="ai-image" accept="image/png, image/jpeg, image/jpg" style="margin-top: 5px;">
+                <label style="font-size: 0.85rem; font-weight: 600; color: #333;">Upload Question Paper PDF</label><br>
+                <input type="file" id="ai-pdf" accept=".pdf" style="margin-top: 5px;">
             </div>
             
-            <button class="btn btn-ai" onclick="scanWithAI()">Scan Questions with AI 🪄</button>
-            <div id="ai-loading" class="loading-text hidden">Gemini is reading the image and creating questions...</div>
+            <button class="btn btn-ai" onclick="scanPDFWithAI()">Extract Questions with Gemini 🪄</button>
+            <div id="ai-loading" class="loading-text hidden">Gemini is reading the PDF and generating JSON questions...</div>
         </div>
 
         <div class="card-basic">
@@ -161,8 +162,7 @@
 
         <div id="preview-section" class="hidden">
             <h3>Current Question Paper Preview:</h3>
-            <div class="preview-box" id="preview-list">
-                </div>
+            <div class="preview-box" id="preview-list"></div>
         </div>
 
         <button class="btn btn-publish" onclick="publishExam()">Publish & Post Entire Exam 🚀</button>
@@ -221,30 +221,47 @@
             updateUI();
         }
 
-        // Simulate AI Scan
-        function scanWithAI() {
-            const fileInput = document.getElementById('ai-image');
+        // 🔄 আসল Gemini PDF ব্যাকএন্ড কল ফাংশন
+        async function scanPDFWithAI() {
+            const fileInput = document.getElementById('ai-pdf');
             if (fileInput.files.length === 0) {
-                alert("Please upload an image first.");
+                alert("Please upload a PDF question paper first.");
                 return;
             }
 
-            document.getElementById('ai-loading').classList.remove('hidden');
+            const loadingDiv = document.getElementById('ai-loading');
+            const aiBtn = document.querySelector('.btn-ai');
             
-            // ভবিষ্যতে এখানে Fetch API দিয়ে Python Backend-এ ইমেজ পাঠানো হবে।
-            // আপাতত আমরা ২ সেকেন্ড অপেক্ষা করে কিছু ডামি প্রশ্ন অ্যাড করে দিচ্ছি (সিমুলেশন)।
-            setTimeout(() => {
-                document.getElementById('ai-loading').classList.add('hidden');
+            loadingDiv.classList.remove('hidden');
+            aiBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/api/extract-pdf-gemini', {
+                    method: 'POST',
+                    body: formData
+                });
                 
-                tempQuestions.push(
-                    { question_text: "What is the powerhouse of the cell?", option_a: "Nucleus", option_b: "Mitochondria", option_c: "Ribosome", option_d: "Endoplasmic Reticulum", correct_option: "B" },
-                    { question_text: "What is the chemical formula for water?", option_a: "H2O", option_b: "CO2", option_c: "O2", option_d: "NaCl", correct_option: "A" }
-                );
+                const data = await response.json();
                 
-                alert("Magic successful! AI extracted questions added to your list.");
-                updateUI();
-                fileInput.value = ""; // Clear file
-            }, 2500);
+                if (response.ok && data.success) {
+                    // জেমিনি থেকে আসা JSON প্রশ্নগুলো অ্যারেতে যুক্ত করা
+                    tempQuestions = tempQuestions.concat(data.questions);
+                    alert(`🎉 Success! Gemini extracted ${data.questions.length} questions from the PDF.`);
+                    updateUI();
+                } else {
+                    alert(data.error || "Failed to extract questions from PDF.");
+                }
+            } catch (error) {
+                alert("Server connection error while contacting Gemini API.");
+                console.error(error);
+            } finally {
+                loadingDiv.classList.add('hidden');
+                aiBtn.disabled = false;
+                fileInput.value = ""; // Clear file input
+            }
         }
 
         // Publish Exam
@@ -252,7 +269,7 @@
             const examName = document.getElementById('exam-name').value;
             const examCode = document.getElementById('exam-code').value.toUpperCase();
             const timer = document.getElementById('exam-timer').value;
-            const teacherEmail = localStorage.getItem('userEmail') || 'teacher@email.com';
+            const teacherEmail = localStorage.getItem('userEmail') || 'dasbabu938207@gmail.com';
             
             if (!examName || !examCode) { alert("Please provide the exam name and unique code."); return; }
             if (tempQuestions.length === 0) { alert("Please add at least 1 question before publishing!"); return; }
