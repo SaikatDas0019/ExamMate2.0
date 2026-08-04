@@ -8,75 +8,31 @@
     <!-- Tesseract.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        /* Global Theme (Pure White) */
         :root { color-scheme: light; }
-        body { 
-            background-color: #f3f4f6; 
-            color: #1a1a1a; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-        }
-        .container { 
-            width: 100%;
-            max-width: 500px; 
-            background-color: #ffffff;
-            min-height: 100vh;
-            padding: 1.5rem 1.5rem 5rem 1.5rem; 
-            box-sizing: border-box;
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
-        }
-
-        /* Top Back Button */
-        .back-btn {
-            background: transparent; color: #10b981; border: none; 
-            font-weight: bold; font-size: 14px; cursor: pointer; 
-            padding: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px;
-        }
+        body { background-color: #f3f4f6; color: #1a1a1a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem 1.5rem 5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        .back-btn { background: transparent; color: #10b981; border: none; font-weight: bold; font-size: 14px; cursor: pointer; padding: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
         .back-btn:hover { color: #059669; text-decoration: underline; }
-
         h1 { font-size: 24px; color: #1a1a1a; margin-top: 0; margin-bottom: 20px; }
-
-        /* Card Layouts */
-        .card-basic {
-            background-color: #f8fafc; border: 1px solid #cbd5e1;
-            border-radius: 12px; padding: 20px; margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-        .card-ai {
-            background-color: #f1f5f9; border: 2px dashed #8b5cf6;
-            border-radius: 12px; padding: 20px; margin-bottom: 20px;
-        }
-
+        .card-basic { background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .card-ai { background-color: #f1f5f9; border: 2px dashed #8b5cf6; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
         h3 { margin-top: 0; font-size: 16px; color: #1a1a1a; margin-bottom: 15px;}
         .ai-title { color: #6d28d9; }
-
-        /* Inputs */
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; color: #333333; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
-        .input-group input, .input-group textarea, .input-group select {
-            width: 100%; padding: 10px; background-color: #ffffff; color: #1a1a1a;
-            border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; outline: none;
-        }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 10px; background-color: #ffffff; color: #1a1a1a; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; outline: none; }
         .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: #3b82f6; }
-        
-        /* 2x2 Grid for layout */
         .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-        /* Buttons */
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; box-sizing: border-box; }
         .btn-ai { background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3); }
-        .btn-ai:hover { opacity: 0.9; }
         .btn-add { background-color: #3b82f6; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); margin-top: 10px; }
-        .btn-add:hover { background-color: #2563eb; }
         .btn-publish { background: linear-gradient(135deg, #10b981, #059669); padding: 15px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin-top: 20px;}
-        .btn-publish:hover { opacity: 0.9; }
-
-        /* Preview List */
+        
         .preview-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-top: 15px;}
-        .preview-item { border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px; font-size: 0.9rem;}
-        .preview-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
+        /* Editable Question Card Styling */
+        .q-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .q-card textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px; font-family: inherit; font-size: 0.9rem; resize: vertical;}
+        .q-card input { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;}
         
         .hidden { display: none !important; }
         .loading-text { text-align: center; color: #8b5cf6; font-weight: bold; font-size: 0.9rem; margin-top: 10px;}
@@ -85,7 +41,6 @@
 <body>
 
     <div class="container">
-        
         <button class="back-btn" onclick="window.location.href='teacher_dashboard.html'">⬅️ Back to Dashboard</button>
         <h1>Create Custom Exam</h1>
 
@@ -107,177 +62,383 @@
         </div>
 
         <!-- 📸 Smart Mobile Scanner Section -->
-        <div class="card-ai" id="smart-scanner-section">
+        <div class="card-ai">
             <h3 class="ai-title">📸 Smart Mobile Scanner</h3>
-            <p style="font-size: 0.85rem; color: #64748b;">ক্যামেরা দিয়ে ছবি তুলুন বা গ্যালারি থেকে ছবি/ফাইল সিলেক্ট করুন</p>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">ক্যামেরা দিয়ে ছবি তুলুন অথবা সরাসরি টেক্সট পেস্ট করুন। (একাধিক পেজ স্ক্যান করতে পারবেন)</p>
             
             <div class="grid-2x2" style="margin-bottom: 15px;">
-                <!-- Camera Button -->
-                <label class="btn btn-ai" style="text-align: center; cursor: pointer; display: block; box-sizing: border-box;">
+                <label class="btn btn-ai" style="text-align: center; cursor: pointer; display: block;">
                     <i class="fas fa-camera"></i> ক্যামেরা ওপেন
                     <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageScan(event)">
                 </label>
-                
-                <!-- Gallery/File Button -->
-                <label class="btn btn-add" style="text-align: center; cursor: pointer; display: block; background: #f59e0b; margin-top: 0; box-sizing: border-box;">
-                    <i class="fas fa-images"></i> গ্যালারি / ফাইল
-                    <input type="file" id="gallery-input" accept="image/*, .pdf" class="hidden" onchange="handleImageScan(event)">
+                <label class="btn btn-add" style="text-align: center; cursor: pointer; display: block; background: #f59e0b; margin-top: 0;">
+                    <i class="fas fa-images"></i> গ্যালারি
+                    <input type="file" id="gallery-input" accept="image/*" class="hidden" onchange="handleImageScan(event)">
                 </label>
             </div>
 
-            <!-- Text Result / Paste Area -->
             <div class="input-group">
                 <label>Scanned Text / Copy-Paste Area</label>
-                <textarea id="scanned-text-result" rows="6" placeholder="স্ক্যান করা টেক্সট এখানে আসবে, অথবা আপনি চাইলে সরাসরি কপি-পেস্টও করতে পারেন..."></textarea>
+                <textarea id="scanned-text-result" rows="5" placeholder="স্ক্যান করা টেক্সট এখানে আসবে, অথবা সরাসরি কপি-পেস্ট করুন..."></textarea>
             </div>
 
-            <button class="btn btn-publish" style="padding: 10px; font-size: 1rem;" onclick="processScannedText()">Extract Questions 🚀</button>
+            <button class="btn btn-publish" style="padding: 10px; font-size: 1rem;" onclick="processScannedText()">অ্যাড করুন ➕</button>
             <div id="scan-loading" class="loading-text hidden">Scanning directly on your device... Please wait ⏳</div>
         </div>
 
         <div class="card-basic">
-            <h3 id="manual-title">📝 Add Manually (Total added: 0)</h3>
-            
+            <h3 id="manual-title">📝 Add Manually</h3>
             <div class="input-group">
                 <label>Question Text</label>
-                <textarea id="q-text" rows="3" placeholder="Type your question here..."></textarea>
+                <textarea id="q-text" rows="2" placeholder="Type question..."></textarea>
             </div>
-            
             <div class="grid-2x2">
-                <div class="input-group">
-                    <label>Option A</label>
-                    <input type="text" id="opt-a">
-                </div>
-                <div class="input-group">
-                    <label>Option B</label>
-                    <input type="text" id="opt-b">
-                </div>
-                <div class="input-group">
-                    <label>Option C</label>
-                    <input type="text" id="opt-c">
-                </div>
-                <div class="input-group">
-                    <label>Option D</label>
-                    <input type="text" id="opt-d">
-                </div>
+                <div class="input-group"><label>A</label><input type="text" id="opt-a"></div>
+                <div class="input-group"><label>B</label><input type="text" id="opt-b"></div>
+                <div class="input-group"><label>C</label><input type="text" id="opt-c"></div>
+                <div class="input-group"><label>D</label><input type="text" id="opt-d"></div>
             </div>
-
             <div class="input-group">
                 <label>Correct Answer</label>
                 <select id="opt-correct">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
+                    <option value="A">A</option><option value="B">B</option>
+                    <option value="C">C</option><option value="D">D</option>
                 </select>
             </div>
-
-            <button class="btn btn-add" onclick="addQuestionManually()">Add This Question ➕</button>
+            <button class="btn btn-add" onclick="addQuestionManually()">Add Manually ➕</button>
         </div>
 
         <div id="preview-section" class="hidden">
-            <h3>Current Question Paper Preview:</h3>
+            <h3 style="color:#10b981;">Total Added Questions: <span id="q-count-display">0</span></h3>
+            <p style="font-size:0.8rem; color:#64748b;">ভুল থাকলে নিচের বক্স থেকেই সরাসরি এডিট করতে পারবেন এবং সঠিক উত্তর বেছে নিতে পারবেন।</p>
             <div class="preview-box" id="preview-list"></div>
         </div>
 
-        <button class="btn btn-publish" onclick="publishExam()">Publish & Post Entire Exam 🚀</button>
+        <button class="btn btn-publish" onclick="publishExam()">Publish Exam 🚀</button>
 
     </div>
 
     <script>
-        // State Array to hold questions
         let tempQuestions = [];
 
-        // Update UI
         function updateUI() {
-            document.getElementById('manual-title').innerText = `📝 Add Manually (Total added: ${tempQuestions.length})`;
-            
             const previewSection = document.getElementById('preview-section');
             const previewList = document.getElementById('preview-list');
+            document.getElementById('q-count-display').innerText = tempQuestions.length;
             
             if (tempQuestions.length > 0) {
                 previewSection.classList.remove('hidden');
-                previewList.innerHTML = tempQuestions.map((q, i) => `
-                    <div class="preview-item">
-                        <strong>Q${i + 1}:</strong> ${q.question_text} <br>
-                        <span style="color:#10b981; font-size:0.8rem;">(Correct: ${q.correct_option})</span>
-                    </div>
-                `).join('');
+                let html = '';
+                tempQuestions.forEach((q, i) => {
+                    html += `
+                    <div class="q-card">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                            <strong style="color: #3b82f6;">Q${i + 1}:</strong>
+                            <button onclick="removeQuestion(${i})" style="background:none; border:none; color:#ef4444; font-size:0.85rem; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                        <textarea onchange="updateQData(${i}, 'question_text', this.value)">${q.question_text}</textarea>
+                        
+                        <div class="grid-2x2" style="gap:5px; margin-bottom: 10px;">
+                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">A)</strong> <input type="text" value="${q.option_a}" onchange="updateQData(${i}, 'option_a', this.value)"></div>
+                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">B)</strong> <input type="text" value="${q.option_b}" onchange="updateQData(${i}, 'option_b', this.value)"></div>
+                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">C)</strong> <input type="text" value="${q.option_c}" onchange="updateQData(${i}, 'option_c', this.value)"></div>
+                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">D)</strong> <input type="text" value="${q.option_d}" onchange="updateQData(${i}, 'option_d', this.value)"></div>
+                        </div>
+                        
+                        <div style="display:flex; align-items:center; gap:10px; background:#e0f2fe; padding:8px; border-radius:6px;">
+                            <label style="font-size:0.85rem; font-weight:bold; color:#0369a1; margin:0;">সঠিক উত্তর সিলেক্ট করুন:</label>
+                            <select onchange="updateQData(${i}, 'correct_option', this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #bae6fd;">
+                                <option value="A" ${q.correct_option === 'A' ? 'selected' : ''}>A</option>
+                                <option value="B" ${q.correct_option === 'B' ? 'selected' : ''}>B</option>
+                                <option value="C" ${q.correct_option === 'C' ? 'selected' : ''}>C</option>
+                                <option value="D" ${q.correct_option === 'D' ? 'selected' : ''}>D</option>
+                            </select>
+                        </div>
+                    </div>`;
+                });
+                previewList.innerHTML = html;
             } else {
                 previewSection.classList.add('hidden');
             }
         }
 
-        // Add Manually
+        // রিয়েল-টাইম এডিট সেভ করার ফাংশন
+        function updateQData(index, field, value) { tempQuestions[index][field] = value; }
+        
+        function removeQuestion(index) {
+            if(confirm("প্রশ্নটি মুছে ফেলতে চান?")) { tempQuestions.splice(index, 1); updateUI(); }
+        }
+
         function addQuestionManually() {
-            const qText = document.getElementById('q-text').value;
-            const optA = document.getElementById('opt-a').value;
-            const optB = document.getElementById('opt-b').value;
-            const optC = document.getElementById('opt-c').value;
-            const optD = document.getElementById('opt-d').value;
-            const correctOpt = document.getElementById('opt-correct').value;
+            const q = document.getElementById('q-text').value;
+            const a = document.getElementById('opt-a').value, b = document.getElementById('opt-b').value;
+            const c = document.getElementById('opt-c').value, d = document.getElementById('opt-d').value;
+            const corr = document.getElementById('opt-correct').value;
 
-            if (!qText || !optA || !optB || !optC || !optD) {
-                alert("Please fill in all the fields for the question.");
-                return;
-            }
+            if (!q || !a || !b) { alert("Please fill at least Question, Option A and B."); return; }
+            tempQuestions.push({ question_text: q, option_a: a, option_b: b, option_c: c, option_d: d, correct_option: corr });
 
-            tempQuestions.push({
-                question_text: qText, option_a: optA, option_b: optB, option_c: optC, option_d: optD, correct_option: correctOpt
-            });
-
-            // Clear inputs
-            document.getElementById('q-text').value = '';
-            document.getElementById('opt-a').value = '';
-            document.getElementById('opt-b').value = '';
-            document.getElementById('opt-c').value = '';
-            document.getElementById('opt-d').value = '';
-
+            document.getElementById('q-text').value = ''; document.getElementById('opt-a').value = '';
+            document.getElementById('opt-b').value = ''; document.getElementById('opt-c').value = ''; document.getElementById('opt-d').value = '';
             updateUI();
         }
 
-        // 🔄 ছবি থেকে টেক্সট বের করার ফাংশন (Tesseract.js)
-        async function handleImageScan(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // Tesseract.js Image Scanner
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Create Custom Exam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Tesseract.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        :root { color-scheme: light; }
+        body { background-color: #f3f4f6; color: #1a1a1a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem 1.5rem 5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        .back-btn { background: transparent; color: #10b981; border: none; font-weight: bold; font-size: 14px; cursor: pointer; padding: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        .back-btn:hover { color: #059669; text-decoration: underline; }
+        h1 { font-size: 24px; color: #1a1a1a; margin-top: 0; margin-bottom: 20px; }
+        .card-basic { background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .card-ai { background-color: #f1f5f9; border: 2px dashed #8b5cf6; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        h3 { margin-top: 0; font-size: 16px; color: #1a1a1a; margin-bottom: 15px;}
+        .ai-title { color: #6d28d9; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; color: #333333; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 10px; background-color: #ffffff; color: #1a1a1a; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; outline: none; }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: #3b82f6; }
+        .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; box-sizing: border-box; }
+        .btn-ai { background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3); }
+        .btn-add { background-color: #3b82f6; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); margin-top: 10px; }
+        .btn-publish { background: linear-gradient(135deg, #10b981, #059669); padding: 15px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin-top: 20px;}
+        
+        .preview-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-top: 15px;}
+        /* Editable Question Card Styling */
+        .q-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .q-card textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px; font-family: inherit; font-size: 0.9rem; resize: vertical;}
+        .q-card input { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;}
+        
+        .hidden { display: none !important; }
+        .loading-text { text-align: center; color: #8b5cf6; font-weight: bold; font-size: 0.9rem; margin-top: 10px;}
+    </style>
+</head>
+<body>
 
-            // পিডিএফ এর কাজ আমরা ২য় ধাপে করব
-            if (file.type === "application/pdf") {
-                alert("পিডিএফ স্ক্যান করার ফিচারটি আমরা পরবর্তী ধাপে যুক্ত করছি! আপাতত একটি ছবি সিলেক্ট করুন বা টেক্সট পেস্ট করুন।");
-                event.target.value = ""; // Reset
-                return;
-            }
+    <div class="container">
+        <button class="back-btn" onclick="window.location.href='teacher_dashboard.html'">⬅️ Back to Dashboard</button>
+        <h1>Create Custom Exam</h1>
 
-            const loadingDiv = document.getElementById('scan-loading');
-            const resultBox = document.getElementById('scanned-text-result');
+        <div class="card-basic">
+            <div class="input-group">
+                <label>Exam Name</label>
+                <input type="text" id="exam-name" placeholder="e.g. Physics Sem 1">
+            </div>
+            <div class="grid-2x2">
+                <div class="input-group">
+                    <label>Exam Code</label>
+                    <input type="text" id="exam-code" placeholder="PHY-101" style="text-transform: uppercase;">
+                </div>
+                <div class="input-group">
+                    <label>Timer (Mins)</label>
+                    <input type="number" id="exam-timer" min="1" max="180" value="30">
+                </div>
+            </div>
+        </div>
+
+        <!-- 📸 Smart Mobile Scanner Section -->
+        <div class="card-ai">
+            <h3 class="ai-title">📸 Smart Mobile Scanner</h3>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">ক্যামেরা দিয়ে ছবি তুলুন অথবা সরাসরি টেক্সট পেস্ট করুন। (একাধিক পেজ স্ক্যান করতে পারবেন)</p>
             
-            loadingDiv.classList.remove('hidden');
-            resultBox.value = "Scanning your image... ⏳";
+            <div class="grid-2x2" style="margin-bottom: 15px;">
+                <label class="btn btn-ai" style="text-align: center; cursor: pointer; display: block;">
+                    <i class="fas fa-camera"></i> ক্যামেরা ওপেন
+                    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageScan(event)">
+                </label>
+                <label class="btn btn-add" style="text-align: center; cursor: pointer; display: block; background: #f59e0b; margin-top: 0;">
+                    <i class="fas fa-images"></i> গ্যালারি
+                    <input type="file" id="gallery-input" accept="image/*" class="hidden" onchange="handleImageScan(event)">
+                </label>
+            </div>
 
-            try {
-                // Tesseract.js দিয়ে স্ক্যান করা (ফোনের ব্রাউজারেই কাজ করবে)
-                const result = await Tesseract.recognize(file, 'eng');
-                
-                // স্ক্যান করা টেক্সট বক্সে বসিয়ে দেওয়া
-                resultBox.value = result.data.text;
-                alert("✅ স্ক্যান সফল হয়েছে! আপনি চাইলে লেখাগুলো এডিট করতে পারেন।");
-            } catch (error) {
-                alert("❌ স্ক্যান করতে সমস্যা হয়েছে: " + error.message);
-                resultBox.value = "";
-            } finally {
-                loadingDiv.classList.add('hidden');
-                event.target.value = ""; // Reset input for next time
+            <div class="input-group">
+                <label>Scanned Text / Copy-Paste Area</label>
+                <textarea id="scanned-text-result" rows="5" placeholder="স্ক্যান করা টেক্সট এখানে আসবে, অথবা সরাসরি কপি-পেস্ট করুন..."></textarea>
+            </div>
+
+            <button class="btn btn-publish" style="padding: 10px; font-size: 1rem;" onclick="processScannedText()">অ্যাড করুন ➕</button>
+            <div id="scan-loading" class="loading-text hidden">Scanning directly on your device... Please wait ⏳</div>
+        </div>
+
+        <div class="card-basic">
+            <h3 id="manual-title">📝 Add Manually</h3>
+            <div class="input-group">
+                <label>Question Text</label>
+                <textarea id="q-text" rows="2" placeholder="Type question..."></textarea>
+            </div>
+            <div class="grid-2x2">
+                <div class="input-group"><label>A</label><input type="text" id="opt-a"></div>
+                <div class="input-group"><label>B</label><input type="text" id="opt-b"></div>
+                <div class="input-group"><label>C</label><input type="text" id="opt-c"></div>
+                <div class="input-group"><label>D</label><input type="text" id="opt-d"></div>
+            </div>
+            <div class="input-group">
+                <label>Correct Answer</label>
+                <select id="opt-correct">
+                    <option value="A">A</option><option value="B">B</option>
+                    <option value="C">C</option><option value="D">D</option>
+                </select>
+            </div>
+            <button class="btn btn-add" onclick="addQuestionManually()">Add Manually ➕</button>
+        </div>
+
+        <div id="preview-section" class="hidden">
+            <h3 style="color:#10b981;">Total Added Questions: <span id="q-count-display">0</span></h3>
+            <p style="font-size:0.8rem; color:#64748b;">ভুল থাকলে নিচের বক্স থেকেই সরাসরি এডিট করতে পারবেন এবং সঠিক উত্তর বেছে নিতে পারবেন।</p>
+            <div class="preview-box" id="preview-list"></div>
+        </div>
+
+        <button class="btn btn-publish" onclick="publishExam()">Publish Exam 🚀</button>
+
+    </div>
+
+    <script>
+        let tempQuestions = [];
+
+        function updateUI() {
+            const previewSection = document.getElementById('preview-section');
+            const previewList = document.getElementById('preview-list');
+            document.getElementById('q-count-display').innerText = tempQuestions.length;
+            
+            if (tempQuestions.length > 0) {
+                previewSection.classList.remove('hidden');
+                let html = '';
+                tempQuestions.forEach((q, i) => {
+                    html += `
+                    <div class="q-card">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                            <strong style="color: #3b82f6;">Q${i + 1}:</strong>
+                            <button onclick="removeQuestion(${i})" style="background:none; border:none; color:#ef4444; font-size:0.85rem; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                        <textarea onchange="updateQData(${i}, 'question_text', this.value)">${q.question_text}</textarea>
+                        
+                        <div class="grid-2x2" style="gap:5px; margin-bottom: 10px;">
+                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">A)</strong> <input type="text" value="${q.option_a}" onchange="updateQData(${i}, 'option_a', this.value)"></div>
+                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">B)</strong> <input type="text" value="${q.option_b}" onchange="updateQData(${i}, 'option_b', this.value)"></div>
+                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">C)</strong> <input type="text" value="${q.option_c}" onchange="updateQData(${i}, 'option_c', this.value)"></div>
+                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">D)</strong> <input type="text" value="${q.option_d}" onchange="updateQData(${i}, 'option_d', this.value)"></div>
+                        </div>
+                        
+                        <div style="display:flex; align-items:center; gap:10px; background:#e0f2fe; padding:8px; border-radius:6px;">
+                            <label style="font-size:0.85rem; font-weight:bold; color:#0369a1; margin:0;">সঠিক উত্তর সিলেক্ট করুন:</label>
+                            <select onchange="updateQData(${i}, 'correct_option', this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #bae6fd;">
+                                <option value="A" ${q.correct_option === 'A' ? 'selected' : ''}>A</option>
+                                <option value="B" ${q.correct_option === 'B' ? 'selected' : ''}>B</option>
+                                <option value="C" ${q.correct_option === 'C' ? 'selected' : ''}>C</option>
+                                <option value="D" ${q.correct_option === 'D' ? 'selected' : ''}>D</option>
+                            </select>
+                        </div>
+                    </div>`;
+                });
+                previewList.innerHTML = html;
+            } else {
+                previewSection.classList.add('hidden');
             }
         }
 
-        // 🔄 ৩য় ধাপের জন্য ফাঁকা ফাংশন (আপাতত)
+        // রিয়েল-টাইম এডিট সেভ করার ফাংশন
+        function updateQData(index, field, value) { tempQuestions[index][field] = value; }
+        
+        function removeQuestion(index) {
+            if(confirm("প্রশ্নটি মুছে ফেলতে চান?")) { tempQuestions.splice(index, 1); updateUI(); }
+        }
+
+        function addQuestionManually() {
+            const q = document.getElementById('q-text').value;
+            const a = document.getElementById('opt-a').value, b = document.getElementById('opt-b').value;
+            const c = document.getElementById('opt-c').value, d = document.getElementById('opt-d').value;
+            const corr = document.getElementById('opt-correct').value;
+
+            if (!q || !a || !b) { alert("Please fill at least Question, Option A and B."); return; }
+            tempQuestions.push({ question_text: q, option_a: a, option_b: b, option_c: c, option_d: d, correct_option: corr });
+
+            document.getElementById('q-text').value = ''; document.getElementById('opt-a').value = '';
+            document.getElementById('opt-b').value = ''; document.getElementById('opt-c').value = ''; document.getElementById('opt-d').value = '';
+            updateUI();
+        }
+
+        // 🔄 ছবি থেকে টেক্সট বের করার ফাংশন (Tesseract.js - বাংলা ও ইংরেজি সাপোর্টসহ)
+       async function handleImageScan(event) {
+           const file = event.target.files[0];
+           if (!file) return;
+
+           if (file.type === "application/pdf") {
+               alert("পিডিএফ স্ক্যান করার ফিচারটি আমরা পরবর্তী ধাপে যুক্ত করছি! আপাতত একটি ছবি সিলেক্ট করুন বা টেক্সট পেস্ট করুন।");
+               event.target.value = ""; 
+               return;
+           }
+
+           const loadingDiv = document.getElementById('scan-loading');
+           const resultBox = document.getElementById('scanned-text-result');
+    
+           loadingDiv.classList.remove('hidden');
+           resultBox.value = "Scanning your image for Bengali & English... ⏳\n(বাংলা স্ক্যান হতে একটু বেশি সময় লাগতে পারে)";
+
+           try {
+               // 'ben+eng' ব্যবহার করা হয়েছে যাতে বাংলা এবং ইংরেজি দুটোই একসাথে স্ক্যান করতে পারে
+               const result = await Tesseract.recognize(file, 'ben+eng');
+               
+               // স্ক্যান করা টেক্সট বক্সে বসিয়ে দেওয়া
+               resultBox.value = result.data.text;
+               alert("✅ স্ক্যান সফল হয়েছে! আপনি চাইলে লেখাগুলো এডিট করতে পারেন।");
+           } catch (error) {
+               alert("❌ স্ক্যান করতে সমস্যা হয়েছে: " + error.message);
+               resultBox.value = "";
+           } finally {
+               loadingDiv.classList.add('hidden');
+               event.target.value = ""; 
+           }
+       }
+
+        // 🧠 স্মার্ট টেক্সট প্রসেসর (অটোমেটিক প্রশ্ন ও অপশন আলাদা করা)
         function processScannedText() {
             const text = document.getElementById('scanned-text-result').value;
-            if (!text.trim()) {
-                alert("Please scan an image or paste some text first!");
-                return;
+            if (!text.trim()) { alert("আগে স্ক্যান করুন বা লেখা পেস্ট করুন!"); return; }
+
+            let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            let currentQ = null;
+            let addedCount = 0;
+
+            for(let i=0; i<lines.length; i++) {
+                let line = lines[i];
+                // অপশন খোঁজার রেগুলার এক্সপ্রেশন (A), a), A., B. ইত্যাদি
+                let optMatch = line.match(/^[\(]?([A-D])[a-z]?[\)\.]?\s+(.*)/i); 
+                let ansMatch = line.match(/^(Ans|Answer|উত্তর)[\s\:\.\-]*([A-D])/i);
+
+                if (ansMatch && currentQ) {
+                    currentQ.correct_option = ansMatch[2].toUpperCase();
+                } else if (optMatch && currentQ) {
+                    let optChar = optMatch[1].toUpperCase();
+                    if (optChar === 'A') currentQ.option_a = optMatch[2];
+                    if (optChar === 'B') currentQ.option_b = optMatch[2];
+                    if (optChar === 'C') currentQ.option_c = optMatch[2];
+                    if (optChar === 'D') currentQ.option_d = optMatch[2];
+                } else {
+                    if (currentQ && (!currentQ.option_a || !currentQ.option_b)) {
+                        currentQ.question_text += " \n" + line; // প্রশ্নের সাথে লাইন যুক্ত করা
+                    } else {
+                        if (currentQ) { tempQuestions.push(currentQ); addedCount++; }
+                        currentQ = { question_text: line, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A" };
+                    }
+                }
             }
-            alert("এই ফাংশনটি ৩য় ধাপে তৈরি করা হবে, যা টেক্সট থেকে অটোমেটিক প্রশ্ন আলাদা করবে!");
+            if (currentQ) { tempQuestions.push(currentQ); addedCount++; }
+
+            document.getElementById('scanned-text-result').value = ""; // পরবর্তী পেজের জন্য ফাঁকা করে দেওয়া
+            updateUI();
+            alert(`✅ ${addedCount} টি প্রশ্ন যুক্ত হয়েছে! আপনি চাইলে আরও একটি পেজ স্ক্যান করতে পারেন।\n\n(নিচে থেকে প্রশ্নগুলো এডিট করে নিতে ভুলবেন না)`);
         }
 
         // Publish Exam
@@ -288,35 +449,24 @@
             const teacherEmail = localStorage.getItem('userEmail') || 'dasbabu938207@gmail.com';
             
             if (!examName || !examCode) { alert("Please provide the exam name and unique code."); return; }
-            if (tempQuestions.length === 0) { alert("Please add at least 1 question before publishing!"); return; }
+            if (tempQuestions.length === 0) { alert("Please add at least 1 question!"); return; }
 
             const publishBtn = document.querySelector('.btn-publish');
-            publishBtn.innerText = "Publishing... ⏳";
-            publishBtn.disabled = true;
+            publishBtn.innerText = "Publishing... ⏳"; publishBtn.disabled = true;
 
             try {
                 const response = await fetch('/api/create-exam', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        exam_code: examCode, exam_name: examName, timer: timer,
-                        teacher_email: teacherEmail, questions: tempQuestions
-                    })
+                    body: JSON.stringify({ exam_code: examCode, exam_name: examName, timer: timer, teacher_email: teacherEmail, questions: tempQuestions })
                 });
                 const data = await response.json();
-
                 if (response.ok && data.success) {
-                    alert(`🎉 Awesome! Your exam has been successfully created.\nShare this code with your students: ${examCode}`);
+                    alert(`🎉 Awesome! Exam created.\nCode: ${examCode}`);
                     window.location.href = 'teacher_dashboard.html';
-                } else {
-                    alert(data.error || "Failed to create exam.");
-                }
-            } catch (error) {
-                alert("Server connection error.");
-            } finally {
-                publishBtn.innerText = "Publish & Post Entire Exam 🚀";
-                publishBtn.disabled = false;
-            }
+                } else { alert(data.error || "Failed to create exam."); }
+            } catch (error) { alert("Server error."); } 
+            finally { publishBtn.innerText = "Publish Exam 🚀"; publishBtn.disabled = false; }
         }
     </script>
 </body>
