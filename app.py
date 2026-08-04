@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import json
-import google.generativeai as genai
 import PyPDF2
 
 # Gemini API কনফিগারেশন (Environment Variable থেকে API Key নেবে)
@@ -840,18 +839,23 @@ def get_profile_data():
     except Exception as e:
         return jsonify({"success": False})
 
+import requests # এটি app.py এর একদম উপরে ইমপোর্ট করে নেবেন (যদি না থাকে)
+
 # ==========================================
-# ১০. Gemini AI PDF Extraction API
+# ১০. Gemini AI PDF Extraction API (REST API Method)
 # ==========================================
 @app.route('/api/extract-pdf-gemini', methods=['POST'])
 def extract_pdf_gemini():
-    # ফাইল আপলোড হয়েছে কি না চেক করা
     if 'file' not in request.files:
         return jsonify({"success": False, "error": "No file uploaded!"}), 400
     
     file = request.files['file']
     if file.filename == '':
         return jsonify({"success": False, "error": "No selected file!"}), 400
+
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return jsonify({"success": False, "error": "Gemini API Key is missing on the server!"}), 500
 
     try:
         # PDF থেকে টেক্সট পড়া
@@ -884,12 +888,21 @@ def extract_pdf_gemini():
         Text to analyze:
         """ + extracted_text
 
-        # Gemini 1.5 Flash মডেল কল করা
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # 🚀 REST API Call (Bypassing SDK issues)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        headers = {'Content-Type': 'application/json'}
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}]
+        }
 
-        response = model.generate_content(prompt)
-        
-        response_text = response.text.strip()
+        api_response = requests.post(url, headers=headers, json=payload)
+        response_data = api_response.json()
+
+        if api_response.status_code != 200:
+            return jsonify({"success": False, "error": f"Google API Error: {response_data}"}), 500
+
+        # API থেকে টেক্সট বের করা
+        response_text = response_data['candidates'][0]['content']['parts'][0]['text'].strip()
         
         # যদি Gemini এক্সট্রা ব্যাকটিক (```json) দেয়, তা মুছে ফেলা
         if response_text.startswith("```json"):
@@ -906,7 +919,7 @@ def extract_pdf_gemini():
         return jsonify({"success": False, "error": "AI could not generate valid questions. Please try a clearer PDF."}), 500
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-
+        
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
