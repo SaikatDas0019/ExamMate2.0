@@ -90,9 +90,8 @@
     <!-- Firebase Authentication SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // আপনার পুরোনো সাইন-ইন পেজ থেকে নেওয়া Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
             authDomain: "exammate-4dfa2.firebaseapp.com",
@@ -106,22 +105,16 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        document.getElementById('btn-google-login').addEventListener('click', async () => {
-            const errorBox = document.getElementById('error-msg');
-            errorBox.style.display = 'none';
-
-            try {
-                // Firebase দিয়ে গুগলে লগিন করানো হচ্ছে
-                const result = await signInWithPopup(auth, provider);
+        // Handle Redirect Result after Google Login
+        getRedirectResult(auth).then(async (result) => {
+            if (result && result.user) {
                 const user = result.user;
-
                 const userData = {
                     email: user.email,
                     name: user.displayName,
                     photo_url: user.photoURL
                 };
 
-                // ব্যাকএন্ডে চেক করা হচ্ছে ইউজার নতুন নাকি পুরোনো
                 const response = await fetch('/api/google-login', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -132,11 +125,9 @@
 
                 if(data.success) {
                     if(data.is_new) {
-                        // নতুন ইউজার: প্রোফাইল সেটআপ পেজে পাঠানো হচ্ছে
                         localStorage.setItem('temp_user', JSON.stringify(userData));
                         window.location.href = '/setup_profile.html';
                     } else {
-                        // পুরোনো ইউজার: সরাসরি ড্যাশবোর্ডে পাঠানো হচ্ছে
                         localStorage.setItem('user', JSON.stringify({
                             email: userData.email, 
                             name: data.name, 
@@ -147,10 +138,24 @@
                         window.location.href = data.redirect_url;
                     }
                 } else {
+                    const errorBox = document.getElementById('error-msg');
                     errorBox.innerText = "Authentication Failed: " + data.error;
                     errorBox.style.display = 'block';
                 }
+            }
+        }).catch((error) => {
+            console.error("Redirect Error:", error);
+            const errorBox = document.getElementById('error-msg');
+            errorBox.innerText = "Google Sign-In failed: " + error.message;
+            errorBox.style.display = 'block';
+        });
 
+        document.getElementById('btn-google-login').addEventListener('click', async () => {
+            const errorBox = document.getElementById('error-msg');
+            errorBox.style.display = 'none';
+
+            try {
+                await signInWithRedirect(auth, provider);
             } catch (error) {
                 console.error("Firebase Login Error:", error);
                 errorBox.innerText = "Google Sign-In failed or was cancelled.";
