@@ -6,6 +6,15 @@
     <title>ExamMate | Exam Room</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- MathJax for Math Equations -->
+    <script>
+        window.MathJax = {
+          tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         :root { color-scheme: light; }
         body { 
@@ -27,11 +36,13 @@
         .progress-bar { height: 100%; background-color: #3b82f6; width: 0%; transition: width 0.3s ease; }
         .progress-text { font-size: 0.9rem; color: #4b5563; font-weight: 600; margin-bottom: 20px; }
         hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
-        .question-text { font-size: 1.1rem; font-weight: 600; color: #111827; margin-bottom: 1.5rem; line-height: 1.5; }
-        .option-label { display: block; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; font-size: 1rem; color: #334155; }
+        
+        .question-text { font-size: 1.1rem; font-weight: 600; color: #111827; margin-bottom: 1.5rem; line-height: 1.5; overflow-x: auto; }
+        .option-label { display: block; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; font-size: 1rem; color: #334155; overflow-x: auto; }
         .option-label:hover { background: #f1f5f9; border-color: #cbd5e1; }
         .option-label input[type="radio"] { display: none; }
         .option-label.selected { background: #eff6ff; border-color: #3b82f6; color: #1e3a8a; font-weight: 600; }
+        
         .nav-buttons { display: flex; justify-content: space-between; gap: 10px; margin-top: 2rem; }
         .btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; }
         .btn-prev { background: #f1f5f9; color: #475569; }
@@ -61,8 +72,10 @@
             <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
             <div class="progress-text" id="progress-text">Question No.: 1 / 10</div>
             <hr>
+            
             <div class="question-text" id="question-text">Loading question...</div>
             <div id="options-container"></div>
+            
             <hr>
             <div class="nav-buttons">
                 <button class="btn btn-prev" id="btn-prev" onclick="changeQuestion(-1)">⬅️ Previous</button>
@@ -100,7 +113,6 @@
             }
 
             try {
-                // ডেটাবেস থেকে প্রশ্ন তুলে আনা
                 const response = await fetch('/api/get-exam-questions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -153,7 +165,8 @@
 
         function loadQuestion(index) {
             const q = dbQuestions[index];
-            document.getElementById('question-text').innerText = `Q: ${q.q_text}`;
+            const qTextElement = document.getElementById('question-text');
+            qTextElement.innerHTML = `Q: ${q.q_text}`;
             
             const progress = ((index + 1) / totalQuestions) * 100;
             document.getElementById('progress-bar').style.width = `${progress}%`;
@@ -184,7 +197,12 @@
                 };
 
                 label.appendChild(input);
-                label.appendChild(document.createTextNode(`${opt.letter}. ${opt.text}`));
+                
+                // Use innerHTML instead of createTextNode so MathJax can parse the tags properly
+                const span = document.createElement('span');
+                span.innerHTML = ` ${opt.letter}. ${opt.text}`;
+                label.appendChild(span);
+                
                 optsContainer.appendChild(label);
             });
 
@@ -195,6 +213,13 @@
             } else {
                 document.getElementById('btn-next').style.display = 'block';
                 document.getElementById('btn-submit').style.display = 'none';
+            }
+
+            // 🚀 Force MathJax to re-render the math equations every time a new question loads
+            if (window.MathJax) {
+                MathJax.typesetPromise([qTextElement, optsContainer]).catch(function (err) {
+                    console.log('MathJax error: ', err.message);
+                });
             }
         }
 
@@ -212,7 +237,6 @@
 
             const userEmail = localStorage.getItem('userEmail') || "student@email.com";
 
-            // রেজাল্ট ডেটাবেসে পাঠানো
             try {
                 await fetch('/api/submit-exam-result', {
                     method: 'POST',
