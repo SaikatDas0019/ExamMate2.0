@@ -105,6 +105,26 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
+        // Check if user is already logged in on app startup
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedEmail = localStorage.getItem('userEmail');
+            const userObj = localStorage.getItem('user');
+            
+            if (savedEmail && userObj) {
+                try {
+                    const parsedUser = JSON.parse(userObj);
+                    if (parsedUser.role && parsedUser.role.toLowerCase() === 'teacher') {
+                        window.location.href = '/teacher_dashboard.html';
+                    } else {
+                        window.location.href = '/student_dashboard.html';
+                    }
+                } catch (e) {
+                    // Fallback if JSON parse fails
+                    window.location.href = '/student_dashboard.html';
+                }
+            }
+        });
+
         // Handle Redirect Result after Google Login
         getRedirectResult(auth).then(async (result) => {
             if (result && result.user) {
