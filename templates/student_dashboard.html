@@ -16,28 +16,54 @@
         }
         .container { 
             width: 100%; max-width: 480px; background-color: #ffffff;
-            min-height: 100vh; padding: 1.5rem 1.5rem 6rem 1.5rem; 
+            min-height: 100vh; padding: 0 1.5rem 6rem 1.5rem; 
             box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
         
-        /* Header Section */
-        .profile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        /* Fixed Sticky Header Style */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background-color: #ffffff;
+            z-index: 999;
+            padding: 1rem 0 0.8rem 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Fixed Back Button Style ("‹") */
+        .btn-back {
+            background: transparent;
+            border: none;
+            color: #111827;
+            font-size: 2.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 0.8;
+            padding: 0;
+        }
+
+        /* Profile Header inside sticky section */
+        .profile-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .profile-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .avatar { 
-            width: 50px; height: 50px; background: #e0f2fe; border-radius: 50%; 
+            width: 45px; height: 45px; background: #e0f2fe; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 1.5rem; border: 2px solid #38bdf8; color: #0369a1;
+            font-size: 1.3rem; border: 2px solid #38bdf8; color: #0369a1;
         }
-        .greeting h3 { margin: 0; font-size: 1.2rem; font-weight: 700; color: #111827; }
-        .greeting p { margin: 0; font-size: 0.8rem; color: #6b7280; }
+        .greeting h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #111827; }
+        .greeting p { margin: 0; font-size: 0.75rem; color: #6b7280; }
         .bell-icon { 
-            font-size: 1.2rem; color: #4b5563; background: #f3f4f6; 
-            padding: 10px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
+            font-size: 1.1rem; color: #4b5563; background: #f3f4f6; 
+            padding: 9px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
             position: relative;
         }
         .bell-icon.has-unread::after {
             content: ''; position: absolute; top: 2px; right: 2px;
-            width: 10px; height: 10px; background-color: #ef4444; 
+            width: 9px; height: 9px; background-color: #ef4444; 
             border-radius: 50%; border: 2px solid #ffffff;
         }
 
@@ -89,15 +115,19 @@
 
     <div class="container">
         
-        <div class="profile-header">
-            <div class="profile-left" onclick="window.location.href='/student_profile.html'">
-                <div class="avatar"><i class="fas fa-user"></i></div>
-                <div class="greeting">
-                    <h3 id="student-name">Hi, Student</h3>
-                    <p>Let's ace your exams! 🚀</p>
+        <!-- ফিক্সড হেডার এবং "‹" ব্যাক বাটন -->
+        <div class="sticky-header">
+            <button class="btn-back" onclick="window.history.back()">‹</button>
+            <div class="profile-header">
+                <div class="profile-left" onclick="window.location.href='/student_profile.html'">
+                    <div class="avatar"><i class="fas fa-user"></i></div>
+                    <div class="greeting">
+                        <h3 id="student-name">Hi, Student</h3>
+                        <p>Let's ace your exams! 🚀</p>
+                    </div>
                 </div>
+                <div class="bell-icon" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></div>
             </div>
-            <div class="bell-icon" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></div>
         </div>
 
         <div class="section-title">📈 My Progress</div>
@@ -151,7 +181,7 @@
 
     </div>
 
-    <!-- Fixed 4-Item Bottom Navigation Bar -->
+    <!-- Fixed Bottom Navigation Bar -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="window.location.href='/student_dashboard.html'">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
@@ -205,7 +235,7 @@
             document.getElementById('student-name').innerText = "Hi, " + userName.split(' ')[0];
 
             checkUnreadNotifications();
-            loadExamFolders(); // 🆕 ডাইনামিক ফোল্ডার লোড
+            loadExamFolders(); 
             
             // প্রগ্রেস ডেটা লোড
             if (userEmail) {
@@ -227,7 +257,7 @@
             }
         };
 
-        // 🆕 ডাইনামিক ফোল্ডার এবং এক্সাম লোড করার ফাংশন
+        // ফোল্ডার এবং এক্সাম লোড করার ফাংশন
         async function loadExamFolders() {
             const folderList = document.getElementById('folder-list');
             const examList = document.getElementById('exam-list');
@@ -235,7 +265,6 @@
             examList.innerHTML = '';
 
             try {
-                // Backend থেকে 'exam' টাইপের ফোল্ডার আনা হচ্ছে
                 const res = await fetch('/api/get-student-drive-contents', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -251,7 +280,6 @@
                         folderList.innerHTML = '<div style="text-align:center; padding:20px; color:#6b7280; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">No exams available here yet.</div>';
                     }
 
-                    // ফোল্ডার রেন্ডারিং
                     data.folders.forEach(f => {
                         const btn = document.createElement('button');
                         btn.className = "flow-btn";
@@ -260,7 +288,6 @@
                         folderList.appendChild(btn);
                     });
 
-                    // এক্সাম রেন্ডারিং
                     data.exams.forEach(ex => {
                         const btn = document.createElement('button');
                         btn.className = "flow-btn";
@@ -272,7 +299,6 @@
                             </div>
                             <i class="fas fa-play-circle" style="color:#10b981; font-size: 1.8rem; transition: 0.2s;"></i>
                         `;
-                        // সরাসরি এক্সাম পেজে পাঠিয়ে দেওয়া হবে
                         btn.onclick = () => window.location.href = "student_exam.html?code=" + ex.code;
                         examList.appendChild(btn);
                     });
@@ -282,7 +308,6 @@
             }
         }
 
-        // ফোল্ডার ওপেন করা
         function openFolder(id, name) {
             folderHistory.push({ id: currentFolderId, name: document.getElementById('bc-folder').innerText.replace('<i class="fas fa-folder-open"></i> ', '') });
             currentFolderId = id;
@@ -291,7 +316,6 @@
             loadExamFolders();
         }
 
-        // ফোল্ডার থেকে ব্যাক করা
         function goBackFolder() {
             if (folderHistory.length > 0) {
                 const prev = folderHistory.pop();
@@ -305,7 +329,6 @@
             }
         }
 
-        // ম্যানুয়াল এক্সাম সার্চ (যদি স্টুডেন্ট কোড টাইপ করে ঢুকতে চায়)
         async function searchExam() {
             const code = document.getElementById('exam-code-input').value.trim().toUpperCase();
             const errorMsg = document.getElementById('search-error');
