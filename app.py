@@ -742,28 +742,25 @@ def create_drive_folder():
 
 @app.route('/api/admin/upload-drive-file', methods=['POST'])
 def upload_drive_file():
+    data = request.get_json()
+    folder_id = data.get('folder_id', 0)
+    title = data.get('title')
+    resource_type = data.get('resource_type', 'Notes')
+    file_url = data.get('file_url')
+
+    if not title or not file_url:
+        return jsonify({"success": False, "error": "Title and Link are required!"}), 400
+
     try:
-        folder_id = request.form.get('folder_id', 0)
-        title = request.form.get('title')
-        resource_type = request.form.get('resource_type', 'Notes')
-        file = request.files.get('file')
-        if not file: return jsonify({"success": False, "error": "No file chosen!"}), 400
-
-        filename = secure_filename(file.filename)
-        unique_filename = f"{resource_type}_{folder_id}_{filename}"
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-        file.save(file_path)
-        file_url = f"/static/uploads/resources/{unique_filename}"
-
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         cursor.execute(f"INSERT INTO drive_files (folder_id, title, file_url, resource_type) VALUES ({ph}, {ph}, {ph}, {ph})", (folder_id, title, file_url, resource_type))
         conn.commit()
         conn.close()
-        return jsonify({"success": True, "message": "File uploaded!"})
+        return jsonify({"success": True, "message": "Link saved successfully!"})
     except Exception as e:
-        return jsonify({"success": False, "error": "Upload Failed"}), 500
+        return jsonify({"success": False, "error": "Save Failed"}), 500
 
 @app.route('/api/admin/delete-drive-item', methods=['POST'])
 def delete_drive_item():
