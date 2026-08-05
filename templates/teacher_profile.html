@@ -19,11 +19,37 @@
         .container { 
             width: 100%; max-width: 480px; 
             background-color: #ffffff; min-height: 100vh;
-            padding: 1.5rem 1.5rem 6rem 1.5rem; 
+            padding: 0 1.5rem 6rem 1.5rem; 
             box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
 
-        .page-title { font-size: 1.8rem; font-weight: 800; text-align: center; margin-bottom: 2rem; color: #111827; }
+        /* Fixed Sticky Header Style */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background-color: #ffffff;
+            z-index: 999;
+            padding: 1rem 0 0.8rem 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Fixed Back Button Style ("‹") */
+        .btn-back {
+            background: transparent;
+            border: none;
+            color: #111827;
+            font-size: 2.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 0.8;
+            padding: 0;
+        }
+
+        .page-title { font-size: 1.5rem; font-weight: 800; margin: 0; color: #111827; flex: 1; }
 
         /* Avatar Style (Initials) */
         .avatar-container { display: flex; justify-content: center; margin-bottom: 25px; }
@@ -109,7 +135,11 @@
 
     <div class="container">
         
-        <div class="page-title">Profile Settings</div>
+        <!-- ফিক্সড হেডার ও "‹" ব্যাক বাটন -->
+        <div class="sticky-header">
+            <button class="btn-back" onclick="window.history.back()">‹</button>
+            <div class="page-title">Profile Settings</div>
+        </div>
 
         <!-- Avatar Section (Initials) -->
         <div class="avatar-container">
@@ -383,16 +413,6 @@
                 }
             });
         }
-        // ব্যাক বাটন প্রেস করলে আগের পেজে যাওয়ার জন্য সঠিক নিয়ম
-        window.addEventListener('popstate', function (event) {
-            // আগের হিস্ট্রিতে ফিরে যাবে
-            if (document.referrer) {
-                window.history.back();
-            } else {
-                window.location.href = '/teacher_dashboard.html'; // কোনো হিস্ট্রি না থাকলে ড্যাশবোর্ডে পাঠিয়ে দেবে
-            }
-        });
-
     </script>
 </body>
 </html>
