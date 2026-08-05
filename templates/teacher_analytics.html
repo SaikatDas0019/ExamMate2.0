@@ -16,20 +16,38 @@
         }
         .container { 
             width: 100%; max-width: 480px; background-color: #ffffff;
-            min-height: 100vh; padding: 1.5rem 1rem 6rem 1rem; 
+            min-height: 100vh; padding: 0 1rem 6rem 1rem; 
             box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
 
-        .back-btn {
-            background: transparent; color: #1ea64d; border: none; 
-            font-weight: bold; font-size: 14px; cursor: pointer; 
-            padding: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px;
+        /* Fixed Sticky Header Style */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background-color: #ffffff;
+            z-index: 999;
+            padding: 1rem 0 0.8rem 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .back-btn:hover { color: #15803d; text-decoration: underline; }
 
-        .page-header { margin-bottom: 20px; }
-        .page-header h1 { font-size: 24px; color: #1a1a1a; margin: 0 0 5px 0; }
-        .page-header p { color: #4b5563; margin: 0; font-size: 0.85rem; }
+        /* Fixed Back Button Style ("‹") */
+        .btn-back {
+            background: transparent;
+            border: none;
+            color: #111827;
+            font-size: 2.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 0.8;
+            padding: 0;
+        }
+
+        .page-header h1 { font-size: 20px; color: #1a1a1a; margin: 0 0 2px 0; }
+        .page-header p { color: #4b5563; margin: 0; font-size: 0.8rem; }
 
         .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
         .metric-card {
@@ -48,7 +66,6 @@
         th { background-color: #f8fafc; color: #374151; font-weight: 600; }
         td { color: #4b5563; }
         
-        /* 🆕 নামের নিচে ইমেইল দেখানোর ডিজাইন */
         .student-name-box { display: flex; flex-direction: column; }
         .student-name-box .email { font-size: 0.65rem; color: #64748b; margin-top: 2px; font-weight: normal; }
 
@@ -78,11 +95,13 @@
 <body>
 
     <div class="container">
-        <button class="back-btn" onclick="window.location.href='/teacher_dashboard.html'">⬅️ Back to Dashboard</button>
-        
-        <div class="page-header">
-            <h1 id="teacher-name">📊 Class Analytics</h1>
-            <p>Monitor student performance and exam statistics</p>
+        <!-- ফিক্সড হেডার এবং "‹" ব্যাক বাটন -->
+        <div class="sticky-header">
+            <button class="btn-back" onclick="window.location.href='/teacher_dashboard.html'">‹</button>
+            <div class="page-header">
+                <h1 id="teacher-name">📊 Class Analytics</h1>
+                <p>Monitor student performance and exam statistics</p>
+            </div>
         </div>
 
         <h2 class="section-title">📈 Class Overview Metrics</h2>
@@ -213,7 +232,6 @@
                         if (data.leaderboard.length === 0) {
                             leaderBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No students have taken exams yet.</td></tr>';
                         } else {
-                            // 🆕 লিডারবোর্ডে নামের নিচে ইমেইল যোগ করা হয়েছে
                             leaderBody.innerHTML = data.leaderboard.map(s => 
                                 `<tr>
                                     <td>
@@ -235,7 +253,6 @@
                         selector.innerHTML = '<option value="" disabled selected>Select a student...</option>';
                         data.leaderboard.forEach(s => {
                             const opt = document.createElement('option');
-                            // ড্রপডাউনেও নাম এবং ইমেইল একসাথে দেখাবে
                             opt.value = s.name;
                             opt.innerText = `${s.name} (${s.email})`;
                             selector.appendChild(opt);
@@ -354,15 +371,6 @@
 
             container.innerHTML = html;
         }
-        // ব্যাক বাটন প্রেস করলে আগের পেজে যাওয়ার জন্য সঠিক নিয়ম
-        window.addEventListener('popstate', function (event) {
-            // আগের হিস্ট্রিতে ফিরে যাবে
-            if (document.referrer) {
-                window.history.back();
-            } else {
-                window.location.href = '/teacher_dashboard.html'; // কোনো হিস্ট্রি না থাকলে ড্যাশবোর্ডে পাঠিয়ে দেবে
-            }
-        });
     </script>
 </body>
 </html>
