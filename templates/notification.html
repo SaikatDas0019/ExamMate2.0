@@ -128,6 +128,12 @@
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
         }
+        // ফোনের হার্ডওয়্যার ব্যাক বাটন হ্যান্ডেল করার জন্য
+        history.pushState(null, null, window.location.href);
+        window.addEventListener('popstate', function () {
+            history.pushState(null, null, window.location.href);
+            window.history.back();
+        });
     </script>
 </body>
 </html>
