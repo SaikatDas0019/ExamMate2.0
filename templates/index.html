@@ -90,7 +90,7 @@
     <!-- Firebase Authentication SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
@@ -103,30 +103,27 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-
-        // 🔴 পার্মানেন্ট সেশন বজায় রাখার জন্য লোকাল পার্সিস্টেন্স সেট করা হলো
-        setPersistence(auth, browserLocalPersistence).catch((error) => {
-            console.error("Persistence error:", error);
-        });
-
         const provider = new GoogleAuthProvider();
 
-        // Check if user is already logged in on app startup
-        window.addEventListener('DOMContentLoaded', () => {
+        // 🔴 অ্যাপ ওপেন হওয়ামাত্র ডেটাবেস থেকে লগইন স্ট্যাটাস চেক করা
+        window.addEventListener('DOMContentLoaded', async () => {
             const savedEmail = localStorage.getItem('userEmail');
-            const userObj = localStorage.getItem('user');
-            
-            if (savedEmail && userObj) {
+            if (savedEmail) {
                 try {
-                    const parsedUser = JSON.parse(userObj);
-                    if (parsedUser.role && parsedUser.role.toLowerCase() === 'teacher') {
-                        window.location.href = '/teacher_dashboard.html';
+                    const response = await fetch('/api/check-login-status', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: savedEmail })
+                    });
+                    const data = await response.json();
+                    if (data.logged_in) {
+                        window.location.href = data.redirect_url;
                     } else {
-                        window.location.href = '/student_dashboard.html';
+                        localStorage.removeItem('userEmail');
+                        localStorage.removeItem('user');
                     }
                 } catch (e) {
-                    // Fallback if JSON parse fails
-                    window.location.href = '/student_dashboard.html';
+                    console.log("Status check error:", e);
                 }
             }
         });
