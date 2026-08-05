@@ -6,9 +6,6 @@
     <title>ExamMate | Create Custom Exam</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Tesseract.js Library -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    
     <!-- MathJax for Math Equations -->
     <script>
         window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
@@ -20,31 +17,42 @@
         :root { color-scheme: light; }
         body { background-color: #f3f4f6; color: #1a1a1a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 500px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem 1.5rem 5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        
         .back-btn { background: transparent; color: #10b981; border: none; font-weight: bold; font-size: 14px; cursor: pointer; padding: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
         .back-btn:hover { color: #059669; text-decoration: underline; }
         h1 { font-size: 24px; color: #1a1a1a; margin-top: 0; margin-bottom: 20px; }
+        
         .card-basic { background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .card-ai { background-color: #f1f5f9; border: 2px dashed #8b5cf6; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .card-ai { background-color: #faf5ff; border: 2px dashed #a855f7; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
         h3 { margin-top: 0; font-size: 16px; color: #1a1a1a; margin-bottom: 15px;}
-        .ai-title { color: #6d28d9; }
+        .ai-title { color: #7e22ce; font-size: 1.1rem; text-align: center; }
+        
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; color: #333333; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
         .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 10px; background-color: #ffffff; color: #1a1a1a; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; outline: none; }
         .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: #3b82f6; }
+        
         .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; box-sizing: border-box; }
-        .btn-ai { background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3); }
-        .btn-add { background-color: #3b82f6; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); margin-top: 10px; }
+        .btn-add { background-color: #8b5cf6; box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3); margin-top: 5px; }
         .btn-publish { background: linear-gradient(135deg, #10b981, #059669); padding: 15px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin-top: 20px;}
         
-        .preview-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-top: 15px;}
+        /* AI Prompt Box Styling */
+        .prompt-box { background: #e0e7ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #1e3a8a; }
+        .prompt-code { background: #ffffff; border: 1px dashed #93c5fd; padding: 12px; margin-top: 10px; border-radius: 6px; position: relative; }
+        .prompt-code code { display: block; color: #334155; font-size: 0.8rem; white-space: pre-wrap; margin-top: 25px; font-family: inherit;}
+        .copy-btn { position: absolute; top: 8px; right: 8px; background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; transition: 0.2s;}
+        .copy-btn:hover { background: #2563eb; }
+
         /* Editable Question Card Styling */
+        .preview-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-top: 15px;}
         .q-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .math-preview { background: #ffffff; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.95rem; overflow-x: auto;}
         .q-card textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px; font-family: inherit; font-size: 0.9rem; resize: vertical;}
         .q-card input { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;}
         
         .hidden { display: none !important; }
-        .loading-text { text-align: center; color: #8b5cf6; font-weight: bold; font-size: 0.9rem; margin-top: 10px;}
     </style>
 </head>
 <body>
@@ -68,7 +76,6 @@
                     <input type="number" id="exam-timer" min="1" max="180" value="30">
                 </div>
             </div>
-            <!-- 🆕 Negative Marking Selection -->
             <div class="input-group" style="margin-top: 10px;">
                 <label>Negative Marks (Per Wrong Answer)</label>
                 <select id="exam-negative">
@@ -81,56 +88,47 @@
             </div>
         </div>
 
-        <!-- 📸 Smart Mobile Scanner Section -->
+        <!-- 🤖 AI Smart Paste Section -->
         <div class="card-ai">
-            <h3 class="ai-title">📸 Smart Mobile Scanner</h3>
-            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">ক্যামেরা দিয়ে ছবি তুলুন অথবা সরাসরি টেক্সট পেস্ট করুন। (একাধিক পেজ স্ক্যান করতে পারবেন)</p>
+            <h3 class="ai-title"><i class="fas fa-robot"></i> AI Smart Paste</h3>
             
-            <div class="grid-2x2" style="margin-bottom: 15px;">
-                <label class="btn btn-ai" style="text-align: center; cursor: pointer; display: block;">
-                    <i class="fas fa-camera"></i> ক্যামেরা ওপেন
-                    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageScan(event)">
-                </label>
-                <label class="btn btn-add" style="text-align: center; cursor: pointer; display: block; background: #f59e0b; margin-top: 0;">
-                    <i class="fas fa-images"></i> গ্যালারি
-                    <input type="file" id="gallery-input" accept="image/*" class="hidden" onchange="handleImageScan(event)">
-                </label>
+            <div class="prompt-box">
+                <strong>কীভাবে প্রশ্ন তৈরি করবেন?</strong><br>
+                ১. নিচের <strong>Copy Prompt</strong> বাটনে ক্লিক করে লেখাটি কপি করুন।<br>
+                ২. <b>ChatGPT</b> বা <b>Gemini</b> তে গিয়ে প্রম্পটটি পেস্ট করুন এবং সাথে আপনার প্রশ্নপত্রের ছবি বা টেক্সট দিয়ে দিন।<br>
+                ৩. AI যে উত্তর দেবে, সেটি কপি করে নিচের বক্সে পেস্ট করে <b>'অ্যাড করুন'</b> বাটনে ক্লিক করুন।
+                
+                <div class="prompt-code">
+                    <button onclick="copyPrompt('ai-prompt', 'copy-btn')" id="copy-btn" class="copy-btn"><i class="fas fa-copy"></i> Copy Prompt</button>
+                    <code id="ai-prompt">You are an expert Math text formatter. Please read the provided text/images and extract the multiple-choice questions. 
+You MUST format them EXACTLY like this:
+
+1. [Question Text]
+A) [Option A]
+B) [Option B]
+C) [Option C]
+D) [Option D]
+Ans: [Correct Option A/B/C/D]
+
+CRITICAL RULES FOR MATH:
+1. You MUST enclose ALL numbers, formulas, fractions, and math symbols inside single dollar signs ($...$). Example: $\frac{1}{2}$, $x^2$, $5$.
+2. ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped! You must write $\frac{a}{b}$ (NOT rac), $\sin$ (NOT sin), $\tan$ (NOT an), $\sqrt{x}$ (NOT sqrt).
+3. Do NOT use double dollar signs ($$).
+4. Keep the Bengali/English text outside the dollar signs. Do not use markdown code blocks.</code>
+                </div>
             </div>
 
             <div class="input-group">
-                <label>Scanned Text / Copy-Paste Area</label>
-                <textarea id="scanned-text-result" rows="5" placeholder="স্ক্যান করা টেক্সট এখানে আসবে, অথবা সরাসরি কপি-পেস্ট করুন..."></textarea>
+                <textarea id="scanned-text-result" rows="5" placeholder="ChatGPT বা Gemini থেকে কপি করা প্রশ্ন এখানে পেস্ট করুন..."></textarea>
             </div>
-
-            <button class="btn btn-publish" style="padding: 10px; font-size: 1rem;" onclick="processScannedText()">অ্যাড করুন ➕</button>
-            <div id="scan-loading" class="loading-text hidden">Scanning directly on your device... Please wait ⏳</div>
+            
+            <button class="btn btn-add" onclick="processScannedText()">অ্যাড করুন ➕</button>
         </div>
 
-        <div class="card-basic">
-            <h3 id="manual-title">📝 Add Manually</h3>
-            <div class="input-group">
-                <label>Question Text</label>
-                <textarea id="q-text" rows="2" placeholder="Type question..."></textarea>
-            </div>
-            <div class="grid-2x2">
-                <div class="input-group"><label>A</label><input type="text" id="opt-a"></div>
-                <div class="input-group"><label>B</label><input type="text" id="opt-b"></div>
-                <div class="input-group"><label>C</label><input type="text" id="opt-c"></div>
-                <div class="input-group"><label>D</label><input type="text" id="opt-d"></div>
-            </div>
-            <div class="input-group">
-                <label>Correct Answer</label>
-                <select id="opt-correct">
-                    <option value="A">A</option><option value="B">B</option>
-                    <option value="C">C</option><option value="D">D</option>
-                </select>
-            </div>
-            <button class="btn btn-add" onclick="addQuestionManually()">Add Manually ➕</button>
-        </div>
-
+        <!-- Preview Section -->
         <div id="preview-section" class="hidden">
-            <h3 style="color:#10b981;">Total Added Questions: <span id="q-count-display">0</span></h3>
-            <p style="font-size:0.8rem; color:#64748b;">ভুল থাকলে নিচের বক্স থেকেই সরাসরি এডিট করতে পারবেন এবং সঠিক উত্তর বেছে নিতে পারবেন।</p>
+            <h3 style="color:#10b981; margin-bottom: 5px;">Total Questions Ready: <span id="q-count-display">0</span></h3>
+            <p style="font-size:0.8rem; color:#64748b; margin-top: 0;">ভুল থাকলে নিচের বক্স থেকেই সরাসরি এডিট করতে পারবেন এবং সঠিক উত্তর বেছে নিতে পারবেন।</p>
             <div class="preview-box" id="preview-list"></div>
         </div>
 
@@ -140,6 +138,20 @@
 
     <script>
         let tempQuestions = [];
+
+        // Copy Prompt Logic
+        function copyPrompt(textId, btnId) {
+            const promptText = document.getElementById(textId).innerText;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.getElementById(btnId);
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.style.background = '#10b981';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-copy"></i> Copy Prompt';
+                    btn.style.background = '#3b82f6';
+                }, 2500);
+            });
+        }
 
         function updateUI() {
             const previewSection = document.getElementById('preview-section');
@@ -156,6 +168,12 @@
                             <strong style="color: #3b82f6;">Q${i + 1}:</strong>
                             <button onclick="removeQuestion(${i})" style="background:none; border:none; color:#ef4444; font-size:0.85rem; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
                         </div>
+                        
+                        <div class="math-preview">
+                            <strong>Q:</strong> ${q.question_text} <br><br>
+                            A) ${q.option_a} &nbsp;&nbsp; B) ${q.option_b} &nbsp;&nbsp; C) ${q.option_c} &nbsp;&nbsp; D) ${q.option_d}
+                        </div>
+
                         <textarea onchange="updateQData(${i}, 'question_text', this.value)">${q.question_text}</textarea>
                         
                         <div class="grid-2x2" style="gap:5px; margin-bottom: 10px;">
@@ -177,66 +195,26 @@
                     </div>`;
                 });
                 previewList.innerHTML = html;
+
+                // Render Math Equations for preview
+                if (window.MathJax) {
+                    MathJax.typesetPromise([previewList]).catch(function (err) { console.log(err.message); });
+                }
             } else {
                 previewSection.classList.add('hidden');
             }
         }
 
-        // রিয়েল-টাইম এডিট সেভ করার ফাংশন
-        function updateQData(index, field, value) { tempQuestions[index][field] = value; }
+        function updateQData(index, field, value) { tempQuestions[index][field] = value; updateUI(); }
         
         function removeQuestion(index) {
             if(confirm("প্রশ্নটি মুছে ফেলতে চান?")) { tempQuestions.splice(index, 1); updateUI(); }
         }
 
-        function addQuestionManually() {
-            const q = document.getElementById('q-text').value;
-            const a = document.getElementById('opt-a').value, b = document.getElementById('opt-b').value;
-            const c = document.getElementById('opt-c').value, d = document.getElementById('opt-d').value;
-            const corr = document.getElementById('opt-correct').value;
-
-            if (!q || !a || !b) { alert("Please fill at least Question, Option A and B."); return; }
-            tempQuestions.push({ question_text: q, option_a: a, option_b: b, option_c: c, option_d: d, correct_option: corr });
-
-            document.getElementById('q-text').value = ''; document.getElementById('opt-a').value = '';
-            document.getElementById('opt-b').value = ''; document.getElementById('opt-c').value = ''; document.getElementById('opt-d').value = '';
-            updateUI();
-        }
-
-        // 🔄 ছবি থেকে টেক্সট বের করার ফাংশন (Tesseract.js - বাংলা ও ইংরেজি সাপোর্টসহ)
-       async function handleImageScan(event) {
-           const file = event.target.files[0];
-           if (!file) return;
-
-           if (file.type === "application/pdf") {
-               alert("পিডিএফ স্ক্যান করার ফিচারটি আমরা পরবর্তী ধাপে যুক্ত করছি! আপাতত একটি ছবি সিলেক্ট করুন বা টেক্সট পেস্ট করুন।");
-               event.target.value = ""; 
-               return;
-           }
-
-           const loadingDiv = document.getElementById('scan-loading');
-           const resultBox = document.getElementById('scanned-text-result');
-    
-           loadingDiv.classList.remove('hidden');
-           resultBox.value = "Scanning your image for Bengali & English... ⏳\n(বাংলা স্ক্যান হতে একটু বেশি সময় লাগতে পারে)";
-
-           try {
-               const result = await Tesseract.recognize(file, 'ben+eng');
-               resultBox.value = result.data.text;
-               alert("✅ স্ক্যান সফল হয়েছে! আপনি চাইলে লেখাগুলো এডিট করতে পারেন।");
-           } catch (error) {
-               alert("❌ স্ক্যান করতে সমস্যা হয়েছে: " + error.message);
-               resultBox.value = "";
-           } finally {
-               loadingDiv.classList.add('hidden');
-               event.target.value = ""; 
-           }
-       }
-
-        // 🧠 স্মার্ট টেক্সট প্রসেসর (অটোমেটিক প্রশ্ন ও অপশন আলাদা করা)
+        // 🧠 Smart Text Processor (Auto split Questions & Options)
         function processScannedText() {
             const text = document.getElementById('scanned-text-result').value;
-            if (!text.trim()) { alert("আগে স্ক্যান করুন বা লেখা পেস্ট করুন!"); return; }
+            if (!text.trim()) { alert("বক্সে প্রশ্ন পেস্ট করুন!"); return; }
 
             let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             let currentQ = null;
@@ -268,7 +246,7 @@
 
             document.getElementById('scanned-text-result').value = ""; 
             updateUI();
-            alert(`✅ ${addedCount} টি প্রশ্ন যুক্ত হয়েছে! আপনি চাইলে আরও একটি পেজ স্ক্যান করতে পারেন।\n\n(নিচে থেকে প্রশ্নগুলো এডিট করে নিতে ভুলবেন না)`);
+            alert(`✅ ${addedCount} টি প্রশ্ন সফলভাবে যুক্ত হয়েছে!`);
         }
 
         // Publish Exam Update with Negative Marks
@@ -276,7 +254,7 @@
             const examName = document.getElementById('exam-name').value;
             const examCode = document.getElementById('exam-code').value.toUpperCase();
             const timer = document.getElementById('exam-timer').value;
-            const negative = document.getElementById('exam-negative').value; // 🆕 Added Negative Marks 
+            const negative = document.getElementById('exam-negative').value; 
             const teacherEmail = localStorage.getItem('userEmail') || 'dasbabu938207@gmail.com';
             
             if (!examName || !examCode) { alert("Please provide the exam name and unique code."); return; }
@@ -289,7 +267,6 @@
                 const response = await fetch('/api/create-exam', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    // 🆕 Passed negative marks to payload
                     body: JSON.stringify({ exam_code: examCode, exam_name: examName, timer: timer, negative_marks: negative, teacher_email: teacherEmail, questions: tempQuestions })
                 });
                 const data = await response.json();
