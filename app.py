@@ -918,6 +918,42 @@ def extract_pdf_gemini():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
         
+# ==========================================
+# ১১. Update User Profile & Role Switch API
+# ==========================================
+@app.route('/api/update-profile', methods=['POST'])
+def update_profile():
+    data = request.get_json()
+    email = data.get('email')
+    name = data.get('name')
+    role = data.get('role')
+
+    if not email or not name or not role:
+        return jsonify({"success": False, "error": "Missing required data!"}), 400
+
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # ডাটাবেসে ইউজার এর নাম এবং ক্যাটাগরি (রোল) আপডেট করা
+        cursor.execute(f"UPDATE users SET name = {ph}, category = {ph} WHERE email = {ph}", (name, role, email))
+        conn.commit()
+        conn.close()
+
+        # ফ্লাস্কের সেশনে (Session) নতুন ডেটা আপডেট করা যাতে লগআউট না হয়ে যায়
+        if 'user' in session and session['user']['email'] == email:
+            session['user']['name'] = name
+            session['user']['role'] = role
+            session.modified = True
+
+        # রোল অনুযায়ী রিডাইরেক্ট ইউআরএল ঠিক করা
+        redirect_url = "/teacher_dashboard.html" if role.lower() == 'teacher' else "/student_dashboard.html"
+
+        return jsonify({"success": True, "redirect_url": redirect_url})
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
