@@ -59,7 +59,7 @@
             right: 2px;
             width: 10px;
             height: 10px;
-            background-color: #ef4444; /* লাল রং */
+            background-color: #ef4444; 
             border-radius: 50%;
             border: 2px solid #ffffff;
         }
@@ -166,9 +166,13 @@
         .rank-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
         .rank-box h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: #1e293b; text-align: center;}
         .rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.8rem;}
-        .rank-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #e2e8f0;}
+        .rank-list li { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dashed #e2e8f0;}
         .rank-list li:last-child { border-bottom: none; }
         
+        /* 🆕 স্টুডেন্টের নামের সাথে ইমেইল দেখানোর ডিজাইন */
+        .student-info { display: flex; flex-direction: column; }
+        .student-email-text { font-size: 0.65rem; color: #64748b; font-weight: normal; margin-top: 2px;}
+
         /* Graph Container */
         .chart-container { position: relative; height: 200px; width: 100%; margin-bottom: 2rem;}
 
@@ -177,9 +181,7 @@
         #analysis-view { display: none; }
         #all-exams-view { display: none; }
 
-        /* -------------------------------------- */
-        /* FIXED BOTTOM NAVIGATION BAR STYLING    */
-        /* -------------------------------------- */
+        /* FIXED BOTTOM NAVIGATION BAR STYLING */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -232,10 +234,10 @@
             </div>
 
             <div class="metrics-grid">
-                <div class="metric-card"><div class="metric-header">🏅 Total Exams</div><div class="metric-val" id="val-exams">12</div></div>
-                <div class="metric-card"><div class="metric-header">👥 Total Students</div><div class="metric-val" id="val-students">145</div></div>
-                <div class="metric-card"><div class="metric-header">📈 Avg Score</div><div class="metric-val" id="val-avg">78%</div></div>
-                <div class="metric-card"><div class="metric-header">🏆 Active Exams</div><div class="metric-val" id="val-active">05</div></div>
+                <div class="metric-card"><div class="metric-header">🏅 Total Exams</div><div class="metric-val" id="val-exams">0</div></div>
+                <div class="metric-card"><div class="metric-header">👥 Total Students</div><div class="metric-val" id="val-students">0</div></div>
+                <div class="metric-card"><div class="metric-header">📈 Avg Score</div><div class="metric-val" id="val-avg">0%</div></div>
+                <div class="metric-card"><div class="metric-header">🏆 Active Exams</div><div class="metric-val" id="val-active">0</div></div>
             </div>
 
             <div class="action-grid">
@@ -317,7 +319,6 @@
     <script>
         let scoreChart = null;
 
-        // অনরিড নোটিফিকেশন থাকলে লাল ডট দেখানোর ফাংশন
         async function checkUnreadNotifications() {
             const userEmail = localStorage.getItem('userEmail');
             if (!userEmail) return;
@@ -332,9 +333,9 @@
 
                 const bellIcon = document.querySelector('.bell-icon');
                 if (data.success && data.has_unread) {
-                    bellIcon.classList.add('has-unread'); // লাল ডট দেখাবে
+                    bellIcon.classList.add('has-unread'); 
                 } else {
-                    bellIcon.classList.remove('has-unread'); // লাল ডট সরাবে
+                    bellIcon.classList.remove('has-unread'); 
                 }
             }             
             catch (error) {
@@ -342,14 +343,11 @@
             }
          }
         
-
-        // ১. পেজ লোড হলে ডেটাবেস থেকে ড্যাশবোর্ডের ডেটা আনা
         window.onload = async () => {
             const userName = localStorage.getItem('userName') || "Teacher";
             const userEmail = localStorage.getItem('userEmail');
             document.getElementById('teacher-name').innerText = "Hi, " + userName.split(' ')[0];
             
-            // window.onload এর ভেতর এটি কল করুন
             checkUnreadNotifications();
             
             if (userEmail) {
@@ -375,7 +373,6 @@
             }
         };
 
-        // ২. এক্সাম লিস্ট স্ক্রিনে দেখানো
         function renderExams(examsList) {
             const recentContainer = document.getElementById('recent-exams-container');
             const allContainer = document.getElementById('all-exams-container');
@@ -404,7 +401,6 @@
             });
         }
 
-        // ৩. পেজ চেঞ্জ করার লজিক (UI Toggles)
         function showDashboard() {
             document.getElementById('dashboard-view').style.display = 'block';
             document.getElementById('analysis-view').style.display = 'none';
@@ -416,7 +412,6 @@
             document.getElementById('all-exams-view').style.display = 'block';
         }
 
-        // ৪. অ্যানালাইসিস পেজ ওপেন করা এবং ডেটাবেস থেকে ডেটা আনা
         async function openAnalysis(examCode, examName) {
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('all-exams-view').style.display = 'none';
@@ -438,8 +433,26 @@
                     document.getElementById('ana-avg-score').innerText = data.avg_score;
                     document.getElementById('ana-total-qs').innerText = data.total_q;
 
-                    document.getElementById('top-students-list').innerHTML = data.top.map(s => `<li><span>${s.name}</span><strong>${s.score}</strong></li>`).join('');
-                    document.getElementById('bottom-students-list').innerHTML = data.bottom.map(s => `<li><span>${s.name}</span><strong>${s.score}</strong></li>`).join('');
+                    // 🆕 নামের নিচে ইমেইল দেখানোর কোড যোগ করা হয়েছে
+                    document.getElementById('top-students-list').innerHTML = data.top.map(s => 
+                        `<li>
+                            <div class="student-info">
+                                <span>${s.name}</span>
+                                <span class="student-email-text">(${s.email})</span>
+                            </div>
+                            <strong>${s.score}</strong>
+                        </li>`
+                    ).join('');
+
+                    document.getElementById('bottom-students-list').innerHTML = data.bottom.map(s => 
+                        `<li>
+                            <div class="student-info">
+                                <span>${s.name}</span>
+                                <span class="student-email-text">(${s.email})</span>
+                            </div>
+                            <strong>${s.score}</strong>
+                        </li>`
+                    ).join('');
 
                     renderChart(data.chartLabels, data.chartData);
                 } else {
@@ -450,7 +463,6 @@
             }
         }
 
-        // ৫. গ্রাফ তৈরি করা (Chart.js)
         function renderChart(labels, data) {
             const ctx = document.getElementById('scoreChart').getContext('2d');
             if(scoreChart !== null) { scoreChart.destroy(); }
