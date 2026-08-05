@@ -9,16 +9,41 @@
     <style>
         :root { color-scheme: light; }
         body { background-color: #f8fafc; color: #1e293b; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem 1rem 6rem 1rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        .container { width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh; padding: 0 1rem 6rem 1rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
 
-        .page-header { margin-bottom: 1rem; }
-        .page-header h1 { font-size: 1.5rem; color: #0f172a; margin: 0 0 4px 0; font-weight: 800; }
-        .page-header p { color: #64748b; margin: 0; font-size: 0.85rem; }
+        /* Fixed Sticky Header Style */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background-color: #ffffff;
+            z-index: 999;
+            padding: 1rem 0 0.8rem 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Fixed Back Button Style ("‹") */
+        .btn-back {
+            background: transparent;
+            border: none;
+            color: #111827;
+            font-size: 2.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 0.8;
+            padding: 0;
+        }
+
+        .page-header h1 { font-size: 1.35rem; color: #0f172a; margin: 0 0 2px 0; font-weight: 800; }
+        .page-header p { color: #64748b; margin: 0; font-size: 0.75rem; }
         
         .breadcrumb { font-size: 0.85rem; color: #3b82f6; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
         .back-folder-btn { background: #f1f5f9; border: none; color: #3b82f6; font-weight: bold; padding: 6px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-size: 0.85rem; display: none; }
 
-        /* 🎨 3D DRIVE FOLDERS */
+        /* 3D DRIVE FOLDERS */
         .folder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
         
         .folder-card {
@@ -59,9 +84,13 @@
 
     <div class="container">
         
-        <div class="page-header">
-            <h1>📂 Study Hub</h1>
-            <p>Access Class Folders, Notes & Materials</p>
+        <!-- ফিক্সড হেডার এবং "‹" ব্যাক বাটন -->
+        <div class="sticky-header">
+            <button class="btn-back" onclick="window.history.back()">‹</button>
+            <div class="page-header">
+                <h1>📂 Study Hub</h1>
+                <p>Access Class Folders, Notes & Materials</p>
+            </div>
         </div>
 
         <div class="breadcrumb" id="bc-text"><i class="fas fa-folder-open"></i> <span id="current-path-text">Root Folder</span></div>
@@ -175,15 +204,6 @@
                 loadStudentDriveContents();
             }
         }
-        // ব্যাক বাটন প্রেস করলে আগের পেজে যাওয়ার জন্য সঠিক নিয়ম
-        window.addEventListener('popstate', function (event) {
-            // আগের হিস্ট্রিতে ফিরে যাবে
-            if (document.referrer) {
-                window.history.back();
-            } else {
-                window.location.href = 'student_dashboard.html'; // কোনো হিস্ট্রি না থাকলে ড্যাশবোর্ডে পাঠিয়ে দেবে
-            }
-        });
     </script>
 </body>
 </html>
