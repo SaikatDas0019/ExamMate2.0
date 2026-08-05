@@ -15,12 +15,38 @@
     <style>
         :root { color-scheme: light; }
         body { background-color: #f9fafb; color: #333333; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
+        .container { width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh; padding: 0 1.5rem 1.5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
         
+        /* Fixed Sticky Header Style */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background-color: #ffffff;
+            z-index: 999;
+            padding: 1rem 0 0.8rem 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Fixed Back Button Style ("‹") */
+        .btn-back {
+            background: transparent;
+            border: none;
+            color: #111827;
+            font-size: 2.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 0.8;
+            padding: 0;
+        }
+
         .message-box { text-align: center; margin-top: 50px; }
         .message-box h2 { color: #ef4444; }
         
-        /* 🆕 Instruction Screen Styling */
+        /* Instruction Screen Styling */
         .instruction-box { background: white; border-radius: 12px; margin-top: 10px; text-align: center; }
         .instruction-box h2 { color: #1e3a8a; margin-top: 0; font-size: 1.4rem;}
         .rule-list { text-align: left; background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; list-style: none; margin-bottom: 20px;}
@@ -28,12 +54,12 @@
         .rule-list li i { color: #3b82f6; margin-top: 3px; }
         .warning-text { background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; color: #991b1b; font-weight: bold; text-align: left;}
         
-        .exam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;}
-        .exam-header h2 { margin: 0; font-size: 1.2rem; color: #111827; flex: 1; min-width: 150px;}
+        .exam-header { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px;}
+        .exam-header h2 { margin: 0; font-size: 1.1rem; color: #111827; flex: 1; min-width: 140px;}
         .timer-box { display: flex; align-items: center; gap: 10px; }
-        .timer { font-weight: bold; color: #ef4444; font-size: 1.1rem; background: #fee2e2; padding: 5px 10px; border-radius: 8px;}
+        .timer { font-weight: bold; color: #ef4444; font-size: 1rem; background: #fee2e2; padding: 4px 8px; border-radius: 8px;}
         
-        .btn-pause { background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: 0.2s;}
+        .btn-pause { background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: 0.2s;}
         .btn-pause:hover { background: #d97706; }
 
         .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 10px; margin-bottom: 15px; height: 8px; overflow: hidden; }
@@ -78,9 +104,14 @@
             <button class="btn btn-next" style="margin-top:20px;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
         </div>
 
-        <!-- 🆕 Pre-Exam Instructions Section -->
+        <!-- Pre-Exam Instructions Section -->
         <div id="instruction-section" class="instruction-box">
-            <h2>📝 Exam Rules & Warning</h2>
+            <!-- ফিক্সড হেডার ও "‹" ব্যাক বাটন (ইনস্ট্রাকশন পেজের জন্য) -->
+            <div class="sticky-header">
+                <button class="btn-back" onclick="window.history.back()">‹</button>
+                <h2 style="margin:0; font-size: 1.2rem; color: #1e3a8a;">Exam Rules & Warning</h2>
+            </div>
+            
             <ul class="rule-list">
                 <li><i class="fas fa-question-circle"></i> <div><strong>Total Questions:</strong> <span id="inst-q">0</span></div></li>
                 <li><i class="fas fa-clock"></i> <div><strong>Time Limit:</strong> <span id="inst-time">0</span> Minutes</div></li>
@@ -95,11 +126,15 @@
         </div>
 
         <div id="exam-section">
-            <div class="exam-header">
-                <h2 id="display-exam-name">Exam Name</h2>
-                <div class="timer-box">
-                    <button class="btn-pause" id="btn-pause" onclick="togglePause()">⏸️ Pause</button>
-                    <div class="timer"><i class="fas fa-clock"></i> <span id="time-left">00:00</span></div>
+            <!-- ফিক্সড হেডার ও "‹" ব্যাক বাটন (এক্সাম চলাকালীন সময়ের জন্য) -->
+            <div class="sticky-header">
+                <button class="btn-back" onclick="window.history.back()">‹</button>
+                <div class="exam-header">
+                    <h2 id="display-exam-name">Exam Name</h2>
+                    <div class="timer-box">
+                        <button class="btn-pause" id="btn-pause" onclick="togglePause()">⏸️ Pause</button>
+                        <div class="timer"><i class="fas fa-clock"></i> <span id="time-left">00:00</span></div>
+                    </div>
                 </div>
             </div>
             
@@ -127,7 +162,12 @@
         </div>
 
         <div id="result-section" class="result-box">
-            <h2>🎉 Exam Completed!</h2>
+            <!-- ফিক্সড হেডার ও "‹" ব্যাক বাটন (রেজাল্ট পেজের জন্য) -->
+            <div class="sticky-header">
+                <button class="btn-back" onclick="window.location.href='student_dashboard.html'">‹</button>
+                <h2 style="margin:0; font-size: 1.2rem;">Exam Completed</h2>
+            </div>
+            
             <div class="score-circle" id="final-score">0/0</div>
             <p class="success-text">Your answers have been submitted successfully. The teacher will be able to view them.</p>
             <button class="btn btn-next" style="width:100%;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
@@ -371,7 +411,6 @@
             isExamActive = false;
             clearInterval(timerInterval); 
             
-            // 🆕 Negative Marking Calculation
             let score = 0;
             dbQuestions.forEach((q, idx) => {
                 if (studentAnswers[idx]) { 
@@ -383,9 +422,7 @@
                 }
             });
 
-            // Format score to prevent long decimals (e.g., 8.3333333 -> 8.33)
             let displayScore = Number.isInteger(score) ? score : parseFloat(score.toFixed(2));
-
             const userEmail = localStorage.getItem('userEmail') || "student@email.com";
 
             try {
@@ -406,15 +443,6 @@
             document.getElementById('result-section').style.display = 'block';
             document.getElementById('final-score').innerText = `${displayScore}/${totalQuestions}`;
         }
-        // ব্যাক বাটন প্রেস করলে আগের পেজে যাওয়ার জন্য সঠিক নিয়ম
-        window.addEventListener('popstate', function (event) {
-            // আগের হিস্ট্রিতে ফিরে যাবে
-            if (document.referrer) {
-                window.history.back();
-            } else {
-                window.location.href = 'student_dashboard.html'; // কোনো হিস্ট্রি না থাকলে ড্যাশবোর্ডে পাঠিয়ে দেবে
-            }
-        });
     </script>
 </body>
 </html>
