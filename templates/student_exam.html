@@ -6,37 +6,33 @@
     <title>ExamMate | Exam Room</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- MathJax for Math Equations -->
     <script>
-        window.MathJax = {
-          tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] }
-        };
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
     </script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <style>
         :root { color-scheme: light; }
-        body { 
-            background-color: #f9fafb; color: #333333; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0; display: flex; justify-content: center;
-        }
-        .container { 
-            width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh;
-            padding: 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            position: relative; overflow-x: hidden;
-        }
+        body { background-color: #f9fafb; color: #333333; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
         
         .message-box { text-align: center; margin-top: 50px; }
         .message-box h2 { color: #ef4444; }
+        
+        /* 🆕 Instruction Screen Styling */
+        .instruction-box { background: white; border-radius: 12px; margin-top: 10px; text-align: center; }
+        .instruction-box h2 { color: #1e3a8a; margin-top: 0; font-size: 1.4rem;}
+        .rule-list { text-align: left; background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; list-style: none; margin-bottom: 20px;}
+        .rule-list li { margin-bottom: 12px; font-size: 0.95rem; color: #334155; display: flex; gap: 10px; align-items: start;}
+        .rule-list li i { color: #3b82f6; margin-top: 3px; }
+        .warning-text { background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; color: #991b1b; font-weight: bold; text-align: left;}
         
         .exam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;}
         .exam-header h2 { margin: 0; font-size: 1.2rem; color: #111827; flex: 1; min-width: 150px;}
         .timer-box { display: flex; align-items: center; gap: 10px; }
         .timer { font-weight: bold; color: #ef4444; font-size: 1.1rem; background: #fee2e2; padding: 5px 10px; border-radius: 8px;}
         
-        /* 🆕 Pause Button Style */
         .btn-pause { background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: 0.2s;}
         .btn-pause:hover { background: #d97706; }
 
@@ -62,14 +58,12 @@
         .score-circle { width: 150px; height: 150px; border-radius: 50%; background: #eff6ff; border: 8px solid #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 900; color: #1e3a8a; margin: 0 auto 20px auto; }
         .success-text { color: #16a34a; font-weight: 600; margin-bottom: 20px; }
         
-        #exam-section, #result-section, #error-section { display: none; }
+        #exam-section, #result-section, #error-section, #instruction-section { display: none; }
 
-        /* 🆕 Pause Overlay Screen */
         #pause-overlay {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.98); z-index: 100; text-align: center;
-            flex-direction: column; justify-content: center; align-items: center;
-            backdrop-filter: blur(5px);
+            flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px);
         }
         #pause-overlay h2 { color: #d97706; font-size: 2rem; margin-bottom: 10px; }
         #pause-overlay p { color: #4b5563; font-size: 1rem; margin-bottom: 30px; padding: 0 20px;}
@@ -82,6 +76,22 @@
         <div id="error-section" class="message-box">
             <h2 id="error-msg">Loading Exam...</h2>
             <button class="btn btn-next" style="margin-top:20px;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
+        </div>
+
+        <!-- 🆕 Pre-Exam Instructions Section -->
+        <div id="instruction-section" class="instruction-box">
+            <h2>📝 Exam Rules & Warning</h2>
+            <ul class="rule-list">
+                <li><i class="fas fa-question-circle"></i> <div><strong>Total Questions:</strong> <span id="inst-q">0</span></div></li>
+                <li><i class="fas fa-clock"></i> <div><strong>Time Limit:</strong> <span id="inst-time">0</span> Minutes</div></li>
+                <li><i class="fas fa-minus-circle"></i> <div><strong>Negative Marking:</strong> <span id="inst-neg">0</span> per wrong answer</div></li>
+                <li style="color: #dc2626;"><i class="fas fa-shield-alt" style="color: #dc2626;"></i> <div><strong>Strict Anti-Cheat:</strong> Do NOT change tabs, minimize the browser, or open split-screen. Doing so will automatically submit your exam!</div></li>
+            </ul>
+            <div class="warning-text">
+                <input type="checkbox" id="agree-check" style="margin-right: 8px; transform: scale(1.2);"> 
+                I agree to the rules and will not use unfair means.
+            </div>
+            <button class="btn btn-submit" id="start-btn" style="width: 100%; opacity: 0.5;" disabled onclick="startActualExam()">Start Exam 🚀</button>
         </div>
 
         <div id="exam-section">
@@ -110,7 +120,6 @@
             </div>
         </div>
 
-        <!-- 🆕 Pause Overlay UI -->
         <div id="pause-overlay">
             <h2>⏸️ Exam Paused</h2>
             <p>Questions are hidden to prevent cheating.<br>Click the button below when you are ready to continue.</p>
@@ -134,12 +143,26 @@
         let studentAnswers = {}; 
         let totalQuestions = 0;
         
-        // Timer & State Variables
         let timerInterval;
         let timeInSeconds = 0;
+        let examMinutesLimit = 0;
+        
         let isPaused = false;
         let isExamActive = false;
         let warningsCount = 0;
+        let negativeMarksPerWrong = 0;
+
+        // Checkbox Logic for Start Button
+        document.getElementById('agree-check').onchange = function(e) {
+            const btn = document.getElementById('start-btn');
+            if(e.target.checked) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+            }
+        };
 
         window.onload = async () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -163,8 +186,22 @@
                     dbQuestions = data.questions;
                     examName = data.exam_name;
                     totalQuestions = dbQuestions.length;
+                    examMinutesLimit = data.timer_minutes;
+                    negativeMarksPerWrong = parseFloat(data.negative_marks) || 0;
                     
-                    initExam(data.timer_minutes);
+                    // Setup Instruction Screen
+                    document.getElementById('inst-q').innerText = totalQuestions;
+                    document.getElementById('inst-time').innerText = examMinutesLimit;
+                    document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
+
+                    // Check if resuming exam
+                    const savedState = localStorage.getItem(`exam_state_${examCode}`);
+                    if(savedState) {
+                        startActualExam(true); // Bypass instruction if returning from pause/refresh
+                    } else {
+                        document.getElementById('error-section').style.display = 'none';
+                        document.getElementById('instruction-section').style.display = 'block';
+                    }
                 } else {
                     document.getElementById('error-msg').innerText = data.error || "No questions inside this exam!";
                     document.getElementById('error-section').style.display = 'block';
@@ -175,23 +212,22 @@
             }
         };
 
-        // 🆕 Initialize Exam & Check Local Storage
-        function initExam(minutes) {
-            document.getElementById('error-section').style.display = 'none';
+        function startActualExam(isResuming = false) {
+            document.getElementById('instruction-section').style.display = 'none';
             document.getElementById('exam-section').style.display = 'block';
             document.getElementById('display-exam-name').innerText = examName;
             
-            // Check if there is saved state (Internet drop / Refresh protection)
-            const savedState = localStorage.getItem(`exam_state_${examCode}`);
-            if(savedState) {
-                const stateData = JSON.parse(savedState);
-                timeInSeconds = stateData.timeLeft;
-                studentAnswers = stateData.answers || {};
-                currentIndex = stateData.currentIndex || 0;
-                warningsCount = stateData.warnings || 0;
-                console.log("Restored previous exam state.");
+            if(isResuming) {
+                const savedState = localStorage.getItem(`exam_state_${examCode}`);
+                if(savedState) {
+                    const stateData = JSON.parse(savedState);
+                    timeInSeconds = stateData.timeLeft;
+                    studentAnswers = stateData.answers || {};
+                    currentIndex = stateData.currentIndex || 0;
+                    warningsCount = stateData.warnings || 0;
+                }
             } else {
-                timeInSeconds = minutes * 60;
+                timeInSeconds = examMinutesLimit * 60;
             }
 
             isExamActive = true;
@@ -199,7 +235,6 @@
             startTimer();
             loadQuestion(currentIndex);
             
-            // Auto-save state every 5 seconds
             setInterval(saveExamState, 5000);
         }
 
@@ -223,7 +258,6 @@
             document.getElementById('time-left').innerText = `${m}:${s}`;
         }
 
-        // 🆕 Save State to Browser LocalStorage
         function saveExamState() {
             if(isExamActive) {
                 const state = {
@@ -236,7 +270,6 @@
             }
         }
 
-        // 🆕 Pause & Resume Logic
         function togglePause() {
             isPaused = !isPaused;
             const overlay = document.getElementById('pause-overlay');
@@ -245,23 +278,23 @@
             if(isPaused) {
                 overlay.style.display = 'flex';
                 pauseBtn.innerText = "▶️ Resume";
-                pauseBtn.style.background = "#10b981"; // Green color
+                pauseBtn.style.background = "#10b981"; 
                 saveExamState();
             } else {
                 overlay.style.display = 'none';
                 pauseBtn.innerText = "⏸️ Pause";
-                pauseBtn.style.background = "#f59e0b"; // Orange color
+                pauseBtn.style.background = "#f59e0b";
             }
         }
 
-        // 🆕 ANTI-CHEAT: Tab Switch Detector
+        // Anti-Cheat: Tab Switch Detection
         document.addEventListener("visibilitychange", () => {
             if (document.hidden && isExamActive && !isPaused) {
                 warningsCount++;
                 saveExamState();
                 
                 if (warningsCount >= 3) {
-                    alert("🚨 FINAL WARNING (3/3): You switched tabs too many times!\nYour exam is being automatically submitted to prevent cheating.");
+                    alert("🚨 FINAL WARNING (3/3): You switched tabs too many times!\nYour exam is automatically submitted to prevent cheating.");
                     submitExam();
                 } else {
                     alert(`⚠️ WARNING ${warningsCount}/3: Do not switch tabs or minimize the browser!\n\nIf you do this ${3 - warningsCount} more time(s), the exam will auto-submit.`);
@@ -299,7 +332,7 @@
                 
                 input.onclick = () => {
                     studentAnswers[index] = opt.letter;
-                    saveExamState(); // Save answers immediately
+                    saveExamState(); 
                     loadQuestion(index); 
                 };
 
@@ -321,7 +354,6 @@
                 document.getElementById('btn-submit').style.display = 'none';
             }
 
-            // MathJax Rendering
             if (window.MathJax) {
                 MathJax.typesetPromise([qTextElement, optsContainer]).catch(function (err) {
                     console.log('MathJax error: ', err.message);
@@ -339,10 +371,20 @@
             isExamActive = false;
             clearInterval(timerInterval); 
             
+            // 🆕 Negative Marking Calculation
             let score = 0;
             dbQuestions.forEach((q, idx) => {
-                if (studentAnswers[idx] === q.correct) score++;
+                if (studentAnswers[idx]) { 
+                    if (studentAnswers[idx] === q.correct) {
+                        score += 1;
+                    } else {
+                        score -= negativeMarksPerWrong;
+                    }
+                }
             });
+
+            // Format score to prevent long decimals (e.g., 8.3333333 -> 8.33)
+            let displayScore = Number.isInteger(score) ? score : parseFloat(score.toFixed(2));
 
             const userEmail = localStorage.getItem('userEmail') || "student@email.com";
 
@@ -351,10 +393,9 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email: userEmail, exam_code: examCode, exam_name: examName, score: score, total_questions: totalQuestions
+                        email: userEmail, exam_code: examCode, exam_name: examName, score: displayScore, total_questions: totalQuestions
                     })
                 });
-                // 🆕 Clear Local Storage after successful submission
                 localStorage.removeItem(`exam_state_${examCode}`);
             } catch (e) { 
                 console.log("Failed to save score online:", e); 
@@ -363,7 +404,7 @@
             document.getElementById('exam-section').style.display = 'none';
             document.getElementById('pause-overlay').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
-            document.getElementById('final-score').innerText = `${score}/${totalQuestions}`;
+            document.getElementById('final-score').innerText = `${displayScore}/${totalQuestions}`;
         }
     </script>
 </body>
