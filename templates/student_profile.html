@@ -5,74 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExamMate | Student Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
         :root { color-scheme: light; }
-        body { 
-            background-color: #f9fafb; color: #333333; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0; display: flex; justify-content: center;
-        }
-        .container { 
-            width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh;
-            padding: 1.5rem 1.5rem 6rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
-        }
-        .page-title { font-size: 1.8rem; font-weight: 800; text-align: center; margin-bottom: 1.5rem; color: #111827; }
+        body { background-color: #f9fafb; color: #333333; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem 1.5rem 6rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        .page-title { font-size: 1.8rem; font-weight: 800; text-align: center; margin-bottom: 2rem; color: #111827; }
         
-        .profile-pic-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
-        .profile-image { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #22c55e; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        #file-upload { display: none; }
-        .btn-upload, .btn-edit { background: #3b82f6; color: white; padding: 8px 18px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 0.85rem; }
-        
-        .edit-form-group { margin-bottom: 12px; text-align: left; }
+        /* Avatar Style (Initials) */
+        .avatar-container { display: flex; justify-content: center; margin-bottom: 25px; }
+        .avatar-circle { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; font-weight: bold; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); text-transform: uppercase; }
+
+        .edit-form-group { margin-bottom: 15px; text-align: left; }
         .edit-form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 5px; }
-        .edit-form-group input, .edit-form-group select {
-            width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1;
-            font-size: 0.95rem; outline: none; box-sizing: border-box; background: #fff;
-        }
+        .edit-form-group input, .edit-form-group select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; outline: none; box-sizing: border-box; background: #fff; }
         .edit-form-group input[readonly] { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
         
-        .btn-save-profile {
-            width: 100%; background: #22c55e; color: white; border: none; padding: 12px;
-            border-radius: 8px; font-weight: bold; font-size: 0.95rem; cursor: pointer; margin-top: 10px;
-            transition: 0.2s; box-shadow: 0 4px 6px rgba(34, 197, 94, 0.2);
-        }
+        .btn-save-profile { width: 100%; background: #22c55e; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: 0.2s; box-shadow: 0 4px 6px rgba(34, 197, 94, 0.2); }
         .btn-save-profile:hover { background: #16a34a; }
 
-        /* Logout Button Style */
-        .btn-logout {
-            width: 100%; background: #ff4d4d; color: white; border: none; padding: 12px;
-            border-radius: 8px; font-weight: bold; font-size: 0.95rem; cursor: pointer; margin-top: 15px;
-            transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .btn-logout:hover { background: #e60000; }
+        .btn-logout { width: 100%; background: #ef4444; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 15px; transition: 0.2s; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2); }
+        .btn-logout:hover { background: #dc2626; }
 
-        hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
+        hr { border: 0; border-top: 1px solid #e5e7eb; margin: 2rem 0; }
         .section-title { font-size: 1.1rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; }
         .teachers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .teacher-btn { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 5px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-align: center; }
+        .teacher-btn { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 5px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center; cursor: default; }
 
-        /* Fixed Bottom Navigation Bar */
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb; padding: 8px 0; z-index: 1000; display: flex; justify-content: space-around; box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; font-weight: 600;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
     </style>
 </head>
 <body>
-
     <div class="container">
         <div class="page-title">Profile Settings</div>
 
-        <div class="profile-pic-container">
-            <img id="profile-img" src="https://ui-avatars.com/api/?name=Student&background=random&size=180" alt="Profile Picture" class="profile-image">
-            <div id="upload-controls">
-                <label for="file-upload" class="btn-upload"><i class="fas fa-camera"></i> Change Photo</label>
-                <input type="file" id="file-upload" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(event)">
-            </div>
-            <div id="edit-controls" style="display: none;">
-                <button class="btn-edit" onclick="removeImage()">Remove / Edit</button>
-            </div>
+        <!-- Avatar Section (Initials) -->
+        <div class="avatar-container">
+            <div class="avatar-circle" id="user-avatar">S</div>
         </div>
 
         <div class="user-info-form">
@@ -80,12 +51,10 @@
                 <label>👤 Name (You can change)</label>
                 <input type="text" id="input-name" placeholder="Enter full name">
             </div>
-
             <div class="edit-form-group">
                 <label>📧 Email (Cannot be changed)</label>
                 <input type="email" id="input-email" readonly>
             </div>
-
             <div class="edit-form-group">
                 <label>🎓 Role (Account Type)</label>
                 <select id="input-role">
@@ -95,24 +64,21 @@
             </div>
 
             <button type="button" class="btn-save-profile" onclick="saveProfileChanges()">Save Changes 💾</button>
-            
-            <!-- 🎯 Logout Button -->
             <button type="button" class="btn-logout" onclick="handleLogout()">🚪 Logout</button>
         </div>
 
         <hr>
         <div class="section-title">My Favourite Teachers</div>
         <div class="teachers-grid">
-            <button class="teacher-btn">Tarapada Sir</button>
-            <button class="teacher-btn">Prokash Sir</button>
-            <button class="teacher-btn">Somnath Sir</button>
-            <button class="teacher-btn">Amit Sir</button>
-            <button class="teacher-btn">Manash Sir</button>
-            <button class="teacher-btn">Mithun Sir</button>
+            <div class="teacher-btn">Tarapada Sir</div>
+            <div class="teacher-btn">Prokash Sir</div>
+            <div class="teacher-btn">Somnath Sir</div>
+            <div class="teacher-btn">Amit Sir</div>
+            <div class="teacher-btn">Manash Sir</div>
+            <div class="teacher-btn">Mithun Sir</div>
         </div>
     </div>
 
-    <!-- Fixed Bottom Navigation Bar -->
     <div class="bottom-nav">
         <div class="nav-item" onclick="window.location.href='/student_dashboard.html'">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
@@ -133,137 +99,61 @@
     </div>
 
     <script>
-        // 👈 গ্লোবাল ভেরিয়েবলগুলো শুধুমাত্র একবার ডিক্লেয়ার করা হলো
-        let imageFileToUpload = null;
-        let removePhotoFlag = false;
-        const defaultImageSrc = "https://ui-avatars.com/api/?name=Student&background=random&size=180";
+        function setAvatarInitials(name) {
+            const avatar = document.getElementById('user-avatar');
+            if(name) {
+                const parts = name.trim().split(' ');
+                if(parts.length > 1) {
+                    avatar.innerText = (parts[0][0] + parts[1][0]).toUpperCase();
+                } else {
+                    avatar.innerText = parts[0][0].toUpperCase();
+                }
+            }
+        }
 
-        // ১. নিরাপদ লোড প্রোফাইল
-        async function loadUserProfile() {
+        function loadUserProfile() {
             let userObj = JSON.parse(localStorage.getItem('user')) || {};
             let userEmail = userObj.email || localStorage.getItem('userEmail') || "";
             let userName = userObj.name || localStorage.getItem('userName') || "Student";
 
             document.getElementById('input-name').value = userName;
             document.getElementById('input-email').value = userEmail;
-
-            if (!userEmail) return;
-
-            try {
-                const res = await fetch('/api/get-profile-data', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: userEmail })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    if (data.name) document.getElementById('input-name').value = data.name;
-                    // প্রোফাইল পিকচার ডাটাবেস থেকে আসলে সেটি দেখাবে, না আসলে ডিফল্ট থাকবে
-                    if (data.photo_url) {
-                        document.getElementById('profile-img').src = data.photo_url;
-                    }
-                }
-            } catch(err) {
-                console.error("Profile Fetch Error:", err);
-            }
+            setAvatarInitials(userName);
         }
 
-        // ২. ফটো প্রিভিউ 
-        function previewImage(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                document.getElementById('profile-img').src = reader.result;
-                document.getElementById('upload-controls').style.display = 'none';
-                document.getElementById('edit-controls').style.display = 'block';
-            }
-            if(event.target.files[0]) {
-                reader.readAsDataURL(event.target.files[0]);
-                imageFileToUpload = event.target.files[0];
-                removePhotoFlag = false;
-            }
-        }
-
-        // ছবি রিমুভ করা
-        function removeImage() {
-            document.getElementById('profile-img').src = defaultImageSrc;
-            document.getElementById('file-upload').value = "";
-            document.getElementById('upload-controls').style.display = 'block';
-            document.getElementById('edit-controls').style.display = 'none';
-            imageFileToUpload = null;
-            removePhotoFlag = true;
-        }
-
-        // ৩. প্রোফাইল আপডেট
         async function saveProfileChanges() {
             const name = document.getElementById('input-name').value.trim();
             const email = document.getElementById('input-email').value.trim();
             const role = document.getElementById('input-role').value;
 
-            if (!name || !email) {
-                alert("Name or Email missing!");
-                return;
-            }
+            if (!name || !email) { alert("Name missing!"); return; }
 
             try {
-                // ১. ছবি আপডেট বা রিমুভ
-                if (imageFileToUpload || removePhotoFlag) {
-                    const formData = new FormData();
-                    formData.append('email', email);
-                    if (removePhotoFlag) {
-                        formData.append('action', 'remove');
-                    } else if (imageFileToUpload) {
-                        formData.append('action', 'upload');
-                        formData.append('file', imageFileToUpload);
-                    }
-                    await fetch('/api/upload-profile-pic', { method: 'POST', body: formData });
-                }
-
-                // ২. ইউজার ইনফো আপডেট
                 const response = await fetch('/api/update-profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email, name: name, role: role })
                 });
-
                 const data = await response.json();
 
                 if (response.ok && data.success) {
                     let userObj = JSON.parse(localStorage.getItem('user')) || {};
-                    userObj.email = email;
-                    userObj.name = name;
-                    userObj.role = role;
-
+                    userObj.email = email; userObj.name = name; userObj.role = role;
                     localStorage.setItem('user', JSON.stringify(userObj));
                     localStorage.setItem('userName', name);
-                    localStorage.setItem('userEmail', email);
-
+                    setAvatarInitials(name);
                     alert("Profile updated successfully!");
-
-                    if (data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    } else {
-                        location.reload();
-                    }
-                } else {
-                    alert(data.error || "Failed to update profile.");
-                }
-            } catch (error) {
-                console.error("Save Error:", error);
-                alert("Server error updating profile.");
-            }
+                    if (data.redirect_url) { window.location.href = data.redirect_url; }
+                } else { alert(data.error || "Failed to update profile."); }
+            } catch (error) { alert("Server error updating profile."); }
         }
 
-        // ৪. নিখুঁত লগআউট
         function handleLogout() {
             if (confirm("Are you sure you want to log out?")) {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = '/logout';
+                localStorage.clear(); sessionStorage.clear(); window.location.href = '/logout';
             }
         }
 
-        // পেজ লোড কল
         window.onload = loadUserProfile;
     </script>
 </body>
