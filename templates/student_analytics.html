@@ -200,11 +200,14 @@
                 }
             });
         }
-        // ফোনের হার্ডওয়্যার ব্যাক বাটন হ্যান্ডেল করার জন্য
-        history.pushState(null, null, window.location.href);
-        window.addEventListener('popstate', function () {
-            history.pushState(null, null, window.location.href);
-            window.history.back();
+        // ব্যাক বাটন প্রেস করলে আগের পেজে যাওয়ার জন্য সঠিক নিয়ম
+        window.addEventListener('popstate', function (event) {
+            // আগের হিস্ট্রিতে ফিরে যাবে
+            if (document.referrer) {
+                window.history.back();
+            } else {
+                window.location.href = 'student_dashboard.html'; // কোনো হিস্ট্রি না থাকলে ড্যাশবোর্ডে পাঠিয়ে দেবে
+            }
         });
     </script>
 </body>
