@@ -470,74 +470,6 @@ def get_teacher_analysis():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT users.name, results.score, results.total_questions FROM results JOIN users ON results.student_email = users.email WHERE results.exam_code = {ph}", (exam_code,))
-        rows = cursor.fetchall()
-        conn.close()
-        
-        if not rows:
-            return jsonify({"success": False, "error": "No students have taken this exam yet."})
-            
-        total_students = len(rows)
-        total_q = rows[0]["total_questions"]
-        student_data = [{"name": r["name"], "score": r["score"], "perf": round((r["score"]/total_q)*100, 2)} for r in rows]
-        avg_score = round(sum([r['score'] for r in student_data]) / total_students, 2)
-        
-        sorted_students = sorted(student_data, key=lambda x: x['score'], reverse=True)
-        top_students = sorted_students[:10]
-        bottom_students = sorted_students[-10:] if len(sorted_students) > 10 else sorted_students[::-1]
-        
-        chart_data = [0] * (total_q + 1)
-        for s in student_data:
-            chart_data[s['score']] += 1
-        labels = [str(i) for i in range(total_q + 1)]
-            
-        return jsonify({ "success": True, "total_students": total_students, "avg_score": avg_score, "total_q": total_q, "top": top_students, "bottom": bottom_students, "all_students": sorted_students, "chartLabels": labels, "chartData": chart_data })
-    except Exception as e:
-        return jsonify({"success": False, "error": "Database error"}), 500
-
-@app.route('/api/teacher-full-analytics', methods=['POST'])
-def teacher_full_analytics():
-    data = request.get_json()
-    email = data.get('email')
-    if not email: return jsonify({"success": False, "error": "Email is required!"}), 400
-
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT exam_code, exam_name FROM exams WHERE teacher_email = {ph}", (email,))
-        teacher_exams = cursor.fetchall()
-
-        if not teacher_exams:
-            conn.close()
-            return jsonify({"success": True, "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": 0}, "examStats": [], "leaderboard": [], "studentProgress": {}})
-
-        exam_codes = [e['exam_code'] for e in teacher_exams]
-        placeholders = ','.join([ph] * len(exam_codes))
-        query = f"SELECT r.student_email, u.name as student_name, r.exam_code, r.exam_name, r.score, r.total_questions, r.date_taken FROM results r LEFT JOIN users u ON r.student_email = u.email WHERE r.exam_code IN ({placeholders})"
-        cursor.execute(query, exam_codes)
-        results = cursor.fetchall()
-        conn.close()
-
-        if not results:
-            return jsonify({"success": True, "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": len(teacher_exams)}, "examStats": [{"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0} for e in teacher_exams], "leaderboard": [], "studentProgress": {}})
-
-        total_attempts = len(results)
-        unique_students = len(set(r['student_email'] for r in results))
-        all_percentages = [round((r['score'] / r['total_questions']) * 100, 1) for r in results if r['total_questions'] > 0]
-        class_avg = round(sum(all_percentages) / len(all_percentages), 1) if all_percentages else 0.0
-        highest_score = max(all_percentages) if all_percentages else 0.0
-
-        exam_map = {}
-        for r in results:@app.route('/api/teacher-analysis', methods=['POST'])
-def get_teacher_analysis():
-    data = request.get_json()
-    exam_code = data.get('exam_code')
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        # 🆕 এখানে results.student_email যোগ করা হয়েছে
         cursor.execute(f"SELECT users.name, results.student_email, results.score, results.total_questions FROM results JOIN users ON results.student_email = users.email WHERE results.exam_code = {ph}", (exam_code,))
         rows = cursor.fetchall()
         conn.close()
@@ -547,7 +479,6 @@ def get_teacher_analysis():
             
         total_students = len(rows)
         total_q = rows[0]["total_questions"]
-        # 🆕 এখানে email ফিল্ড ফ্রন্টএন্ডে পাঠানো হচ্ছে
         student_data = [{"name": r["name"], "email": r["student_email"], "score": r["score"], "perf": round((r["score"]/total_q)*100, 2)} for r in rows]
         avg_score = round(sum([r['score'] for r in student_data]) / total_students, 2)
         
@@ -629,7 +560,6 @@ def teacher_full_analytics():
         student_progress = {}
         for email_key, data in student_map.items():
             s_avg = round(sum(data["perfs"]) / len(data["perfs"]), 1)
-            # 🆕 এখানে email_key (স্টুডেন্টের ইমেইল) ফ্রন্টএন্ডে পাঠানো হচ্ছে
             leaderboard.append({"name": data["name"], "email": email_key, "avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "totalScore": sum(data["scores"])})
             student_progress[data["name"]] = {"avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "labels": data["exam_names"], "data": data["perfs"]}
 
@@ -765,24 +695,21 @@ def mark_notifications_read():
 def get_drive_contents_api():
     data = request.get_json() if request.is_json else {}
     parent_id = data.get('parent_id', 0)
-    folder_type = data.get('folder_type', 'content') # 🆕 Separated type
+    folder_type = data.get('folder_type', 'content') 
 
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
 
-        # Fetch Folders by type
         cursor.execute(f"SELECT id, folder_name FROM drive_folders WHERE parent_id = {ph} AND folder_type = {ph} ORDER BY id DESC", (parent_id, folder_type))
         folders = [{"id": r["id"], "name": r["folder_name"]} for r in cursor.fetchall()]
 
         if folder_type == 'content':
-            # Fetch Notes/Files
             cursor.execute(f"SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = {ph} ORDER BY id DESC", (parent_id,))
             files = [{"id": r["id"], "title": r["title"], "file_url": r["file_url"], "type": r["resource_type"], "date": str(r["date_uploaded"]).split(' ')[0]} for r in cursor.fetchall()]
             exams = []
         else:
-            # Fetch Exams
             files = []
             cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY exam_code DESC", (parent_id,))
             exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"]} for r in cursor.fetchall()]
@@ -797,7 +724,7 @@ def create_drive_folder():
     data = request.get_json()
     folder_name = data.get('folder_name')
     parent_id = data.get('parent_id', 0)
-    folder_type = data.get('folder_type', 'content') # 🆕 Save by type
+    folder_type = data.get('folder_type', 'content') 
 
     try:
         conn, db_type = get_db_connection()
@@ -922,7 +849,6 @@ def extract_pdf_gemini():
         return jsonify({"success": False, "error": "Gemini API Key is missing on the server!"}), 500
 
     try:
-        # PDF থেকে টেক্সট পড়া
         reader = PyPDF2.PdfReader(file)
         extracted_text = ""
         for page in reader.pages:
@@ -933,7 +859,6 @@ def extract_pdf_gemini():
         if not extracted_text.strip():
             return jsonify({"success": False, "error": "No readable text found in the PDF!"}), 400
 
-        # Gemini-কে দেওয়ার জন্য প্রম্পট
         prompt = """
         Extract all the multiple-choice questions from the following text. 
         You must respond ONLY with a valid JSON array of objects. Do not include markdown formatting like ```json or ```.
@@ -952,9 +877,7 @@ def extract_pdf_gemini():
         Text to analyze:
         """ + extracted_text
 
-        # 🚀 REST API Call (Bypassing SDK issues)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key={api_key}"
-
         headers = {'Content-Type': 'application/json'}
         payload = {
             "contents": [{"parts": [{"text": prompt}]}]
@@ -966,16 +889,13 @@ def extract_pdf_gemini():
         if api_response.status_code != 200:
             return jsonify({"success": False, "error": f"Google API Error: {response_data}"}), 500
 
-        # API থেকে টেক্সট বের করা
         response_text = response_data['candidates'][0]['content']['parts'][0]['text'].strip()
         
-        # যদি Gemini এক্সট্রা ব্যাকটিক (```json) দেয়, তা মুছে ফেলা
         if response_text.startswith("```json"):
             response_text = response_text[7:-3].strip()
         elif response_text.startswith("```"):
             response_text = response_text[3:-3].strip()
 
-        # টেক্সটকে জেসন বা ডিকশনারিতে রূপান্তর
         questions_json = json.loads(response_text)
         
         return jsonify({"success": True, "questions": questions_json})
@@ -1003,20 +923,16 @@ def update_profile():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # ডাটাবেসে ইউজার এর নাম এবং ক্যাটাগরি (রোল) আপডেট করা
         cursor.execute(f"UPDATE users SET name = {ph}, category = {ph} WHERE email = {ph}", (name, role, email))
         conn.commit()
         conn.close()
 
-        # ফ্লাস্কের সেশনে (Session) নতুন ডেটা আপডেট করা যাতে লগআউট না হয়ে যায়
         if 'user' in session and session['user']['email'] == email:
             session['user']['name'] = name
             session['user']['role'] = role
             session.modified = True
 
-        # রোল অনুযায়ী রিডাইরেক্ট ইউআরএল ঠিক করা
         redirect_url = "/teacher_dashboard.html" if role.lower() == 'teacher' else "/student_dashboard.html"
-
         return jsonify({"success": True, "redirect_url": redirect_url})
         
     except Exception as e:
