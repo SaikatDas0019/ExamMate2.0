@@ -529,6 +529,75 @@ def teacher_full_analytics():
         highest_score = max(all_percentages) if all_percentages else 0.0
 
         exam_map = {}
+        for r in results:@app.route('/api/teacher-analysis', methods=['POST'])
+def get_teacher_analysis():
+    data = request.get_json()
+    exam_code = data.get('exam_code')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        # 🆕 এখানে results.student_email যোগ করা হয়েছে
+        cursor.execute(f"SELECT users.name, results.student_email, results.score, results.total_questions FROM results JOIN users ON results.student_email = users.email WHERE results.exam_code = {ph}", (exam_code,))
+        rows = cursor.fetchall()
+        conn.close()
+        
+        if not rows:
+            return jsonify({"success": False, "error": "No students have taken this exam yet."})
+            
+        total_students = len(rows)
+        total_q = rows[0]["total_questions"]
+        # 🆕 এখানে email ফিল্ড ফ্রন্টএন্ডে পাঠানো হচ্ছে
+        student_data = [{"name": r["name"], "email": r["student_email"], "score": r["score"], "perf": round((r["score"]/total_q)*100, 2)} for r in rows]
+        avg_score = round(sum([r['score'] for r in student_data]) / total_students, 2)
+        
+        sorted_students = sorted(student_data, key=lambda x: x['score'], reverse=True)
+        top_students = sorted_students[:10]
+        bottom_students = sorted_students[-10:] if len(sorted_students) > 10 else sorted_students[::-1]
+        
+        chart_data = [0] * (total_q + 1)
+        for s in student_data:
+            chart_data[s['score']] += 1
+        labels = [str(i) for i in range(total_q + 1)]
+            
+        return jsonify({ "success": True, "total_students": total_students, "avg_score": avg_score, "total_q": total_q, "top": top_students, "bottom": bottom_students, "all_students": sorted_students, "chartLabels": labels, "chartData": chart_data })
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
+
+@app.route('/api/teacher-full-analytics', methods=['POST'])
+def teacher_full_analytics():
+    data = request.get_json()
+    email = data.get('email')
+    if not email: return jsonify({"success": False, "error": "Email is required!"}), 400
+
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT exam_code, exam_name FROM exams WHERE teacher_email = {ph}", (email,))
+        teacher_exams = cursor.fetchall()
+
+        if not teacher_exams:
+            conn.close()
+            return jsonify({"success": True, "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": 0}, "examStats": [], "leaderboard": [], "studentProgress": {}})
+
+        exam_codes = [e['exam_code'] for e in teacher_exams]
+        placeholders = ','.join([ph] * len(exam_codes))
+        query = f"SELECT r.student_email, u.name as student_name, r.exam_code, r.exam_name, r.score, r.total_questions, r.date_taken FROM results r LEFT JOIN users u ON r.student_email = u.email WHERE r.exam_code IN ({placeholders})"
+        cursor.execute(query, exam_codes)
+        results = cursor.fetchall()
+        conn.close()
+
+        if not results:
+            return jsonify({"success": True, "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": len(teacher_exams)}, "examStats": [{"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0} for e in teacher_exams], "leaderboard": [], "studentProgress": {}})
+
+        total_attempts = len(results)
+        unique_students = len(set(r['student_email'] for r in results))
+        all_percentages = [round((r['score'] / r['total_questions']) * 100, 1) for r in results if r['total_questions'] > 0]
+        class_avg = round(sum(all_percentages) / len(all_percentages), 1) if all_percentages else 0.0
+        highest_score = max(all_percentages) if all_percentages else 0.0
+
+        exam_map = {}
         for r in results:
             code = r['exam_code']
             perf = round((r['score'] / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
@@ -560,7 +629,8 @@ def teacher_full_analytics():
         student_progress = {}
         for email_key, data in student_map.items():
             s_avg = round(sum(data["perfs"]) / len(data["perfs"]), 1)
-            leaderboard.append({"name": data["name"], "avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "totalScore": sum(data["scores"])})
+            # 🆕 এখানে email_key (স্টুডেন্টের ইমেইল) ফ্রন্টএন্ডে পাঠানো হচ্ছে
+            leaderboard.append({"name": data["name"], "email": email_key, "avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "totalScore": sum(data["scores"])})
             student_progress[data["name"]] = {"avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "labels": data["exam_names"], "data": data["perfs"]}
 
         leaderboard = sorted(leaderboard, key=lambda x: x['avg'], reverse=True)
