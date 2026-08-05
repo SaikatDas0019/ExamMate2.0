@@ -92,7 +92,14 @@ def init_db():
                 conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
-            
+
+        # 🆕 Login Status Column for Permanent Session
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN is_logged_in BOOLEAN DEFAULT FALSE;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+                
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
@@ -134,7 +141,20 @@ def handle_exception(e):
     session.pop('user', None); return redirect('/')
 
 @app.route('/logout')
-def logout(): session.pop('user', None); return redirect('/')
+def logout():
+    user = session.get('user')
+    if user and 'email' in user:
+        try:
+            conn, db_type = get_db_connection()
+            cursor = conn.cursor()
+            ph = "%s" if db_type == 'postgres' else "?"
+            cursor.execute(f"UPDATE users SET is_logged_in = FALSE WHERE email = {ph}", (user['email'],))
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+    session.pop('user', None)
+    return redirect('/')
 
 @app.route('/api/google-login', methods=['POST'])
 def google_login():
@@ -150,6 +170,11 @@ def google_login():
         if user:
             user_role = user['category'] if isinstance(user, dict) else user[1]
             user_name = user['name'] if isinstance(user, dict) else user[0]
+            
+            # 🆕 ডেটাবেসে লগইন স্ট্যাটাস True করা হলো
+            cursor.execute(f"UPDATE users SET is_logged_in = TRUE WHERE email = {ph}", (email,))
+            conn.commit()
+
             session.permanent = True
             session['user'] = {'email': email, 'name': user_name, 'role': user_role}
             conn.close()
@@ -171,7 +196,8 @@ def complete_signup():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"INSERT INTO users (email, name, category, photo_url) VALUES ({ph}, {ph}, {ph}, {ph})", (email, name, role, photo_url))
+        # 🆕 is_logged_in = TRUE সহ ইনসার্ট করা হলো
+        cursor.execute(f"INSERT INTO users (email, name, category, photo_url, is_logged_in) VALUES ({ph}, {ph}, {ph}, {ph}, TRUE)", (email, name, role, photo_url))
         conn.commit()
         conn.close()
         session.permanent = True
@@ -738,6 +764,35 @@ def update_profile():
         return jsonify({"success": True, "redirect_url": redirect_url})
     except Exception as e:
         return jsonify({"success": False, "error": "Database error occurred."}), 500
+        
+@app.route('/api/check-login-status', methods=['POST'])
+def check_login_status():
+    data = request.get_json()
+    email = data.get('email')
+    if not email:
+        return jsonify({"logged_in": False})
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT category, is_logged_in FROM users WHERE email = {ph}", (email,))
+        user = cursor.fetchone()
+        conn.close()
+        
+        if user:
+            is_logged = user['is_logged_in'] if isinstance(user, dict) else user[1]
+            role = user['category'] if isinstance(user, dict) else user[0]
+            if is_logged:
+                session.permanent = True
+                session['user'] = {'email': email, 'role': role}
+                return jsonify({
+                    "logged_in": True,
+                    "role": role,
+                    "redirect_url": "/teacher_dashboard.html" if role.lower() == 'teacher' else "/student_dashboard.html"
+                })
+        return jsonify({"logged_in": False})
+    except Exception as e:
+        return jsonify({"logged_in": False})
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
