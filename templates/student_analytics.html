@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <button onclick="window.history.back()" style="background: transparent; border: none; color: inherit; font-size: 1.1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 1rem; font-weight: 600;">
-    <i class="fas fa-arrow-left"></i> Back
-    </button>
     <title>ExamMate | Student Analytics</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -67,6 +64,11 @@
 
     <div class="container">
         
+        <!-- ব্যাক বাটনটি এখন বডির ভেতরে সঠিক জায়গায় রাখা হলো -->
+        <button onclick="window.history.back()" style="background: transparent; border: none; color: #4b5563; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 1rem; font-weight: 600; padding: 0;">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+
         <div class="page-header">
             <h1>📊 My Performance Analytics</h1>
             <p>Track your score trends and exam history</p>
@@ -103,7 +105,7 @@
 
     </div>
 
-    <!-- Fixed 4-Item Bottom Navigation Bar -->
+    <!-- Fixed Bottom Navigation Bar -->
     <div class="bottom-nav">
         <div class="nav-item" onclick="window.location.href='/student_dashboard.html'">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
@@ -173,7 +175,6 @@
         function renderChart(history) {
             const ctx = document.getElementById('progressChart').getContext('2d');
             
-            // সাম্প্রতিক থেকে পুরোনো হিসেবে রিভার্স করা গ্রাফ সাজানোর জন্য
             const reversedHistory = [...history].reverse();
             const labels = reversedHistory.map(h => h.exam_name.length > 12 ? h.exam_name.substring(0, 12) + '...' : h.exam_name);
             const dataScores = reversedHistory.map(h => ((h.score / h.total) * 100).toFixed(1));
@@ -203,15 +204,6 @@
                 }
             });
         }
-        // ব্যাক বাটন প্রেস করলে আগের পেজে যাওয়ার জন্য সঠিক নিয়ম
-        window.addEventListener('popstate', function (event) {
-            // আগের হিস্ট্রিতে ফিরে যাবে
-            if (document.referrer) {
-                window.history.back();
-            } else {
-                window.location.href = 'student_dashboard.html'; // কোনো হিস্ট্রি না থাকলে ড্যাশবোর্ডে পাঠিয়ে দেবে
-            }
-        });
     </script>
 </body>
 </html>
