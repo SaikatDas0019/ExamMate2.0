@@ -25,13 +25,21 @@
         .container { 
             width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh;
             padding: 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            position: relative;
+            position: relative; overflow-x: hidden;
         }
+        
         .message-box { text-align: center; margin-top: 50px; }
         .message-box h2 { color: #ef4444; }
-        .exam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .exam-header h2 { margin: 0; font-size: 1.2rem; color: #111827; }
-        .exam-header .timer { font-weight: bold; color: #ef4444; font-size: 1.1rem; }
+        
+        .exam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;}
+        .exam-header h2 { margin: 0; font-size: 1.2rem; color: #111827; flex: 1; min-width: 150px;}
+        .timer-box { display: flex; align-items: center; gap: 10px; }
+        .timer { font-weight: bold; color: #ef4444; font-size: 1.1rem; background: #fee2e2; padding: 5px 10px; border-radius: 8px;}
+        
+        /* 🆕 Pause Button Style */
+        .btn-pause { background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: 0.2s;}
+        .btn-pause:hover { background: #d97706; }
+
         .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 10px; margin-bottom: 15px; height: 8px; overflow: hidden; }
         .progress-bar { height: 100%; background-color: #3b82f6; width: 0%; transition: width 0.3s ease; }
         .progress-text { font-size: 0.9rem; color: #4b5563; font-weight: 600; margin-bottom: 20px; }
@@ -49,10 +57,22 @@
         .btn-next { background: #3b82f6; color: white; }
         .btn-submit { background: #10b981; color: white; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
         .result-box { text-align: center; padding: 2rem 0; }
         .score-circle { width: 150px; height: 150px; border-radius: 50%; background: #eff6ff; border: 8px solid #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 900; color: #1e3a8a; margin: 0 auto 20px auto; }
         .success-text { color: #16a34a; font-weight: 600; margin-bottom: 20px; }
+        
         #exam-section, #result-section, #error-section { display: none; }
+
+        /* 🆕 Pause Overlay Screen */
+        #pause-overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98); z-index: 100; text-align: center;
+            flex-direction: column; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        #pause-overlay h2 { color: #d97706; font-size: 2rem; margin-bottom: 10px; }
+        #pause-overlay p { color: #4b5563; font-size: 1rem; margin-bottom: 30px; padding: 0 20px;}
     </style>
 </head>
 <body>
@@ -67,14 +87,20 @@
         <div id="exam-section">
             <div class="exam-header">
                 <h2 id="display-exam-name">Exam Name</h2>
-                <div class="timer"><i class="fas fa-clock"></i> <span id="time-left">00:00</span></div>
+                <div class="timer-box">
+                    <button class="btn-pause" id="btn-pause" onclick="togglePause()">⏸️ Pause</button>
+                    <div class="timer"><i class="fas fa-clock"></i> <span id="time-left">00:00</span></div>
+                </div>
             </div>
+            
             <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
             <div class="progress-text" id="progress-text">Question No.: 1 / 10</div>
             <hr>
             
-            <div class="question-text" id="question-text">Loading question...</div>
-            <div id="options-container"></div>
+            <div id="exam-content-area">
+                <div class="question-text" id="question-text">Loading question...</div>
+                <div id="options-container"></div>
+            </div>
             
             <hr>
             <div class="nav-buttons">
@@ -82,6 +108,13 @@
                 <button class="btn btn-next" id="btn-next" onclick="changeQuestion(1)">Next ➡️</button>
                 <button class="btn btn-submit" id="btn-submit" onclick="submitExam()" style="display:none;">Submit 🚀</button>
             </div>
+        </div>
+
+        <!-- 🆕 Pause Overlay UI -->
+        <div id="pause-overlay">
+            <h2>⏸️ Exam Paused</h2>
+            <p>Questions are hidden to prevent cheating.<br>Click the button below when you are ready to continue.</p>
+            <button class="btn btn-next" style="padding: 15px 30px; font-size: 1.1rem;" onclick="togglePause()">▶️ Resume Exam</button>
         </div>
 
         <div id="result-section" class="result-box">
@@ -100,7 +133,13 @@
         let currentIndex = 0;
         let studentAnswers = {}; 
         let totalQuestions = 0;
+        
+        // Timer & State Variables
         let timerInterval;
+        let timeInSeconds = 0;
+        let isPaused = false;
+        let isExamActive = false;
+        let warningsCount = 0;
 
         window.onload = async () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -125,7 +164,7 @@
                     examName = data.exam_name;
                     totalQuestions = dbQuestions.length;
                     
-                    startExam(data.timer_minutes);
+                    initExam(data.timer_minutes);
                 } else {
                     document.getElementById('error-msg').innerText = data.error || "No questions inside this exam!";
                     document.getElementById('error-section').style.display = 'block';
@@ -136,25 +175,46 @@
             }
         };
 
-        function startExam(minutes) {
+        // 🆕 Initialize Exam & Check Local Storage
+        function initExam(minutes) {
             document.getElementById('error-section').style.display = 'none';
             document.getElementById('exam-section').style.display = 'block';
             document.getElementById('display-exam-name').innerText = examName;
             
-            let timeInSeconds = minutes * 60;
+            // Check if there is saved state (Internet drop / Refresh protection)
+            const savedState = localStorage.getItem(`exam_state_${examCode}`);
+            if(savedState) {
+                const stateData = JSON.parse(savedState);
+                timeInSeconds = stateData.timeLeft;
+                studentAnswers = stateData.answers || {};
+                currentIndex = stateData.currentIndex || 0;
+                warningsCount = stateData.warnings || 0;
+                console.log("Restored previous exam state.");
+            } else {
+                timeInSeconds = minutes * 60;
+            }
+
+            isExamActive = true;
             updateTimerDisplay(timeInSeconds);
+            startTimer();
+            loadQuestion(currentIndex);
             
+            // Auto-save state every 5 seconds
+            setInterval(saveExamState, 5000);
+        }
+
+        function startTimer() {
             timerInterval = setInterval(() => {
-                timeInSeconds--;
-                updateTimerDisplay(timeInSeconds);
-                if(timeInSeconds <= 0) {
-                    clearInterval(timerInterval);
-                    alert("Time is up! Auto-submitting.");
-                    submitExam();
+                if(!isPaused) {
+                    timeInSeconds--;
+                    updateTimerDisplay(timeInSeconds);
+                    if(timeInSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        alert("⏳ Time is up! Auto-submitting your exam.");
+                        submitExam();
+                    }
                 }
             }, 1000);
-
-            loadQuestion(0);
         }
 
         function updateTimerDisplay(seconds) {
@@ -162,6 +222,52 @@
             const s = (seconds % 60).toString().padStart(2, '0');
             document.getElementById('time-left').innerText = `${m}:${s}`;
         }
+
+        // 🆕 Save State to Browser LocalStorage
+        function saveExamState() {
+            if(isExamActive) {
+                const state = {
+                    timeLeft: timeInSeconds,
+                    answers: studentAnswers,
+                    currentIndex: currentIndex,
+                    warnings: warningsCount
+                };
+                localStorage.setItem(`exam_state_${examCode}`, JSON.stringify(state));
+            }
+        }
+
+        // 🆕 Pause & Resume Logic
+        function togglePause() {
+            isPaused = !isPaused;
+            const overlay = document.getElementById('pause-overlay');
+            const pauseBtn = document.getElementById('btn-pause');
+            
+            if(isPaused) {
+                overlay.style.display = 'flex';
+                pauseBtn.innerText = "▶️ Resume";
+                pauseBtn.style.background = "#10b981"; // Green color
+                saveExamState();
+            } else {
+                overlay.style.display = 'none';
+                pauseBtn.innerText = "⏸️ Pause";
+                pauseBtn.style.background = "#f59e0b"; // Orange color
+            }
+        }
+
+        // 🆕 ANTI-CHEAT: Tab Switch Detector
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden && isExamActive && !isPaused) {
+                warningsCount++;
+                saveExamState();
+                
+                if (warningsCount >= 3) {
+                    alert("🚨 FINAL WARNING (3/3): You switched tabs too many times!\nYour exam is being automatically submitted to prevent cheating.");
+                    submitExam();
+                } else {
+                    alert(`⚠️ WARNING ${warningsCount}/3: Do not switch tabs or minimize the browser!\n\nIf you do this ${3 - warningsCount} more time(s), the exam will auto-submit.`);
+                }
+            }
+        });
 
         function loadQuestion(index) {
             const q = dbQuestions[index];
@@ -193,12 +299,12 @@
                 
                 input.onclick = () => {
                     studentAnswers[index] = opt.letter;
+                    saveExamState(); // Save answers immediately
                     loadQuestion(index); 
                 };
 
                 label.appendChild(input);
                 
-                // Use innerHTML instead of createTextNode so MathJax can parse the tags properly
                 const span = document.createElement('span');
                 span.innerHTML = ` ${opt.letter}. ${opt.text}`;
                 label.appendChild(span);
@@ -215,7 +321,7 @@
                 document.getElementById('btn-submit').style.display = 'none';
             }
 
-            // 🚀 Force MathJax to re-render the math equations every time a new question loads
+            // MathJax Rendering
             if (window.MathJax) {
                 MathJax.typesetPromise([qTextElement, optsContainer]).catch(function (err) {
                     console.log('MathJax error: ', err.message);
@@ -225,11 +331,14 @@
 
         function changeQuestion(step) {
             currentIndex += step;
+            saveExamState();
             loadQuestion(currentIndex);
         }
 
         async function submitExam() {
+            isExamActive = false;
             clearInterval(timerInterval); 
+            
             let score = 0;
             dbQuestions.forEach((q, idx) => {
                 if (studentAnswers[idx] === q.correct) score++;
@@ -245,9 +354,14 @@
                         email: userEmail, exam_code: examCode, exam_name: examName, score: score, total_questions: totalQuestions
                     })
                 });
-            } catch (e) { console.log("Failed to save score online:", e); }
+                // 🆕 Clear Local Storage after successful submission
+                localStorage.removeItem(`exam_state_${examCode}`);
+            } catch (e) { 
+                console.log("Failed to save score online:", e); 
+            }
 
             document.getElementById('exam-section').style.display = 'none';
+            document.getElementById('pause-overlay').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
             document.getElementById('final-score').innerText = `${score}/${totalQuestions}`;
         }
