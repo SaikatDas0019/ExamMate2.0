@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <button onclick="window.history.back()" style="background: transparent; border: none; color: inherit; font-size: 1.1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 1rem; font-weight: 600;">
-    <i class="fas fa-arrow-left"></i> Back
-    </button>
     <title>ExamMate | Notifications</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -18,12 +15,36 @@
         }
         .container { 
             width: 100%; max-width: 480px; background-color: #ffffff;
-            min-height: 100vh; padding: 1.5rem 1rem 5rem 1rem; 
+            min-height: 100vh; padding: 0 1rem 5rem 1rem; 
             box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
 
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 1.5rem; }
-        .back-btn { background: none; border: none; font-size: 1.2rem; color: #3b82f6; cursor: pointer; }
+        /* Fixed Sticky Header Style */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background-color: #ffffff;
+            z-index: 999;
+            padding: 1rem 0 0.8rem 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* আগের সেই নীল রঙের ছোট ব্যাক বাটন স্টাইল */
+        .back-btn { 
+            background: none; 
+            border: none; 
+            font-size: 1.2rem; 
+            color: #3b82f6; 
+            cursor: pointer; 
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
         .header h1 { font-size: 1.3rem; margin: 0; color: #0f172a; font-weight: 800; }
 
         .notif-list { display: flex; flex-direction: column; gap: 12px; }
@@ -41,7 +62,7 @@
         }
         .green-dot {
             width: 10px; height: 10px;
-            background-color: #22c55e; /* উজ্জ্বল সবুজ রংশাইড ডট */
+            background-color: #22c55e;
             border-radius: 50%;
             display: inline-block;
             position: absolute;
@@ -56,9 +77,12 @@
 <body>
 
     <div class="container">
-        <div class="header">
+        <!-- ফিক্সড হেডার এবং আগের মতো নীল ব্যাক বাটন -->
+        <div class="sticky-header">
             <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
-            <h1>Notifications 🔔</h1>
+            <div class="header">
+                <h1>Notifications 🔔</h1>
+            </div>
         </div>
 
         <div class="notif-list" id="notif-container">
@@ -77,7 +101,6 @@
             }
 
             try {
-                // ১. ব্যাকএন্ড থেকে নোটিফিকেশন লোড করা
                 const response = await fetch('/api/get-notifications-page', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -89,7 +112,6 @@
                     container.innerHTML = "";
                     data.notifications.forEach(n => {
                         const card = document.createElement('div');
-                        // নতুন নোটিফিকেশন হলে 'is-new' ক্লাস যুক্ত হবে
                         card.className = `notif-card ${n.is_unread ? 'is-new' : ''}`;
                         
                         card.innerHTML = `
@@ -100,7 +122,6 @@
                         container.appendChild(card);
                     });
 
-                    // ২. নোটিফিকেশন পেজ দেখা হয়ে গেলে রিড মার্ক (Mark as Read) করে দেওয়া
                     markNotificationsAsRead(userEmail);
 
                 } else {
@@ -111,7 +132,6 @@
             }
         };
 
-        // নোটিফিকেশন দেখা শেষ হলে লাস্ট রিড টাইম আপডেট করা
         async function markNotificationsAsRead(email) {
             try {
                 await fetch('/api/mark-notifications-read', {
@@ -131,12 +151,6 @@
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
         }
-        // ফোনের হার্ডওয়্যার ব্যাক বাটন হ্যান্ডেল করার জন্য
-        history.pushState(null, null, window.location.href);
-        window.addEventListener('popstate', function () {
-            history.pushState(null, null, window.location.href);
-            window.history.back();
-        });
     </script>
 </body>
 </html>
