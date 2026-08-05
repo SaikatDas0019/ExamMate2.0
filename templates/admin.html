@@ -77,7 +77,6 @@
         .q-card textarea { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 8px; box-sizing: border-box; resize: vertical;}
         .q-card input { width: 100%; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;}
         
-        /* Prompt Box Styling */
         .prompt-box { background: #e0e7ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #1e3a8a; }
         .prompt-code { background: #ffffff; border: 1px dashed #93c5fd; padding: 12px; margin-top: 10px; border-radius: 6px; position: relative; }
         .prompt-code code { display: block; color: #334155; font-size: 0.8rem; white-space: pre-wrap; margin-top: 25px; font-family: inherit;}
@@ -174,7 +173,6 @@
                 <button class="modal-btn" style="background: #3b82f6; color: white; justify-content: center; border: none;" onclick="addManualQuestion()">Add Question ➕</button>
             </div>
 
-            <!-- 🤖 AI Smart Paste Section -->
             <div id="method-ai" class="hidden" style="padding: 20px; border: 2px dashed #a855f7; border-radius: 12px; background: #faf5ff;">
                 <h3 style="margin-top: 0; color: #7e22ce; font-weight: bold; font-size: 1rem; text-align: center;"><i class="fas fa-robot"></i> AI Smart Paste</h3>
                 
@@ -200,8 +198,8 @@ CRITICAL RULES FOR MATH:
 1. You MUST enclose ALL numbers, formulas, fractions, and math symbols inside single dollar signs ($...$). Example: $\frac{1}{2}$, $x^2$, $5$.
 2. ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped! You must write $\frac{a}{b}$ (NOT rac), $\sin$ (NOT sin), $\tan$ (NOT an), $\sqrt{x}$ (NOT sqrt).
 3. Do NOT use double dollar signs ($$).
-4. Keep the Bengali/English text outside the dollar signs. Do not use markdown code blocks.
-             </div>
+4. Keep the Bengali/English text outside the dollar signs. Do not use markdown code blocks.</code>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -221,12 +219,12 @@ CRITICAL RULES FOR MATH:
 
     </div>
 
-    <!-- Modals -->
+    <!-- Modals (UPDATED FOR DRIVE LINK) -->
     <div class="modal-overlay" id="plus-modal">
         <div class="modal-box">
             <div class="modal-title">Create or Upload</div>
             <button class="modal-btn" onclick="openFolderModal()"><i class="fas fa-folder-plus" style="color:#f59e0b; font-size: 1.2rem;"></i> Create New Folder</button>
-            <button class="modal-btn" id="btn-upload-file" onclick="openUploadModal()"><i class="fas fa-file-upload" style="color:#3b82f6; font-size: 1.2rem;"></i> Upload Content File</button>
+            <button class="modal-btn" id="btn-upload-file" onclick="openUploadModal()"><i class="fas fa-link" style="color:#3b82f6; font-size: 1.2rem;"></i> Add Resource Link</button>
             <button class="modal-btn" id="btn-create-exam" onclick="openExamCreator()"><i class="fas fa-file-signature" style="color:#22c55e; font-size: 1.2rem;"></i> Create New Exam</button>
             <button class="modal-btn" style="color:#ef4444; justify-content: center; margin-top: 15px; border-color: #fca5a5; background: #fef2f2;" onclick="closeAllModals()">Cancel</button>
         </div>
@@ -234,12 +232,25 @@ CRITICAL RULES FOR MATH:
 
     <div class="modal-overlay" id="upload-file-modal">
         <div class="modal-box">
-            <div class="modal-title">Upload File 📄</div>
+            <div class="modal-title">Add Resource Link 🔗</div>
             <form id="file-upload-form" onsubmit="submitDriveFileUpload(event)">
-                <div class="form-group"><label>File Title</label><input type="text" id="upload-file-title" required></div>
-                <div class="form-group"><label>Content Type</label><select id="upload-file-type" required><option value="Notes">Notes 📑</option><option value="Short Notes">Short Notes 📝</option><option value="Mind Map">Mind Map 🧠</option></select></div>
-                <div class="form-group"><label>Select File (PDF / Image)</label><input type="file" id="upload-file-input" accept=".pdf,.doc,.docx,.png,.jpg" required style="background: #fff;"></div>
-                <button type="submit" class="btn-submit" id="upload-file-submit-btn">Start Upload 🚀</button>
+                <div class="form-group">
+                    <label>Resource Title</label>
+                    <input type="text" id="upload-file-title" placeholder="e.g. Chapter 1 PDF" required>
+                </div>
+                <div class="form-group">
+                    <label>Content Type</label>
+                    <select id="upload-file-type" required>
+                        <option value="Notes">Notes 📑</option>
+                        <option value="Short Notes">Short Notes 📝</option>
+                        <option value="Mind Map">Mind Map 🧠</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Google Drive Link</label>
+                    <input type="url" id="upload-file-url" placeholder="Paste link here..." required style="background: #fff;">
+                </div>
+                <button type="submit" class="btn-submit" id="upload-file-submit-btn">Save Link 🚀</button>
                 <button type="button" class="modal-btn" style="margin-top:10px; justify-content: center;" onclick="closeAllModals()">Cancel</button>
             </form>
         </div>
@@ -248,7 +259,6 @@ CRITICAL RULES FOR MATH:
     <script>
         let currentFolderId = 0, folderHistory = [], tempExamQuestions = [], currentDriveType = 'content';
 
-        // 1-Click Copy Function
         function copyPrompt(textId, btnId) {
             const promptText = document.getElementById(textId).innerText;
             navigator.clipboard.writeText(promptText).then(() => {
@@ -374,16 +384,33 @@ CRITICAL RULES FOR MATH:
             }, 100);
         }
 
+        // UPDATED JAVASCRIPT FOR UPLOADING LINK
         async function submitDriveFileUpload(e) {
             e.preventDefault();
-            const formData = new FormData();
-            formData.append('title', document.getElementById('upload-file-title').value); formData.append('resource_type', document.getElementById('upload-file-type').value);
-            formData.append('folder_id', currentFolderId); formData.append('file', document.getElementById('upload-file-input').files[0]);
+            const submitBtn = document.getElementById('upload-file-submit-btn');
+            submitBtn.disabled = true; submitBtn.innerText = "Saving... ⏳";
+            
+            const payload = {
+                title: document.getElementById('upload-file-title').value,
+                resource_type: document.getElementById('upload-file-type').value,
+                folder_id: currentFolderId,
+                file_url: document.getElementById('upload-file-url').value
+            };
+
             try {
-                const res = await fetch('/api/admin/upload-drive-file', { method: 'POST', body: formData });
+                const res = await fetch('/api/admin/upload-drive-file', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload) 
+                });
                 const data = await res.json();
-                if (data.success) { closeAllModals(); loadDriveContents(); } else { alert("Upload failed!"); }
-            } catch (err) { alert("Server error."); } 
+                if (data.success) { 
+                    document.getElementById('file-upload-form').reset();
+                    closeAllModals(); 
+                    loadDriveContents(); 
+                } else { alert("Failed to save link!"); }
+            } catch (err) { alert("Server error."); }
+            finally { submitBtn.disabled = false; submitBtn.innerText = "Save Link 🚀"; }
         }
 
         async function deleteDriveItem(e, type, id) {
@@ -391,9 +418,6 @@ CRITICAL RULES FOR MATH:
             if (confirm("Are you sure?")) { await fetch('/api/admin/delete-drive-item', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ type: type, id: id }) }); loadDriveContents(); }
         }
 
-        // ==========================================
-        // 4. CREATE EXAM LOGIC
-        // ==========================================
         function openExamCreator() {
             closeAllModals(); document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
             document.getElementById('exam-create-panel').classList.add('active');
