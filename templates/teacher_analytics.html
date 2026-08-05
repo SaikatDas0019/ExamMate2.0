@@ -47,6 +47,10 @@
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
         th { background-color: #f8fafc; color: #374151; font-weight: 600; }
         td { color: #4b5563; }
+        
+        /* 🆕 নামের নিচে ইমেইল দেখানোর ডিজাইন */
+        .student-name-box { display: flex; flex-direction: column; }
+        .student-name-box .email { font-size: 0.65rem; color: #64748b; margin-top: 2px; font-weight: normal; }
 
         .chart-box { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; margin-bottom: 1.5rem; }
         .chart-container { position: relative; height: 260px; width: 100%; }
@@ -116,7 +120,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Student Name</th>
+                        <th>Student Info</th>
                         <th>Avg %</th>
                         <th>Best %</th>
                         <th>Exams</th>
@@ -209,8 +213,20 @@
                         if (data.leaderboard.length === 0) {
                             leaderBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No students have taken exams yet.</td></tr>';
                         } else {
+                            // 🆕 লিডারবোর্ডে নামের নিচে ইমেইল যোগ করা হয়েছে
                             leaderBody.innerHTML = data.leaderboard.map(s => 
-                                `<tr><td>${s.name}</td><td>${s.avg}%</td><td>${s.best}%</td><td>${s.taken}</td><td>${s.totalScore}</td></tr>`
+                                `<tr>
+                                    <td>
+                                        <div class="student-name-box">
+                                            <span>${s.name}</span>
+                                            <span class="email">(${s.email})</span>
+                                        </div>
+                                    </td>
+                                    <td>${s.avg}%</td>
+                                    <td>${s.best}%</td>
+                                    <td>${s.taken}</td>
+                                    <td>${s.totalScore}</td>
+                                </tr>`
                             ).join('');
                         }
 
@@ -219,8 +235,9 @@
                         selector.innerHTML = '<option value="" disabled selected>Select a student...</option>';
                         data.leaderboard.forEach(s => {
                             const opt = document.createElement('option');
+                            // ড্রপডাউনেও নাম এবং ইমেইল একসাথে দেখাবে
                             opt.value = s.name;
-                            opt.innerText = s.name;
+                            opt.innerText = `${s.name} (${s.email})`;
                             selector.appendChild(opt);
                         });
 
@@ -232,11 +249,9 @@
             }
         };
 
-        // Graph Formatting Logic Fix
         function renderExamChart(examStats) {
             const ctx = document.getElementById('examChart').getContext('2d');
             
-            // নাম বেশি লম্বা হলে সংক্ষিপ্ত (...) করবে
             const labels = examStats.map(e => {
                 return e.name.length > 15 ? e.name.substring(0, 15) + '...' : e.name;
             });
@@ -262,7 +277,7 @@
                         y: { beginAtZero: true, max: 100 },
                         x: {
                             ticks: {
-                                maxRotation: 0, // সোজা দেখাবে
+                                maxRotation: 0, 
                                 minRotation: 0,
                                 font: { size: 10 }
                             }
