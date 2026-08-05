@@ -169,7 +169,6 @@
         .rank-list li { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dashed #e2e8f0;}
         .rank-list li:last-child { border-bottom: none; }
         
-        /* 🆕 স্টুডেন্টের নামের সাথে ইমেইল দেখানোর ডিজাইন */
         .student-info { display: flex; flex-direction: column; }
         .student-email-text { font-size: 0.65rem; color: #64748b; font-weight: normal; margin-top: 2px;}
 
@@ -405,17 +404,20 @@
             document.getElementById('dashboard-view').style.display = 'block';
             document.getElementById('analysis-view').style.display = 'none';
             document.getElementById('all-exams-view').style.display = 'none';
+            window.history.pushState({view: 'dashboard'}, "", window.location.href);
         }
 
         function showAllExams() {
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('all-exams-view').style.display = 'block';
+            window.history.pushState({view: 'all_exams'}, "", window.location.href);
         }
 
         async function openAnalysis(examCode, examName) {
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('all-exams-view').style.display = 'none';
             document.getElementById('analysis-view').style.display = 'block';
+            window.history.pushState({view: 'analysis'}, "", window.location.href);
 
             document.getElementById('ana-exam-name').innerText = examName;
             document.getElementById('ana-exam-code').innerText = examCode;
@@ -433,7 +435,6 @@
                     document.getElementById('ana-avg-score').innerText = data.avg_score;
                     document.getElementById('ana-total-qs').innerText = data.total_q;
 
-                    // 🆕 নামের নিচে ইমেইল দেখানোর কোড যোগ করা হয়েছে
                     document.getElementById('top-students-list').innerHTML = data.top.map(s => 
                         `<li>
                             <div class="student-info">
@@ -489,6 +490,17 @@
                 }
             });
         }
+
+        // ফোনের ব্যাক বাটন হ্যান্ডেল করার জন্য সঠিক হিস্ট্রি লজিক
+        window.addEventListener('popstate', function (event) {
+            if (document.getElementById('analysis-view').style.display === 'block' || document.getElementById('all-exams-view').style.display === 'block') {
+                showDashboard();
+            } else {
+                if (document.referrer) {
+                    window.history.back();
+                }
+            }
+        });
     </script>
 </body>
 </html>
