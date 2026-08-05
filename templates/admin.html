@@ -6,11 +6,8 @@
     <title>ExamMate | Admin Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- MathJax for Math Equations -->
     <script>
-        window.MathJax = {
-          tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] }
-        };
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
     </script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -148,6 +145,18 @@
                 <div class="form-group"><label>Timer (Mins)</label><input type="number" id="exam-timer" value="30"></div>
             </div>
 
+            <!-- 🆕 Negative Marking Feature -->
+            <div class="form-group">
+                <label>Negative Marks (Per Wrong Answer)</label>
+                <select id="exam-negative">
+                    <option value="0">No Negative Marking (0)</option>
+                    <option value="0.25">-0.25 Marks</option>
+                    <option value="0.33">-0.33 Marks</option>
+                    <option value="0.5">-0.50 Marks</option>
+                    <option value="1">-1.00 Mark</option>
+                </select>
+            </div>
+
             <div class="form-group">
                 <label>Question Upload Method</label>
                 <select id="exam-method" onchange="toggleExamMethod()">
@@ -219,7 +228,7 @@ CRITICAL RULES FOR MATH:
 
     </div>
 
-    <!-- Modals (UPDATED FOR DRIVE LINK) -->
+    <!-- Modals -->
     <div class="modal-overlay" id="plus-modal">
         <div class="modal-box">
             <div class="modal-title">Create or Upload</div>
@@ -384,7 +393,6 @@ CRITICAL RULES FOR MATH:
             }, 100);
         }
 
-        // UPDATED JAVASCRIPT FOR UPLOADING LINK
         async function submitDriveFileUpload(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('upload-file-submit-btn');
@@ -542,10 +550,13 @@ CRITICAL RULES FOR MATH:
             const name = document.getElementById('exam-name').value.trim();
             const code = document.getElementById('exam-code').value.trim().toUpperCase();
             const timer = document.getElementById('exam-timer').value;
+            const negative = document.getElementById('exam-negative').value;
+            
             if(!name || !code || tempExamQuestions.length === 0) return;
 
             const teacherEmail = "dasbabu938207@gmail.com";
-            const payload = { exam_code: code, exam_name: name, timer: timer, teacher_email: teacherEmail, folder_id: currentFolderId, questions: tempExamQuestions };
+            // 🆕 Passed negative marks to payload
+            const payload = { exam_code: code, exam_name: name, timer: timer, negative_marks: negative, teacher_email: teacherEmail, folder_id: currentFolderId, questions: tempExamQuestions };
 
             try {
                 const res = await fetch('/api/create-exam', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
