@@ -87,7 +87,7 @@
         </div>
     </div>
 
-    <!-- Firebase Authentication SDK -->
+        <!-- Firebase Authentication SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -105,7 +105,7 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // 🔴 অ্যাপ ওপেন হওয়ামাত্র ডেটাবেস থেকে লগইন স্ট্যাটাস চেক করা
+        // 🔴 অ্যাপ ওপেন হওয়ামাত্র ডেটাবেস থেকে is_logged_in চেক করা
         window.addEventListener('DOMContentLoaded', async () => {
             const savedEmail = localStorage.getItem('userEmail');
             if (savedEmail) {
@@ -186,5 +186,6 @@
             }
         });
     </script>
+
 </body>
 </html>
