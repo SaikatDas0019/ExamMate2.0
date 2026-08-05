@@ -90,7 +90,7 @@
     <!-- Firebase Authentication SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
@@ -103,6 +103,12 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+
+        // 🔴 পার্মানেন্ট সেশন বজায় রাখার জন্য লোকাল পার্সিস্টেন্স সেট করা হলো
+        setPersistence(auth, browserLocalPersistence).catch((error) => {
+            console.error("Persistence error:", error);
+        });
+
         const provider = new GoogleAuthProvider();
 
         // Check if user is already logged in on app startup
