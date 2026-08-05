@@ -767,10 +767,15 @@ def update_profile():
         
 @app.route('/api/check-login-status', methods=['POST'])
 def check_login_status():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get('email')
+    
+    if not email and 'user' in session:
+        email = session['user'].get('email')
+
     if not email:
         return jsonify({"logged_in": False})
+        
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
@@ -787,6 +792,7 @@ def check_login_status():
                 session['user'] = {'email': email, 'role': role}
                 return jsonify({
                     "logged_in": True,
+                    "email": email,
                     "role": role,
                     "redirect_url": "/teacher_dashboard.html" if role.lower() == 'teacher' else "/student_dashboard.html"
                 })
