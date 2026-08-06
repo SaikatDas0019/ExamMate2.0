@@ -151,6 +151,12 @@
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
         }
+        // নোটিফিকেশন কার্ড তৈরির সময় লিংক থাকলে তা দেখানোর কোড:
+        let linkHtml = n.link_url ? `<br><a href="${n.link_url}" target="_blank" style="display:inline-block; margin-top:8px; background:#22c55e; color:#white; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem; font-weight:bold;"><i class="fas fa-external-link-alt"></i> Open Attached Link</a>` : '';
+
+        // এটি মেসেজ ববলের ভেতরে প্রিন্ট হবে:
+        // ${n.message} ${linkHtml}
+
     </script>
 </body>
 </html>
