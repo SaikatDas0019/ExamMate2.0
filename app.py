@@ -138,6 +138,23 @@ def init_db():
                 );
             ''')
         conn.commit()
+        if db_type == 'postgres':
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS notifications (id SERIAL PRIMARY KEY, message TEXT NOT NULL, target_role VARCHAR(50) NOT NULL, link_url TEXT, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+            ''')
+        else:
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT NOT NULL, target_role TEXT NOT NULL, link_url TEXT, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+            ''')
+        conn.commit()
+
+        # যদি টেবিল আগে থেকেই তৈরি থাকে, তবে সেফটির জন্য এই অল্টার কুয়েরিটি রাখতে পারেন:
+        try:
+            cursor.execute("ALTER TABLE notifications ADD COLUMN link_url TEXT;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
@@ -498,11 +515,12 @@ def admin_send_notification():
     data = request.get_json()
     message = data.get('message')
     target_role = data.get('target_role')
+    link_url = data.get('link_url', '') # 🆕 লিংক রিসিভ করা
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"INSERT INTO notifications (message, target_role) VALUES ({ph}, {ph})", (message, target_role))
+        cursor.execute(f"INSERT INTO notifications (message, target_role, link_url) VALUES ({ph}, {ph}, {ph})", (message, target_role, link_url))
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Broadcasted!"})
@@ -514,10 +532,10 @@ def admin_get_notifications():
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, message, target_role, date_sent FROM notifications ORDER BY id DESC")
+        cursor.execute("SELECT id, message, target_role, link_url, date_sent FROM notifications ORDER BY id DESC")
         rows = cursor.fetchall()
         conn.close()
-        notifs = [{"id": r["id"], "message": r["message"], "target_role": r["target_role"], "date": str(r["date_sent"])} for r in rows]
+        notifs = [{"id": r["id"], "message": r["message"], "target_role": r["target_role"], "link_url": r["link_url"] or '', "date": str(r["date_sent"])} for r in rows]
         return jsonify({"success": True, "notifications": notifs})
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
@@ -527,16 +545,37 @@ def edit_notification():
     data = request.get_json()
     notif_id = data.get('id')
     new_message = data.get('message')
+    link_url = data.get('link_url', '') # 🆕 এডিট করার সময় লিংক আপডেট
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"UPDATE notifications SET message = {ph} WHERE id = {ph}", (new_message, notif_id))
+        cursor.execute(f"UPDATE notifications SET message = {ph}, link_url = {ph} WHERE id = {ph}", (new_message, link_url, notif_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"})
+
+@app.route('/api/get-notifications-page', methods=['POST'])
+def get_notifications_page():
+    data = request.get_json()
+    email = data.get('email')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT category, last_notif_read FROM users WHERE email = {ph}", (email,))
+        user = cursor.fetchone()
+        role = user["category"] if user else 'All'
+        last_read = str(user["last_notif_read"]) if (user and user["last_notif_read"]) else '1970-01-01 00:00:00'
+        cursor.execute(f"SELECT id, message, target_role, link_url, date_sent FROM notifications WHERE target_role = 'All' OR target_role = {ph} ORDER BY id DESC", (role,))
+        rows = cursor.fetchall()
+        conn.close()
+        notifs = [{"id": r["id"], "message": r["message"], "target_role": r["target_role"], "link_url": r["link_url"] or '', "date": str(r["date_sent"]).split('.')[0], "is_unread": str(r["date_sent"]) > last_read} for r in rows]
+        return jsonify({"success": True, "notifications": notifs})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/admin/delete-notification', methods=['POST'])
 def delete_notification():
@@ -573,26 +612,6 @@ def check_unread_notifications():
         return jsonify({"success": True, "has_unread": unread_count > 0})
     except Exception as e:
         return jsonify({"success": False, "has_unread": False})
-
-@app.route('/api/get-notifications-page', methods=['POST'])
-def get_notifications_page():
-    data = request.get_json()
-    email = data.get('email')
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT category, last_notif_read FROM users WHERE email = {ph}", (email,))
-        user = cursor.fetchone()
-        role = user["category"] if user else 'All'
-        last_read = str(user["last_notif_read"]) if (user and user["last_notif_read"]) else '1970-01-01 00:00:00'
-        cursor.execute(f"SELECT id, message, target_role, date_sent FROM notifications WHERE target_role = 'All' OR target_role = {ph} ORDER BY id DESC", (role,))
-        rows = cursor.fetchall()
-        conn.close()
-        notifs = [{"id": r["id"], "message": r["message"], "target_role": r["target_role"], "date": str(r["date_sent"]).split('.')[0], "is_unread": str(r["date_sent"]) > last_read} for r in rows]
-        return jsonify({"success": True, "notifications": notifs})
-    except Exception as e:
-        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/mark-notifications-read', methods=['POST'])
 def mark_notifications_read():
