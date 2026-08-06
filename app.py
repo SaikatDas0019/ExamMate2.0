@@ -99,10 +99,6 @@ def init_db():
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
-                
-        conn.close()
-    except Exception as e:
-        print("DB Init Exception:", e)
 
         # 🆕 Reviews Table Creation
         if db_type == 'postgres':
@@ -128,6 +124,11 @@ def init_db():
                 );
             ''')
         conn.commit()
+        
+        conn.close()
+    except Exception as e:
+        print("DB Init Exception:", e)
+
         
 init_db()
 
