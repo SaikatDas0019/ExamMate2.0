@@ -124,6 +124,19 @@ def init_db():
                 );
             ''')
         conn.commit()
+        if db_type == 'postgres':
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS drive_folders (id SERIAL PRIMARY KEY, folder_name VARCHAR(255) NOT NULL, parent_id INT DEFAULT 0, folder_type VARCHAR(50) DEFAULT 'content', position INT DEFAULT 0);
+                CREATE TABLE IF NOT EXISTS drive_files (id SERIAL PRIMARY KEY, folder_id INT NOT NULL, title VARCHAR(255) NOT NULL, file_url TEXT NOT NULL, resource_type VARCHAR(50) DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, position INT DEFAULT 0);
+                CREATE TABLE IF NOT EXISTS exams (exam_code VARCHAR(100) PRIMARY KEY, exam_name VARCHAR(255) NOT NULL, teacher_email VARCHAR(255) NOT NULL, timer_minutes INT NOT NULL, folder_id INT DEFAULT 0, negative_marks FLOAT DEFAULT 0.0, position INT DEFAULT 0);
+            ''')
+        else:
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS drive_folders (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_name TEXT NOT NULL, parent_id INTEGER DEFAULT 0, folder_type TEXT DEFAULT 'content', position INTEGER DEFAULT 0);
+                CREATE TABLE IF NOT EXISTS drive_files (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_id INTEGER NOT NULL, title TEXT NOT NULL, file_url TEXT NOT NULL, resource_type TEXT DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, position INTEGER DEFAULT 0);
+                CREATE TABLE IF NOT EXISTS exams (exam_code TEXT PRIMARY KEY, exam_name TEXT NOT NULL, teacher_email TEXT NOT NULL, timer_minutes INTEGER NOT NULL, folder_id INTEGER DEFAULT 0, negative_marks REAL DEFAULT 0.0, position INTEGER DEFAULT 0);
+            ''')
+        conn.commit()
         
         conn.close()
     except Exception as e:
@@ -880,6 +893,85 @@ def get_reviews():
     except Exception as e:
         return jsonify({"success": False, "error": "Failed to fetch reviews."}), 500
 
+@app.route('/api/admin/get-drive-contents', methods=['POST'])
+@app.route('/api/get-student-drive-contents', methods=['POST'])
+def get_drive_contents_api():
+    data = request.get_json() if request.is_json else {}
+    parent_id = data.get('parent_id', 0)
+    folder_type = data.get('folder_type', 'content') 
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        # 🆕 ORDER BY position ASC যুক্ত করা হলো যাতে পজিশন অনুযায়ী সাজানো থাকে
+        cursor.execute(f"SELECT id, folder_name FROM drive_folders WHERE parent_id = {ph} AND folder_type = {ph} ORDER BY position ASC, id DESC", (parent_id, folder_type))
+        folders = [{"id": r["id"], "name": r["folder_name"]} for r in cursor.fetchall()]
+        if folder_type == 'content':
+            cursor.execute(f"SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = {ph} ORDER BY position ASC, id DESC", (parent_id,))
+            files = [{"id": r["id"], "title": r["title"], "file_url": r["file_url"], "type": r["resource_type"], "date": str(r["date_uploaded"]).split(' ')[0]} for r in cursor.fetchall()]
+            exams = []
+        else:
+            files = []
+            cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY position ASC, exam_code DESC", (parent_id,))
+            exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"]} for r in cursor.fetchall()]
+        conn.close()
+        return jsonify({"success": True, "folders": folders, "files": files, "exams": exams})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
+
+@app.route('/api/admin/move-item', methods=['POST'])
+def move_drive_item():
+    data = request.get_json()
+    item_type = data.get('type')  # 'folder', 'file', বা 'exam'
+    item_id = data.get('id')
+    new_folder_id = data.get('new_folder_id', 0)
+    
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        if item_type == 'folder':
+            cursor.execute(f"UPDATE drive_folders SET parent_id = {ph} WHERE id = {ph}", (new_folder_id, item_id))
+        elif item_type == 'exam':
+            cursor.execute(f"UPDATE exams SET folder_id = {ph} WHERE exam_code = {ph}", (new_folder_id, item_id))
+        else:
+            cursor.execute(f"UPDATE drive_files SET folder_id = {ph} WHERE id = {ph}", (new_folder_id, item_id))
+            
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Moved successfully!"})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Failed to move item."}), 500
+
+# 🆕 নতুন পজিশন বা সিরিয়াল পরিবর্তনের API
+@app.route('/api/admin/update-position', methods=['POST'])
+def update_item_position():
+    data = request.get_json()
+    items = data.get('items', []) # [{'type': 'folder', 'id': 1, 'position': 0}, ...]
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        for item in items:
+            it_type = item.get('type')
+            it_id = item.get('id')
+            pos = item.get('position', 0)
+            
+            if it_type == 'folder':
+                cursor.execute(f"UPDATE drive_folders SET position = {ph} WHERE id = {ph}", (pos, it_id))
+            elif it_type == 'exam':
+                cursor.execute(f"UPDATE exams SET position = {ph} WHERE exam_code = {ph}", (pos, it_id))
+            elif it_type == 'file':
+                cursor.execute(f"UPDATE drive_files SET position = {ph} WHERE id = {ph}", (pos, it_id))
+                
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Failed to update order."}), 500
+        
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
