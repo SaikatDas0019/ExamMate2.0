@@ -38,12 +38,12 @@
         .panel-view.active { display: flex; }
 
         .drive-breadcrumb { font-size: 0.9rem; color: #3b82f6; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; padding: 10px; background: #eff6ff; border-radius: 10px;}
-        .drive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-        .folder-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+        .drive-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .folder-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; }
         .folder-card span { font-size: 0.9rem; font-weight: bold; color: #1e293b; }
 
         .file-list { display: flex; flex-direction: column; gap: 10px; }
-        .file-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        .file-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
 
         .fab-plus { position: absolute; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #3b82f6; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); cursor: pointer; transition: 0.2s; z-index: 50;}
         
@@ -145,7 +145,6 @@
                 <div class="form-group"><label>Timer (Mins)</label><input type="number" id="exam-timer" value="30"></div>
             </div>
 
-            <!-- 🆕 Negative Marking Feature -->
             <div class="form-group">
                 <label>Negative Marks (Per Wrong Answer)</label>
                 <select id="exam-negative">
@@ -187,25 +186,26 @@
                 
                 <div class="prompt-box">
                     <strong>কীভাবে প্রশ্ন তৈরি করবেন?</strong><br>
-                    ১. নিচের <strong>Copy Prompt</strong> বাটনে ক্লিক করে লেখাটি কপি করুন।<br>
+                    ১. নিচের <strong>Copy Prompt</strong> বাটনে ক্লিক করে লেখাটি কপি করুন。<br>
                     ২. <b>ChatGPT</b> বা <b>Gemini</b> তে গিয়ে প্রম্পটটি পেস্ট করুন এবং সাথে আপনার প্রশ্নপত্রের ছবি বা টেক্সট দিয়ে দিন।<br>
                     ৩. AI যে উত্তর দেবে, সেটি কপি করে নিচের বক্সে পেস্ট করে <b>'অ্যাড করুন'</b> বাটনে ক্লিক করুন।
                     
                     <div class="prompt-code">
                         <button onclick="copyPrompt('ai-prompt-2', 'copy-btn-2')" id="copy-btn-2" class="copy-btn"><i class="fas fa-copy"></i> Copy Prompt</button>
-                        <code id="ai-prompt-2">​You are an expert Math text formatter and AI assistant. Please read the provided text/images and extract the multiple-choice questions with absolute accuracy.
-​You MUST format the extracted output EXACTLY like this:
-​[Question Text with all numbers, variables, and math symbols enclosed in single dollar signs]
+                        <code id="ai-prompt-2">You are an expert Math text formatter and AI assistant. Please read the provided text/images and extract the multiple-choice questions with absolute accuracy.
+You MUST format the extracted output EXACTLY like this:
+[Question Text with all numbers, variables, and math symbols enclosed in single dollar signs]
 A) [Option A]
 B) [Option B]
 C) [Option C]
 D) [Option D]
 Ans: [Correct Option A/B/C/D]
-​CRITICAL RULES FOR MATH & FORMATTING:
-1. ​You MUST enclose ALL numbers, formulas, fractions, variables, and math symbols strictly inside single dollar signs (...). Example: \frac{1}{2}, x^2, 5.
-2. ​ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped! You must write \frac{a}{b},\sin,\cos,\tan,\sqrt{x}. 3. Do NOT use double dollar signs ($$).
-3. ​Keep the regular text (Bengali/English) completely outside the dollar signs. Do not use markdown code blocks.
-4. ​Once the formatting is complete, generate and provide the final output inside a downloadable or copyable .txt file format.                    </div>
+CRITICAL RULES FOR MATH & FORMATTING:
+1. You MUST enclose ALL numbers, formulas, fractions, variables, and math symbols strictly inside single dollar signs (...). Example: \frac{1}{2}, x^2, 5.
+2. ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped! You must write \frac{a}{b},\sin,\cos,\tan,\sqrt{x}.
+3. Keep the regular text (Bengali/English) completely outside the dollar signs. Do not use markdown code blocks.
+4. Once the formatting is complete, generate and provide the final output inside a downloadable or copyable .txt file format.</code>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -262,8 +262,25 @@ Ans: [Correct Option A/B/C/D]
         </div>
     </div>
 
+    <!-- Move Item Modal -->
+    <div class="modal-overlay" id="move-modal">
+        <div class="modal-box">
+            <div class="modal-title">Move Item To 📁</div>
+            <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px; text-align:center;">Select destination folder:</p>
+            <div class="form-group">
+                <select id="move-target-folder" class="form-control" style="width:100%; padding:12px; border-radius:10px; border:1px solid #cbd5e1;">
+                    <option value="0">📁 Root Folder (Main)</option>
+                </select>
+            </div>
+            <button class="btn-submit" onclick="confirmMoveItem()" style="background:#3b82f6;">Move Here 🚀</button>
+            <button type="button" class="modal-btn" style="margin-top:10px; justify-content: center;" onclick="closeAllModals()">Cancel</button>
+        </div>
+    </div>
+
     <script>
         let currentFolderId = 0, folderHistory = [], tempExamQuestions = [], currentDriveType = 'content';
+        let itemToMove = { type: null, id: null };
+        let currentFoldersData = [], currentFilesData = [], currentExamsData = [];
 
         function copyPrompt(textId, btnId) {
             const promptText = document.getElementById(textId).innerText;
@@ -302,7 +319,11 @@ Ans: [Correct Option A/B/C/D]
             document.getElementById('back-btn').style.display = 'none';
         }
 
-        function closeAllModals() { document.getElementById('plus-modal').style.display = 'none'; document.getElementById('upload-file-modal').style.display = 'none'; }
+        function closeAllModals() { 
+            document.getElementById('plus-modal').style.display = 'none'; 
+            document.getElementById('upload-file-modal').style.display = 'none'; 
+            document.getElementById('move-modal').style.display = 'none';
+        }
         
         async function loadNotifications() {
             const feed = document.getElementById('chat-feed');
@@ -357,21 +378,140 @@ Ans: [Correct Option A/B/C/D]
                 });
                 const data = await res.json();
                 if (data.success) {
-                    folderBox.innerHTML = ''; fileBox.innerHTML = '';
-                    data.folders.forEach(f => {
-                        folderBox.innerHTML += `<div class="folder-card" onclick="openDriveFolder(${f.id}, '${f.name.replace(/'/g, "\\'")}')"><div><i class="fas fa-folder" style="color:#f59e0b; margin-right:8px;"></i> <span>${f.name}</span></div><i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'folder', ${f.id})"></i></div>`;
-                    });
-                    if (currentDriveType === 'content') {
-                        data.files.forEach(file => {
-                            fileBox.innerHTML += `<div class="file-card"><div><strong>${file.title}</strong><br><span style="font-size:0.75rem;">${file.type}</span></div><div><a href="${file.file_url}" target="_blank"><i class="fas fa-eye"></i></a> <i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'file', ${file.id})"></i></div></div>`;
-                        });
-                    } else if (currentDriveType === 'exam') {
-                        data.exams.forEach(exam => {
-                            fileBox.innerHTML += `<div class="file-card"><div><strong>${exam.name}</strong><br><span style="font-size:0.75rem; color:#16a34a;">Code: ${exam.code}</span></div><i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'exam', '${exam.code}')"></i></div>`;
-                        });
-                    }
+                    currentFoldersData = data.folders || [];
+                    currentFilesData = data.files || [];
+                    currentExamsData = data.exams || [];
+                    renderDriveUI();
                 }
             } catch(e) { console.error(e); }
+        }
+
+        function renderDriveUI() {
+            const folderBox = document.getElementById('drive-folder-container');
+            const fileBox = document.getElementById('drive-file-container');
+            folderBox.innerHTML = ''; fileBox.innerHTML = '';
+
+            // 1. Render Folders with Reorder (Up/Down) buttons
+            currentFoldersData.forEach((f, idx) => {
+                folderBox.innerHTML += `
+                    <div class="folder-card">
+                        <div onclick="openDriveFolder(${f.id}, '${f.name.replace(/'/g, "\\'")}')" style="display:flex; align-items:center; cursor:pointer; flex:1;">
+                            <i class="fas fa-folder" style="color:#f59e0b; margin-right:8px;"></i> <span>${f.name}</span>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            ${idx > 0 ? `<button onclick="reorderItem('folder', ${idx}, 'up')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Up">⬆️</button>` : ''}
+                            ${idx < currentFoldersData.length - 1 ? `<button onclick="reorderItem('folder', ${idx}, 'down')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Down">⬇️</button>` : ''}
+                            <i class="fas fa-arrows-alt" style="color:#3b82f6; cursor:pointer;" onclick="openMoveModal('folder', ${f.id})" title="Move to folder"></i>
+                            <i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'folder', ${f.id})" title="Delete"></i>
+                        </div>
+                    </div>`;
+            });
+
+            // 2. Render Files or Exams with Reorder buttons
+            if (currentDriveType === 'content') {
+                currentFilesData.forEach((file, idx) => {
+                    fileBox.innerHTML += `
+                        <div class="file-card">
+                            <div><strong>${file.title}</strong><br><span style="font-size:0.75rem;">${file.type}</span></div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                ${idx > 0 ? `<button onclick="reorderItem('file', ${idx}, 'up')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Up">⬆️</button>` : ''}
+                                ${idx < currentFilesData.length - 1 ? `<button onclick="reorderItem('file', ${idx}, 'down')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Down">⬇️</button>` : ''}
+                                <a href="${file.file_url}" target="_blank" title="View"><i class="fas fa-eye"></i></a>
+                                <i class="fas fa-arrows-alt" style="color:#3b82f6; cursor:pointer;" onclick="openMoveModal('file', ${file.id})" title="Move"></i>
+                                <i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'file', ${file.id})" title="Delete"></i>
+                            </div>
+                        </div>`;
+                });
+            } else if (currentDriveType === 'exam') {
+                currentExamsData.forEach((exam, idx) => {
+                    fileBox.innerHTML += `
+                        <div class="file-card">
+                            <div><strong>${exam.name}</strong><br><span style="font-size:0.75rem; color:#16a34a;">Code: ${exam.code}</span></div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                ${idx > 0 ? `<button onclick="reorderItem('exam', ${idx}, 'up')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Up">⬆️</button>` : ''}
+                                ${idx < currentExamsData.length - 1 ? `<button onclick="reorderItem('exam', ${idx}, 'down')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Down">⬇️</button>` : ''}
+                                <i class="fas fa-arrows-alt" style="color:#3b82f6; cursor:pointer;" onclick="openMoveModal('exam', '${exam.code}')" title="Move"></i>
+                                <i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'exam', '${exam.code}')" title="Delete"></i>
+                            </div>
+                        </div>`;
+                });
+            }
+        }
+
+        // 🆕 পজিশন বা সিরিয়াল বদলানোর ফাংশন (উপরে বা নিচে নেওয়া)
+        async function reorderItem(type, index, direction) {
+            let list = type === 'folder' ? currentFoldersData : (currentDriveType === 'content' ? currentFilesData : currentExamsData);
+            let targetIndex = direction === 'up' ? index - 1 : index + 1;
+            
+            if (targetIndex < 0 || targetIndex >= list.length) return;
+
+            // অ্যারের ভেতর পজিশন সওয়াপ করা
+            let temp = list[index];
+            list[index] = list[targetIndex];
+            list[targetIndex] = temp;
+
+            renderDriveUI();
+
+            // সার্ভারে নতুন পজিশন সেভ করা
+            let payloadItems = list.map((item, idx) => ({
+                type: type,
+                id: item.id || item.code,
+                position: idx
+            }));
+
+            try {
+                await fetch('/api/admin/update-position', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: payloadItems })
+                });
+            } catch(e) {
+                console.error("Failed to save order");
+            }
+        }
+
+        async function openMoveModal(type, id) {
+            itemToMove = { type: type, id: id };
+            const selectBox = document.getElementById('move-target-folder');
+            selectBox.innerHTML = '<option value="0">📁 Root Folder (Main)</option>';
+            
+            try {
+                const res = await fetch('/api/admin/get-drive-contents', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ parent_id: 0, folder_type: currentDriveType })
+                });
+                const data = await res.json();
+                if(data.success && data.folders) {
+                    data.folders.forEach(f => {
+                        if (type !== 'folder' || f.id !== id) {
+                            selectBox.innerHTML += `<option value="${f.id}">📂 ${f.name}</option>`;
+                        }
+                    });
+                }
+            } catch(e) {}
+
+            document.getElementById('move-modal').style.display = 'flex';
+        }
+
+        async function confirmMoveItem() {
+            const targetFolderId = document.getElementById('move-target-folder').value;
+            try {
+                const res = await fetch('/api/admin/move-item', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: itemToMove.type, id: itemToMove.id, new_folder_id: targetFolderId })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    closeAllModals();
+                    loadDriveContents();
+                    alert("Moved successfully!");
+                } else {
+                    alert("Failed to move item.");
+                }
+            } catch(e) {
+                alert("Server error.");
+            }
         }
 
         function openDriveFolder(folderId, folderName) { folderHistory.push({ id: currentFolderId, name: document.getElementById('current-path').innerText }); currentFolderId = folderId; document.getElementById('current-path').innerText = folderName; document.getElementById('up-folder-btn').style.display = 'inline-block'; loadDriveContents(); }
@@ -552,12 +692,11 @@ Ans: [Correct Option A/B/C/D]
             if(!name || !code || tempExamQuestions.length === 0) return;
 
             const teacherEmail = "dasbabu938207@gmail.com";
-            // 🆕 Passed negative marks to payload
             const payload = { exam_code: code, exam_name: name, timer: timer, negative_marks: negative, teacher_email: teacherEmail, folder_id: currentFolderId, questions: tempExamQuestions };
 
             try {
                 const res = await fetch('/api/create-exam', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                const data = await res.json();
+                const data = var_data = await res.json();
                 if(data.success) {
                     alert(`🎉 Exam created successfully!`); document.getElementById('back-btn').onclick = showDashboardMenu; openDrivePanel('exam', '📝 Create Exam Folders');
                 } else { alert("Failed to publish exam."); }
