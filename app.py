@@ -770,9 +770,6 @@ def check_login_status():
     data = request.get_json() or {}
     email = data.get('email')
     
-    if not email and 'user' in session:
-        email = session['user'].get('email')
-
     if not email:
         return jsonify({"logged_in": False})
         
@@ -780,22 +777,28 @@ def check_login_status():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT category, is_logged_in FROM users WHERE email = {ph}", (email,))
+        
+        # 🔴 আমরা এখন আর is_logged_in চেক করছি না, শুধু দেখছি ইমেইলটা ডেটাবেসে আছে কি না
+        cursor.execute(f"SELECT category, name FROM users WHERE email = {ph}", (email,))
         user = cursor.fetchone()
         conn.close()
         
         if user:
-            is_logged = user['is_logged_in'] if isinstance(user, dict) else user[1]
             role = user['category'] if isinstance(user, dict) else user[0]
-            if is_logged:
-                session.permanent = True
-                session['user'] = {'email': email, 'role': role}
-                return jsonify({
-                    "logged_in": True,
-                    "email": email,
-                    "role": role,
-                    "redirect_url": "/teacher_dashboard.html" if role.lower() == 'teacher' else "/student_dashboard.html"
-                })
+            name = user['name'] if isinstance(user, dict) else user[1]
+            
+            # সেশন আপডেট করে ড্যাশবোর্ডে পাঠিয়ে দেওয়া
+            session.permanent = True
+            session['user'] = {'email': email, 'role': role, 'name': name}
+            
+            return jsonify({
+                "logged_in": True,
+                "email": email,
+                "role": role,
+                "name": name,
+                "redirect_url": "/teacher_dashboard.html" if role.lower() == 'teacher' else "/student_dashboard.html"
+            })
+            
         return jsonify({"logged_in": False})
     except Exception as e:
         return jsonify({"logged_in": False})
