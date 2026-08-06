@@ -140,22 +140,6 @@ def handle_exception(e):
     if isinstance(e, HTTPException): return e
     session.pop('user', None); return redirect('/')
 
-@app.route('/logout')
-def logout():
-    user = session.get('user')
-    if user and 'email' in user:
-        try:
-            conn, db_type = get_db_connection()
-            cursor = conn.cursor()
-            ph = "%s" if db_type == 'postgres' else "?"
-            cursor.execute(f"UPDATE users SET is_logged_in = FALSE WHERE email = {ph}", (user['email'],))
-            conn.commit()
-            conn.close()
-        except Exception:
-            pass
-    session.pop('user', None)
-    return redirect('/')
-
 @app.route('/api/google-login', methods=['POST'])
 def google_login():
     data = request.get_json()
@@ -765,11 +749,20 @@ def update_profile():
     except Exception as e:
         return jsonify({"success": False, "error": "Database error occurred."}), 500
         
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    # 🔴 লগআউট হলে একটি স্পেশাল ফ্ল্যাগ নিয়ে ইনডেক্স পেজে যাবে, যাতে কুকি ক্লিয়ার করা যায়
+    return redirect('/?logout=1')
+
 @app.route('/api/check-login-status', methods=['POST'])
 def check_login_status():
     data = request.get_json() or {}
     email = data.get('email')
     
+    if not email and 'user' in session:
+        email = session['user'].get('email')
+
     if not email:
         return jsonify({"logged_in": False})
         
@@ -777,8 +770,7 @@ def check_login_status():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        
-        # 🔴 আমরা এখন আর is_logged_in চেক করছি না, শুধু দেখছি ইমেইলটা ডেটাবেসে আছে কি না
+        # 🔴 ডেটাবেস থেকে ইউজারের নাম ও ক্যাটাগরি আনছি
         cursor.execute(f"SELECT category, name FROM users WHERE email = {ph}", (email,))
         user = cursor.fetchone()
         conn.close()
@@ -787,7 +779,7 @@ def check_login_status():
             role = user['category'] if isinstance(user, dict) else user[0]
             name = user['name'] if isinstance(user, dict) else user[1]
             
-            # সেশন আপডেট করে ড্যাশবোর্ডে পাঠিয়ে দেওয়া
+            # 🔴 নতুন করে সেশন তৈরি করে ড্যাশবোর্ডে পাঠিয়ে দিচ্ছি
             session.permanent = True
             session['user'] = {'email': email, 'role': role, 'name': name}
             
