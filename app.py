@@ -42,21 +42,21 @@ def init_db():
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS users (email VARCHAR(255) PRIMARY KEY, name VARCHAR(255) NOT NULL, category VARCHAR(50) NOT NULL, last_notif_read TIMESTAMP DEFAULT '1970-01-01 00:00:00');
                 CREATE TABLE IF NOT EXISTS results (id SERIAL PRIMARY KEY, student_email VARCHAR(255) NOT NULL, exam_code VARCHAR(100) NOT NULL, exam_name VARCHAR(255) NOT NULL, score FLOAT NOT NULL, total_questions INT NOT NULL, date_taken TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-                CREATE TABLE IF NOT EXISTS exams (exam_code VARCHAR(100) PRIMARY KEY, exam_name VARCHAR(255) NOT NULL, teacher_email VARCHAR(255) NOT NULL, timer_minutes INT NOT NULL);
+                CREATE TABLE IF NOT EXISTS exams (exam_code VARCHAR(100) PRIMARY KEY, exam_name VARCHAR(255) NOT NULL, teacher_email VARCHAR(255) NOT NULL, timer_minutes INT NOT NULL, folder_id INT DEFAULT 0, negative_marks FLOAT DEFAULT 0.0, position INT DEFAULT 0);
                 CREATE TABLE IF NOT EXISTS questions (id SERIAL PRIMARY KEY, exam_code VARCHAR(100) REFERENCES exams(exam_code) ON DELETE CASCADE, question_text TEXT NOT NULL, option_a TEXT NOT NULL, option_b TEXT NOT NULL, option_c TEXT NOT NULL, option_d TEXT NOT NULL, correct_option VARCHAR(10) NOT NULL);
                 CREATE TABLE IF NOT EXISTS notifications (id SERIAL PRIMARY KEY, message TEXT NOT NULL, target_role VARCHAR(50) NOT NULL, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-                CREATE TABLE IF NOT EXISTS drive_folders (id SERIAL PRIMARY KEY, folder_name VARCHAR(255) NOT NULL, parent_id INT DEFAULT 0);
-                CREATE TABLE IF NOT EXISTS drive_files (id SERIAL PRIMARY KEY, folder_id INT NOT NULL, title VARCHAR(255) NOT NULL, file_url TEXT NOT NULL, resource_type VARCHAR(50) DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+                CREATE TABLE IF NOT EXISTS drive_folders (id SERIAL PRIMARY KEY, folder_name VARCHAR(255) NOT NULL, parent_id INT DEFAULT 0, folder_type VARCHAR(50) DEFAULT 'content', position INT DEFAULT 0);
+                CREATE TABLE IF NOT EXISTS drive_files (id SERIAL PRIMARY KEY, folder_id INT NOT NULL, title VARCHAR(255) NOT NULL, file_url TEXT NOT NULL, resource_type VARCHAR(50) DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, position INT DEFAULT 0);
             ''')
         else:
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, last_notif_read TIMESTAMP DEFAULT '1970-01-01 00:00:00');
                 CREATE TABLE IF NOT EXISTS results (id INTEGER PRIMARY KEY AUTOINCREMENT, student_email TEXT NOT NULL, exam_code TEXT NOT NULL, exam_name TEXT NOT NULL, score REAL NOT NULL, total_questions INTEGER NOT NULL, date_taken TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-                CREATE TABLE IF NOT EXISTS exams (exam_code TEXT PRIMARY KEY, exam_name TEXT NOT NULL, teacher_email TEXT NOT NULL, timer_minutes INTEGER NOT NULL);
+                CREATE TABLE IF NOT EXISTS exams (exam_code TEXT PRIMARY KEY, exam_name TEXT NOT NULL, teacher_email TEXT NOT NULL, timer_minutes INTEGER NOT NULL, folder_id INTEGER DEFAULT 0, negative_marks REAL DEFAULT 0.0, position INTEGER DEFAULT 0);
                 CREATE TABLE IF NOT EXISTS questions (id INTEGER PRIMARY KEY AUTOINCREMENT, exam_code TEXT, question_text TEXT NOT NULL, option_a TEXT NOT NULL, option_b TEXT NOT NULL, option_c TEXT NOT NULL, option_d TEXT NOT NULL, correct_option TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT NOT NULL, target_role TEXT NOT NULL, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-                CREATE TABLE IF NOT EXISTS drive_folders (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_name TEXT NOT NULL, parent_id INTEGER DEFAULT 0);
-                CREATE TABLE IF NOT EXISTS drive_files (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_id INTEGER NOT NULL, title TEXT NOT NULL, file_url TEXT NOT NULL, resource_type TEXT DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+                CREATE TABLE IF NOT EXISTS drive_folders (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_name TEXT NOT NULL, parent_id INTEGER DEFAULT 0, folder_type TEXT DEFAULT 'content', position INTEGER DEFAULT 0);
+                CREATE TABLE IF NOT EXISTS drive_files (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_id INTEGER NOT NULL, title TEXT NOT NULL, file_url TEXT NOT NULL, resource_type TEXT DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, position INTEGER DEFAULT 0);
             ''')
         conn.commit()
         
@@ -78,14 +78,30 @@ def init_db():
         except Exception:
             if db_type == 'postgres': conn.rollback()
             
-        # 🆕 Negative Marks Column
         try:
             cursor.execute("ALTER TABLE exams ADD COLUMN negative_marks FLOAT DEFAULT 0.0;")
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
             
-        # 🆕 Score column to FLOAT
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN position INT DEFAULT 0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+
+        try:
+            cursor.execute("ALTER TABLE drive_folders ADD COLUMN position INT DEFAULT 0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+
+        try:
+            cursor.execute("ALTER TABLE drive_files ADD COLUMN position INT DEFAULT 0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
         try:
             if db_type == 'postgres':
                 cursor.execute("ALTER TABLE results ALTER COLUMN score TYPE FLOAT;")
@@ -93,14 +109,12 @@ def init_db():
         except Exception:
             if db_type == 'postgres': conn.rollback()
 
-        # 🆕 Login Status Column for Permanent Session
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN is_logged_in BOOLEAN DEFAULT FALSE;")
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
 
-        # 🆕 Reviews Table Creation
         if db_type == 'postgres':
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS reviews (
@@ -124,25 +138,10 @@ def init_db():
                 );
             ''')
         conn.commit()
-        if db_type == 'postgres':
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS drive_folders (id SERIAL PRIMARY KEY, folder_name VARCHAR(255) NOT NULL, parent_id INT DEFAULT 0, folder_type VARCHAR(50) DEFAULT 'content', position INT DEFAULT 0);
-                CREATE TABLE IF NOT EXISTS drive_files (id SERIAL PRIMARY KEY, folder_id INT NOT NULL, title VARCHAR(255) NOT NULL, file_url TEXT NOT NULL, resource_type VARCHAR(50) DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, position INT DEFAULT 0);
-                CREATE TABLE IF NOT EXISTS exams (exam_code VARCHAR(100) PRIMARY KEY, exam_name VARCHAR(255) NOT NULL, teacher_email VARCHAR(255) NOT NULL, timer_minutes INT NOT NULL, folder_id INT DEFAULT 0, negative_marks FLOAT DEFAULT 0.0, position INT DEFAULT 0);
-            ''')
-        else:
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS drive_folders (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_name TEXT NOT NULL, parent_id INTEGER DEFAULT 0, folder_type TEXT DEFAULT 'content', position INTEGER DEFAULT 0);
-                CREATE TABLE IF NOT EXISTS drive_files (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_id INTEGER NOT NULL, title TEXT NOT NULL, file_url TEXT NOT NULL, resource_type TEXT DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, position INTEGER DEFAULT 0);
-                CREATE TABLE IF NOT EXISTS exams (exam_code TEXT PRIMARY KEY, exam_name TEXT NOT NULL, teacher_email TEXT NOT NULL, timer_minutes INTEGER NOT NULL, folder_id INTEGER DEFAULT 0, negative_marks REAL DEFAULT 0.0, position INTEGER DEFAULT 0);
-            ''')
-        conn.commit()
-        
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
 
-        
 init_db()
 
 @app.route('/')
@@ -194,7 +193,6 @@ def google_login():
             user_role = user['category'] if isinstance(user, dict) else user[1]
             user_name = user['name'] if isinstance(user, dict) else user[0]
             
-            # 🆕 ডেটাবেসে লগইন স্ট্যাটাস True করা হলো
             cursor.execute(f"UPDATE users SET is_logged_in = TRUE WHERE email = {ph}", (email,))
             conn.commit()
 
@@ -219,7 +217,6 @@ def complete_signup():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        # 🆕 is_logged_in = TRUE সহ ইনসার্ট করা হলো
         cursor.execute(f"INSERT INTO users (email, name, category, photo_url, is_logged_in) VALUES ({ph}, {ph}, {ph}, {ph}, TRUE)", (email, name, role, photo_url))
         conn.commit()
         conn.close()
@@ -272,7 +269,6 @@ def get_exam_questions():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        # 🆕 Fetch negative_marks
         cursor.execute(f"SELECT exam_name, timer_minutes, negative_marks FROM exams WHERE exam_code = {ph}", (exam_code,))
         exam_info = cursor.fetchone()
         if not exam_info:
@@ -285,7 +281,6 @@ def get_exam_questions():
 
         questions_list = [{"id": q["id"], "q_text": q["question_text"], "opt_a": q["option_a"], "opt_b": q["option_b"], "opt_c": q["option_c"], "opt_d": q["option_d"], "correct": q["correct_option"]} for q in questions_rows]
         
-        # safely extract variables
         if isinstance(exam_info, dict):
             e_name = exam_info['exam_name']
             e_time = exam_info['timer_minutes']
@@ -351,7 +346,6 @@ def create_exam_api():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # 🆕 Insert negative marks
         cursor.execute(f"INSERT INTO exams (exam_code, exam_name, teacher_email, timer_minutes, folder_id, negative_marks) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
                        (exam_code, exam_name, teacher_email, timer, folder_id, negative_marks))
         
@@ -416,7 +410,6 @@ def get_teacher_analysis():
         top_students = sorted_students[:10]
         bottom_students = sorted_students[-10:] if len(sorted_students) > 10 else sorted_students[::-1]
         
-        # Safe chart array for float scores
         chart_data = [0] * (total_q + 1)
         for s in student_data:
             int_score = int(max(0, s['score']))
@@ -626,15 +619,15 @@ def get_drive_contents_api():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT id, folder_name FROM drive_folders WHERE parent_id = {ph} AND folder_type = {ph} ORDER BY id DESC", (parent_id, folder_type))
+        cursor.execute(f"SELECT id, folder_name FROM drive_folders WHERE parent_id = {ph} AND folder_type = {ph} ORDER BY position ASC, id DESC", (parent_id, folder_type))
         folders = [{"id": r["id"], "name": r["folder_name"]} for r in cursor.fetchall()]
         if folder_type == 'content':
-            cursor.execute(f"SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = {ph} ORDER BY id DESC", (parent_id,))
+            cursor.execute(f"SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = {ph} ORDER BY position ASC, id DESC", (parent_id,))
             files = [{"id": r["id"], "title": r["title"], "file_url": r["file_url"], "type": r["resource_type"], "date": str(r["date_uploaded"]).split(' ')[0]} for r in cursor.fetchall()]
             exams = []
         else:
             files = []
-            cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY exam_code DESC", (parent_id,))
+            cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY position ASC, exam_code DESC", (parent_id,))
             exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"]} for r in cursor.fetchall()]
         conn.close()
         return jsonify({"success": True, "folders": folders, "files": files, "exams": exams})
@@ -702,7 +695,7 @@ def delete_drive_item():
 
 @app.route('/api/upload-profile-pic', methods=['POST'])
 def upload_profile_pic():
-    return jsonify({"success": True}) # Legacy fallback, profile pics removed.
+    return jsonify({"success": True})
         
 @app.route('/api/get-profile-data', methods=['POST'])
 def get_profile_data():
@@ -791,7 +784,6 @@ def update_profile():
 @app.route('/logout')
 def logout():
     session.pop('user', None)
-    # 🔴 লগআউট হলে একটি স্পেশাল ফ্ল্যাগ নিয়ে ইনডেক্স পেজে যাবে, যাতে কুকি ক্লিয়ার করা যায়
     return redirect('/?logout=1')
 
 @app.route('/api/check-login-status', methods=['POST'])
@@ -809,7 +801,6 @@ def check_login_status():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        # 🔴 ডেটাবেস থেকে ইউজারের নাম ও ক্যাটাগরি আনছি
         cursor.execute(f"SELECT category, name FROM users WHERE email = {ph}", (email,))
         user = cursor.fetchone()
         conn.close()
@@ -818,7 +809,6 @@ def check_login_status():
             role = user['category'] if isinstance(user, dict) else user[0]
             name = user['name'] if isinstance(user, dict) else user[1]
             
-            # 🔴 নতুন করে সেশন তৈরি করে ড্যাশবোর্ডে পাঠিয়ে দিচ্ছি
             session.permanent = True
             session['user'] = {'email': email, 'role': role, 'name': name}
             
@@ -893,36 +883,10 @@ def get_reviews():
     except Exception as e:
         return jsonify({"success": False, "error": "Failed to fetch reviews."}), 500
 
-@app.route('/api/admin/get-drive-contents', methods=['POST'])
-@app.route('/api/get-student-drive-contents', methods=['POST'])
-def get_drive_contents_api():
-    data = request.get_json() if request.is_json else {}
-    parent_id = data.get('parent_id', 0)
-    folder_type = data.get('folder_type', 'content') 
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        # 🆕 ORDER BY position ASC যুক্ত করা হলো যাতে পজিশন অনুযায়ী সাজানো থাকে
-        cursor.execute(f"SELECT id, folder_name FROM drive_folders WHERE parent_id = {ph} AND folder_type = {ph} ORDER BY position ASC, id DESC", (parent_id, folder_type))
-        folders = [{"id": r["id"], "name": r["folder_name"]} for r in cursor.fetchall()]
-        if folder_type == 'content':
-            cursor.execute(f"SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = {ph} ORDER BY position ASC, id DESC", (parent_id,))
-            files = [{"id": r["id"], "title": r["title"], "file_url": r["file_url"], "type": r["resource_type"], "date": str(r["date_uploaded"]).split(' ')[0]} for r in cursor.fetchall()]
-            exams = []
-        else:
-            files = []
-            cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY position ASC, exam_code DESC", (parent_id,))
-            exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"]} for r in cursor.fetchall()]
-        conn.close()
-        return jsonify({"success": True, "folders": folders, "files": files, "exams": exams})
-    except Exception as e:
-        return jsonify({"success": False, "error": "Database error"}), 500
-
 @app.route('/api/admin/move-item', methods=['POST'])
 def move_drive_item():
     data = request.get_json()
-    item_type = data.get('type')  # 'folder', 'file', বা 'exam'
+    item_type = data.get('type')
     item_id = data.get('id')
     new_folder_id = data.get('new_folder_id', 0)
     
@@ -944,11 +908,10 @@ def move_drive_item():
     except Exception as e:
         return jsonify({"success": False, "error": "Failed to move item."}), 500
 
-# 🆕 নতুন পজিশন বা সিরিয়াল পরিবর্তনের API
 @app.route('/api/admin/update-position', methods=['POST'])
 def update_item_position():
     data = request.get_json()
-    items = data.get('items', []) # [{'type': 'folder', 'id': 1, 'position': 0}, ...]
+    items = data.get('items', [])
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
@@ -971,7 +934,7 @@ def update_item_position():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": "Failed to update order."}), 500
-        
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
