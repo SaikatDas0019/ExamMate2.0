@@ -105,22 +105,19 @@
                 
                 <div class="prompt-code">
                     <button onclick="copyPrompt('ai-prompt', 'copy-btn')" id="copy-btn" class="copy-btn"><i class="fas fa-copy"></i> Copy Prompt</button>
-                    <code id="ai-prompt">You are an expert Math text formatter. Please read the provided text/images and extract the multiple-choice questions. 
-You MUST format them EXACTLY like this:
-
-1. [Question Text]
+                    <code id="ai-prompt">​You are an expert Math text formatter and AI assistant. Please read the provided text/images and extract the multiple-choice questions with absolute accuracy.
+​You MUST format the extracted output EXACTLY like this:
+​[Question Text with all numbers, variables, and math symbols enclosed in single dollar signs]
 A) [Option A]
 B) [Option B]
 C) [Option C]
 D) [Option D]
 Ans: [Correct Option A/B/C/D]
-
-CRITICAL RULES FOR MATH:
-1. You MUST enclose ALL numbers, formulas, fractions, and math symbols inside single dollar signs ($...$). Example: $\frac{1}{2}$, $x^2$, $5$.
-2. ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped! You must write $\frac{a}{b}$ (NOT rac), $\sin$ (NOT sin), $\tan$ (NOT an), $\sqrt{x}$ (NOT sqrt).
-3. Do NOT use double dollar signs ($$).
-4. Keep the Bengali/English text outside the dollar signs. Do not use markdown code blocks.</code>
-                </div>
+​CRITICAL RULES FOR MATH & FORMATTING:
+1. ​You MUST enclose ALL numbers, formulas, fractions, variables, and math symbols strictly inside single dollar signs (...). Example: \frac{1}{2}, x^2, 5.
+2. ​ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped! You must write \frac{a}{b},\sin,\cos,\tan,\sqrt{x}. 3. Do NOT use double dollar signs ($$).
+3. ​Keep the regular text (Bengali/English) completely outside the dollar signs. Do not use markdown code blocks.
+4. ​Once the formatting is complete, generate and provide the final output inside a downloadable or copyable .txt file format.                </div>
             </div>
 
             <div class="input-group">
