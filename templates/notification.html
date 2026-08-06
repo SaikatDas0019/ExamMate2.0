@@ -71,7 +71,7 @@
         }
 
         .notif-title { font-size: 0.95rem; font-weight: 600; color: #1e293b; margin-bottom: 6px; padding-right: 15px; line-height: 1.4; }
-        .notif-date { font-size: 0.75rem; color: #64748b; }
+        .notif-date { font-size: 0.75rem; color: #64748b; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -114,9 +114,16 @@
                         const card = document.createElement('div');
                         card.className = `notif-card ${n.is_unread ? 'is-new' : ''}`;
                         
+                        // 🆕 নোটিফিকেশনের সাথে লিংক থাকলে সুন্দর বাটন তৈরি করার কোড
+                        let linkHtml = n.link_url ? `
+                            <br>
+                            <a href="${n.link_url}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; background: #22c55e; color: #ffffff; padding: 6px 14px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: bold; box-shadow: 0 2px 5px rgba(34,197,94,0.3);">
+                                <i class="fas fa-external-link-alt"></i> Open Attached Link
+                            </a>` : '';
+                        
                         card.innerHTML = `
                             ${n.is_unread ? '<span class="green-dot" title="New Notification"></span>' : ''}
-                            <div class="notif-title">${escapeHTML(n.message)}</div>
+                            <div class="notif-title">${escapeHTML(n.message)} ${linkHtml}</div>
                             <div class="notif-date"><i class="far fa-clock"></i> ${n.date}</div>
                         `;
                         container.appendChild(card);
@@ -151,12 +158,6 @@
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
         }
-        // নোটিফিকেশন কার্ড তৈরির সময় লিংক থাকলে তা দেখানোর কোড:
-        let linkHtml = n.link_url ? `<br><a href="${n.link_url}" target="_blank" style="display:inline-block; margin-top:8px; background:#22c55e; color:#white; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem; font-weight:bold;"><i class="fas fa-external-link-alt"></i> Open Attached Link</a>` : '';
-
-        // এটি মেসেজ ববলের ভেতরে প্রিন্ট হবে:
-        // ${n.message} ${linkHtml}
-
     </script>
 </body>
 </html>
