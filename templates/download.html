@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Download App</title>
+    <title>ExamMate | Download App & Reviews</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -15,7 +15,8 @@
         }
         .container { padding: 2rem; max-width: 900px; width: 100%; box-sizing: border-box; text-align: center; }
         
-        .logo { width: 120px; height: 120px; margin-bottom: 1rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(34, 192, 93, 0.2); }
+        /* 🔴 আপডেট করা লোগো নেম */
+        .logo { width: 120px; height: 120px; margin-bottom: 1rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(34, 192, 93, 0.2); object-fit: contain; }
         .header-section h1 { margin: 0 0 0.5rem 0; color: #22c05d; font-size: 3.2rem; letter-spacing: -0.03em; }
         .header-section p { margin: 0 0 2rem 0; color: #c8d3ea; font-size: 1.2rem; }
 
@@ -54,13 +55,32 @@
         .feature-box ul { padding-left: 20px; margin: 0; color: #c8d3ea; font-size: 1rem; line-height: 1.8; }
         .feature-box ul li { margin-bottom: 10px; }
 
+        /* Review Form Section */
+        .review-form-card {
+            background: rgba(17, 29, 52, 0.5); border-radius: 20px; padding: 25px;
+            margin-bottom: 2.5rem; border: 1px solid rgba(255, 255, 255, 0.1); text-align: left;
+        }
+        .review-form-card h3 { margin-top: 0; color: #81c784; font-size: 1.3rem; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #c8d3ea; font-size: 0.95rem; }
+        .form-control {
+            width: 100%; padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3); color: #fff; font-size: 1rem; box-sizing: border-box;
+        }
+        .star-rating-select { font-size: 1.5rem; color: #f59e0b; cursor: pointer; display: flex; gap: 5px; }
+        .btn-submit-review {
+            background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 20px;
+            font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .btn-submit-review:hover { background: #2563eb; }
+
         /* Reviews Section */
         .reviews-section { margin-top: 2rem; }
         .rating-summary { margin-bottom: 2rem; }
         .rating-summary .stars { color: #f59e0b; font-size: 1.8rem; letter-spacing: 2px; }
         .rating-summary p { font-size: 1.1rem; color: #c8d3ea; margin-top: 5px; }
 
-        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; text-align: left; }
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; text-align: left; }
         
         .review-card {
             background: rgba(17, 29, 52, 0.3); padding: 1.5rem; border-radius: 15px; 
@@ -81,8 +101,8 @@
 <body>
 
     <div class="container">
-        <!-- Logo -->
-        <img src="/static/24744.png" alt="ExamMate Logo" class="logo">
+        <!-- 🔴 আপডেট করা লোগো নাম -->
+        <img src="/static/24741.png" alt="ExamMate Logo" class="logo">
         
         <div class="header-section">
             <h1>ExamMate</h1>
@@ -92,8 +112,9 @@
         <!-- Download Section -->
         <div class="download-card">
             <h2 style="margin-top: 0; color: #f2f7ff; font-size: 1.8rem;">Ready to Boost Your Preparation?</h2>
-            <p style="color: #c8d3ea; margin-bottom: 2rem; font-size: 1.1rem;">Download the official Android app now and join thousands of students and teachers.</p>
+            <p style="color: #c8d3ea; margin-bottom: 2rem; font-size: 1.1rem;">Download the official Android app now and join students and teachers.</p>
             
+            <!-- 🔴 আপডেট করা এপিকে ফাইলের নাম -->
             <a href="/static/app-release.apk" download class="btn-download">
                 <i class="fab fa-android"></i> Download APK for Free
             </a>
@@ -124,59 +145,57 @@
             </div>
         </div>
 
-        <!-- Reviews & Ratings Section -->
+        <!-- 🔴 কাস্টম রিভিউ দেয়ার ফর্ম -->
+        <div class="review-form-card">
+            <h3><i class="fas fa-pen-nib"></i> Leave Your Review</h3>
+            <form id="reviewForm">
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label>Your Name</label>
+                        <input type="text" id="revName" class="form-control" placeholder="e.g. Rahul Sharma" required>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label>Your Role</label>
+                        <select id="revRole" class="form-control">
+                            <option value="Student">Student</option>
+                            <option value="Teacher">Teacher</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Rating</label>
+                    <div class="star-rating-select" id="starContainer">
+                        <i class="fas fa-star" data-val="1"></i>
+                        <i class="fas fa-star" data-val="2"></i>
+                        <i class="fas fa-star" data-val="3"></i>
+                        <i class="fas fa-star" data-val="4"></i>
+                        <i class="fas fa-star" data-val="5"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Your Feedback</label>
+                    <textarea id="revText" class="form-control" rows="3" placeholder="Write your experience with ExamMate..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit-review">Submit Review</button>
+            </form>
+        </div>
+
+        <!-- 🔴 লাইভ রিভিউ এবং রেটিং সেকশন -->
         <div class="reviews-section">
-            <h2 class="section-title">What Our Users Say</h2>
+            <h2 class="section-title">User Reviews & Ratings</h2>
             
             <div class="rating-summary">
-                <div class="stars">
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                <div class="stars" id="avgStars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                 </div>
-                <p><strong>4.8/5</strong> Average Rating from early users</p>
+                <p><strong id="avgScore">5.0</strong>/5 Based on <span id="totalCount">0</span> review(s)</p>
             </div>
 
-            <div class="reviews-grid">
-                <!-- Review 1 -->
-                <div class="review-card">
-                    <i class="fas fa-quote-right quote"></i>
-                    <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                    <p class="review-text">"The timer feature is a game-changer! It feels exactly like sitting in the real exam hall. My time management has improved massively."</p>
-                    <div class="reviewer-info">
-                        <div class="avatar">R</div>
-                        <div>
-                            <span class="name">Rahul S.</span>
-                            <span class="role">Student / SSC Aspirant</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Review 2 -->
-                <div class="review-card">
-                    <i class="fas fa-quote-right quote"></i>
-                    <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                    <p class="review-text">"As a teacher, setting up questions used to take hours. The AI PDF extractor is pure magic! Plus, the analytics dashboard helps me track weak students easily."</p>
-                    <div class="reviewer-info">
-                        <div class="avatar">A</div>
-                        <div>
-                            <span class="name">Anjali Das</span>
-                            <span class="role">Teacher / Educator</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Review 3 -->
-                <div class="review-card">
-                    <i class="fas fa-quote-right quote"></i>
-                    <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
-                    <p class="review-text">"I love the instant leaderboard! Seeing my rank right after finishing the exam keeps me motivated to study harder for the next test."</p>
-                    <div class="reviewer-info">
-                        <div class="avatar">S</div>
-                        <div>
-                            <span class="name">Souvik K.</span>
-                            <span class="role">Student</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="reviews-grid" id="reviewsGrid">
+                <!-- রিভিউগুলো ডাইনামিক্যালি লোড হবে -->
             </div>
         </div>
 
@@ -186,6 +205,106 @@
             <p>Designed for better education.</p>
         </footer>
     </div>
+
+    <!-- Review JS Logic -->
+    <script>
+        let selectedRating = 5;
+
+        // স্টার সিলেক্ট করার লজিক
+        const stars = document.querySelectorAll('#starContainer i');
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                selectedRating = parseInt(star.getAttribute('data-val'));
+                updateStarDisplay();
+            });
+        });
+
+        function updateStarDisplay() {
+            stars.forEach((star, idx) => {
+                if (idx < selectedRating) {
+                    star.className = 'fas fa-star';
+                } else {
+                    star.className = 'far fa-star';
+                }
+            });
+        }
+
+        // লাইভ রিভিউ লোড করার ফাংশন
+        async function loadReviews() {
+            try {
+                const res = await fetch('/api/get-reviews');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('avgScore').innerText = data.avg_rating;
+                    document.getElementById('totalCount').innerText = data.total_reviews;
+                    
+                    const grid = document.getElementById('reviewsGrid');
+                    grid.innerHTML = '';
+
+                    if (data.reviews.length === 0) {
+                        grid.innerHTML = '<p style="color: gray; grid-column: 1/-1; text-align: center;">No reviews yet. Be the first to leave one!</p>';
+                        return;
+                    }
+
+                    data.reviews.forEach(r => {
+                        let starHtml = '';
+                        for(let i=1; i<=5; i++) {
+                            starHtml += i <= r.rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+                        }
+
+                        const card = `
+                            <div class="review-card">
+                                <i class="fas fa-quote-right quote"></i>
+                                <div class="review-stars">${starHtml}</div>
+                                <p class="review-text">"${r.text}"</p>
+                                <div class="reviewer-info">
+                                    <div class="avatar">${r.name.charAt(0).toUpperCase()}</div>
+                                    <div>
+                                        <span class="name">${r.name}</span>
+                                        <span class="role">${r.role} • ${r.date}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        grid.innerHTML += card;
+                    });
+                }
+            } catch (e) {
+                console.log("Error loading reviews:", e);
+            }
+        }
+
+        // ফর্ম সাবমিট
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('revName').value;
+            const role = document.getElementById('revRole').value;
+            const text = document.getElementById('revText').value;
+
+            try {
+                const res = await fetch('/api/submit-review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, role, rating: selectedRating, text })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Thank you for your feedback!');
+                    document.getElementById('reviewForm').reset();
+                    selectedRating = 5;
+                    updateStarDisplay();
+                    loadReviews(); // লাইভ আপডেট
+                } else {
+                    alert(data.error || 'Failed to submit review.');
+                }
+            } catch (e) {
+                alert('Error submitting review.');
+            }
+        });
+
+        // পেজ লোড হলেই রিভিউ নিয়ে আসবে
+        window.addEventListener('DOMContentLoaded', loadReviews);
+    </script>
 
 </body>
 </html>
