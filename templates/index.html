@@ -115,10 +115,10 @@
         </div>
     </div>
 
-    <!-- Firebase Authentication SDK -->
+        <!-- Firebase Authentication SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
@@ -131,40 +131,44 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        
+        // 🔴 ফায়ারবেসের পার্মানেন্ট সেশন চালু রাখা
+        setPersistence(auth, browserLocalPersistence).catch((err) => console.log(err));
+
         const provider = new GoogleAuthProvider();
 
-        // 🔴 অ্যাপ ওপেন হওয়ামাত্র লোডিং স্ক্রিন দেখাবে এবং ডেটাবেস থেকে is_logged_in চেক করবে
-        window.addEventListener('DOMContentLoaded', async () => {
-            const savedEmail = localStorage.getItem('userEmail');
-            
-            if (savedEmail) {
+        const loadingScreen = document.getElementById('loading-screen');
+        const mainContent = document.getElementById('main-content');
+
+        // 🔴 অ্যাপ ওপেন হলে ফায়ারবেসকে জিজ্ঞেস করা ইউজার লগইন আছে কি না
+        onAuthStateChanged(auth, async (user) => {
+            if (user && user.email) {
                 try {
+                    // ব্যাকএন্ডে চেক করা যে এই ইমেইল আমাদের ডেটাবেসে আছে কি না
                     const response = await fetch('/api/check-login-status', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: savedEmail })
+                        body: JSON.stringify({ email: user.email })
                     });
                     const data = await response.json();
                     
                     if (data.logged_in) {
-                        // যদি is_logged_in = true হয়, তবে সরাসরি ড্যাশবোর্ডে চলে যাবে
+                        localStorage.setItem('userEmail', data.email);
+                        localStorage.setItem('userName', data.name);
+                        localStorage.setItem('user', JSON.stringify({email: data.email, name: data.name, role: data.role}));
                         window.location.href = data.redirect_url;
                         return;
                     }
                 } catch (e) {
-                    console.log("Status check error:", e);
+                    console.log("Check error", e);
                 }
             }
-
-            // যদি is_logged_in = false হয় অথবা ইমেল না থাকে, তবে লোডিং স্ক্রিন সরিয়ে মূল ইনডেক্স পেজ দেখাবে
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('user');
             
-            const loadingScreen = document.getElementById('loading-screen');
+            // যদি ফায়ারবেসে লগইন না থাকে বা ডেটাবেসে না থাকে, তবে ইনডেক্স পেজ দেখাও
             loadingScreen.style.opacity = '0';
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
-                document.getElementById('main-content').style.display = 'flex';
+                mainContent.style.display = 'flex';
             }, 300);
         });
 
@@ -201,30 +205,21 @@
                         window.location.href = data.redirect_url;
                     }
                 } else {
-                    const errorBox = document.getElementById('error-msg');
-                    errorBox.innerText = "Authentication Failed: " + data.error;
-                    errorBox.style.display = 'block';
+                    alert("Login failed: " + data.error);
                 }
             }
         }).catch((error) => {
             console.error("Redirect Error:", error);
-            const errorBox = document.getElementById('error-msg');
-            errorBox.innerText = "Google Sign-In failed: " + error.message;
-            errorBox.style.display = 'block';
         });
 
         document.getElementById('btn-google-login').addEventListener('click', async () => {
-            const errorBox = document.getElementById('error-msg');
-            errorBox.style.display = 'none';
-
             try {
                 await signInWithRedirect(auth, provider);
             } catch (error) {
-                console.error("Firebase Login Error:", error);
-                errorBox.innerText = "Google Sign-In failed or was cancelled.";
-                errorBox.style.display = 'block';
+                alert("Sign-In failed.");
             }
         });
     </script>
+
 </body>
 </html>
