@@ -14,7 +14,6 @@
             margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
-        /* 🔴 নতুন লোডিং বা স্পিনার স্ক্রিন স্টাইল */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #05070f; display: flex; flex-direction: column;
@@ -29,11 +28,9 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { font-size: 1.1rem; color: #c8d3ea; font-weight: 600; letter-spacing: 0.5px; }
 
-        /* মেইন কন্টেন্ট যা শুরুতে লুকিয়ে থাকবে যতক্ষণ না স্ট্যাটাস চেক শেষ হয় */
         #main-content { display: none; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
         .container { padding: 2rem; max-width: 600px; width: 100%; box-sizing: border-box; }
-        
         .header-section { text-align: center; margin-bottom: 2rem; }
         .header-section h1 { margin: 0 0 0.35rem 0; color: #f5f9ff; font-size: 2.6rem; letter-spacing: -0.03em; }
         .header-section p { margin: 0; color: #c8d3ea; font-size: 1.05rem; }
@@ -45,7 +42,6 @@
         }
         .auth-card h2 { margin: 0 0 1.5rem 0; color: #f2f7ff; font-size: 1.4rem; }
         
-        /* Custom Google Button */
         .btn-google { 
             width: 100%; max-width: 320px; margin: 0 auto;
             background: #ffffff; color: #374151; border: none; 
@@ -53,9 +49,7 @@
             cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;
             gap: 10px; box-shadow: 0 4px 15px rgba(255,255,255,0.1);
         }
-        .btn-google:hover { 
-            background: #f9fafb; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,255,255,0.2); 
-        }
+        .btn-google:hover { background: #f9fafb; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,255,255,0.2); }
         .btn-google img { width: 22px; height: 22px; }
 
         .divider { height: 1px; background: rgba(255,255,255,0.2); margin: 2.5rem 0 1.5rem 0; }
@@ -69,21 +63,17 @@
         .feature-text strong { color: #f4fbff; font-size: 1rem; }
         .feature-text p { margin: 5px 0 0 0; color: #c8d3ea; font-size: 0.85rem; }
 
-        #error-msg {
-            color: #ef4444; font-size: 0.95rem; margin-top: 15px; display: none; font-weight: bold;
-        }
+        #error-msg { color: #ef4444; font-size: 0.95rem; margin-top: 15px; display: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- 🔴 লোডিং বা প্রোগ্রেস ইন্টারফেস -->
     <div id="loading-screen">
         <div class="spinner"></div>
-        <div class="loading-text">Checking session, please wait...</div>
+        <div class="loading-text">ExamMate is starting...</div>
     </div>
 
-    <!-- মূল পেজের কন্টেন্ট -->
-    <div id="main-content" style="display: none;">
+    <div id="main-content">
         <div class="container">
             <div class="header-section">
                 <h1>ExamMate</h1>
@@ -93,7 +83,6 @@
             <div class="auth-card">
                 <h2>Get Started with ExamMate</h2>
                 
-                <!-- Firebase Custom Google Button -->
                 <button type="button" class="btn-google" id="btn-google-login">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo">
                     Continue with Google
@@ -115,10 +104,9 @@
         </div>
     </div>
 
-        <!-- Firebase Authentication SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
@@ -131,40 +119,76 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        
-        // 🔴 ফায়ারবেসের পার্মানেন্ট সেশন চালু রাখা
-        setPersistence(auth, browserLocalPersistence).catch((err) => console.log(err));
-
         const provider = new GoogleAuthProvider();
 
-        const loadingScreen = document.getElementById('loading-screen');
-        const mainContent = document.getElementById('main-content');
+        // 🔴 Cookie Helper Functions (ব্রাউজার কেটে দিলেও সেশন ধরে রাখবে)
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                let date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+        }
 
-        // 🔴 অ্যাপ ওপেন হলে ফায়ারবেসকে জিজ্ঞেস করা ইউজার লগইন আছে কি না
-        onAuthStateChanged(auth, async (user) => {
-            if (user && user.email) {
+        function getCookie(name) {
+            let nameEQ = name + "=";
+            let ca = document.cookie.split(';');
+            for(let i=0;i < ca.length;i++) {
+                let c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+
+        function saveSessionLocally(email, name, role) {
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userName', name);
+            localStorage.setItem('user', JSON.stringify({email: email, name: name, role: role}));
+            setCookie('userEmail', email, 365); // 1 বছরের জন্য কুকি সেভ
+        }
+
+        function clearSession() {
+            localStorage.clear();
+            setCookie('userEmail', '', -1);
+        }
+
+        // 🔴 অ্যাপ ওপেন হওয়ামাত্র অটো-লগইন চেক
+        window.addEventListener('DOMContentLoaded', async () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const mainContent = document.getElementById('main-content');
+            
+            // ১. চেক করা যে ইউজার নিজে থেকে লগআউট করেছে কি না
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('logout') === '1') {
+                clearSession();
+                window.history.replaceState({}, document.title, "/"); // URL থেকে logout=1 সরিয়ে দেওয়া
+            }
+
+            // ২. LocalStorage অথবা Cookie থেকে ইমেইল বের করা
+            const savedEmail = localStorage.getItem('userEmail') || getCookie('userEmail');
+            
+            if (savedEmail) {
                 try {
-                    // ব্যাকএন্ডে চেক করা যে এই ইমেইল আমাদের ডেটাবেসে আছে কি না
                     const response = await fetch('/api/check-login-status', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: user.email })
+                        body: JSON.stringify({ email: savedEmail })
                     });
                     const data = await response.json();
                     
                     if (data.logged_in) {
-                        localStorage.setItem('userEmail', data.email);
-                        localStorage.setItem('userName', data.name);
-                        localStorage.setItem('user', JSON.stringify({email: data.email, name: data.name, role: data.role}));
-                        window.location.href = data.redirect_url;
-                        return;
+                        saveSessionLocally(data.email, data.name, data.role);
+                        window.location.replace(data.redirect_url);
+                        return; // ড্যাশবোর্ডে চলে যাবে, নিচের কোড রান হবে না
                     }
-                } catch (e) {
-                    console.log("Check error", e);
-                }
+                } catch (e) { console.log("Status check error:", e); }
             }
-            
-            // যদি ফায়ারবেসে লগইন না থাকে বা ডেটাবেসে না থাকে, তবে ইনডেক্স পেজ দেখাও
+
+            // ৩. যদি ইমেইল না থাকে বা লগইন ফেল করে, তবে লগইন পেজ দেখাও
+            clearSession();
             loadingScreen.style.opacity = '0';
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
@@ -172,22 +196,17 @@
             }, 300);
         });
 
-        // Handle Redirect Result after Google Login
+        // 🔴 গুগল লগইন সম্পন্ন হওয়ার পর
         getRedirectResult(auth).then(async (result) => {
             if (result && result.user) {
                 const user = result.user;
-                const userData = {
-                    email: user.email,
-                    name: user.displayName,
-                    photo_url: user.photoURL
-                };
+                const userData = { email: user.email, name: user.displayName, photo_url: user.photoURL };
 
                 const response = await fetch('/api/google-login', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(userData)
                 });
-                
                 const data = await response.json();
 
                 if(data.success) {
@@ -195,21 +214,13 @@
                         localStorage.setItem('temp_user', JSON.stringify(userData));
                         window.location.href = '/setup_profile.html';
                     } else {
-                        localStorage.setItem('user', JSON.stringify({
-                            email: userData.email, 
-                            name: data.name, 
-                            role: data.role
-                        }));
-                        localStorage.setItem('userName', data.name);
-                        localStorage.setItem('userEmail', userData.email);
-                        window.location.href = data.redirect_url;
+                        saveSessionLocally(userData.email, data.name, data.role);
+                        window.location.replace(data.redirect_url);
                     }
                 } else {
                     alert("Login failed: " + data.error);
                 }
             }
-        }).catch((error) => {
-            console.error("Redirect Error:", error);
         });
 
         document.getElementById('btn-google-login').addEventListener('click', async () => {
@@ -220,6 +231,5 @@
             }
         });
     </script>
-
 </body>
 </html>
