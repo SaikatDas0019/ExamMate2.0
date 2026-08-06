@@ -104,6 +104,7 @@
         </div>
     </div>
 
+        <!-- Firebase Authentication SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -121,7 +122,6 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // 🔴 Cookie Helper Functions (ব্রাউজার কেটে দিলেও সেশন ধরে রাখবে)
         function setCookie(name, value, days) {
             let expires = "";
             if (days) {
@@ -147,7 +147,7 @@
             localStorage.setItem('userEmail', email);
             localStorage.setItem('userName', name);
             localStorage.setItem('user', JSON.stringify({email: email, name: name, role: role}));
-            setCookie('userEmail', email, 365); // 1 বছরের জন্য কুকি সেভ
+            setCookie('userEmail', email, 365); 
         }
 
         function clearSession() {
@@ -155,19 +155,51 @@
             setCookie('userEmail', '', -1);
         }
 
-        // 🔴 অ্যাপ ওপেন হওয়ামাত্র অটো-লগইন চেক
         window.addEventListener('DOMContentLoaded', async () => {
             const loadingScreen = document.getElementById('loading-screen');
             const mainContent = document.getElementById('main-content');
+            const loadingText = document.querySelector('.loading-text');
             
             // ১. চেক করা যে ইউজার নিজে থেকে লগআউট করেছে কি না
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('logout') === '1') {
                 clearSession();
-                window.history.replaceState({}, document.title, "/"); // URL থেকে logout=1 সরিয়ে দেওয়া
+                window.history.replaceState({}, document.title, "/");
             }
 
-            // ২. LocalStorage অথবা Cookie থেকে ইমেইল বের করা
+            // ২. সবার আগে চেক করা: গুগল লগইন থেকে রিডাইরেক্ট হয়ে ফিরেছে কি না?
+            try {
+                const result = await getRedirectResult(auth);
+                if (result && result.user) {
+                    loadingText.innerText = "Authenticating...";
+                    const user = result.user;
+                    const userData = { email: user.email, name: user.displayName, photo_url: user.photoURL };
+
+                    const response = await fetch('/api/google-login', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(userData)
+                    });
+                    const data = await response.json();
+
+                    if(data.success) {
+                        if(data.is_new) {
+                            localStorage.setItem('temp_user', JSON.stringify(userData));
+                            window.location.href = '/setup_profile.html';
+                        } else {
+                            saveSessionLocally(userData.email, data.name, data.role);
+                            window.location.replace(data.redirect_url);
+                        }
+                        return; // এখানেই এক্সিকিউশন থামিয়ে দেবে, আর নিচে যাবে না
+                    } else {
+                        alert("Login failed: " + data.error);
+                    }
+                }
+            } catch (error) {
+                console.error("Redirect Error:", error);
+            }
+
+            // ৩. গুগল থেকে না ফিরলে, লোকাল সেশন (Cookie/LocalStorage) চেক করা
             const savedEmail = localStorage.getItem('userEmail') || getCookie('userEmail');
             
             if (savedEmail) {
@@ -182,12 +214,12 @@
                     if (data.logged_in) {
                         saveSessionLocally(data.email, data.name, data.role);
                         window.location.replace(data.redirect_url);
-                        return; // ড্যাশবোর্ডে চলে যাবে, নিচের কোড রান হবে না
+                        return; 
                     }
                 } catch (e) { console.log("Status check error:", e); }
             }
 
-            // ৩. যদি ইমেইল না থাকে বা লগইন ফেল করে, তবে লগইন পেজ দেখাও
+            // ৪. কোনো লগইন না থাকলে মূল পেজ দেখানো
             clearSession();
             loadingScreen.style.opacity = '0';
             setTimeout(() => {
@@ -196,40 +228,21 @@
             }, 300);
         });
 
-        // 🔴 গুগল লগইন সম্পন্ন হওয়ার পর
-        getRedirectResult(auth).then(async (result) => {
-            if (result && result.user) {
-                const user = result.user;
-                const userData = { email: user.email, name: user.displayName, photo_url: user.photoURL };
-
-                const response = await fetch('/api/google-login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(userData)
-                });
-                const data = await response.json();
-
-                if(data.success) {
-                    if(data.is_new) {
-                        localStorage.setItem('temp_user', JSON.stringify(userData));
-                        window.location.href = '/setup_profile.html';
-                    } else {
-                        saveSessionLocally(userData.email, data.name, data.role);
-                        window.location.replace(data.redirect_url);
-                    }
-                } else {
-                    alert("Login failed: " + data.error);
-                }
-            }
-        });
-
+        // লগইন বাটনে ক্লিক করলে
         document.getElementById('btn-google-login').addEventListener('click', async () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.style.display = 'flex';
+            loadingScreen.style.opacity = '1';
+            document.querySelector('.loading-text').innerText = "Connecting to Google...";
+            
             try {
                 await signInWithRedirect(auth, provider);
             } catch (error) {
                 alert("Sign-In failed.");
+                loadingScreen.style.display = 'none';
             }
         });
     </script>
+
 </body>
 </html>
