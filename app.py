@@ -104,6 +104,31 @@ def init_db():
     except Exception as e:
         print("DB Init Exception:", e)
 
+        # 🆕 Reviews Table Creation
+        if db_type == 'postgres':
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS reviews (
+                    id SERIAL PRIMARY KEY,
+                    reviewer_name VARCHAR(255) NOT NULL,
+                    role VARCHAR(100) NOT NULL,
+                    rating INT NOT NULL,
+                    review_text TEXT NOT NULL,
+                    date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            ''')
+        else:
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS reviews (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    reviewer_name TEXT NOT NULL,
+                    role TEXT NOT NULL,
+                    rating INTEGER NOT NULL,
+                    review_text TEXT NOT NULL,
+                    date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            ''')
+        conn.commit()
+        
 init_db()
 
 @app.route('/')
@@ -798,6 +823,65 @@ def check_login_status():
         return jsonify({"logged_in": False})
     except Exception as e:
         return jsonify({"logged_in": False})
+
+@app.route('/download')
+def download_page(): 
+    return render_template('download.html')
+
+@app.route('/api/submit-review', methods=['POST'])
+def submit_review():
+    data = request.get_json()
+    name = data.get('name')
+    role = data.get('role', 'Student')
+    rating = int(data.get('rating', 5))
+    text = data.get('text')
+    
+    if not name or not text:
+        return jsonify({"success": False, "error": "Name and Review text are required!"}), 400
+        
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"INSERT INTO reviews (reviewer_name, role, rating, review_text) VALUES ({ph}, {ph}, {ph}, {ph})", 
+                       (name, role, rating, text))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Review submitted successfully!"})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Failed to submit review."}), 500
+
+@app.route('/api/get-reviews', methods=['GET'])
+def get_reviews():
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT reviewer_name, role, rating, review_text, date_submitted FROM reviews ORDER BY id DESC")
+        rows = cursor.fetchall()
+        conn.close()
+        
+        reviews_list = []
+        total_rating = 0
+        for r in rows:
+            reviews_list.append({
+                "name": r["reviewer_name"],
+                "role": r["role"],
+                "rating": r["rating"],
+                "text": r["review_text"],
+                "date": str(r["date_submitted"]).split(' ')[0]
+            })
+            total_rating += r["rating"]
+            
+        avg_rating = round(total_rating / len(reviews_list), 1) if reviews_list else 5.0
+        
+        return jsonify({
+            "success": True, 
+            "reviews": reviews_list,
+            "avg_rating": avg_rating,
+            "total_reviews": len(reviews_list)
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": "Failed to fetch reviews."}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
