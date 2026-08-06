@@ -166,10 +166,6 @@ def handle_exception(e):
     if isinstance(e, HTTPException): return e
     session.pop('user', None); return redirect('/')
 
-@app.route('/download')
-def download_page(): 
-    return render_template('download.html')
-
 @app.route('/api/google-login', methods=['POST'])
 def google_login():
     data = request.get_json()
