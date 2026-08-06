@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Download App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { color-scheme: dark; }
+        body {
+            background-color: #05070f; background: linear-gradient(180deg, #08101f 0%, #04060d 100%);
+            color: #e8eef8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .container { padding: 2rem; max-width: 900px; width: 100%; box-sizing: border-box; text-align: center; }
+        
+        .logo { width: 120px; height: 120px; margin-bottom: 1rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(34, 192, 93, 0.2); }
+        .header-section h1 { margin: 0 0 0.5rem 0; color: #22c05d; font-size: 3.2rem; letter-spacing: -0.03em; }
+        .header-section p { margin: 0 0 2rem 0; color: #c8d3ea; font-size: 1.2rem; }
+
+        .download-card {
+            background: rgba(17, 29, 52, 0.4); border-radius: 26px; padding: 40px 30px;
+            margin-bottom: 3rem; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+            border: 2px solid rgba(34, 192, 93, 0.5);
+        }
+        
+        .btn-download { 
+            display: inline-block; text-decoration: none;
+            background: #22c05d; color: #ffffff; border: none; 
+            border-radius: 25px; padding: 1.2rem 2.5rem; font-size: 1.2rem; font-weight: bold; 
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(34, 192, 93, 0.3);
+        }
+        .btn-download:hover { 
+            background: #1eab52; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(34, 192, 93, 0.4); 
+        }
+        .btn-download i { margin-right: 10px; font-size: 1.3rem; }
+
+        .section-title { font-size: 2rem; color: #f2f7ff; margin-bottom: 1.5rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: inline-block;}
+
+        /* Features Section */
+        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; text-align: left; margin-bottom: 3rem;}
+        @media (max-width: 768px) { .features-grid { grid-template-columns: 1fr; } }
+        
+        .feature-box {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px; padding: 2rem; transition: transform 0.3s ease;
+        }
+        .feature-box:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.05); }
+        .feature-box h3 { margin: 0 0 15px 0; font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+        .feature-box h3.student { color: #3b82f6; }
+        .feature-box h3.teacher { color: #f59e0b; }
+        .feature-box ul { padding-left: 20px; margin: 0; color: #c8d3ea; font-size: 1rem; line-height: 1.8; }
+        .feature-box ul li { margin-bottom: 10px; }
+
+        /* Reviews Section */
+        .reviews-section { margin-top: 2rem; }
+        .rating-summary { margin-bottom: 2rem; }
+        .rating-summary .stars { color: #f59e0b; font-size: 1.8rem; letter-spacing: 2px; }
+        .rating-summary p { font-size: 1.1rem; color: #c8d3ea; margin-top: 5px; }
+
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; text-align: left; }
+        
+        .review-card {
+            background: rgba(17, 29, 52, 0.3); padding: 1.5rem; border-radius: 15px; 
+            border: 1px solid rgba(34, 192, 93, 0.2); position: relative;
+        }
+        .review-card i.quote { position: absolute; top: 15px; right: 15px; color: rgba(255,255,255,0.05); font-size: 3rem; }
+        .review-stars { color: #f59e0b; font-size: 1rem; margin-bottom: 10px; }
+        .review-text { font-style: italic; color: #e8eef8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 15px; }
+        .reviewer-info { display: flex; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;}
+        .reviewer-info .avatar { width: 40px; height: 40px; background: #22c05d; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
+        .reviewer-info div { display: flex; flex-direction: column; }
+        .reviewer-info .name { font-weight: bold; color: #f5f9ff; font-size: 1rem; }
+        .reviewer-info .role { font-size: 0.8rem; color: #81c784; }
+
+        footer { margin-top: 4rem; padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.1); color: gray; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Logo -->
+        <img src="/static/24744.png" alt="ExamMate Logo" class="logo">
+        
+        <div class="header-section">
+            <h1>ExamMate</h1>
+            <p>The Ultimate Platform for MCQ Practice & Mock Exams</p>
+        </div>
+
+        <!-- Download Section -->
+        <div class="download-card">
+            <h2 style="margin-top: 0; color: #f2f7ff; font-size: 1.8rem;">Ready to Boost Your Preparation?</h2>
+            <p style="color: #c8d3ea; margin-bottom: 2rem; font-size: 1.1rem;">Download the official Android app now and join thousands of students and teachers.</p>
+            
+            <a href="/static/ExamMate.apk" download class="btn-download">
+                <i class="fab fa-android"></i> Download APK for Free
+            </a>
+            <p style="margin-top: 15px; font-size: 0.85rem; color: #64748b;">100% Free & Secure | Version 1.0</p>
+        </div>
+
+        <h2 class="section-title">How It Works</h2>
+
+        <!-- Features Section -->
+        <div class="features-grid">
+            <div class="feature-box">
+                <h3 class="student"><i class="fas fa-user-graduate"></i> For Students</h3>
+                <ul>
+                    <li><strong>Real-Time Mock Tests:</strong> Practice MCQs with strict exam timers to improve your time management.</li>
+                    <li><strong>Instant Analytics & Leaderboard:</strong> Get your score immediately after submission, see class averages, and check your rank on the leaderboard.</li>
+                    <li><strong>Performance Tracking:</strong> Monitor your highest/lowest scores and total progress over time.</li>
+                    <li><strong>Resource Center:</strong> Access study materials, notes, and PDFs uploaded by your teachers directly from Google Drive.</li>
+                </ul>
+            </div>
+            <div class="feature-box">
+                <h3 class="teacher"><i class="fas fa-chalkboard-teacher"></i> For Teachers</h3>
+                <ul>
+                    <li><strong>Full Exam Control:</strong> Create customized exams, set specific time limits, and apply negative marking for wrong answers.</li>
+                    <li><strong>AI Question Extractor:</strong> Save time by uploading your PDF notes; our Gemini AI will automatically extract MCQ questions and options for you.</li>
+                    <li><strong>Advanced Dashboard:</strong> Track your entire class's performance, identify top/bottom students, and view detailed analytical charts.</li>
+                    <li><strong>Broadcast Notifications:</strong> Send instant updates and important messages to all your students with one click.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Reviews & Ratings Section -->
+        <div class="reviews-section">
+            <h2 class="section-title">What Our Users Say</h2>
+            
+            <div class="rating-summary">
+                <div class="stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                </div>
+                <p><strong>4.8/5</strong> Average Rating from early users</p>
+            </div>
+
+            <div class="reviews-grid">
+                <!-- Review 1 -->
+                <div class="review-card">
+                    <i class="fas fa-quote-right quote"></i>
+                    <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                    <p class="review-text">"The timer feature is a game-changer! It feels exactly like sitting in the real exam hall. My time management has improved massively."</p>
+                    <div class="reviewer-info">
+                        <div class="avatar">R</div>
+                        <div>
+                            <span class="name">Rahul S.</span>
+                            <span class="role">Student / SSC Aspirant</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review 2 -->
+                <div class="review-card">
+                    <i class="fas fa-quote-right quote"></i>
+                    <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                    <p class="review-text">"As a teacher, setting up questions used to take hours. The AI PDF extractor is pure magic! Plus, the analytics dashboard helps me track weak students easily."</p>
+                    <div class="reviewer-info">
+                        <div class="avatar">A</div>
+                        <div>
+                            <span class="name">Anjali Das</span>
+                            <span class="role">Teacher / Educator</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review 3 -->
+                <div class="review-card">
+                    <i class="fas fa-quote-right quote"></i>
+                    <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+                    <p class="review-text">"I love the instant leaderboard! Seeing my rank right after finishing the exam keeps me motivated to study harder for the next test."</p>
+                    <div class="reviewer-info">
+                        <div class="avatar">S</div>
+                        <div>
+                            <span class="name">Souvik K.</span>
+                            <span class="role">Student</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>© 2026 ExamMate. All rights reserved.</p>
+            <p>Designed for better education.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
