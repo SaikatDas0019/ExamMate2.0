@@ -174,7 +174,8 @@
                                         <span style="font-size:0.75rem; color:#64748b;">${file.type} • ${file.date}</span>
                                     </div>
                                 </div>
-                                <a href="${file.file_url}" target="_blank" class="btn-view">View 👁️</a>
+                                <!-- 🔴 এখানে JavaScript দিয়ে এক্সটার্নাল লিংক ওপেন করার কমান্ড দেওয়া হয়েছে -->
+                                <a href="javascript:void(0);" onclick="window.open('${file.file_url}', '_blank', 'noopener,noreferrer');" class="btn-view">View 👁️</a>
                             </div>
                         `;
                     });
