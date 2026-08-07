@@ -26,7 +26,7 @@
         .card-basic { background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .card-ai { background-color: #faf5ff; border: 2px dashed #a855f7; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
         h3 { margin-top: 0; font-size: 16px; color: #1a1a1a; margin-bottom: 15px;}
-        .ai-title { color: #7e22ce; font-size: 1.1rem; text-align: center; }
+        .ai-title { color: #7e22ce; font-size: 1.1rem; text-align: center; margin-bottom: 15px;}
         
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; color: #333333; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
@@ -39,12 +39,21 @@
         .btn-add { background-color: #8b5cf6; box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3); margin-top: 5px; }
         .btn-publish { background: linear-gradient(135deg, #10b981, #059669); padding: 15px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin-top: 20px;}
         
+        /* Language Toggle Buttons */
+        .lang-toggle { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center;}
+        .lang-btn { padding: 4px 15px; font-size: 0.8rem; border-radius: 20px; border: 1px solid #8b5cf6; background: #ffffff; color: #8b5cf6; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .lang-btn.active { background: #8b5cf6; color: #ffffff; }
+
         /* AI Prompt Box Styling */
         .prompt-box { background: #e0e7ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #1e3a8a; }
-        .prompt-code { background: #ffffff; border: 1px dashed #93c5fd; padding: 12px; margin-top: 10px; border-radius: 6px; position: relative; }
+        .prompt-code { background: #ffffff; border: 1px dashed #93c5fd; padding: 12px; margin-top: 10px; border-radius: 6px; position: relative; max-height: 130px; overflow-y: auto; }
         .prompt-code code { display: block; color: #334155; font-size: 0.8rem; white-space: pre-wrap; margin-top: 25px; font-family: inherit;}
         .copy-btn { position: absolute; top: 8px; right: 8px; background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; transition: 0.2s;}
         .copy-btn:hover { background: #2563eb; }
+
+        /* Manual Entry Guide */
+        .manual-guide { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 0.85rem; color: #475569;}
+        .manual-guide-title { font-weight: bold; color: #1e293b; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;}
 
         /* Editable Question Card Styling */
         .preview-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-top: 15px;}
@@ -94,34 +103,65 @@
         <div class="card-ai">
             <h3 class="ai-title"><i class="fas fa-robot"></i> AI Smart Paste</h3>
             
+            <div class="lang-toggle">
+                <button class="lang-btn active" id="btn-bn" onclick="toggleLanguage('bn')">বাংলা</button>
+                <button class="lang-btn" id="btn-en" onclick="toggleLanguage('en')">English</button>
+            </div>
+
             <div class="prompt-box">
-                <strong>কীভাবে প্রশ্ন তৈরি করবেন?</strong><br>
-                ১. নিচের <strong>Copy Prompt</strong> বাটনে ক্লিক করে লেখাটি কপি করুন।<br>
-                ২. <b>ChatGPT</b> বা <b>Gemini</b> তে গিয়ে প্রম্পটটি পেস্ট করুন এবং সাথে আপনার প্রশ্নপত্রের ছবি বা টেক্সট দিয়ে দিন।<br>
-                ৩. AI যে উত্তর দেবে, সেটি কপি করে নিচের বক্সে পেস্ট করে <b>'অ্যাড করুন'</b> বাটনে ক্লিক করুন।
+                <!-- Bengali Instructions -->
+                <div id="inst-bn">
+                    <strong>কীভাবে প্রশ্ন তৈরি করবেন?</strong><br>
+                    ১. নিচের <strong>Copy Prompt</strong> বাটনে ক্লিক করে লেখাটি কপি করুন।<br>
+                    ২. <b>ChatGPT</b> বা <b>Gemini</b> তে গিয়ে প্রম্পটটি পেস্ট করুন এবং সাথে আপনার প্রশ্নপত্রের ছবি বা টেক্সট দিয়ে দিন।<br>
+                    ৩. AI যে উত্তর দেবে, সেটি কপি করে নিচের বক্সে পেস্ট করে <b>'অ্যাড করুন'</b> বাটনে ক্লিক করুন।
+                </div>
+                <!-- English Instructions -->
+                <div id="inst-en" class="hidden">
+                    <strong>How to generate questions?</strong><br>
+                    1. Click the <strong>Copy Prompt</strong> button below to copy the text.<br>
+                    2. Go to <b>ChatGPT</b> or <b>Gemini</b>, paste the prompt along with your question paper image or text.<br>
+                    3. Copy the AI's response, paste it in the box below, and click <b>'Add'</b>.
+                </div>
                 
                 <div class="prompt-code">
                     <button onclick="copyPrompt('ai-prompt', 'copy-btn')" id="copy-btn" class="copy-btn"><i class="fas fa-copy"></i> Copy Prompt</button>
-                    <code id="ai-prompt">​You are an expert Math text formatter and AI assistant. Please read the provided text/images and extract the multiple-choice questions with absolute accuracy.
-​You MUST format the extracted output EXACTLY like this:
-​[Question Text with all numbers, variables, and math symbols enclosed in single dollar signs]
+                    <code id="ai-prompt">You are an expert Math text formatter and AI assistant. Please read the provided text/images and extract the multiple-choice questions with absolute accuracy.
+You MUST format the extracted output EXACTLY like this:
+[Question Text with all numbers, variables, and math symbols enclosed in single dollar signs]
 A) [Option A]
 B) [Option B]
 C) [Option C]
 D) [Option D]
 Ans: [Correct Option A/B/C/D]
-​CRITICAL RULES FOR MATH & FORMATTING:
-1. ​You MUST enclose ALL numbers, formulas, fractions, variables, and math symbols strictly inside single dollar signs (...). Example: \frac{1}{2}, x^2, 5.
-2. ​ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped! You must write \frac{a}{b},\sin,\cos,\tan,\sqrt{x}. 3. Do NOT use double dollar signs ($$).
-3. ​Keep the regular text (Bengali/English) completely outside the dollar signs. Do not use markdown code blocks.
-4. ​Once the formatting is complete, generate and provide the final output inside a downloadable or copyable .txt file format.                </div>
+
+CRITICAL RULES FOR MATH & FORMATTING:
+1. You MUST enclose ALL numbers, formulas, fractions, variables, and math symbols strictly inside single dollar signs (...). Example: \frac{1}{2}, x^2, 5.
+2. ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped! You must write \frac{a}{b},\sin,\cos,\tan,\sqrt{x}. Do NOT use double dollar signs ($$).
+3. Keep the regular text (Bengali/English) completely outside the dollar signs. Do not use markdown code blocks.
+4. Once the formatting is complete, generate and provide the final output inside a downloadable or copyable .txt file format.</code>
+                </div>
             </div>
 
             <div class="input-group">
                 <textarea id="scanned-text-result" rows="5" placeholder="ChatGPT বা Gemini থেকে কপি করা প্রশ্ন এখানে পেস্ট করুন..."></textarea>
             </div>
             
-            <button class="btn btn-add" onclick="processScannedText()">অ্যাড করুন ➕</button>
+            <button class="btn btn-add" id="btn-add-text" onclick="processScannedText()">অ্যাড করুন ➕</button>
+
+            <!-- Manual Entry Guide -->
+            <div class="manual-guide">
+                <div class="manual-guide-title"><i class="fas fa-edit"></i> <span id="manual-title-text">ম্যানুয়ালি প্রশ্ন দেওয়ার নিয়ম:</span></div>
+                <span id="manual-desc-text">আপনি চাইলে নিজে টাইপ করেও প্রশ্ন দিতে পারেন। শুধু নিচের মতো করে সাজিয়ে বক্সে পেস্ট করুন:</span>
+                <div style="background: #ffffff; padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; color: #334155; border: 1px solid #e2e8f0;">
+                    Q: What is the capital of France?<br>
+                    A) Berlin<br>
+                    B) Paris<br>
+                    C) Rome<br>
+                    D) Madrid<br>
+                    Ans: B
+                </div>
+            </div>
         </div>
 
         <!-- Preview Section -->
@@ -137,6 +177,38 @@ Ans: [Correct Option A/B/C/D]
 
     <script>
         let tempQuestions = [];
+
+        // Language Toggle Logic
+        function toggleLanguage(lang) {
+            const btnBn = document.getElementById('btn-bn');
+            const btnEn = document.getElementById('btn-en');
+            const instBn = document.getElementById('inst-bn');
+            const instEn = document.getElementById('inst-en');
+            const textArea = document.getElementById('scanned-text-result');
+            const addBtn = document.getElementById('btn-add-text');
+            const manualTitle = document.getElementById('manual-title-text');
+            const manualDesc = document.getElementById('manual-desc-text');
+
+            if (lang === 'en') {
+                btnEn.classList.add('active');
+                btnBn.classList.remove('active');
+                instEn.classList.remove('hidden');
+                instBn.classList.add('hidden');
+                textArea.placeholder = "Paste the generated questions from ChatGPT or Gemini here...";
+                addBtn.innerHTML = "Add Questions ➕";
+                manualTitle.innerText = "Manual Entry Format:";
+                manualDesc.innerText = "You can also type questions manually. Just format them like below and paste in the box:";
+            } else {
+                btnBn.classList.add('active');
+                btnEn.classList.remove('active');
+                instBn.classList.remove('hidden');
+                instEn.classList.add('hidden');
+                textArea.placeholder = "ChatGPT বা Gemini থেকে কপি করা প্রশ্ন এখানে পেস্ট করুন...";
+                addBtn.innerHTML = "অ্যাড করুন ➕";
+                manualTitle.innerText = "ম্যানুয়ালি প্রশ্ন দেওয়ার নিয়ম:";
+                manualDesc.innerText = "আপনি চাইলে নিজে টাইপ করেও প্রশ্ন দিতে পারেন। শুধু নিচের মতো করে সাজিয়ে বক্সে পেস্ট করুন:";
+            }
+        }
 
         // Copy Prompt Logic
         function copyPrompt(textId, btnId) {
@@ -213,7 +285,7 @@ Ans: [Correct Option A/B/C/D]
         // 🧠 Smart Text Processor (Auto split Questions & Options)
         function processScannedText() {
             const text = document.getElementById('scanned-text-result').value;
-            if (!text.trim()) { alert("বক্সে প্রশ্ন পেস্ট করুন!"); return; }
+            if (!text.trim()) { alert("Please paste questions in the box! / বক্সে প্রশ্ন পেস্ট করুন!"); return; }
 
             let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             let currentQ = null;
@@ -237,7 +309,9 @@ Ans: [Correct Option A/B/C/D]
                         currentQ.question_text += " \n" + line; 
                     } else {
                         if (currentQ) { tempQuestions.push(currentQ); addedCount++; }
-                        currentQ = { question_text: line, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A" };
+                        // Filter out 'Q:' prefix if they typed it manually
+                        let qText = line.replace(/^(Q|Question|প্রশ্ন)[\s\:\.\-]+/i, '');
+                        currentQ = { question_text: qText, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A" };
                     }
                 }
             }
@@ -245,7 +319,7 @@ Ans: [Correct Option A/B/C/D]
 
             document.getElementById('scanned-text-result').value = ""; 
             updateUI();
-            alert(`✅ ${addedCount} টি প্রশ্ন সফলভাবে যুক্ত হয়েছে!`);
+            alert(`✅ ${addedCount} Questions added successfully!`);
         }
 
         // Publish Exam Update with Negative Marks
@@ -276,13 +350,13 @@ Ans: [Correct Option A/B/C/D]
             } catch (error) { alert("Server error."); } 
             finally { publishBtn.innerText = "Publish Exam 🚀"; publishBtn.disabled = false; }
         }
+        
         // ব্যাক বাটন প্রেস করলে আগের পেজে যাওয়ার জন্য সঠিক নিয়ম
         window.addEventListener('popstate', function (event) {
-            // আগের হিস্ট্রিতে ফিরে যাবে
             if (document.referrer) {
                 window.history.back();
             } else {
-                window.location.href = '/teacher_dashboard.html'; // কোনো হিস্ট্রি না থাকলে ড্যাশবোর্ডে পাঠিয়ে দেবে
+                window.location.href = '/teacher_dashboard.html';
             }
         });
 
