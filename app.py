@@ -154,7 +154,12 @@ def init_db():
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
-
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+                
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
@@ -438,6 +443,7 @@ def get_teacher_analysis():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/teacher-full-analytics', methods=['POST'])
+@app.route('/api/teacher-full-analytics', methods=['POST'])
 def teacher_full_analytics():
     data = request.get_json()
     email = data.get('email')
@@ -447,7 +453,8 @@ def teacher_full_analytics():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT exam_code, exam_name FROM exams WHERE teacher_email = {ph}", (email,))
+        # 🆕 Fetching created_at
+        cursor.execute(f"SELECT exam_code, exam_name, created_at FROM exams WHERE teacher_email = {ph} ORDER BY created_at DESC, exam_code DESC", (email,))
         teacher_exams = cursor.fetchall()
 
         if not teacher_exams:
@@ -461,9 +468,6 @@ def teacher_full_analytics():
         results = cursor.fetchall()
         conn.close()
 
-        if not results:
-            return jsonify({"success": True, "overall": {"students": 0, "attempts": 0, "avg": "0.0", "high": "0.0", "exams": len(teacher_exams)}, "examStats": [{"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0} for e in teacher_exams], "leaderboard": [], "studentProgress": {}})
-
         total_attempts = len(results)
         unique_students = len(set(r['student_email'] for r in results))
         all_percentages = [round((float(r['score']) / r['total_questions']) * 100, 1) for r in results if r['total_questions'] > 0]
@@ -474,6 +478,7 @@ def teacher_full_analytics():
         for r in results:
             code = r['exam_code']
             perf = round((float(r['score']) / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
+            score = float(r['score'])
             if code not in exam_map: exam_map[code] = {"name": r['exam_name'], "perfs": [], "attempts": 0}
             exam_map[code]["perfs"].append(perf)
             exam_map[code]["attempts"] += 1
@@ -481,11 +486,16 @@ def teacher_full_analytics():
         exam_stats = []
         for e in teacher_exams:
             code = e['exam_code']
+            # 🆕 Date and Time format
+            dt_str = str(e['created_at']).split(' ') if e['created_at'] else ["N/A"]
+            date_str = dt_str[0]
+            time_str = dt_str[1].split('.')[0] if len(dt_str) > 1 else "N/A"
+            
             if code in exam_map:
                 perfs = exam_map[code]["perfs"]
-                exam_stats.append({"name": exam_map[code]["name"], "avg": round(sum(perfs) / len(perfs), 1), "high": max(perfs), "low": min(perfs), "attempts": exam_map[code]["attempts"]})
+                exam_stats.append({"code": code, "name": exam_map[code]["name"], "avg": round(sum(perfs) / len(perfs), 1), "high": max(perfs), "low": min(perfs), "attempts": exam_map[code]["attempts"], "date": date_str, "time": time_str})
             else:
-                exam_stats.append({"name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0})
+                exam_stats.append({"code": code, "name": e['exam_name'], "avg": 0, "high": 0, "low": 0, "attempts": 0, "date": date_str, "time": time_str})
 
         student_map = {}
         for r in results:
@@ -505,7 +515,7 @@ def teacher_full_analytics():
             leaderboard.append({"name": data["name"], "email": email_key, "avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "totalScore": sum(data["scores"])})
             student_progress[data["name"]] = {"avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "labels": data["exam_names"], "data": data["perfs"]}
 
-        leaderboard = sorted(leaderboard, key=lambda x: x['avg'], reverse=True)
+        leaderboard = sorted(leaderboard, key=lambda x: x['best'], reverse=True) # 🆕 Sorted by Best Score
         return jsonify({"success": True, "overall": {"students": unique_students, "attempts": total_attempts, "avg": class_avg, "high": highest_score, "exams": len(teacher_exams)}, "examStats": exam_stats, "leaderboard": leaderboard, "studentProgress": student_progress})
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
