@@ -14,64 +14,66 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0; padding: 0; display: flex; justify-content: center;
         }
+        
         .container { 
             width: 100%; max-width: 480px; background-color: #ffffff;
-            min-height: 100vh; padding: 0 1rem 6rem 1rem; 
+            min-height: 100vh; padding: 90px 1rem 6rem 1rem; 
             box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            position: relative; margin: 0 auto; overflow-x: hidden;
         }
 
-        /* ফিক্সড হেডার স্টাইল */
+        /* Fully Fixed Header */
         .sticky-header {
-            position: sticky;
-            top: 0;
-            background-color: #ffffff;
-            z-index: 999;
-            padding: 1rem 0 0.8rem 0;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background-color: #ffffff;
+            z-index: 999; padding: 1rem; box-sizing: border-box;
+            border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px;
         }
 
-        /* ফিক্সড ব্যাক বাটন স্টাইল ("‹" চিহ্ন সহ) */
-        .btn-back {
-            background: transparent;
-            border: none;
-            color: #1a1a1a;
-            font-size: 2.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 0.8;
-            padding: 0;
-        }
-
+        .btn-back { background: transparent; border: none; color: #1a1a1a; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0; }
         .page-header h1 { font-size: 20px; color: #1a1a1a; margin: 0 0 2px 0; }
         .page-header p { color: #4b5563; margin: 0; font-size: 0.8rem; }
 
+        .section-title { font-size: 1.05rem; font-weight: 700; color: #111827; margin: 1.5rem 0 0.8rem 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
+
+        /* Clickable Metric Buttons */
         .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
         .metric-card {
             background: #f0fdf4; border: 1px solid #bbf7d0;
             border-radius: 12px; padding: 12px; text-align: center;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
         }
-        .metric-card.full-width { grid-column: span 2; }
-        .metric-card span { display: block; font-size: 0.8rem; color: #4b5563; font-weight: 600; margin-bottom: 5px; }
-        .metric-card strong { font-size: 1.3rem; color: #111827; }
-
-        .section-title { font-size: 1.05rem; font-weight: 700; color: #111827; margin: 1.5rem 0 0.8rem 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px;}
+        .metric-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); }
+        .metric-card span { display: block; font-size: 0.8rem; color: #166534; font-weight: 700; margin-bottom: 5px; }
+        .metric-card strong { font-size: 1.4rem; color: #14532d; }
 
         .chart-box { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; margin-bottom: 1.5rem; }
         .chart-container { position: relative; height: 220px; width: 100%; }
 
+        /* Panel System */
+        .panel-view { display: none; }
+        #main-view { display: block; }
+        
         .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
         th { background-color: #f8fafc; color: #374151; font-weight: 600; }
         td { color: #4b5563; }
         
         .perf-high { color: #16a34a; font-weight: bold; }
         .perf-mid { color: #ca8a04; font-weight: bold; }
         .perf-low { color: #dc2626; font-weight: bold; }
+
+        /* Custom Cards for Top / Improve */
+        .result-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .result-card-high { border-left: 4px solid #10b981; }
+        .result-card-low { border-left: 4px solid #ef4444; background: #fef2f2; }
+        .res-icon-high { color: #10b981; font-size: 1.8rem; margin-right: 15px; }
+        .res-icon-low { color: #ef4444; font-size: 1.8rem; margin-right: 15px; }
+        .res-details { flex: 1; }
+        .res-details strong { display: block; font-size: 1rem; color: #1e293b; margin-bottom: 4px; }
+        .res-details span { font-size: 0.8rem; color: #64748b; }
+        .res-score { font-size: 1.2rem; font-weight: 900; }
 
         /* Fixed Bottom Navigation Bar */
         .bottom-nav {
@@ -89,43 +91,89 @@
 
     <div class="container">
         
-        <!-- ফিক্সড হেডার ও "‹" ব্যাক বাটন -->
-        <div class="sticky-header">
-            <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
+        <!-- MAIN ANALYTICS VIEW -->
+        <div id="main-view">
+            <!-- Fixed Header -->
+            <div class="sticky-header">
+                <button class="btn-back" onclick="window.location.href='/student_dashboard.html'">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header">
+                    <h1>📊 My Analytics</h1>
+                    <p>Track your score trends and exam history</p>
+                </div>
+            </div>
 
-            <div class="page-header">
-                <h1>📊 My Performance Analytics</h1>
-                <p>Track your score trends and exam history</p>
+            <!-- Clickable Metrics -->
+            <h2 class="section-title">📈 Score Summary</h2>
+            <div class="metrics-grid">
+                <div class="metric-card" onclick="openPanel('panel-history')">
+                    <span>📅 Exams Given</span><strong id="m-total">0</strong>
+                </div>
+                <div class="metric-card" onclick="openPanel('panel-top')">
+                    <span>🏆 Highest Score</span><strong id="m-high">0</strong>
+                </div>
+                <div class="metric-card" onclick="openPanel('panel-breakdown')">
+                    <span>🎯 Total Marks</span><strong id="m-sum">0</strong>
+                </div>
+                <div class="metric-card" onclick="openPanel('panel-improve')">
+                    <span>📉 Average Score</span><strong id="m-avg">0%</strong>
+                </div>
+            </div>
+
+            <h2 class="section-title">📉 Exam Progress Graph</h2>
+            <div class="chart-box">
+                <div class="chart-container"><canvas id="progressChart"></canvas></div>
             </div>
         </div>
 
-        <h2 class="section-title">📈 Score Summary</h2>
-        <div class="metrics-grid">
-            <div class="metric-card"><span>Exams Given</span><strong id="m-total">0</strong></div>
-            <div class="metric-card"><span>Highest Score</span><strong id="m-high">0</strong></div>
-            <div class="metric-card"><span>Total Marks</span><strong id="m-sum">0</strong></div>
-            <div class="metric-card"><span>Average Score</span><strong id="m-avg">0%</strong></div>
+        <!-- PANEL 1: EXAMS GIVEN (HISTORY TABLE) -->
+        <div id="panel-history" class="panel-view">
+            <div class="sticky-header">
+                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header"><h1>Detailed Exam History</h1></div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Exam Name</th><th>Score</th><th>Total</th><th>Date</th><th>Accuracy</th></tr></thead>
+                    <tbody id="history-table-body"></tbody>
+                </table>
+            </div>
         </div>
 
-        <h2 class="section-title">📉 Exam Progress Graph</h2>
-        <div class="chart-box">
-            <div class="chart-container"><canvas id="progressChart"></canvas></div>
+        <!-- PANEL 2: TOP ACHIEVEMENTS (HIGHEST SCORE) -->
+        <div id="panel-top" class="panel-view">
+            <div class="sticky-header">
+                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header"><h1>Top Achievements 🏆</h1><p>Your best performing exams</p></div>
+            </div>
+            <div id="top-achievements-container"></div>
         </div>
 
-        <h2 class="section-title">📋 Detailed Exam History</h2>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Exam Name</th>
-                        <th>Score</th>
-                        <th>Total</th>
-                        <th>Date</th>
-                        <th>Accuracy</th>
-                    </tr>
-                </thead>
-                <tbody id="history-table-body"></tbody>
-            </table>
+        <!-- PANEL 3: AREAS TO IMPROVE (AVERAGE SCORE) -->
+        <div id="panel-improve" class="panel-view">
+            <div class="sticky-header">
+                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header"><h1>Areas to Improve 📉</h1><p>Exams below your average score</p></div>
+            </div>
+            <div id="improve-message" style="background:#eff6ff; padding:15px; border-radius:10px; color:#1e3a8a; font-size:0.85rem; margin-bottom:15px; border:1px solid #bfdbfe;">
+                Loading...
+            </div>
+            <div id="improve-container"></div>
+        </div>
+
+        <!-- PANEL 4: SCORE BREAKDOWN (TOTAL MARKS) -->
+        <div id="panel-breakdown" class="panel-view">
+            <div class="sticky-header">
+                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header"><h1>Score Breakdown 🎯</h1><p>Overall accuracy across all exams</p></div>
+            </div>
+            <div class="chart-box" style="padding: 20px;">
+                <div class="chart-container" style="height: 250px;"><canvas id="pieChart"></canvas></div>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <div style="font-size: 0.9rem; color: #475569;">Total Attempted Marks: <strong id="pb-total" style="color:#0f172a;">0</strong></div>
+                <div style="font-size: 0.9rem; color: #16a34a;">Successfully Achieved: <strong id="pb-achieved">0</strong></div>
+                <div style="font-size: 0.9rem; color: #ef4444;">Lost / Negative: <strong id="pb-lost">0</strong></div>
+            </div>
         </div>
 
     </div>
@@ -140,7 +188,7 @@
             <div class="nav-icon"><i class="fas fa-folder-open"></i></div>
             <span>Resources</span>
         </div>
-        <div class="nav-item active" onclick="window.location.href='/student_analytics.html'">
+        <div class="nav-item active" onclick="closePanels()">
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
             <span>Analytics</span>
         </div>
@@ -152,6 +200,9 @@
 
     <script>
         let progressChart = null;
+        let pieChart = null;
+        let globalHistory = [];
+        let globalAvgAcc = 0;
 
         window.onload = async () => {
             const userEmail = localStorage.getItem('userEmail');
@@ -166,28 +217,42 @@
                     const data = await response.json();
 
                     if (data.success && data.history.length > 0) {
-                        const history = data.history;
+                        globalHistory = data.history;
                         
-                        let totalExams = history.length;
-                        let highest = Math.max(...history.map(h => h.score));
-                        let sumScore = history.reduce((acc, curr) => acc + curr.score, 0);
-                        let avgAcc = (history.reduce((acc, curr) => acc + ((curr.score / curr.total) * 100), 0) / totalExams).toFixed(1);
+                        let totalExams = globalHistory.length;
+                        let highest = Math.max(...globalHistory.map(h => h.score));
+                        let sumScore = globalHistory.reduce((acc, curr) => acc + curr.score, 0);
+                        let sumTotal = globalHistory.reduce((acc, curr) => acc + curr.total, 0);
+                        globalAvgAcc = (globalHistory.reduce((acc, curr) => acc + ((curr.score / curr.total) * 100), 0) / totalExams).toFixed(1);
 
+                        // Populate Main Dashboard Cards
                         document.getElementById('m-total').innerText = totalExams;
                         document.getElementById('m-high').innerText = highest;
-                        document.getElementById('m-sum').innerText = sumScore;
-                        document.getElementById('m-avg').innerText = avgAcc + '%';
+                        document.getElementById('m-sum').innerText = sumScore.toFixed(1);
+                        document.getElementById('m-avg').innerText = globalAvgAcc + '%';
 
-                        // Table Population
+                        // Panel 1: Table Population
                         const tbody = document.getElementById('history-table-body');
-                        tbody.innerHTML = history.map(h => {
+                        tbody.innerHTML = globalHistory.map(h => {
                             let acc = ((h.score / h.total) * 100).toFixed(1);
                             let perfClass = acc >= 75 ? "perf-high" : (acc >= 40 ? "perf-mid" : "perf-low");
-                            return `<tr><td>${h.exam_name}</td><td>${h.score}</td><td>${h.total}</td><td>${h.date}</td><td class="${perfClass}">${acc}%</td></tr>`;
+                            return `<tr><td>${h.exam_name}</td><td><strong>${h.score}</strong></td><td>${h.total}</td><td>${h.date}</td><td class="${perfClass}">${acc}%</td></tr>`;
                         }).join('');
 
-                        // Chart Population
-                        renderChart(history);
+                        // Panel 2: Top Achievements
+                        populateTopAchievements();
+
+                        // Panel 3: Areas to Improve
+                        populateImprovementAreas();
+
+                        // Panel 4: Pie Chart Data
+                        document.getElementById('pb-total').innerText = sumTotal;
+                        document.getElementById('pb-achieved').innerText = sumScore.toFixed(1);
+                        document.getElementById('pb-lost').innerText = (sumTotal - sumScore).toFixed(1);
+                        renderPieChart(sumScore, sumTotal - sumScore);
+
+                        // Main Chart Population
+                        renderChart(globalHistory);
                     } else {
                         document.getElementById('history-table-body').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px;">No exam history found yet.</td></tr>';
                     }
@@ -196,6 +261,83 @@
                 }
             }
         };
+
+        function populateTopAchievements() {
+            // Sort by percentage descending
+            const sorted = [...globalHistory].sort((a, b) => (b.score/b.total) - (a.score/a.total));
+            const top3 = sorted.slice(0, 3);
+            
+            const container = document.getElementById('top-achievements-container');
+            if (top3.length === 0) { container.innerHTML = '<p>No data.</p>'; return; }
+
+            container.innerHTML = top3.map((h, i) => {
+                let acc = ((h.score / h.total) * 100).toFixed(1);
+                let medalColor = i === 0 ? '#fbbf24' : (i === 1 ? '#94a3b8' : '#cd7f32');
+                return `
+                <div class="result-card result-card-high">
+                    <div class="res-icon-high" style="color: ${medalColor};"><i class="fas fa-medal"></i></div>
+                    <div class="res-details">
+                        <strong>${h.exam_name}</strong>
+                        <span>Score: ${h.score}/${h.total} • ${h.date}</span>
+                    </div>
+                    <div class="res-score perf-high">${acc}%</div>
+                </div>`;
+            }).join('');
+        }
+
+        function populateImprovementAreas() {
+            // Filter below average
+            const weakAreas = globalHistory.filter(h => ((h.score / h.total) * 100) < parseFloat(globalAvgAcc));
+            const container = document.getElementById('improve-container');
+            const msg = document.getElementById('improve-message');
+            
+            if (weakAreas.length === 0) { 
+                msg.innerHTML = "🌟 <strong>Awesome!</strong> You don't have any exams below your average score. Keep up the good work!";
+                msg.style.background = "#f0fdf4"; msg.style.borderColor = "#bbf7d0"; msg.style.color = "#166534";
+                container.innerHTML = '';
+                return; 
+            }
+
+            msg.innerHTML = `💡 You scored below your average (<strong>${globalAvgAcc}%</strong>) in <strong>${weakAreas.length}</strong> exam(s). Focus on these subjects during revision!`;
+            
+            container.innerHTML = weakAreas.map(h => {
+                let acc = ((h.score / h.total) * 100).toFixed(1);
+                return `
+                <div class="result-card result-card-low">
+                    <div class="res-icon-low"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="res-details">
+                        <strong style="color:#7f1d1d;">${h.exam_name}</strong>
+                        <span>Score: ${h.score}/${h.total} • ${h.date}</span>
+                    </div>
+                    <div class="res-score perf-low">${acc}%</div>
+                </div>`;
+            }).join('');
+        }
+
+        // Panel Navigation Logic
+        function openPanel(id) {
+            document.getElementById('main-view').style.display = 'none';
+            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            window.scrollTo(0, 0);
+            window.history.pushState({view: id}, "", window.location.href);
+        }
+
+        function closePanels() {
+            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+            document.getElementById('main-view').style.display = 'block';
+            window.scrollTo(0, 0);
+            window.history.pushState({view: 'dashboard'}, "", window.location.href);
+        }
+
+        // Hardware Back Button Support
+        window.addEventListener('popstate', function (event) {
+            let isPanelOpen = false;
+            document.querySelectorAll('.panel-view').forEach(p => { if(p.style.display === 'block') isPanelOpen = true; });
+
+            if (isPanelOpen) { closePanels(); } 
+            else { if (document.referrer) { window.history.back(); } }
+        });
 
         function renderChart(history) {
             const ctx = document.getElementById('progressChart').getContext('2d');
@@ -222,10 +364,37 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: { beginAtZero: true, max: 100 },
                         x: { ticks: { font: { size: 10 } } }
                     }
+                }
+            });
+        }
+
+        function renderPieChart(achieved, lost) {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            if (pieChart !== null) { pieChart.destroy(); }
+            
+            pieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Achieved Score', 'Lost / Negative'],
+                    datasets: [{
+                        data: [Math.max(0, achieved), Math.max(0, lost)],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    cutout: '70%'
                 }
             });
         }
