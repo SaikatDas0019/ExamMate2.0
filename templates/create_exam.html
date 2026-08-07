@@ -51,8 +51,8 @@
         .copy-btn { position: absolute; top: 8px; right: 8px; background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; transition: 0.2s;}
         .copy-btn:hover { background: #2563eb; }
 
-        /* Manual Entry Guide */
-        .manual-guide { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 0.85rem; color: #475569;}
+        /* Manual Entry Guide - Moved Margin to Bottom */
+        .manual-guide { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #475569;}
         .manual-guide-title { font-weight: bold; color: #1e293b; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;}
 
         /* Editable Question Card Styling */
@@ -108,6 +108,7 @@
                 <button class="lang-btn" id="btn-en" onclick="toggleLanguage('en')">English</button>
             </div>
 
+            <!-- AI Prompt Box -->
             <div class="prompt-box">
                 <!-- Bengali Instructions -->
                 <div id="inst-bn">
@@ -143,13 +144,7 @@ CRITICAL RULES FOR MATH & FORMATTING:
                 </div>
             </div>
 
-            <div class="input-group">
-                <textarea id="scanned-text-result" rows="5" placeholder="ChatGPT বা Gemini থেকে কপি করা প্রশ্ন এখানে পেস্ট করুন..."></textarea>
-            </div>
-            
-            <button class="btn btn-add" id="btn-add-text" onclick="processScannedText()">অ্যাড করুন ➕</button>
-
-            <!-- Manual Entry Guide -->
+            <!-- Manual Entry Guide Moved Here (Between Prompt and Input Box) -->
             <div class="manual-guide">
                 <div class="manual-guide-title"><i class="fas fa-edit"></i> <span id="manual-title-text">ম্যানুয়ালি প্রশ্ন দেওয়ার নিয়ম:</span></div>
                 <span id="manual-desc-text">আপনি চাইলে নিজে টাইপ করেও প্রশ্ন দিতে পারেন। শুধু নিচের মতো করে সাজিয়ে বক্সে পেস্ট করুন:</span>
@@ -162,6 +157,12 @@ CRITICAL RULES FOR MATH & FORMATTING:
                     Ans: B
                 </div>
             </div>
+
+            <div class="input-group">
+                <textarea id="scanned-text-result" rows="5" placeholder="ChatGPT বা Gemini থেকে কপি করা প্রশ্ন এখানে পেস্ট করুন..."></textarea>
+            </div>
+            
+            <button class="btn btn-add" id="btn-add-text" onclick="processScannedText()">অ্যাড করুন ➕</button>
         </div>
 
         <!-- Preview Section -->
