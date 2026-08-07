@@ -634,20 +634,38 @@ def get_drive_contents_api():
     data = request.get_json() if request.is_json else {}
     parent_id = data.get('parent_id', 0)
     folder_type = data.get('folder_type', 'content') 
+    
+    is_student_req = request.path == '/api/get-student-drive-contents'
+    
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
+        
         cursor.execute(f"SELECT id, folder_name FROM drive_folders WHERE parent_id = {ph} AND folder_type = {ph} ORDER BY position ASC, id DESC", (parent_id, folder_type))
         folders = [{"id": r["id"], "name": r["folder_name"]} for r in cursor.fetchall()]
+        
         if folder_type == 'content':
             cursor.execute(f"SELECT id, title, file_url, resource_type, date_uploaded FROM drive_files WHERE folder_id = {ph} ORDER BY position ASC, id DESC", (parent_id,))
             files = [{"id": r["id"], "title": r["title"], "file_url": r["file_url"], "type": r["resource_type"], "date": str(r["date_uploaded"]).split(' ')[0]} for r in cursor.fetchall()]
             exams = []
         else:
             files = []
-            cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY position ASC, exam_code DESC", (parent_id,))
+            if is_student_req:
+                # স্টুডেন্টদের ড্যাশবোর্ডে: শুধুমাত্র আপনার জিমেইল (এডমিন) দিয়ে তৈরি এক্সামগুলো দেখাবে
+                query = f"""
+                    SELECT exam_code, exam_name, timer_minutes 
+                    FROM exams 
+                    WHERE folder_id = {ph} AND teacher_email = 'dasbabu938207@gmail.com' 
+                    ORDER BY position ASC, exam_code DESC
+                """
+                cursor.execute(query, (parent_id,))
+            else:
+                # এডমিন প্যানেলে: সবার এক্সাম দেখাবে
+                cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY position ASC, exam_code DESC", (parent_id,))
+                
             exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"]} for r in cursor.fetchall()]
+            
         conn.close()
         return jsonify({"success": True, "folders": folders, "files": files, "exams": exams})
     except Exception as e:
