@@ -293,25 +293,34 @@
             <div class="score-modal-title" style="color: #1e3a8a;">🏆 All Levels & Tiers</div>
             
             <div style="margin-bottom: 20px;">
-                <div class="tier-card">
+                <!-- Novice (Green Theme) -->
+                <div class="tier-card" style="background: #ecfdf5; border-color: #6ee7b7;">
                     <div class="tier-icon" style="color:#10b981;"><i class="fas fa-seedling"></i></div>
-                    <div><strong style="color:#0f172a; font-size:1.1rem;">Novice</strong><br><span style="color:#64748b; font-size:0.8rem;">0 - 49 Points</span></div>
+                    <div><strong style="color:#064e3b; font-size:1.1rem;">Novice</strong><br><span style="color:#047857; font-size:0.8rem;">0 - 49 Points</span></div>
                 </div>
-                <div class="tier-card">
-                    <div class="tier-icon" style="color:#cd7f32;"><i class="fas fa-medal"></i></div>
-                    <div><strong style="color:#0f172a; font-size:1.1rem;">Bronze Scholar</strong><br><span style="color:#64748b; font-size:0.8rem;">50 - 99 Points</span></div>
+                
+                <!-- Bronze Scholar (Bronze/Orange Theme) -->
+                <div class="tier-card" style="background: #ffedd5; border-color: #fdba74;">
+                    <div class="tier-icon" style="color:#d97706;"><i class="fas fa-medal"></i></div>
+                    <div><strong style="color:#7c2d12; font-size:1.1rem;">Bronze Scholar</strong><br><span style="color:#9a3412; font-size:0.8rem;">50 - 99 Points</span></div>
                 </div>
-                <div class="tier-card">
-                    <div class="tier-icon" style="color:#94a3b8;"><i class="fas fa-medal"></i></div>
-                    <div><strong style="color:#0f172a; font-size:1.1rem;">Silver Achiever</strong><br><span style="color:#64748b; font-size:0.8rem;">100 - 299 Points</span></div>
+                
+                <!-- Silver Achiever (Silver/Slate Theme) -->
+                <div class="tier-card" style="background: #f1f5f9; border-color: #cbd5e1;">
+                    <div class="tier-icon" style="color:#64748b;"><i class="fas fa-medal"></i></div>
+                    <div><strong style="color:#1e293b; font-size:1.1rem;">Silver Achiever</strong><br><span style="color:#475569; font-size:0.8rem;">100 - 299 Points</span></div>
                 </div>
+                
+                <!-- Gold Master (Gold/Yellow Theme) -->
                 <div class="tier-card" style="background:#fef9c3; border-color:#fde047;">
                     <div class="tier-icon" style="color:#eab308;"><i class="fas fa-trophy"></i></div>
-                    <div><strong style="color:#0f172a; font-size:1.1rem;">Gold Master</strong><br><span style="color:#a16207; font-size:0.8rem;">300 - 599 Points</span></div>
+                    <div><strong style="color:#713f12; font-size:1.1rem;">Gold Master</strong><br><span style="color:#a16207; font-size:0.8rem;">300 - 599 Points</span></div>
                 </div>
-                <div class="tier-card" style="background:#f1f5f9; border-color:#cbd5e1; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
-                    <div class="tier-icon" style="color:#64748b;"><i class="fas fa-crown"></i></div>
-                    <div><strong style="color:#334155; font-size:1.1rem;">Platinum Legend</strong><br><span style="color:#475569; font-size:0.8rem;">600+ Points</span></div>
+                
+                <!-- Platinum Legend (Instagram Style Gradient) -->
+                <div class="tier-card" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); border: none; box-shadow: 0 4px 15px rgba(220, 39, 67, 0.4);">
+                    <div class="tier-icon" style="color:#ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);"><i class="fas fa-crown"></i></div>
+                    <div><strong style="color:#ffffff; font-size:1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">Platinum Legend</strong><br><span style="color:rgba(255, 255, 255, 0.9); font-size:0.8rem;">600+ Points</span></div>
                 </div>
             </div>
 
@@ -379,13 +388,66 @@
                         
                         // Gamification Logic based on Total Score (Points)
                         const score = parseFloat(data.score);
-                        let badgeTitle = "Novice", badgeIcon = '<i class="fas fa-seedling"></i>', badgeDesc = "Keep taking exams to level up!";
+                        let badgeTitle = "Novice", 
+                            badgeIcon = '<i class="fas fa-seedling" style="color:#10b981;"></i>', 
+                            badgeDesc = "Keep taking exams to level up!";
                         let nextLevelScore = 50, prevLevelScore = 0;
+                        
+                        // Default Box Style (Novice - Green)
+                        let boxBg = "#ecfdf5", boxColor = "#064e3b", boxBorder = "1px solid #6ee7b7", boxShadow = "0 10px 20px rgba(16, 185, 129, 0.2)";
 
-                        if(score >= 50 && score < 100) { badgeTitle = "Bronze Scholar"; badgeIcon = '<i class="fas fa-medal" style="color:#cd7f32;"></i>'; badgeDesc = "You are making good progress!"; prevLevelScore = 50; nextLevelScore = 100;}
-                        else if(score >= 100 && score < 300) { badgeTitle = "Silver Achiever"; badgeIcon = '<i class="fas fa-medal" style="color:#c0c0c0;"></i>'; badgeDesc = "Great work! Aim for Gold."; prevLevelScore = 100; nextLevelScore = 300;}
-                        else if(score >= 300 && score < 600) { badgeTitle = "Gold Master"; badgeIcon = '<i class="fas fa-trophy" style="color:#ffd700;"></i>'; badgeDesc = "Outstanding performance!"; prevLevelScore = 300; nextLevelScore = 600;}
-                        else if(score >= 600) { badgeTitle = "Platinum Legend"; badgeIcon = '<i class="fas fa-crown" style="color:#e5e4e2;"></i>'; badgeDesc = "You are at the top of your game!"; prevLevelScore = 600; nextLevelScore = 600;}
+                        if(score >= 50 && score < 100) { 
+                            badgeTitle = "Bronze Scholar"; 
+                            badgeIcon = '<i class="fas fa-medal" style="color:#d97706;"></i>'; 
+                            badgeDesc = "You are making good progress!"; 
+                            prevLevelScore = 50; nextLevelScore = 100;
+                            boxBg = "#ffedd5"; boxColor = "#7c2d12"; boxBorder = "1px solid #fdba74"; boxShadow = "0 10px 20px rgba(217, 119, 6, 0.2)";
+                        }
+                        else if(score >= 100 && score < 300) { 
+                            badgeTitle = "Silver Achiever"; 
+                            badgeIcon = '<i class="fas fa-medal" style="color:#64748b;"></i>'; 
+                            badgeDesc = "Great work! Aim for Gold."; 
+                            prevLevelScore = 100; nextLevelScore = 300;
+                            boxBg = "#f1f5f9"; boxColor = "#1e293b"; boxBorder = "1px solid #cbd5e1"; boxShadow = "0 10px 20px rgba(100, 116, 139, 0.2)";
+                        }
+                        else if(score >= 300 && score < 600) { 
+                            badgeTitle = "Gold Master"; 
+                            badgeIcon = '<i class="fas fa-trophy" style="color:#eab308;"></i>'; 
+                            badgeDesc = "Outstanding performance!"; 
+                            prevLevelScore = 300; nextLevelScore = 600;
+                            boxBg = "#fef9c3"; boxColor = "#713f12"; boxBorder = "1px solid #fde047"; boxShadow = "0 10px 20px rgba(234, 179, 8, 0.2)";
+                        }
+                        else if(score >= 600) { 
+                            badgeTitle = "Platinum Legend"; 
+                            badgeIcon = '<i class="fas fa-crown" style="color:#ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);"></i>'; 
+                            badgeDesc = "You are at the top of your game!"; 
+                            prevLevelScore = 600; nextLevelScore = 600;
+                            boxBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; 
+                            boxColor = "#ffffff"; boxBorder = "none"; boxShadow = "0 10px 20px rgba(220, 39, 67, 0.4)";
+                        }
+
+                        // Apply dynamic styles to the main Level Box
+                        const levelBox = document.querySelector('.level-box');
+                        levelBox.style.background = boxBg;
+                        levelBox.style.color = boxColor;
+                        levelBox.style.border = boxBorder;
+                        levelBox.style.boxShadow = boxShadow;
+
+                        // Fix text colors for Progress Text and View Tiers Button based on background
+                        const progText = document.getElementById('level-progress-text');
+                        const viewTiersBtn = document.querySelector('.btn-view-tiers');
+                        
+                        if (score >= 600) {
+                            progText.style.color = "#ffffff";
+                            viewTiersBtn.style.background = "rgba(255,255,255,0.2)";
+                            viewTiersBtn.style.color = "white";
+                            viewTiersBtn.style.border = "1px solid rgba(255,255,255,0.3)";
+                        } else {
+                            progText.style.color = boxColor;
+                            viewTiersBtn.style.background = "rgba(0,0,0,0.05)";
+                            viewTiersBtn.style.color = boxColor;
+                            viewTiersBtn.style.border = "1px solid rgba(0,0,0,0.1)";
+                        }
 
                         document.getElementById('badge-title').innerHTML = badgeTitle;
                         document.getElementById('badge-icon').innerHTML = badgeIcon;
@@ -399,6 +461,12 @@
                         } else {
                             document.getElementById('level-progress-text').innerText = `🏆 Max Level Reached! (${score} Points)`;
                         }
+                        
+                        // Small timeout to allow CSS animation to trigger smoothly
+                        setTimeout(() => {
+                            document.getElementById('level-progress-bar').style.width = `${progressPercent}%`;
+                        }, 300);
+
                         
                         // Small timeout to allow CSS animation to trigger smoothly
                         setTimeout(() => {
