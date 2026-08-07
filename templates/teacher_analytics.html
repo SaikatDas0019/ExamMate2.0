@@ -14,17 +14,36 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0; padding: 0; display: flex; justify-content: center;
         }
+        
+        /* 
+         * Container's top padding is increased to 90px 
+         * so the content doesn't hide behind the fixed header 
+         */
         .container { 
             width: 100%; max-width: 480px; background-color: #ffffff;
-            min-height: 100vh; padding: 0 1rem 6rem 1rem; 
+            min-height: 100vh; padding: 90px 1rem 6rem 1rem; 
             box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            position: relative; overflow-x: hidden;
+            margin: 0 auto;
         }
 
+        /* 
+         * Header is now fully FIXED to the top of the screen 
+         */
         .sticky-header {
-            position: sticky; top: 0; background-color: #ffffff; z-index: 999;
-            padding: 1rem 0 0.8rem 0; margin-bottom: 1rem;
-            border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px;
+            position: fixed; 
+            top: 0; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 100%; 
+            max-width: 480px; 
+            background-color: #ffffff; 
+            z-index: 999;
+            padding: 1rem;
+            box-sizing: border-box;
+            border-bottom: 1px solid #e5e7eb; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
         }
 
         .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0;}
@@ -88,6 +107,7 @@
         
         <!-- MAIN DASHBOARD VIEW -->
         <div id="main-view">
+            <!-- 1. Fixed Header -->
             <div class="sticky-header">
                 <button class="btn-back" onclick="window.location.href='/teacher_dashboard.html'">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header">
@@ -97,25 +117,25 @@
             </div>
 
             <div class="metrics-grid">
-                <div class="metric-card" onclick="openPanel('panel-students', 'Total Students')">
+                <div class="metric-card" onclick="openPanel('panel-students')">
                     <span>👥 Total Students</span><strong id="m-students">0</strong>
                 </div>
-                <div class="metric-card" onclick="openPanel('panel-attempts', 'Total Attempts')">
+                <div class="metric-card" onclick="openPanel('panel-attempts')">
                     <span>📝 Total Attempts</span><strong id="m-attempts">0</strong>
                 </div>
-                <div class="metric-card" onclick="openPanel('panel-average', 'Class Average')">
+                <div class="metric-card" onclick="openPanel('panel-average')">
                     <span>📈 Class Average</span><strong id="m-avg">0%</strong>
                 </div>
-                <div class="metric-card" onclick="openPanel('panel-highest', 'Highest Score')">
+                <div class="metric-card" onclick="openPanel('panel-highest')">
                     <span>🏆 Highest Score</span><strong id="m-high">0%</strong>
                 </div>
-                <div class="metric-card full-width" onclick="openPanel('panel-active', 'Active Exams')">
+                <div class="metric-card full-width" onclick="openPanel('panel-active')">
                     <span>🟢 Active Exams</span><strong id="m-exams">0</strong>
                 </div>
             </div>
 
             <h2 class="section-title">📝 Recent Exam Performance 
-                <button class="btn-view-all" onclick="openPanel('panel-average', 'Class Average')">View All</button>
+                <button class="btn-view-all" onclick="openPanel('panel-average')">View All</button>
             </h2>
             <div class="table-container">
                 <table>
@@ -149,7 +169,7 @@
         <div id="panel-students" class="panel-view">
             <div class="sticky-header">
                 <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1 id="header-students">Total Students</h1></div>
+                <div class="page-header"><h1>Total Students</h1></div>
             </div>
             <div class="table-container">
                 <table>
@@ -159,26 +179,30 @@
             </div>
         </div>
 
-        <!-- PANEL 2: TOTAL ATTEMPTS -->
+        <!-- PANEL 2: TOTAL ATTEMPTS (LIST OF EXAMS) -->
         <div id="panel-attempts" class="panel-view">
             <div class="sticky-header">
                 <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1 id="header-attempts">Exam Attempts</h1><p>Click an exam to view students</p></div>
+                <div class="page-header"><h1>Exam Attempts</h1><p>Click an exam to view students</p></div>
             </div>
             <div id="list-attempts-box"></div>
-            
-            <!-- Sub Panel for Attempts -->
-            <div id="sub-panel-attempts" style="display:none; margin-top:20px;">
-                <h3 style="margin-top:0; border-bottom: 2px solid #e2e8f0; padding-bottom:5px; display:flex; justify-content:space-between;">
-                    <span id="sub-attempt-title" style="color:#1e40af;">Students</span>
-                    <button onclick="document.getElementById('sub-panel-attempts').style.display='none'" style="border:none; background:none; color:#ef4444; font-weight:bold; cursor:pointer;">Close ✖</button>
-                </h3>
-                <div class="table-container">
-                    <table>
-                        <thead><tr><th>Student Name</th><th>Score</th><th>Performance</th></tr></thead>
-                        <tbody id="sub-attempt-body"></tbody>
-                    </table>
+        </div>
+
+        <!-- PANEL 2.1: SPECIFIC EXAM ATTEMPT DETAILS (NEW PAGE VIEW) -->
+        <div id="panel-attempt-details" class="panel-view">
+            <div class="sticky-header">
+                <!-- Back button to return to Panel 2 (Exam List) -->
+                <button class="btn-back" onclick="backToAttemptsPanel()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header">
+                    <h1 id="sub-attempt-title">Students</h1>
+                    <p>Performance in this specific exam</p>
                 </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Student Name</th><th>Score</th><th>Performance</th></tr></thead>
+                    <tbody id="sub-attempt-body"></tbody>
+                </table>
             </div>
         </div>
 
@@ -186,7 +210,7 @@
         <div id="panel-average" class="panel-view">
             <div class="sticky-header">
                 <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1 id="header-average">All Exams Stats</h1></div>
+                <div class="page-header"><h1>All Exams Stats</h1></div>
             </div>
             <div class="table-container">
                 <table>
@@ -200,7 +224,7 @@
         <div id="panel-highest" class="panel-view">
             <div class="sticky-header">
                 <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1 id="header-highest">Leaderboard</h1></div>
+                <div class="page-header"><h1>Leaderboard</h1></div>
             </div>
             <select id="leaderboard-filter" class="student-select-box" onchange="loadLeaderboard()">
                 <option value="all" selected>🏆 Overall Highest Scores (All Exams)</option>
@@ -217,7 +241,7 @@
         <div id="panel-active" class="panel-view">
             <div class="sticky-header">
                 <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1 id="header-active">Manage Exams</h1><p>View release dates and manage</p></div>
+                <div class="page-header"><h1>Manage Exams</h1><p>View release dates and manage</p></div>
             </div>
             <div class="table-container">
                 <table>
@@ -334,9 +358,9 @@
             loadLeaderboard();
         }
 
-        function openPanel(id, title) {
-            document.getElementById('main-view').style.display = 'none';
+        function openPanel(id) {
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+            document.getElementById('main-view').style.display = 'none';
             document.getElementById(id).style.display = 'block';
             window.scrollTo(0, 0);
         }
@@ -347,11 +371,18 @@
             window.scrollTo(0, 0);
         }
 
+        // NEW FUNCTION: Open Attempt Details in a New White Page
         async function fetchAttempts(examCode, examName) {
-            document.getElementById('sub-attempt-title').innerText = examName + " (Students)";
+            // Switch views
+            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+            document.getElementById('main-view').style.display = 'none';
+            document.getElementById('panel-attempt-details').style.display = 'block';
+            window.scrollTo(0, 0);
+
+            document.getElementById('sub-attempt-title').innerText = examName.length > 20 ? examName.substring(0, 20) + "..." : examName;
+            
             const tbody = document.getElementById('sub-attempt-body');
             tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
-            document.getElementById('sub-panel-attempts').style.display = 'block';
             
             try {
                 const response = await fetch('/api/teacher-analysis', {
@@ -361,12 +392,19 @@
                 const data = await response.json();
                 if(data.success) {
                     tbody.innerHTML = data.all_students.map(s => 
-                        `<tr><td><div class="student-name-box"><strong>${s.name}</strong><span class="email">${s.email}</span></div></td><td>${s.score}/${data.total_q}</td><td>${s.perf}%</td></tr>`
+                        `<tr><td><div class="student-name-box"><strong>${s.name}</strong><span class="email">${s.email}</span></div></td><td>${s.score}/${data.total_q}</td><td><strong style="color:#16a34a;">${s.perf}%</strong></td></tr>`
                     ).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="3">No attempts yet.</td></tr>';
                 }
             } catch(e) { tbody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>'; }
+        }
+
+        // NEW FUNCTION: Return to Attempts Panel
+        function backToAttemptsPanel() {
+            document.getElementById('panel-attempt-details').style.display = 'none';
+            document.getElementById('panel-attempts').style.display = 'block';
+            window.scrollTo(0, 0);
         }
 
         async function loadLeaderboard() {
