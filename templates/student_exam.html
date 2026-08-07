@@ -91,6 +91,18 @@
         .score-circle { width: 150px; height: 150px; border-radius: 50%; background: #eff6ff; border: 8px solid #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 900; color: #1e3a8a; margin: 0 auto 20px auto; }
         .success-text { color: #16a34a; font-weight: 600; margin-bottom: 20px; }
         
+        /* Detailed Review Styles */
+        .review-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; }
+        .review-correct { background: #f0fdf4; border-color: #bbf7d0; }
+        .review-wrong { background: #fef2f2; border-color: #fecaca; }
+        .review-unattempted { background: #f8fafc; border-color: #e2e8f0; }
+        .review-q-text { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 10px; line-height: 1.4; overflow-x: auto; }
+        .review-ans { font-size: 0.9rem; margin-bottom: 5px; }
+        .ans-correct-text { color: #166534; font-weight: bold; }
+        .ans-wrong-text { color: #991b1b; font-weight: bold; }
+        .ans-real-correct { color: #065f46; font-weight: bold; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fca5a5;}
+        .ans-real-correct.unattempted-border { border-top: 1px dashed #cbd5e1; color: #0f172a; }
+
         #exam-section, #result-section, #error-section, #instruction-section { display: none; }
 
         #pause-overlay {
@@ -113,7 +125,6 @@
 
         <!-- Pre-Exam Instructions Section -->
         <div id="instruction-section" class="instruction-box">
-            <!-- ফিক্সড হেডার ও "‹" ব্যাক বাটন (ইনস্ট্রাকশন পেজের জন্য) -->
             <div class="sticky-header">
                 <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
                 <h2 style="margin:0; font-size: 1.2rem; color: #1e3a8a;">Exam Rules & Warning</h2>
@@ -141,7 +152,6 @@
         </div>
 
         <div id="exam-section">
-            <!-- ফিক্সড হেডার ও "‹" ব্যাক বাটন (এক্সাম চলাকালীন সময়ের জন্য) -->
             <div class="sticky-header">
                 <button class="btn-back" onclick="window.history.back()">‹</button>
                 <div class="exam-header">
@@ -177,15 +187,21 @@
         </div>
 
         <div id="result-section" class="result-box">
-            <!-- ফিক্সড হেডার ও "‹" ব্যাক বাটন (রেজাল্ট পেজের জন্য) -->
             <div class="sticky-header">
                 <button class="btn-back" onclick="window.location.href='student_dashboard.html'">‹</button>
                 <h2 style="margin:0; font-size: 1.2rem;">Exam Completed</h2>
             </div>
             
             <div class="score-circle" id="final-score">0/0</div>
-            <p class="success-text">Your answers have been submitted successfully. The teacher will be able to view them.</p>
-            <button class="btn btn-next" style="width:100%;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
+            <p class="success-text">Your answers have been submitted successfully!</p>
+            
+            <!-- Detailed Review Section -->
+            <div style="text-align: left; margin-top: 30px;">
+                <h3 style="font-size: 1.1rem; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px;">📋 Detailed Answer Review</h3>
+                <div id="detailed-review-container"></div>
+            </div>
+
+            <button class="btn btn-next" style="width:100%; margin-top:20px;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
         </div>
 
     </div>
@@ -464,6 +480,54 @@
             loadQuestion(currentIndex);
         }
 
+        // Render Detailed Review Function
+        function renderDetailedReview() {
+            const container = document.getElementById('detailed-review-container');
+            let html = '';
+
+            dbQuestions.forEach((q, idx) => {
+                const studentAns = studentAnswers[idx];
+                const isCorrect = studentAns === q.correct;
+                const isAttempted = studentAns !== undefined;
+
+                let cardClass = 'review-unattempted';
+                if (isAttempted) {
+                    cardClass = isCorrect ? 'review-correct' : 'review-wrong';
+                }
+
+                const getOptionText = (letter) => {
+                    if(letter === 'A') return q.opt_a;
+                    if(letter === 'B') return q.opt_b;
+                    if(letter === 'C') return q.opt_c;
+                    if(letter === 'D') return q.opt_d;
+                    return '';
+                };
+
+                html += `<div class="review-card ${cardClass}">`;
+                html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text}</div>`;
+
+                if (isAttempted) {
+                    if (isCorrect) {
+                        html += `<div class="review-ans ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                    } else {
+                        html += `<div class="review-ans ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                        html += `<div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                    }
+                } else {
+                    html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div>`;
+                    html += `<div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                }
+
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+
+            if (window.MathJax) {
+                MathJax.typesetPromise([container]).catch(function (err) { console.log('MathJax error: ', err.message); });
+            }
+        }
+
         async function submitExam() {
             isExamActive = false;
             clearInterval(timerInterval); 
@@ -483,7 +547,6 @@
             const userEmail = localStorage.getItem('userEmail') || "student@email.com";
 
             try {
-                // Modified payload to include warnings count for the teacher to see
                 await fetch('/api/submit-exam-result', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -509,6 +572,9 @@
             if (document.fullscreenElement) { document.exitFullscreen(); }
             
             document.getElementById('final-score').innerText = `${displayScore}/${totalQuestions}`;
+            
+            // Call the function to render detailed review
+            renderDetailedReview();
         }
     </script>
 </body>
