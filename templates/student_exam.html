@@ -14,7 +14,14 @@
 
     <style>
         :root { color-scheme: light; }
-        body { background-color: #f9fafb; color: #333333; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; justify-content: center; }
+        body { 
+            background-color: #f9fafb; color: #333333; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; justify-content: center; 
+            /* Anti-select & Anti-copy */
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
         .container { width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh; padding: 0 1.5rem 1.5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
         
         /* Fixed Sticky Header Style */
@@ -109,7 +116,6 @@
             <!-- ফিক্সড হেডার ও "‹" ব্যাক বাটন (ইনস্ট্রাকশন পেজের জন্য) -->
             <div class="sticky-header">
                 <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
-
                 <h2 style="margin:0; font-size: 1.2rem; color: #1e3a8a;">Exam Rules & Warning</h2>
             </div>
             
@@ -117,11 +123,19 @@
                 <li><i class="fas fa-question-circle"></i> <div><strong>Total Questions:</strong> <span id="inst-q">0</span></div></li>
                 <li><i class="fas fa-clock"></i> <div><strong>Time Limit:</strong> <span id="inst-time">0</span> Minutes</div></li>
                 <li><i class="fas fa-minus-circle"></i> <div><strong>Negative Marking:</strong> <span id="inst-neg">0</span> per wrong answer</div></li>
-                <li style="color: #dc2626;"><i class="fas fa-shield-alt" style="color: #dc2626;"></i> <div><strong>Strict Anti-Cheat:</strong> Do NOT change tabs, minimize the browser, or open split-screen. Doing so will automatically submit your exam!</div></li>
+                <li style="color: #dc2626;"><i class="fas fa-shield-alt" style="color: #dc2626;"></i> 
+                    <div>
+                        <strong>Strict Anti-Cheat Policy:</strong><br>
+                        ১. পরীক্ষা চলাকালীন ট্যাব বা অ্যাপ পরিবর্তন করা নিষেধ।<br>
+                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো (Floating Window) ব্যবহার করা যাবে না।<br>
+                        ৩. স্ক্রিনশট তোলা বা ওপর থেকে নোটিফিকেশন/নেভিগেশন বার টানা সম্পূর্ণ নিষিদ্ধ।<br><br>
+                        <i>এই নিয়ম ভাঙলে আপনি ওয়ার্নিং পাবেন। ৫ বার ওয়ার্নিং পেলে পরীক্ষা স্বয়ংক্রিয়ভাবে বাতিল (Auto-Submit) হয়ে যাবে!</i>
+                    </div>
+                </li>
             </ul>
             <div class="warning-text">
                 <input type="checkbox" id="agree-check" style="margin-right: 8px; transform: scale(1.2);"> 
-                I agree to the rules and will not use unfair means.
+                I agree to the strict rules and will not use unfair means.
             </div>
             <button class="btn btn-submit" id="start-btn" style="width: 100%; opacity: 0.5;" disabled onclick="startActualExam()">Start Exam 🚀</button>
         </div>
@@ -258,6 +272,9 @@
             document.getElementById('exam-section').style.display = 'block';
             document.getElementById('display-exam-name').innerText = examName;
             
+            // Full Screen Mode Enforce
+            enterFullScreen();
+
             if(isResuming) {
                 const savedState = localStorage.getItem(`exam_state_${examCode}`);
                 if(savedState) {
@@ -278,6 +295,59 @@
             
             setInterval(saveExamState, 5000);
         }
+
+        // ---------------- Security / Anti-Cheat Module Start ----------------
+        
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('copy', event => {
+            event.preventDefault();
+            alert("⚠️ কপি করা সম্পূর্ণ নিষেধ!");
+        });
+
+        function enterFullScreen() {
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen(); } 
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+        }
+
+        function triggerWarning(reason) {
+            if (!isExamActive || isPaused) return;
+
+            warningsCount++;
+            saveExamState();
+            
+            if (warningsCount >= 5) {
+                alert(`🚨 FINAL WARNING (5/5): ${reason}\n\nআপনার পরীক্ষা স্বয়ংক্রিয়ভাবে বাতিল (Auto-Submit) করা হচ্ছে!`);
+                submitExam();
+            } else {
+                alert(`⚠️ WARNING ${warningsCount}/5: ${reason}\n\nআর ${5 - warningsCount} বার এমন হলে পরীক্ষা অটো-সাবমিট হয়ে যাবে!`);
+                enterFullScreen();
+            }
+        }
+
+        // Anti-Cheat 1: Tab Switch Detection
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden && isExamActive && !isPaused) {
+                triggerWarning("আপনি ট্যাব পরিবর্তন করেছেন বা ব্রাউজার মিনিমাইজ করার চেষ্টা করেছেন!");
+            }
+        });
+
+        // Anti-Cheat 2: Floating window / Lost Focus (Google Lens detection)
+        window.addEventListener("blur", () => {
+            if (isExamActive && !isPaused) {
+                triggerWarning("আপনি অন্য উইন্ডো বা অ্যাপে (যেমন গুগল লেন্স) টাচ করার চেষ্টা করেছেন!");
+            }
+        });
+
+        // Anti-Cheat 3: Exited Full Screen (Notification bar / Split screen / Screenshot attempt)
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && isExamActive && !isPaused) {
+                triggerWarning("আপনি ফুল-স্ক্রিন মোড থেকে বের হওয়ার বা নোটিফিকেশন/নেভিগেশন বার টানার চেষ্টা করেছেন!");
+            }
+        });
+        
+        // ---------------- Security / Anti-Cheat Module End ----------------
 
         function startTimer() {
             timerInterval = setInterval(() => {
@@ -325,23 +395,9 @@
                 overlay.style.display = 'none';
                 pauseBtn.innerText = "⏸️ Pause";
                 pauseBtn.style.background = "#f59e0b";
+                enterFullScreen();
             }
         }
-
-        // Anti-Cheat: Tab Switch Detection
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden && isExamActive && !isPaused) {
-                warningsCount++;
-                saveExamState();
-                
-                if (warningsCount >= 3) {
-                    alert("🚨 FINAL WARNING (3/3): You switched tabs too many times!\nYour exam is automatically submitted to prevent cheating.");
-                    submitExam();
-                } else {
-                    alert(`⚠️ WARNING ${warningsCount}/3: Do not switch tabs or minimize the browser!\n\nIf you do this ${3 - warningsCount} more time(s), the exam will auto-submit.`);
-                }
-            }
-        });
 
         function loadQuestion(index) {
             const q = dbQuestions[index];
@@ -427,11 +483,17 @@
             const userEmail = localStorage.getItem('userEmail') || "student@email.com";
 
             try {
+                // Modified payload to include warnings count for the teacher to see
                 await fetch('/api/submit-exam-result', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email: userEmail, exam_code: examCode, exam_name: examName, score: displayScore, total_questions: totalQuestions
+                        email: userEmail, 
+                        exam_code: examCode, 
+                        exam_name: examName, 
+                        score: displayScore, 
+                        total_questions: totalQuestions,
+                        warnings: warningsCount
                     })
                 });
                 localStorage.removeItem(`exam_state_${examCode}`);
@@ -442,6 +504,10 @@
             document.getElementById('exam-section').style.display = 'none';
             document.getElementById('pause-overlay').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
+            
+            // Exit fullscreen after submission
+            if (document.fullscreenElement) { document.exitFullscreen(); }
+            
             document.getElementById('final-score').innerText = `${displayScore}/${totalQuestions}`;
         }
     </script>
