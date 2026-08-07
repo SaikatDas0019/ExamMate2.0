@@ -14,40 +14,27 @@
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0; display: flex; justify-content: center;
         }
+        
+        /* Container updated for fixed header */
         .container { 
             width: 100%; max-width: 480px; background-color: #ffffff;
-            min-height: 100vh; padding: 0 1.5rem 6rem 1.5rem; 
+            min-height: 100vh; padding: 90px 1rem 6rem 1rem; 
             box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            margin: 0 auto;
         }
         
-        /* Fixed Sticky Header Style */
+        /* Fully Fixed Header */
         .sticky-header {
-            position: sticky;
-            top: 0;
-            background-color: #ffffff;
-            z-index: 999;
-            padding: 1rem 0 0.8rem 0;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            position: fixed; top: 0; left: 50%; transform: translateX(-50%); 
+            width: 100%; max-width: 480px; background-color: #ffffff; 
+            z-index: 999; padding: 1rem; box-sizing: border-box;
+            border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between;
         }
-
-        /* Fixed Back Button Style ("‹") */
-        .btn-back {
-            background: transparent;
-            border: none;
-            color: #111827;
-            font-size: 2.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 0.8;
-            padding: 0;
-        }
+        
+        .sticky-header-left { justify-content: flex-start; gap: 15px; }
+        .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0;}
 
         /* Profile Header inside sticky section */
-        .profile-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .profile-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .avatar { 
             width: 45px; height: 45px; background: #e0f2fe; border-radius: 50%; 
@@ -58,13 +45,11 @@
         .greeting p { margin: 0; font-size: 0.75rem; color: #6b7280; }
         .bell-icon { 
             font-size: 1.1rem; color: #4b5563; background: #f3f4f6; 
-            padding: 9px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
-            position: relative;
+            padding: 9px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer; position: relative;
         }
         .bell-icon.has-unread::after {
             content: ''; position: absolute; top: 2px; right: 2px;
-            width: 9px; height: 9px; background-color: #ef4444; 
-            border-radius: 50%; border: 2px solid #ffffff;
+            width: 9px; height: 9px; background-color: #ef4444; border-radius: 50%; border: 2px solid #ffffff;
         }
 
         /* My Progress Grid */
@@ -72,11 +57,14 @@
         .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
         .progress-card { 
             background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; 
-            padding: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            padding: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
         }
-        .progress-icon { font-size: 1.5rem; color: #22c55e; }
-        .progress-info span { font-size: 0.75rem; color: #4b5563; display: block; margin-bottom: 2px; }
-        .progress-info b { font-size: 1.1rem; color: #111827; }
+        .progress-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); }
+        .progress-info { width: 100%; display: flex; justify-content: space-between; align-items: center;}
+        .progress-info span { font-size: 0.8rem; color: #166534; font-weight: 700; }
+        .progress-info i { font-size: 1.2rem; color: #22c55e; }
+        .progress-card b { font-size: 1.4rem; color: #14532d; line-height: 1; }
 
         /* Search Exam Section */
         .search-box { display: flex; gap: 10px; margin-bottom: 1.5rem; }
@@ -90,12 +78,29 @@
             width: 100%; background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b;
             padding: 14px 15px; border-radius: 12px; font-size: 0.95rem; font-weight: 600;
             margin-bottom: 10px; cursor: pointer; text-align: left; transition: 0.2s;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         .flow-btn:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-2px);}
-        .back-btn { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: bold; cursor: pointer; padding: 8px 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; transition: 0.2s;}
-        .back-btn:hover { background: #e2e8f0; }
+        
+        /* Panels & Tables */
+        .panel-view { display: none; margin-top: 10px; }
+        .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;}
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+        th { background-color: #f8fafc; color: #374151; font-weight: bold; }
+        td { color: #4b5563; }
+        .student-select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px; box-sizing: border-box; outline: none;}
+
+        /* Badge/Level Section */
+        .level-box { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 16px; padding: 20px; color: white; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);}
+        .level-icon { font-size: 3.5rem; margin-bottom: 10px; color: #fbbf24; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        .level-title { font-size: 1.4rem; font-weight: 900; margin: 0 0 5px 0; letter-spacing: 1px;}
+        .level-desc { font-size: 0.85rem; opacity: 0.9; margin: 0; }
+        
+        .stat-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-box-small { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-align: center; }
+        .stat-box-small span { font-size: 0.75rem; color: #64748b; font-weight: bold; text-transform: uppercase; }
+        .stat-box-small strong { display: block; font-size: 1.3rem; color: #0f172a; margin-top: 5px; }
 
         /* Fixed 3-Item Bottom Navigation Bar */
         .bottom-nav {
@@ -115,9 +120,10 @@
 
     <div class="container">
         
-        <!-- ফিক্সড হেডার এবং "‹" ব্যাক বাটন -->
-        <div class="sticky-header">
-            <div class="profile-header">
+        <!-- DASHBOARD VIEW -->
+        <div id="dashboard-view">
+            <!-- Fixed Header -->
+            <div class="sticky-header">
                 <div class="profile-left" onclick="window.location.href='/student_profile.html'">
                     <div class="avatar"><i class="fas fa-user"></i></div>
                     <div class="greeting">
@@ -127,54 +133,117 @@
                 </div>
                 <div class="bell-icon" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></div>
             </div>
+
+            <div class="section-title">📈 My Progress</div>
+            <div class="progress-grid">
+                <div class="progress-card" onclick="openPanel('panel-level')">
+                    <div class="progress-info"><span>My Level</span><i class="fas fa-medal"></i></div>
+                    <b id="stat-score">00</b>
+                </div>
+                <div class="progress-card" onclick="openPanel('panel-exams')">
+                    <div class="progress-info"><span>Total Exams</span><i class="far fa-calendar-alt"></i></div>
+                    <b id="stat-total">00</b>
+                </div>
+                <div class="progress-card" onclick="openPanel('panel-leaderboard')">
+                    <div class="progress-info"><span>Leaderboard</span><i class="fas fa-trophy"></i></div>
+                    <b>Rank</b>
+                </div>
+                <div class="progress-card" onclick="openPanel('panel-recent')">
+                    <div class="progress-info"><span>Recent Activity</span><i class="fas fa-chart-line"></i></div>
+                    <b>View</b>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="section-title">Teacher's Exam Code</div>
+            <div class="search-box">
+                <input type="text" id="exam-code-input" placeholder="e.g: PHY-101">
+                <button id="search-btn" onclick="searchExam()">🔍 Search</button>
+            </div>
+            <div id="search-error" style="color: #ef4444; font-size: 0.85rem; margin-top: -15px; margin-bottom: 15px; display: none; font-weight: bold;"></div>
+
+            <hr>
+
+            <div class="section-title">Explore Exams &nbsp; <span style="color:#22c55e;"><i class="fas fa-chevron-right"></i></span></div>
+
+            <!-- Dynamic Exams Section -->
+            <div id="dynamic-exams-section">
+                <div class="nav-breadcrumb" id="bc-folder"><i class="fas fa-folder-open"></i> Available Exams</div>
+                
+                <button class="btn-del" id="btn-back-folder" onclick="goBackFolder()" style="display:none; margin-bottom:10px; border-radius:8px; padding: 8px 12px; background:#f1f5f9; color:#334155;"><i class="fas fa-arrow-left"></i> Go Back</button>
+                
+                <div id="folder-list">
+                    <p style="text-align:center; color:#6b7280;">Loading exams...</p>
+                </div>
+                
+                <div id="exam-list" style="margin-top: 15px;"></div>
+            </div>
         </div>
 
-        <div class="section-title">📈 My Progress</div>
-        <div class="progress-grid">
-            <div class="progress-card">
-                <div class="progress-icon"><i class="fas fa-medal"></i></div>
-                <div class="progress-info"><span>Total Score</span><b id="stat-score">00</b></div>
+        <!-- PANEL 1: MY LEVEL & SCORE DETAILS -->
+        <div id="panel-level" class="panel-view">
+            <div class="sticky-header sticky-header-left">
+                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
+                <h1 style="font-size: 1.4rem; margin: 0; color:#1e3a8a;">My Level</h1>
             </div>
-            <div class="progress-card">
-                <div class="progress-icon"><i class="far fa-calendar-alt"></i></div>
-                <div class="progress-info"><span>Total Exams</span><b id="stat-total">00</b></div>
+            
+            <div class="level-box">
+                <div class="level-icon" id="badge-icon"><i class="fas fa-seedling"></i></div>
+                <h2 class="level-title" id="badge-title">Novice</h2>
+                <p class="level-desc" id="badge-desc">Keep taking exams to level up!</p>
             </div>
-            <div class="progress-card">
-                <div class="progress-icon"><i class="fas fa-chart-line"></i></div>
-                <div class="progress-info"><span>Highest Marks</span><b id="stat-high">00</b></div>
-            </div>
-            <div class="progress-card">
-                <div class="progress-icon"><i class="fas fa-trophy"></i></div>
-                <div class="progress-info"><span>Lowest Marks</span><b id="stat-low">00</b></div>
+
+            <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 10px;">Performance Overview</h3>
+            <div class="stat-grid-2">
+                <div class="stat-box-small"><span>Highest Score</span><strong id="lvl-high" style="color:#16a34a;">0%</strong></div>
+                <div class="stat-box-small"><span>Lowest Score</span><strong id="lvl-low" style="color:#ef4444;">0%</strong></div>
+                <div class="stat-box-small" style="grid-column: span 2;"><span>Average Score</span><strong id="lvl-avg" style="color:#3b82f6;">0%</strong></div>
             </div>
         </div>
 
-        <hr>
-
-        <div class="section-title">Teacher's Exam Code</div>
-        <div class="search-box">
-            <input type="text" id="exam-code-input" placeholder="e.g: PHY-101">
-            <button id="search-btn" onclick="searchExam()">🔍 Search</button>
-        </div>
-        <div id="search-error" style="color: #ef4444; font-size: 0.85rem; margin-top: -15px; margin-bottom: 15px; display: none; font-weight: bold;"></div>
-
-        <hr>
-
-        <div class="section-title">Explore Exams &nbsp; <span style="color:#22c55e;"><i class="fas fa-chevron-right"></i></span></div>
-
-        <!-- Dynamic Exams Section -->
-        <div id="dynamic-exams-section">
-            <div class="nav-breadcrumb" id="bc-folder"><i class="fas fa-folder-open"></i> Available Exams</div>
-            
-            <button class="back-btn" id="btn-back-folder" onclick="goBackFolder()" style="display:none;"><i class="fas fa-arrow-left"></i> Go Back</button>
-            
-            <div id="folder-list">
-                <!-- Folders will load here -->
-                <p style="text-align:center; color:#6b7280;">Loading exams...</p>
+        <!-- PANEL 2: TOTAL EXAMS (HISTORY) -->
+        <div id="panel-exams" class="panel-view">
+            <div class="sticky-header sticky-header-left">
+                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
+                <h1 style="font-size: 1.4rem; margin: 0; color:#1e3a8a;">Exam History</h1>
             </div>
-            
-            <div id="exam-list" style="margin-top: 15px;">
-                <!-- Exams will load here -->
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Exam Name</th><th>Score</th><th>Date Taken</th></tr></thead>
+                    <tbody id="list-history-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 3: LEADERBOARD -->
+        <div id="panel-leaderboard" class="panel-view">
+            <div class="sticky-header sticky-header-left">
+                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
+                <h1 style="font-size: 1.4rem; margin: 0; color:#1e3a8a;">Leaderboard</h1>
+            </div>
+            <select id="leaderboard-filter" class="student-select-box" onchange="loadStudentLeaderboard()">
+                <option value="all" selected>🏆 Overall Performance (All Exams)</option>
+            </select>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Rank</th><th>Student Name</th><th>Score/Perf</th></tr></thead>
+                    <tbody id="list-leaderboard-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 4: RECENT ACTIVITY -->
+        <div id="panel-recent" class="panel-view">
+            <div class="sticky-header sticky-header-left">
+                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
+                <h1 style="font-size: 1.4rem; margin: 0; color:#1e3a8a;">Recent Activity</h1>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Recent Exams</th><th>Score</th><th>Questions</th></tr></thead>
+                    <tbody id="list-recent-body"></tbody>
+                </table>
             </div>
         </div>
 
@@ -182,7 +251,7 @@
 
     <!-- Fixed Bottom Navigation Bar -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="window.location.href='/student_dashboard.html'">
+        <div class="nav-item active" onclick="showDashboard()">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
             <span>Home</span>
         </div>
@@ -204,6 +273,8 @@
     <script>
         let currentFolderId = 0;
         let folderHistory = [];
+        let globalHistory = [];
+        let globalLeaderboard = [];
 
         // অনরিড নোটিফিকেশন চেক
         async function checkUnreadNotifications() {
@@ -240,8 +311,7 @@
             if (userEmail) {
                 try {
                     const response = await fetch('/api/get-student-progress', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: userEmail })
                     });
                     const data = await response.json();
@@ -249,12 +319,101 @@
                     if (data.success) {
                         document.getElementById('stat-score').innerText = data.score;
                         document.getElementById('stat-total').innerText = data.total_exams;
-                        document.getElementById('stat-high').innerText = data.highest;
-                        document.getElementById('stat-low').innerText = data.lowest;
+                        
+                        // Gamification Logic based on Total Score
+                        const score = parseFloat(data.score);
+                        let badgeTitle = "Novice", badgeIcon = '<i class="fas fa-seedling"></i>', badgeDesc = "Keep taking exams to level up!";
+                        if(score >= 50 && score < 100) { badgeTitle = "Bronze Scholar"; badgeIcon = '<i class="fas fa-medal" style="color:#cd7f32;"></i>'; badgeDesc = "You are making good progress!"; }
+                        else if(score >= 100 && score < 300) { badgeTitle = "Silver Achiever"; badgeIcon = '<i class="fas fa-medal" style="color:#c0c0c0;"></i>'; badgeDesc = "Great work! Aim for Gold."; }
+                        else if(score >= 300 && score < 600) { badgeTitle = "Gold Master"; badgeIcon = '<i class="fas fa-trophy" style="color:#ffd700;"></i>'; badgeDesc = "Outstanding performance!"; }
+                        else if(score >= 600) { badgeTitle = "Platinum Legend"; badgeIcon = '<i class="fas fa-crown" style="color:#e5e4e2;"></i>'; badgeDesc = "You are at the top of your game!"; }
+
+                        document.getElementById('badge-title').innerHTML = badgeTitle;
+                        document.getElementById('badge-icon').innerHTML = badgeIcon;
+                        document.getElementById('badge-desc').innerText = badgeDesc;
+
+                        document.getElementById('lvl-high').innerText = data.highest + '%';
+                        document.getElementById('lvl-low').innerText = data.lowest + '%';
+                        
+                        let avg = data.total_exams > 0 ? (score / parseFloat(data.total_exams)).toFixed(2) : 0;
+                        document.getElementById('lvl-avg').innerText = avg + '%';
+                    }
+
+                    // Fetch History for Table
+                    const histRes = await fetch('/api/get-student-history', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: userEmail })
+                    });
+                    const histData = await histRes.json();
+                    if(histData.success) {
+                        globalHistory = histData.history;
+                        
+                        // Panel 2: Total Exams History
+                        document.getElementById('list-history-body').innerHTML = histData.history.map(h => 
+                            `<tr><td><strong>${h.exam_name}</strong></td><td><strong style="color:#3b82f6;">${h.score}/${h.total}</strong></td><td>${h.date}</td></tr>`
+                        ).join('') || '<tr><td colspan="3">No exams taken yet.</td></tr>';
+
+                        // Panel 4: Recent Activity (Top 5)
+                        document.getElementById('list-recent-body').innerHTML = histData.history.slice(0,5).map(h => 
+                            `<tr><td><strong>${h.exam_name}</strong><br><span style="font-size:0.7rem;">${h.date}</span></td><td><strong style="color:#10b981;">${((h.score/h.total)*100).toFixed(1)}%</strong></td><td>${h.total}</td></tr>`
+                        ).join('') || '<tr><td colspan="3">No recent activity.</td></tr>';
+
+                        // Populate Leaderboard Dropdown with taken exams
+                        const ldFilter = document.getElementById('leaderboard-filter');
+                        const uniqueExams = [...new Set(histData.history.map(item => item.exam_name))]; // Just getting names for filter
+                        uniqueExams.forEach(eName => {
+                            const opt = document.createElement('option');
+                            opt.value = eName;
+                            opt.innerText = eName;
+                            ldFilter.appendChild(opt);
+                        });
                     }
                 } catch (error) { console.log("Error fetching progress:", error); }
             }
         };
+
+        // Panel Navigation
+        function openPanel(id) {
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            window.scrollTo(0, 0);
+            window.history.pushState({view: id}, "", window.location.href);
+
+            if(id === 'panel-leaderboard') { loadStudentLeaderboard(); }
+        }
+
+        function showDashboard() {
+            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+            document.getElementById('dashboard-view').style.display = 'block';
+            window.scrollTo(0, 0);
+            window.history.pushState({view: 'dashboard'}, "", window.location.href);
+        }
+
+        // Leaderboard Logic for Students
+        async function loadStudentLeaderboard() {
+            const filter = document.getElementById('leaderboard-filter').value;
+            const tbody = document.getElementById('list-leaderboard-body');
+            tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            
+            // Note: Currently, students only fetch their own history in /api/get-student-history.
+            // For a true global leaderboard, we simulate it here by showing the student's rank 
+            // relative to class data (would require a new API endpoint for exact global ranks, 
+            // but we use history logic for now as requested).
+            
+            if(filter === 'all') {
+                tbody.innerHTML = `<tr><td><strong>#1</strong></td><td><div class="student-name-box"><strong>${localStorage.getItem('userName')}</strong><span class="email">You</span></div></td><td><strong style="color:#16a34a;">${document.getElementById('stat-score').innerText}</strong></td></tr>`;
+            } else {
+                // Find specific exam score
+                const examRecord = globalHistory.find(e => e.exam_name === filter);
+                if(examRecord) {
+                    tbody.innerHTML = `<tr><td><strong>#1</strong></td><td><div class="student-name-box"><strong>${localStorage.getItem('userName')}</strong><span class="email">You</span></div></td><td><strong style="color:#16a34a;">${((examRecord.score/examRecord.total)*100).toFixed(1)}%</strong></td></tr>`;
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="3">No records found.</td></tr>';
+                }
+            }
+        }
+
 
         // ফোল্ডার এবং এক্সাম লোড করার ফাংশন
         async function loadExamFolders() {
@@ -365,6 +524,15 @@
                 searchBtn.disabled = false;
             }
         }
+
+        // Phone Back Button Logic
+        window.addEventListener('popstate', function (event) {
+            let isPanelOpen = false;
+            document.querySelectorAll('.panel-view').forEach(p => { if(p.style.display === 'block') isPanelOpen = true; });
+
+            if (isPanelOpen) { showDashboard(); } 
+            else { if (document.referrer) { window.history.back(); } }
+        });
     </script>
 </body>
 </html>
