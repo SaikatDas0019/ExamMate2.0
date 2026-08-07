@@ -19,52 +19,68 @@
             display: flex;
             justify-content: center;
         }
+        
+        /* Container updated for fixed header */
         .container { 
             width: 100%;
             max-width: 480px; 
             background-color: #ffffff;
             min-height: 100vh;
-            padding: 1.5rem 1rem 6rem 1rem; 
+            padding: 90px 1rem 6rem 1rem; 
             box-sizing: border-box;
             box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            margin: 0 auto;
         }
 
-        /* Header Section */
-        .profile-header { 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; 
+        /* Fully Fixed Header */
+        .sticky-header {
+            position: fixed; 
+            top: 0; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 100%; 
+            max-width: 480px; 
+            background-color: #ffffff; 
+            z-index: 999;
+            padding: 1rem;
+            box-sizing: border-box;
+            border-bottom: 1px solid #e5e7eb; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
         }
+        
+        .sticky-header-left {
+            justify-content: flex-start;
+            gap: 15px;
+        }
+
+        .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0;}
+
+        /* Header Section Elements */
         .profile-left { 
             display: flex; align-items: center; gap: 12px; cursor: pointer;
         }
         .avatar { 
-            width: 50px; height: 50px; background: #e0f2fe; border-radius: 50%; 
+            width: 45px; height: 45px; background: #e0f2fe; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 1.5rem; border: 2px solid #38bdf8; color: #0369a1;
+            font-size: 1.3rem; border: 2px solid #38bdf8; color: #0369a1;
         }
-        .greeting h3 { margin: 0; font-size: 1.2rem; font-weight: 700; color: #111827; }
-        .greeting p { margin: 0; font-size: 0.8rem; color: #6b7280; }
+        .greeting h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #111827; }
+        .greeting p { margin: 0; font-size: 0.75rem; color: #6b7280; }
+        
         .bell-icon { 
-            font-size: 1.2rem; color: #4b5563; background: #f3f4f6; 
-            padding: 10px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
-        }
-
-        /* Unread Notification Red Dot Style */
-        .bell-icon {
+            font-size: 1.1rem; color: #4b5563; background: #f3f4f6; 
+            padding: 9px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
             position: relative;
         }
         .bell-icon.has-unread::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 10px;
-            height: 10px;
-            background-color: #ef4444; 
-            border-radius: 50%;
-            border: 2px solid #ffffff;
+            content: ''; position: absolute; top: 2px; right: 2px;
+            width: 9px; height: 9px; background-color: #ef4444; 
+            border-radius: 50%; border: 2px solid #ffffff;
         }
         
-        /* Metrics */
+        /* Metric Buttons */
         .metrics-grid { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -80,9 +96,15 @@
             flex-direction: column; 
             gap: 5px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            cursor: pointer; 
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .metric-header { font-size: 0.8rem; color: #4b5563; font-weight: 600;}
-        .metric-val { font-size: 1.6rem; font-weight: 700; color: #111827; margin: 0; line-height: 1; }
+        .metric-card:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); 
+        }
+        .metric-header { font-size: 0.8rem; color: #166534; font-weight: 700;}
+        .metric-val { font-size: 1.6rem; font-weight: 700; color: #14532d; margin: 0; line-height: 1; }
 
         /* Action Buttons */
         .action-grid {
@@ -155,8 +177,6 @@
         .btn-wbjee { background: #0ea5e9; } .btn-adv { background: #8b5cf6; }
 
         /* ANALYSIS VIEW SPECIFIC STYLES */
-        .back-btn { background: none; border: none; color: #3b82f6; font-weight: bold; cursor: pointer; padding: 0; margin-bottom: 15px; font-size: 1rem;}
-        
         .analysis-metrics { display: flex; justify-content: space-between; margin: 15px 0; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;}
         .ana-metric { text-align: center; }
         .ana-metric span { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 5px;}
@@ -179,6 +199,7 @@
         #dashboard-view { display: block; }
         #analysis-view { display: none; }
         #all-exams-view { display: none; }
+        #edit-exam-view { display: none; }
 
         /* FIXED BOTTOM NAVIGATION BAR STYLING */
         .bottom-nav {
@@ -220,8 +241,10 @@
 
     <div class="container">
         
+        <!-- DASHBOARD VIEW -->
         <div id="dashboard-view">
-            <div class="profile-header">
+            <!-- Fixed Header for Dashboard -->
+            <div class="sticky-header">
                 <div class="profile-left" onclick="window.location.href='teacher_profile.html'">
                     <div class="avatar"><i class="fas fa-user-tie"></i></div>
                     <div class="greeting">
@@ -232,11 +255,24 @@
                 <div class="bell-icon" onclick="window.location.href='notification.html'"><i class="fas fa-bell"></i></div>
             </div>
 
+            <!-- Clickable Metric Cards -->
             <div class="metrics-grid">
-                <div class="metric-card"><div class="metric-header">🏅 Total Exams</div><div class="metric-val" id="val-exams">0</div></div>
-                <div class="metric-card"><div class="metric-header">👥 Total Students</div><div class="metric-val" id="val-students">0</div></div>
-                <div class="metric-card"><div class="metric-header">📈 Avg Score</div><div class="metric-val" id="val-avg">0%</div></div>
-                <div class="metric-card"><div class="metric-header">🏆 Active Exams</div><div class="metric-val" id="val-active">0</div></div>
+                <div class="metric-card" onclick="showAllExams()">
+                    <div class="metric-header">🏅 Total Exams</div>
+                    <div class="metric-val" id="val-exams">0</div>
+                </div>
+                <div class="metric-card" onclick="window.location.href='/teacher_analytics.html'">
+                    <div class="metric-header">👥 Total Students</div>
+                    <div class="metric-val" id="val-students">0</div>
+                </div>
+                <div class="metric-card" onclick="window.location.href='/teacher_analytics.html'">
+                    <div class="metric-header">📈 Avg Score</div>
+                    <div class="metric-val" id="val-avg">0%</div>
+                </div>
+                <div class="metric-card" onclick="showAllExams()">
+                    <div class="metric-header">🏆 Active Exams</div>
+                    <div class="metric-val" id="val-active">0</div>
+                </div>
             </div>
 
             <div class="action-grid">
@@ -260,17 +296,25 @@
             </div>
         </div>
 
+        <!-- ALL EXAMS VIEW -->
         <div id="all-exams-view">
-            <button class="back-btn" onclick="showDashboard()">⬅️ Back to Dashboard</button>
-            <h1 style="font-size: 1.5rem; margin-bottom: 15px;">All Created Exams</h1>
+            <!-- Fixed Header for All Exams -->
+            <div class="sticky-header sticky-header-left">
+                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
+                <h1 style="font-size: 1.4rem; margin: 0;">All Created Exams</h1>
+            </div>
             
             <div class="exam-grid" id="all-exams-container"></div>
         </div>
 
+        <!-- ANALYSIS VIEW -->
         <div id="analysis-view">
-            <button class="back-btn" onclick="showDashboard()">⬅️ Back to Dashboard</button>
+            <!-- Fixed Header for Analysis -->
+            <div class="sticky-header sticky-header-left">
+                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
+                <h1 style="font-size: 1.3rem; margin: 0;">📈 <span id="ana-exam-name">Exam Name</span></h1>
+            </div>
             
-            <h1 style="font-size: 1.4rem; margin-top:10px; margin-bottom: 2px;">📈 <span id="ana-exam-name">Exam Name</span> Report</h1>
             <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Exam Code: <strong id="ana-exam-code">CODE</strong></div>
 
             <div class="analysis-metrics">
@@ -290,6 +334,13 @@
                 </div>
             </div>
 
+            <!-- Suspicious Activity Box from previous updates -->
+            <div class="rank-box" style="border: 2px solid #fca5a5; background: #fef2f2; margin-bottom: 1.5rem;">
+                <h3 style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> Suspicious Activity</h3>
+                <p style="font-size:0.75rem; color:#b91c1c; text-align:center; margin-top:-5px; margin-bottom:10px;">যারা ট্যাব পাল্টানো বা মিনিমাইজ করার চেষ্টা করেছে</p>
+                <ul class="rank-list" id="cheater-list"></ul>
+            </div>
+
             <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 10px;">📊 Score Distribution</h3>
             <div class="chart-container">
                 <canvas id="scoreChart"></canvas>
@@ -301,9 +352,13 @@
             </div>
         </div>
         
-        <div id="edit-exam-view" style="display: none;">
-            <button class="back-btn" onclick="showDashboard()">⬅️ Back to Dashboard</button>
-            <h1 style="font-size: 1.4rem; margin-top:10px; margin-bottom: 15px;" id="edit-exam-title">✏️ Edit Exam</h1>
+        <!-- EDIT EXAM VIEW -->
+        <div id="edit-exam-view">
+            <!-- Fixed Header for Edit Exam -->
+            <div class="sticky-header sticky-header-left">
+                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
+                <h1 style="font-size: 1.4rem; margin: 0;" id="edit-exam-title">✏️ Edit Exam</h1>
+            </div>
             
             <div style="background: #ffffff; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
                 <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Exam Name</label>
@@ -431,7 +486,7 @@
                                 <span class="exam-code">${exam.code}</span>
                             </div>
                         </div>
-                        <button class="ana-btn" onclick="openAnalysis('${exam.code}', '${exam.name}')">View Analysis 📈</button>
+                        <button class="ana-btn" onclick="openAnalysis('${exam.code}', '${exam.name.replace(/'/g, "\\'")}')">View Analysis 📈</button>
                     </div>
                 `;
                 allContainer.innerHTML += cardHTML;
@@ -444,12 +499,14 @@
             document.getElementById('analysis-view').style.display = 'none';
             document.getElementById('all-exams-view').style.display = 'none';
             document.getElementById('edit-exam-view').style.display = 'none';
+            window.scrollTo(0, 0);
             window.history.pushState({view: 'dashboard'}, "", window.location.href);
         }
 
         function showAllExams() {
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('all-exams-view').style.display = 'block';
+            window.scrollTo(0, 0);
             window.history.pushState({view: 'all_exams'}, "", window.location.href);
         }
 
@@ -457,6 +514,7 @@
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('all-exams-view').style.display = 'none';
             document.getElementById('analysis-view').style.display = 'block';
+            window.scrollTo(0, 0);
             window.history.pushState({view: 'analysis'}, "", window.location.href);
 
             document.getElementById('ana-exam-name').innerText = examName;
@@ -494,6 +552,22 @@
                             <strong>${s.score}</strong>
                         </li>`
                     ).join('');
+                    
+                    // Suspicious Activity (Cheating Attempts)
+                    const cheaters = data.all_students.filter(s => s.warnings > 0);
+                    if (cheaters.length > 0) {
+                        document.getElementById('cheater-list').innerHTML = cheaters.map(s => 
+                            `<li>
+                                <div class="student-info">
+                                    <span style="color: #ef4444; font-weight:bold;">${s.name}</span>
+                                    <span class="student-email-text">(${s.email})</span>
+                                </div>
+                                <strong style="color: #ef4444; background: #fee2e2; padding: 3px 8px; border-radius: 6px;">${s.warnings} Warnings</strong>
+                            </li>`
+                        ).join('');
+                    } else {
+                        document.getElementById('cheater-list').innerHTML = `<li style="justify-content:center; color:#10b981; font-weight:bold;">✅ No suspicious activity detected!</li>`;
+                    }
 
                     renderChart(data.chartLabels, data.chartData);
                 } else {
@@ -533,7 +607,7 @@
 
         // ফোনের ব্যাক বাটন হ্যান্ডেল করার জন্য সঠিক হিস্ট্রি লজিক
         window.addEventListener('popstate', function (event) {
-            if (document.getElementById('analysis-view').style.display === 'block' || document.getElementById('all-exams-view').style.display === 'block') {
+            if (document.getElementById('analysis-view').style.display === 'block' || document.getElementById('all-exams-view').style.display === 'block' || document.getElementById('edit-exam-view').style.display === 'block') {
                 showDashboard();
             } else {
                 if (document.referrer) {
@@ -541,6 +615,7 @@
                 }
             }
         });
+        
         let currentEditingExamCode = "";
         let currentEditQuestions = [];
 
@@ -574,6 +649,7 @@
             document.getElementById('analysis-view').style.display = 'none';
             document.getElementById('edit-exam-view').style.display = 'block';
             document.getElementById('edit-exam-title').innerText = "Edit Exam: " + examCode;
+            window.scrollTo(0, 0);
             window.history.pushState({view: 'edit_exam'}, "", window.location.href);
             
             const response = await fetch('/api/get-exam-questions', {
