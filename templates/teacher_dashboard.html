@@ -294,6 +294,45 @@
             <div class="chart-container">
                 <canvas id="scoreChart"></canvas>
             </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px;">
+                <button onclick="editExam()" style="background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1rem;"><i class="fas fa-pen"></i> Edit Exam</button>
+                <button onclick="deleteExam()" style="background: #ef4444; color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1rem;"><i class="fas fa-trash"></i> Delete Exam</button>
+            </div>
+        </div>
+        
+        <div id="edit-exam-view" style="display: none;">
+            <button class="back-btn" onclick="showDashboard()">⬅️ Back to Dashboard</button>
+            <h1 style="font-size: 1.4rem; margin-top:10px; margin-bottom: 15px;" id="edit-exam-title">✏️ Edit Exam</h1>
+            
+            <div style="background: #ffffff; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Exam Name</label>
+                <input type="text" id="edit-exam-name" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Timer (Mins)</label>
+                        <input type="number" id="edit-exam-timer" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Negative Marks</label>
+                        <select id="edit-exam-negative" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
+                            <option value="0">0</option>
+                            <option value="0.25">-0.25</option>
+                            <option value="0.33">-0.33</option>
+                            <option value="0.5">-0.50</option>
+                            <option value="1">-1.00</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 10px; font-size: 1.1rem;">Questions List</h3>
+            <div id="edit-questions-list"></div>
+
+            <button onclick="addEditQuestion()" style="width:100%; background: #f1f5f9; color: #3b82f6; border: 2px dashed #3b82f6; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 15px;">➕ Add New Question</button>
+
+            <button id="save-edit-btn" onclick="saveEditedExam()" style="width:100%; background: #10b981; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 6px rgba(16,185,129,0.3);">💾 Save Changes</button>
         </div>
 
     </div>
@@ -404,6 +443,7 @@
             document.getElementById('dashboard-view').style.display = 'block';
             document.getElementById('analysis-view').style.display = 'none';
             document.getElementById('all-exams-view').style.display = 'none';
+            document.getElementById('edit-exam-view').style.display = 'none';
             window.history.pushState({view: 'dashboard'}, "", window.location.href);
         }
 
@@ -501,6 +541,127 @@
                 }
             }
         });
+        let currentEditingExamCode = "";
+        let currentEditQuestions = [];
+
+        // ডিলিট করার লজিক
+        async function deleteExam() {
+            if (confirm("আপনি কি সত্যিই এই এক্সামটি ডিলিট করতে চান? এই কাজ বাতিল করা যাবে না।")) {
+                try {
+                    const response = await fetch('/api/teacher-delete-exam', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ exam_code: document.getElementById('ana-exam-code').innerText })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert("এক্সামটি সফলভাবে ডিলিট হয়েছে!");
+                        window.location.reload(); 
+                    } else {
+                        alert("Failed to delete exam.");
+                    }
+                } catch(e) {
+                    alert("Server error.");
+                }
+            }
+        }
+
+        // এডিট ভিউ খোলার লজিক
+        async function editExam() {
+            const examCode = document.getElementById('ana-exam-code').innerText;
+            currentEditingExamCode = examCode;
+            
+            document.getElementById('analysis-view').style.display = 'none';
+            document.getElementById('edit-exam-view').style.display = 'block';
+            document.getElementById('edit-exam-title').innerText = "Edit Exam: " + examCode;
+            window.history.pushState({view: 'edit_exam'}, "", window.location.href);
+            
+            const response = await fetch('/api/get-exam-questions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exam_code: examCode })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('edit-exam-name').value = data.exam_name;
+                document.getElementById('edit-exam-timer').value = data.timer_minutes;
+                document.getElementById('edit-exam-negative').value = data.negative_marks;
+                
+                currentEditQuestions = data.questions.map(q => ({
+                    question_text: q.q_text, option_a: q.opt_a, option_b: q.opt_b, option_c: q.opt_c, option_d: q.opt_d, correct_option: q.correct
+                }));
+                
+                renderEditQuestions();
+            } else {
+                alert("Failed to load exam data.");
+            }
+        }
+
+        // এডিট লিস্ট রেন্ডার করা
+        function renderEditQuestions() {
+            const list = document.getElementById('edit-questions-list');
+            list.innerHTML = '';
+            
+            currentEditQuestions.forEach((q, i) => {
+                list.innerHTML += `
+                <div class="exam-card" style="margin-bottom: 15px; padding: 15px; background: #f8fafc;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                        <strong style="color: #3b82f6;">Q${i + 1}:</strong>
+                        <button onclick="removeEditQuestion(${i})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                    <textarea style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px;" onchange="updateEditQ(${i}, 'question_text', this.value)">${q.question_text}</textarea>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom: 10px;">
+                        <div>A) <input type="text" style="width:100%; padding: 5px; border:1px solid #cbd5e1; border-radius:4px;" value="${q.option_a}" onchange="updateEditQ(${i}, 'option_a', this.value)"></div>
+                        <div>B) <input type="text" style="width:100%; padding: 5px; border:1px solid #cbd5e1; border-radius:4px;" value="${q.option_b}" onchange="updateEditQ(${i}, 'option_b', this.value)"></div>
+                        <div>C) <input type="text" style="width:100%; padding: 5px; border:1px solid #cbd5e1; border-radius:4px;" value="${q.option_c}" onchange="updateEditQ(${i}, 'option_c', this.value)"></div>
+                        <div>D) <input type="text" style="width:100%; padding: 5px; border:1px solid #cbd5e1; border-radius:4px;" value="${q.option_d}" onchange="updateEditQ(${i}, 'option_d', this.value)"></div>
+                    </div>
+                    
+                    <div style="background:#e0f2fe; padding:8px; border-radius:6px;">
+                        <label style="font-size:0.85rem; font-weight:bold; color:#0369a1;">Correct Option:</label>
+                        <select onchange="updateEditQ(${i}, 'correct_option', this.value)" style="padding:4px; border-radius:4px; border:1px solid #bae6fd;">
+                            <option value="A" ${q.correct_option === 'A' ? 'selected' : ''}>A</option>
+                            <option value="B" ${q.correct_option === 'B' ? 'selected' : ''}>B</option>
+                            <option value="C" ${q.correct_option === 'C' ? 'selected' : ''}>C</option>
+                            <option value="D" ${q.correct_option === 'D' ? 'selected' : ''}>D</option>
+                        </select>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function updateEditQ(index, field, value) { currentEditQuestions[index][field] = value; }
+        function removeEditQuestion(index) { if(confirm("প্রশ্নটি মুছে ফেলতে চান?")) { currentEditQuestions.splice(index, 1); renderEditQuestions(); } }
+        function addEditQuestion() { currentEditQuestions.push({ question_text: "", option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A" }); renderEditQuestions(); }
+
+        // আপডেটেড এক্সাম সেভ করা
+        async function saveEditedExam() {
+            const name = document.getElementById('edit-exam-name').value;
+            const timer = document.getElementById('edit-exam-timer').value;
+            const negative = document.getElementById('edit-exam-negative').value;
+            
+            const btn = document.getElementById('save-edit-btn');
+            btn.innerText = "Saving... ⏳"; btn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/teacher-update-exam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: currentEditingExamCode, exam_name: name, timer: timer, negative_marks: negative, questions: currentEditQuestions })
+                });
+                const data = await response.json();
+                if(data.success) {
+                    alert("Exam Updated Successfully!");
+                    window.location.reload();
+                } else {
+                    alert("Failed to update: " + data.error);
+                }
+            } catch(e) { alert("Server error"); } 
+            finally { btn.innerText = "💾 Save Changes"; btn.disabled = false; }
+        }
+
     </script>
 </body>
 </html>
