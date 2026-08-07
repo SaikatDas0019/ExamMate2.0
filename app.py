@@ -972,6 +972,57 @@ def update_item_position():
     except Exception as e:
         return jsonify({"success": False, "error": "Failed to update order."}), 500
 
+@app.route('/api/teacher-delete-exam', methods=['POST'])
+def teacher_delete_exam():
+    data = request.get_json()
+    exam_code = data.get('exam_code')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # প্রথমে ওই এক্সামের প্রশ্ন এবং রেজাল্ট ডিলিট করা হচ্ছে
+        cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
+        cursor.execute(f"DELETE FROM results WHERE exam_code = {ph}", (exam_code,))
+        # সবশেষে এক্সাম ডিলিট করা হচ্ছে
+        cursor.execute(f"DELETE FROM exams WHERE exam_code = {ph}", (exam_code,))
+        
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Exam deleted successfully!"})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
+
+@app.route('/api/teacher-update-exam', methods=['POST'])
+def teacher_update_exam():
+    data = request.get_json()
+    exam_code = data.get('exam_code')
+    exam_name = data.get('exam_name')
+    timer = data.get('timer')
+    negative_marks = float(data.get('negative_marks', 0.0))
+    questions = data.get('questions')
+
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # এক্সামের মূল ইনফরমেশন আপডেট করা হচ্ছে
+        cursor.execute(f"UPDATE exams SET exam_name = {ph}, timer_minutes = {ph}, negative_marks = {ph} WHERE exam_code = {ph}", 
+                       (exam_name, timer, negative_marks, exam_code))
+        
+        # পুরনো প্রশ্ন মুছে নতুন প্রশ্নগুলো সেভ করা হচ্ছে
+        cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
+        for q in questions:
+            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
+                           (exam_code, q['question_text'], q['option_a'], q['option_b'], q['option_c'], q['option_d'], q['correct_option']))
+        
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Exam updated successfully!"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
