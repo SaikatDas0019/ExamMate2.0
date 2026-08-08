@@ -51,7 +51,7 @@
         .copy-btn { position: absolute; top: 8px; right: 8px; background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; transition: 0.2s;}
         .copy-btn:hover { background: #2563eb; }
 
-        /* Manual Entry Guide - Moved Margin to Bottom */
+        /* Manual Entry Guide */
         .manual-guide { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #475569;}
         .manual-guide-title { font-weight: bold; color: #1e293b; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;}
 
@@ -72,14 +72,27 @@
 
         <h1>Create Custom Exam</h1>
 
+        <!-- Exam Details Box (Updated with Class & Subject) -->
         <div class="card-basic">
             <div class="input-group">
-                <label>Exam Name</label>
-                <input type="text" id="exam-name" placeholder="e.g. Physics Sem 1">
+                <label>Exam Name (e.g. Kinematics Test 1)</label>
+                <input type="text" id="exam-name" placeholder="Physics Sem 1">
             </div>
+            
             <div class="grid-2x2">
                 <div class="input-group">
-                    <label>Exam Code</label>
+                    <label>Class/Batch</label>
+                    <input type="text" id="exam-class" placeholder="e.g. Class 11, JEE">
+                </div>
+                <div class="input-group">
+                    <label>Subject</label>
+                    <input type="text" id="exam-subject" placeholder="e.g. Physics">
+                </div>
+            </div>
+
+            <div class="grid-2x2" style="margin-top: 10px;">
+                <div class="input-group">
+                    <label>Unique Exam Code</label>
                     <input type="text" id="exam-code" placeholder="PHY-101" style="text-transform: uppercase;">
                 </div>
                 <div class="input-group">
@@ -87,6 +100,7 @@
                     <input type="number" id="exam-timer" min="1" max="180" value="30">
                 </div>
             </div>
+            
             <div class="input-group" style="margin-top: 10px;">
                 <label>Negative Marks (Per Wrong Answer)</label>
                 <select id="exam-negative">
@@ -144,7 +158,7 @@ CRITICAL RULES FOR MATH & FORMATTING:
                 </div>
             </div>
 
-            <!-- Manual Entry Guide Moved Here (Between Prompt and Input Box) -->
+            <!-- Manual Entry Guide -->
             <div class="manual-guide">
                 <div class="manual-guide-title"><i class="fas fa-edit"></i> <span id="manual-title-text">ম্যানুয়ালি প্রশ্ন দেওয়ার নিয়ম:</span></div>
                 <span id="manual-desc-text">আপনি চাইলে নিজে টাইপ করেও প্রশ্ন দিতে পারেন। শুধু নিচের মতো করে সাজিয়ে বক্সে পেস্ট করুন:</span>
@@ -191,19 +205,15 @@ CRITICAL RULES FOR MATH & FORMATTING:
             const manualDesc = document.getElementById('manual-desc-text');
 
             if (lang === 'en') {
-                btnEn.classList.add('active');
-                btnBn.classList.remove('active');
-                instEn.classList.remove('hidden');
-                instBn.classList.add('hidden');
+                btnEn.classList.add('active'); btnBn.classList.remove('active');
+                instEn.classList.remove('hidden'); instBn.classList.add('hidden');
                 textArea.placeholder = "Paste the generated questions from ChatGPT or Gemini here...";
                 addBtn.innerHTML = "Add Questions ➕";
                 manualTitle.innerText = "Manual Entry Format:";
                 manualDesc.innerText = "You can also type questions manually. Just format them like below and paste in the box:";
             } else {
-                btnBn.classList.add('active');
-                btnEn.classList.remove('active');
-                instBn.classList.remove('hidden');
-                instEn.classList.add('hidden');
+                btnBn.classList.add('active'); btnEn.classList.remove('active');
+                instBn.classList.remove('hidden'); instEn.classList.add('hidden');
                 textArea.placeholder = "ChatGPT বা Gemini থেকে কপি করা প্রশ্ন এখানে পেস্ট করুন...";
                 addBtn.innerHTML = "অ্যাড করুন ➕";
                 manualTitle.innerText = "ম্যানুয়ালি প্রশ্ন দেওয়ার নিয়ম:";
@@ -211,7 +221,6 @@ CRITICAL RULES FOR MATH & FORMATTING:
             }
         }
 
-        // Copy Prompt Logic
         function copyPrompt(textId, btnId) {
             const promptText = document.getElementById(textId).innerText;
             navigator.clipboard.writeText(promptText).then(() => {
@@ -267,23 +276,13 @@ CRITICAL RULES FOR MATH & FORMATTING:
                     </div>`;
                 });
                 previewList.innerHTML = html;
-
-                // Render Math Equations for preview
-                if (window.MathJax) {
-                    MathJax.typesetPromise([previewList]).catch(function (err) { console.log(err.message); });
-                }
-            } else {
-                previewSection.classList.add('hidden');
-            }
+                if (window.MathJax) { MathJax.typesetPromise([previewList]).catch(function (err) { console.log(err.message); }); }
+            } else { previewSection.classList.add('hidden'); }
         }
 
         function updateQData(index, field, value) { tempQuestions[index][field] = value; updateUI(); }
-        
-        function removeQuestion(index) {
-            if(confirm("প্রশ্নটি মুছে ফেলতে চান?")) { tempQuestions.splice(index, 1); updateUI(); }
-        }
+        function removeQuestion(index) { if(confirm("প্রশ্নটি মুছে ফেলতে চান?")) { tempQuestions.splice(index, 1); updateUI(); } }
 
-        // 🧠 Smart Text Processor (Auto split Questions & Options)
         function processScannedText() {
             const text = document.getElementById('scanned-text-result').value;
             if (!text.trim()) { alert("Please paste questions in the box! / বক্সে প্রশ্ন পেস্ট করুন!"); return; }
@@ -297,8 +296,7 @@ CRITICAL RULES FOR MATH & FORMATTING:
                 let optMatch = line.match(/^[\(]?([A-D])[a-z]?[\)\.]?\s+(.*)/i); 
                 let ansMatch = line.match(/^(Ans|Answer|উত্তর)[\s\:\.\-]*([A-D])/i);
 
-                if (ansMatch && currentQ) {
-                    currentQ.correct_option = ansMatch[2].toUpperCase();
+                if (ansMatch && currentQ) { currentQ.correct_option = ansMatch[2].toUpperCase();
                 } else if (optMatch && currentQ) {
                     let optChar = optMatch[1].toUpperCase();
                     if (optChar === 'A') currentQ.option_a = optMatch[2];
@@ -306,11 +304,9 @@ CRITICAL RULES FOR MATH & FORMATTING:
                     if (optChar === 'C') currentQ.option_c = optMatch[2];
                     if (optChar === 'D') currentQ.option_d = optMatch[2];
                 } else {
-                    if (currentQ && (!currentQ.option_a || !currentQ.option_b)) {
-                        currentQ.question_text += " \n" + line; 
+                    if (currentQ && (!currentQ.option_a || !currentQ.option_b)) { currentQ.question_text += " \n" + line; 
                     } else {
                         if (currentQ) { tempQuestions.push(currentQ); addedCount++; }
-                        // Filter out 'Q:' prefix if they typed it manually
                         let qText = line.replace(/^(Q|Question|প্রশ্ন)[\s\:\.\-]+/i, '');
                         currentQ = { question_text: qText, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A" };
                     }
@@ -318,18 +314,19 @@ CRITICAL RULES FOR MATH & FORMATTING:
             }
             if (currentQ) { tempQuestions.push(currentQ); addedCount++; }
 
-            document.getElementById('scanned-text-result').value = ""; 
-            updateUI();
+            document.getElementById('scanned-text-result').value = ""; updateUI();
             alert(`✅ ${addedCount} Questions added successfully!`);
         }
 
-        // Publish Exam Update with Negative Marks
+        // Updated Publish Exam Function (With Class & Subject)
         async function publishExam() {
             const examName = document.getElementById('exam-name').value;
+            const examClass = document.getElementById('exam-class').value || 'General';
+            const examSubject = document.getElementById('exam-subject').value || 'General';
             const examCode = document.getElementById('exam-code').value.toUpperCase();
             const timer = document.getElementById('exam-timer').value;
             const negative = document.getElementById('exam-negative').value; 
-            const teacherEmail = localStorage.getItem('userEmail') || 'dasbabu938207@gmail.com';
+            const teacherEmail = localStorage.getItem('userEmail') || 'teacher@email.com';
             
             if (!examName || !examCode) { alert("Please provide the exam name and unique code."); return; }
             if (tempQuestions.length === 0) { alert("Please add at least 1 question!"); return; }
@@ -341,7 +338,16 @@ CRITICAL RULES FOR MATH & FORMATTING:
                 const response = await fetch('/api/create-exam', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ exam_code: examCode, exam_name: examName, timer: timer, negative_marks: negative, teacher_email: teacherEmail, questions: tempQuestions })
+                    body: JSON.stringify({ 
+                        exam_code: examCode, 
+                        exam_name: examName, 
+                        class_name: examClass,
+                        subject: examSubject,
+                        timer: timer, 
+                        negative_marks: negative, 
+                        teacher_email: teacherEmail, 
+                        questions: tempQuestions 
+                    })
                 });
                 const data = await response.json();
                 if (response.ok && data.success) {
@@ -352,15 +358,10 @@ CRITICAL RULES FOR MATH & FORMATTING:
             finally { publishBtn.innerText = "Publish Exam 🚀"; publishBtn.disabled = false; }
         }
         
-        // ব্যাক বাটন প্রেস করলে আগের পেজে যাওয়ার জন্য সঠিক নিয়ম
         window.addEventListener('popstate', function (event) {
-            if (document.referrer) {
-                window.history.back();
-            } else {
-                window.location.href = '/teacher_dashboard.html';
-            }
+            if (document.referrer) { window.history.back(); } 
+            else { window.location.href = '/teacher_dashboard.html'; }
         });
-
     </script>
 </body>
 </html>
