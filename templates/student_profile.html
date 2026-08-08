@@ -413,27 +413,36 @@
         async function saveProfileData() {
             const newName = document.getElementById('edit-name-input').value.trim();
             const newRole = document.getElementById('edit-role-input').value;
-            const oldRole = localStorage.getItem('userRole');
+            const userEmail = localStorage.getItem('userEmail');
 
             if(!newName) { alert("Name cannot be empty!"); return; }
 
             try {
-                localStorage.setItem('userName', newName);
-                localStorage.setItem('userRole', newRole);
-                
-                loadProfileData();
-                alert("Profile updated successfully!");
-                
-                // If they change role to Teacher, redirect them to the teacher dashboard
-                if (newRole !== oldRole && newRole === 'Teacher') {
-                    window.location.href = '/teacher_dashboard.html';
+                // আপনার অ্যাপের অরিজিনাল এপিআই রুট '/api/update-profile' ব্যবহার করা হলো
+                const response = await fetch('/api/update-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, name: newName, role: newRole })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    // লোকাল স্টোরেজ আপডেট করা
+                    localStorage.setItem('userName', newName);
+                    localStorage.setItem('userRole', newRole);
+                    
+                    alert("Profile updated successfully!");
+                    
+                    // সার্ভার থেকে আসা সঠিক রিডাইরেক্ট লিংকে চলে যাবে (রোল অনুযায়ী একাউন্ট সুইচ হবে)
+                    window.location.href = data.redirect_url;
                 } else {
-                    showMainProfile();
+                    alert("Failed to update profile: " + data.error);
                 }
             } catch(e) {
-                alert("Error saving profile.");
+                alert("Server error while saving profile.");
             }
         }
+
 
         // 2. Fetch Analytics & Gamification Data
         async function fetchAnalyticsData() {
