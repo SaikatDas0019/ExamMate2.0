@@ -383,6 +383,39 @@
             if (navigator.share) { navigator.share({ title: examName, text: text }).catch(console.error); }
             else { navigator.clipboard.writeText(`Exam Code: ${examCode}`); alert("Exam Code copied!"); }
         }
+        // শিক্ষকের সার্চ ও ভিউ প্যাটার্ন ট্র্যাক করা
+        function trackTeacherActivity(searchTerm, subject) {
+            let activity = JSON.parse(localStorage.getItem('teacher_activity') || '{"searches": [], "viewedSubjects": []}');
+            if(searchTerm && !activity.searches.includes(searchTerm)) activity.searches.unshift(searchTerm);
+            if(subject && !activity.viewedSubjects.includes(subject)) activity.viewedSubjects.unshift(subject);
+            localStorage.setItem('teacher_activity', JSON.stringify(activity));
+        }
+
+        // টিচার ফিড র‍্যাঙ্কিং অ্যালগরিদম
+        function sortExamsForTeacher(feedList) {
+            let activity = JSON.parse(localStorage.getItem('teacher_activity') || '{"searches": [], "viewedSubjects": []}');
+
+            return feedList.sort((a, b) => {
+                let scoreA = 0;
+                let scoreB = 0;
+
+                // ১. শিক্ষক যে সাবজেক্ট বা টার্ম বেশি সার্চ করেছেন
+                if (activity.searches.some(s => a.subject.toLowerCase().includes(s.toLowerCase()) || a.name.toLowerCase().includes(s.toLowerCase()))) scoreA += 50;
+                if (activity.searches.some(s => b.subject.toLowerCase().includes(s.toLowerCase()) || b.name.toLowerCase().includes(s.toLowerCase()))) scoreB += 50;
+
+                // ২. শিক্ষক যে সাবজেক্টের কোয়েশ্চন আগে ভিউ করেছেন
+                if (activity.viewedSubjects.includes(a.subject)) scoreA += 40;
+                if (activity.viewedSubjects.includes(b.subject)) scoreB += 40;
+
+                // ৩. সাম্প্রতিক আপলোড
+                let daysA = (new Date() - new Date(a.date)) / (1000 * 60 * 60 * 24);
+                let daysB = (new Date() - new Date(b.date)) / (1000 * 60 * 60 * 24);
+                if (daysA <= 7) scoreA += 20;
+                if (daysB <= 7) scoreB += 20;
+
+                return scoreB - scoreA;
+            });
+        }
     </script>
 </body>
 </html>
