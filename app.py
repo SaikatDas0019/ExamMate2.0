@@ -311,7 +311,7 @@ def get_exam_questions():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT exam_name, timer_minutes, negative_marks FROM exams WHERE exam_code = {ph}", (exam_code,))
+        cursor.execute(f"SELECT exam_name, timer_minutes, negative_marks, class_name, subject, is_private FROM exams WHERE exam_code = {ph}", (exam_code,))
         exam_info = cursor.fetchone()
         if not exam_info:
             conn.close()
@@ -327,12 +327,27 @@ def get_exam_questions():
             e_name = exam_info['exam_name']
             e_time = exam_info['timer_minutes']
             e_neg = exam_info.get('negative_marks', 0.0)
+            c_name = exam_info.get('class_name', '')
+            subj = exam_info.get('subject', '')
+            is_priv = exam_info.get('is_private', False)
         else:
             e_name = exam_info[0]
             e_time = exam_info[1]
             e_neg = exam_info[2] if len(exam_info) > 2 else 0.0
+            c_name = exam_info[3] if len(exam_info) > 3 else ''
+            subj = exam_info[4] if len(exam_info) > 4 else ''
+            is_priv = exam_info[5] if len(exam_info) > 5 else False
 
-        return jsonify({ "success": True, "exam_name": e_name, "timer_minutes": e_time, "negative_marks": float(e_neg) if e_neg else 0.0, "questions": questions_list })
+        return jsonify({ 
+            "success": True, 
+            "exam_name": e_name, 
+            "timer_minutes": e_time, 
+            "negative_marks": float(e_neg) if e_neg else 0.0, 
+            "class_name": c_name,
+            "subject": subj,
+            "is_private": is_priv,
+            "questions": questions_list 
+        })
     except Exception as e:
         return jsonify({"success": False, "error": "Database error occurred."}), 500
 
@@ -1018,6 +1033,9 @@ def teacher_update_exam():
     exam_name = data.get('exam_name')
     timer = data.get('timer')
     negative_marks = float(data.get('negative_marks', 0.0))
+    class_name = data.get('class_name', 'General')
+    subject = data.get('subject', 'General')
+    is_private = data.get('is_private', False)
     questions = data.get('questions')
 
     try:
@@ -1025,8 +1043,8 @@ def teacher_update_exam():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        cursor.execute(f"UPDATE exams SET exam_name = {ph}, timer_minutes = {ph}, negative_marks = {ph} WHERE exam_code = {ph}", 
-                       (exam_name, timer, negative_marks, exam_code))
+        cursor.execute(f"UPDATE exams SET exam_name = {ph}, timer_minutes = {ph}, negative_marks = {ph}, class_name = {ph}, subject = {ph}, is_private = {ph} WHERE exam_code = {ph}", 
+                       (exam_name, timer, negative_marks, class_name, subject, is_private, exam_code))
         
         cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
         for q in questions:
@@ -1161,13 +1179,12 @@ def toggle_social():
         return jsonify({"success": True, "status": status})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+
 @app.route('/run-fix-db', methods=['GET'])
 def run_fix_db():
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
-        
-        # টেবিলের মধ্যে is_private কলামটি যুক্ত করা হচ্ছে
         cursor.execute("ALTER TABLE exams ADD COLUMN is_private BOOLEAN DEFAULT FALSE;")
         conn.commit()
         conn.close()
