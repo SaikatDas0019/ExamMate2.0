@@ -1161,7 +1161,20 @@ def toggle_social():
         return jsonify({"success": True, "status": status})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
-
+@app.route('/run-fix-db', methods=['GET'])
+def run_fix_db():
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        
+        # টেবিলের মধ্যে is_private কলামটি যুক্ত করা হচ্ছে
+        cursor.execute("ALTER TABLE exams ADD COLUMN is_private BOOLEAN DEFAULT FALSE;")
+        conn.commit()
+        conn.close()
+        return "<h3>🎉 Database successfully fixed! The 'is_private' column has been added. You can now go back and publish your exam.</h3>"
+    except Exception as e:
+        return f"<h3>⚠️ Note:</h3> <p>{str(e)}</p><p>(If it says column already exists, that means it's already fixed and ready to use!)</p>"
+        
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
