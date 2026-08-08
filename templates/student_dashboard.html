@@ -3,11 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Student Dashboard (Feed)</title>
+    <title>ExamMate | Student Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- MathJax for rendering Math in Results -->
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
-        /* Global Theme (Light Theme & Mobile First) */
+        /* Global Theme */
         :root { color-scheme: light; }
         body { 
             background-color: #f1f5f9; color: #333333; 
@@ -17,20 +24,22 @@
         
         .container { 
             width: 100%; max-width: 480px; background-color: #f1f5f9;
-            min-height: 100vh; padding: 80px 0 70px 0; 
+            min-height: 100vh; padding-bottom: 70px; 
             box-sizing: border-box; margin: 0 auto; position: relative; overflow-x: hidden;
         }
-        
-        /* Fully Fixed Header */
-        .sticky-header {
-            position: fixed; top: 0; left: 50%; transform: translateX(-50%); 
-            width: 100%; max-width: 480px; background-color: #ffffff; 
-            z-index: 999; padding: 12px 15px; box-sizing: border-box;
-            border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+
+        /* 📌 100% Fixed Top Section (Header + Search + Filters) */
+        .fixed-top-section {
+            position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; z-index: 999;
+            background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.04);
         }
 
         /* Profile Header */
+        .sticky-header {
+            padding: 12px 15px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #f8fafc;
+        }
         .profile-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .avatar { 
             width: 40px; height: 40px; background: #e0f2fe; border-radius: 50%; 
@@ -49,23 +58,15 @@
         }
 
         /* Search Area */
-        .search-container {
-            padding: 15px 15px 5px 15px;
-            display: flex;
-            gap: 10px;
-            background: #ffffff;
-        }
-        .search-input-wrapper {
-            flex: 1;
-            position: relative;
-        }
+        .search-container { padding: 10px 15px; display: flex; gap: 10px; }
+        .search-input-wrapper { flex: 1; position: relative; }
         .search-input-wrapper input {
-            width: 100%; padding: 12px 15px; padding-left: 35px;
+            width: 100%; padding: 12px 15px; padding-left: 38px;
             background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px;
             font-size: 0.95rem; outline: none; box-sizing: border-box; transition: 0.2s;
         }
         .search-input-wrapper input:focus { border-color: #3b82f6; background: #ffffff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-        .search-input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        .search-input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
         
         .search-btn-circle {
             width: 45px; height: 45px; border-radius: 50%; background: #3b82f6;
@@ -77,9 +78,7 @@
 
         /* Filter Pills / Chips */
         .filter-container {
-            padding: 10px 15px 15px 15px; background: #ffffff;
-            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
-            border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;
+            padding: 0 15px 12px 15px; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
         }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-pill {
@@ -90,14 +89,14 @@
         .filter-pill:hover { background: #f8fafc; border-color: #94a3b8; }
         .filter-pill.active { background: #eff6ff; color: #1e3a8a; border-color: #3b82f6; }
 
-        /* Social Feed Cards */
-        .feed-container { padding: 0 15px; }
+        /* Social Feed Cards Container (Pushed down to avoid hiding under fixed header) */
+        .feed-container { padding: 15px; margin-top: 185px; }
+        
         .feed-card {
             background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
             padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         }
         
-        /* Teacher Info Header */
         .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
         .feed-teacher-info { flex: 1; }
@@ -105,7 +104,6 @@
         .feed-teacher-info span { display: block; font-size: 0.7rem; color: #64748b; }
         .feed-options { color: #94a3b8; cursor: pointer; padding: 5px; }
 
-        /* Exam Content */
         .feed-body { margin-bottom: 15px; }
         .feed-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; line-height: 1.3;}
         .feed-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;}
@@ -122,15 +120,15 @@
         }
         .action-left { display: flex; gap: 15px; }
         .action-btn {
-            background: transparent; border: none; color: #64748b; font-size: 1.1rem;
+            background: transparent; border: none; color: #64748b; font-size: 1.2rem;
             cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; padding: 0;
         }
-        .action-btn span { font-size: 0.8rem; font-weight: 600; }
-        .action-btn:hover { color: #3b82f6; transform: scale(1.1); }
-        .action-btn.like-btn:hover { color: #ef4444; }
-        .action-btn.save-btn:hover { color: #f59e0b; }
+        .action-btn span { font-size: 0.85rem; font-weight: 700; }
+        .action-btn:hover { transform: scale(1.1); }
+        .like-active { color: #ef4444 !important; }
+        .save-active { color: #f59e0b !important; }
 
-        /* Main Attempt Button */
+        /* Buttons */
         .btn-attempt {
             width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white; border: none; padding: 12px; border-radius: 10px;
@@ -143,170 +141,328 @@
             padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
 
-        /* Fixed Bottom Navigation Bar */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
-            display: flex; justify-content: space-around; padding: 8px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
-        }
+        /* Modals for Details */
+        .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; max-height: 85vh; overflow-y: auto; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .score-modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
+        .score-modal-close { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); margin-top: 15px;}
+        
+        .review-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; }
+        .review-correct { background: #f0fdf4; border-color: #bbf7d0; }
+        .review-wrong { background: #fef2f2; border-color: #fecaca; }
+        .review-unattempted { background: #f8fafc; border-color: #e2e8f0; }
+        .review-q-text { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 10px; line-height: 1.4; overflow-x: auto; }
+        .review-ans { font-size: 0.9rem; margin-bottom: 5px; }
+        .ans-correct-text { color: #166534; font-weight: bold; }
+        .ans-wrong-text { color: #991b1b; font-weight: bold; }
+        .ans-real-correct { color: #065f46; font-weight: bold; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fca5a5;}
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; padding: 8px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
-
     </style>
 </head>
 <body>
 
     <div class="container">
         
-        <!-- Fixed Header -->
-        <div class="sticky-header">
-            <div class="profile-left" onclick="window.location.href='/student_profile.html'">
-                <div class="avatar"><i class="fas fa-user"></i></div>
-                <div class="greeting">
-                    <h3 id="student-name">Hi, Student</h3>
-                    <p>Ready to learn today? 🚀</p>
+        <!-- 📌 Fixed Top Section -->
+        <div class="fixed-top-section">
+            <div class="sticky-header">
+                <div class="profile-left" onclick="window.location.href='/student_profile.html'">
+                    <div class="avatar"><i class="fas fa-user"></i></div>
+                    <div class="greeting">
+                        <h3 id="student-name">Hi, Student</h3>
+                        <p>Ready to learn today? 🚀</p>
+                    </div>
                 </div>
+                <div class="bell-icon" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></div>
             </div>
-            <div class="bell-icon" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></div>
-        </div>
 
-        <!-- Search Box Section -->
-        <div class="search-container">
-            <div class="search-input-wrapper">
-                <i class="fas fa-search"></i>
-                <input type="text" id="main-search" placeholder="Search subject, teacher, or topic...">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="main-search" placeholder="Search subject, teacher, or code...">
+                </div>
+                <button class="search-btn-circle" onclick="performSearch()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
-            <button class="search-btn-circle" onclick="performSearch()">
-                <i class="fas fa-arrow-right"></i>
-            </button>
+
+            <div class="filter-container">
+                <button class="filter-pill"><i class="fas fa-graduation-cap"></i> Class <i class="fas fa-caret-down"></i></button>
+                <button class="filter-pill"><i class="fas fa-book"></i> Subject <i class="fas fa-caret-down"></i></button>
+                <button class="filter-pill active" onclick="alert('Filter by: Attempted / Unattempted')"><i class="fas fa-check-circle"></i> Status <i class="fas fa-caret-down"></i></button>
+            </div>
         </div>
 
-        <!-- Filter Pills Section -->
-        <div class="filter-container">
-            <button class="filter-pill"><i class="fas fa-graduation-cap"></i> Class <i class="fas fa-caret-down"></i></button>
-            <button class="filter-pill"><i class="fas fa-book"></i> Subject <i class="fas fa-caret-down"></i></button>
-            <button class="filter-pill active"><i class="fas fa-check-circle"></i> Status <i class="fas fa-caret-down"></i></button>
-        </div>
-
-        <!-- Social Media Style Exam Feed -->
+        <!-- 📌 Dynamic Social Feed (Pushed Down by margin-top) -->
         <div class="feed-container" id="exam-feed">
-            
-            <!-- Dummy Card 1 (Unattempted Public Exam) -->
-            <div class="feed-card">
-                <div class="feed-header">
-                    <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
-                    <div class="feed-teacher-info">
-                        <strong>Arindam Sir</strong>
-                        <span>arindam.physics@gmail.com • 2 hours ago</span>
-                    </div>
-                    <div class="feed-options"><i class="fas fa-ellipsis-v"></i></div>
-                </div>
-                
-                <div class="feed-body">
-                    <h3 class="feed-title">Physics Mock Test: Kinematics (Set 1)</h3>
-                    <div class="feed-tags">
-                        <span class="feed-tag">Class 11</span>
-                        <span class="feed-tag">Physics</span>
-                        <span class="feed-tag" style="background:#dcfce7; color:#166534;">Public</span>
-                    </div>
-                    <div class="feed-meta">
-                        <span><i class="fas fa-clock"></i> 30 Mins</span>
-                        <span><i class="fas fa-list-ol"></i> 20 Questions</span>
-                        <span><i class="fas fa-minus-circle" style="color:#ef4444;"></i> -0.25 Negative</span>
-                    </div>
-                </div>
-
-                <div class="feed-actions">
-                    <div class="action-left">
-                        <button class="action-btn like-btn"><i class="far fa-heart"></i> <span>124</span></button>
-                        <button class="action-btn"><i class="far fa-comment"></i> <span>18</span></button>
-                        <button class="action-btn"><i class="far fa-share-square"></i></button>
-                    </div>
-                    <button class="action-btn save-btn"><i class="far fa-bookmark"></i></button>
-                </div>
-
-                <button class="btn-attempt" onclick="alert('Exam Code Auto-Filled. Starting Exam...')">Attempt Exam 🚀</button>
+            <div style="text-align:center; padding: 40px; color: #64748b;">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Loading real exams from server...</p>
             </div>
-
-            <!-- Dummy Card 2 (Already Attempted Exam) -->
-            <div class="feed-card">
-                <div class="feed-header">
-                    <div class="feed-avatar"><i class="fas fa-user-tie"></i></div>
-                    <div class="feed-teacher-info">
-                        <strong>Sourav Math Classes</strong>
-                        <span>sourav.math@gmail.com • 1 day ago</span>
-                    </div>
-                    <div class="feed-options"><i class="fas fa-ellipsis-v"></i></div>
-                </div>
-                
-                <div class="feed-body">
-                    <h3 class="feed-title">Calculus Revision Test</h3>
-                    <div class="feed-tags">
-                        <span class="feed-tag">Class 12</span>
-                        <span class="feed-tag">Mathematics</span>
-                    </div>
-                    <div class="feed-meta">
-                        <span><i class="fas fa-clock"></i> 45 Mins</span>
-                        <span><i class="fas fa-list-ol"></i> 25 Questions</span>
-                    </div>
-                </div>
-
-                <div class="feed-actions">
-                    <div class="action-left">
-                        <button class="action-btn like-btn" style="color:#ef4444;"><i class="fas fa-heart"></i> <span>342</span></button>
-                        <button class="action-btn"><i class="far fa-comment"></i> <span>45</span></button>
-                        <button class="action-btn"><i class="far fa-share-square"></i></button>
-                    </div>
-                    <button class="action-btn save-btn" style="color:#f59e0b;"><i class="fas fa-bookmark"></i></button>
-                </div>
-
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-result" style="flex:1;">View Result 📊</button>
-                    <button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;">Re-attempt</button>
-                </div>
-            </div>
-
         </div>
 
+    </div>
+
+    <!-- Detailed Answer Review Modal -->
+    <div class="score-modal-overlay" id="detailed-result-modal">
+        <div class="score-modal-box">
+            <div class="score-modal-title" id="dr-title" style="text-align: center;">Exam Result</div>
+            <div id="detailed-review-container" style="text-align: left;"></div>
+            <button class="score-modal-close" onclick="document.getElementById('detailed-result-modal').style.display='none'">Close ✖</button>
+        </div>
     </div>
 
     <!-- Fixed Bottom Navigation Bar -->
     <div class="bottom-nav">
         <div class="nav-item active">
-            <div class="nav-icon"><i class="fas fa-home"></i></div>
-            <span>Home</span>
+            <div class="nav-icon"><i class="fas fa-home"></i></div><span>Home</span>
         </div>
-        <!-- 'Community' Button Concept Added Here -->
         <div class="nav-item" onclick="alert('Community Chat Features coming soon!')">
-            <div class="nav-icon"><i class="fas fa-users"></i></div>
-            <span>Community</span>
+            <div class="nav-icon"><i class="fas fa-users"></i></div><span>Community</span>
         </div>
         <div class="nav-item" onclick="window.location.href='/student_analytics.html'">
-            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
-            <span>Analytics</span>
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div><span>Analytics</span>
         </div>
         <div class="nav-item" onclick="window.location.href='/student_profile.html'">
-            <div class="nav-icon"><i class="far fa-user"></i></div>
-            <span>Profile</span>
+            <div class="nav-icon"><i class="far fa-user"></i></div><span>Profile</span>
         </div>
     </div>
 
     <script>
-        // Set User Name
-        window.onload = () => {
+        window.onload = async () => {
             const userName = localStorage.getItem('userName') || "Student";
+            const userEmail = localStorage.getItem('userEmail');
             document.getElementById('student-name').innerText = "Hi, " + userName.split(' ')[0];
+
+            checkUnreadNotifications(userEmail);
+            loadRealFeed(userEmail);
         };
 
-        function performSearch() {
-            const query = document.getElementById('main-search').value;
-            if(query) {
-                alert("Searching for: " + query + "\n(Backend filter algorithm will be implemented here later)");
-            } else {
-                alert("Please enter a subject, topic, or teacher name to search.");
+        // Real Data Fetch from Backend
+        async function loadRealFeed(userEmail) {
+            const feedContainer = document.getElementById('exam-feed');
+            
+            try {
+                const response = await fetch('/api/get-social-feed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
+                const data = await response.json();
+
+                if (data.success && data.feed.length > 0) {
+                    renderFeedCards(data.feed);
+                } else {
+                    feedContainer.innerHTML = `
+                        <div style="text-align:center; padding: 40px; color: #64748b;">
+                            <i class="fas fa-box-open fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i>
+                            <p>No exams posted by teachers yet.</p>
+                        </div>`;
+                }
+            } catch (error) {
+                feedContainer.innerHTML = `
+                    <div style="text-align:center; padding: 40px; background:#fef2f2; border:1px solid #fecaca; border-radius:12px;">
+                        <i class="fas fa-exclamation-triangle fa-2x" style="color:#ef4444; margin-bottom:10px;"></i>
+                        <p style="color:#991b1b; font-weight:bold;">Backend Update Required!</p>
+                        <p style="font-size:0.8rem; color:#b91c1c;">Please make sure you have added the '/api/get-social-feed' code to your app.py file.</p>
+                    </div>`;
             }
+        }
+
+        // Render Real Feed Cards dynamically
+        function renderFeedCards(exams) {
+            const container = document.getElementById('exam-feed');
+            container.innerHTML = '';
+            
+            exams.forEach(ex => {
+                // Real local persistence for interactions
+                const isLiked = localStorage.getItem('like_' + ex.code) === 'true';
+                const isSaved = localStorage.getItem('save_' + ex.code) === 'true';
+                
+                // Deterministic dummy counts to make it look active (until DB tables are built)
+                const baseCount = ex.code.length * 15; 
+                const likeCount = isLiked ? baseCount + 1 : baseCount;
+                const commentCount = Math.floor(baseCount / 3);
+                
+                const heartClass = isLiked ? 'fas fa-heart like-active' : 'far fa-heart';
+                const saveClass = isSaved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
+
+                let actionHTML = '';
+                if (ex.is_attempted) {
+                    let acc = ((ex.score / ex.total) * 100).toFixed(1);
+                    actionHTML = `
+                    <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">
+                        ✅ Already Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-result" style="flex:1;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
+                        <button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}'">Re-attempt</button>
+                    </div>`;
+                } else {
+                    actionHTML = `<button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
+                }
+
+                container.innerHTML += `
+                <div class="feed-card">
+                    <div class="feed-header">
+                        <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div class="feed-teacher-info">
+                            <strong>${ex.teacher_name}</strong>
+                            <span>${ex.teacher_email} • Posted ${ex.date}</span>
+                        </div>
+                        <div class="feed-options"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    
+                    <div class="feed-body">
+                        <h3 class="feed-title">${ex.name}</h3>
+                        <div class="feed-tags">
+                            <span class="feed-tag">Code: ${ex.code}</span>
+                            <span class="feed-tag" style="background:#dcfce7; color:#166534;">Public</span>
+                        </div>
+                        <div class="feed-meta">
+                            <span><i class="fas fa-clock"></i> ${ex.timer} Mins</span>
+                        </div>
+                    </div>
+
+                    <div class="feed-actions">
+                        <div class="action-left">
+                            <button class="action-btn" onclick="toggleLike(this, '${ex.code}')">
+                                <i class="${heartClass}"></i> <span>${likeCount}</span>
+                            </button>
+                            <button class="action-btn" onclick="alert('Community features opening soon!')">
+                                <i class="far fa-comment"></i> <span>${commentCount}</span>
+                            </button>
+                            <button class="action-btn" onclick="shareRealExam('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">
+                                <i class="far fa-share-square"></i>
+                            </button>
+                        </div>
+                        <button class="action-btn" onclick="toggleSave(this, '${ex.code}')">
+                            <i class="${saveClass}"></i>
+                        </button>
+                    </div>
+
+                    ${actionHTML}
+                </div>`;
+            });
+        }
+
+        // Real Interactive Functions
+        function toggleLike(btn, examCode) {
+            let icon = btn.querySelector('i');
+            let span = btn.querySelector('span');
+            let count = parseInt(span.innerText);
+
+            if (icon.classList.contains('like-active')) {
+                icon.className = 'far fa-heart';
+                span.innerText = count - 1;
+                localStorage.removeItem('like_' + examCode);
+            } else {
+                icon.className = 'fas fa-heart like-active';
+                span.innerText = count + 1;
+                localStorage.setItem('like_' + examCode, 'true');
+            }
+        }
+
+        function toggleSave(btn, examCode) {
+            let icon = btn.querySelector('i');
+            if (icon.classList.contains('save-active')) {
+                icon.className = 'far fa-bookmark';
+                localStorage.removeItem('save_' + examCode);
+            } else {
+                icon.className = 'fas fa-bookmark save-active';
+                localStorage.setItem('save_' + examCode, 'true');
+            }
+        }
+
+        function shareRealExam(examCode, examName) {
+            const shareText = `Join me and take this exam: ${examName}. Code: ${examCode}`;
+            if (navigator.share) {
+                navigator.share({ title: examName, text: shareText }).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(`Exam Code: ${examCode}`);
+                alert("Exam Code copied! Share it with your friends via WhatsApp.");
+            }
+        }
+
+        // View Detailed Result Modal
+        async function showDetailedResult(code, name) {
+            const container = document.getElementById('detailed-review-container');
+            container.innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Fetching your answers...</p>';
+            document.getElementById('dr-title').innerText = name + " - Result";
+            document.getElementById('detailed-result-modal').style.display = 'flex';
+
+            try {
+                const response = await fetch('/api/get-exam-questions', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: code })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const savedState = localStorage.getItem('exam_result_' + code);
+                    const studentAnswers = savedState ? JSON.parse(savedState).answers : null;
+
+                    let html = '';
+                    data.questions.forEach((q, idx) => {
+                        const getOptionText = (letter) => {
+                            if(letter === 'A') return q.opt_a; if(letter === 'B') return q.opt_b;
+                            if(letter === 'C') return q.opt_c; if(letter === 'D') return q.opt_d; return '';
+                        };
+
+                        if (studentAnswers) {
+                            const studentAns = studentAnswers[idx];
+                            const isCorrect = studentAns === q.correct;
+                            const isAttempted = studentAns !== undefined && studentAns !== null;
+                            
+                            let cardClass = isAttempted ? (isCorrect ? 'review-correct' : 'review-wrong') : 'review-unattempted';
+
+                            html += `<div class="review-card ${cardClass}">`;
+                            html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text}</div>`;
+
+                            if (isAttempted) {
+                                if (isCorrect) {
+                                    html += `<div class="review-ans ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                                } else {
+                                    html += `<div class="review-ans ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                                    html += `<div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                                }
+                            } else {
+                                html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div>`;
+                                html += `<div class="ans-real-correct" style="border-top: 1px dashed #cbd5e1; color: #0f172a;">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                            }
+                            html += `</div>`;
+                        } else {
+                            html += `<div class="review-card review-unattempted">`;
+                            html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text}</div>`;
+                            html += `<div class="ans-real-correct" style="border-top: 1px dashed #cbd5e1; color: #0f172a;">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                            html += `</div>`;
+                        }
+                    });
+
+                    if (!studentAnswers) {
+                        html = `<div style="background:#fffbeb; color:#92400e; padding:12px; border-radius:8px; margin-bottom:15px; font-size:0.85rem; border:1px solid #fef3c7;">⚠️ Since this is an older attempt, your exact chosen options weren't saved. Showing only the correct answers.</div>` + html;
+                    }
+
+                    container.innerHTML = html;
+                    if (window.MathJax) { MathJax.typesetPromise([container]).catch(err => console.log(err)); }
+                } else { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load questions.</p>'; }
+            } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
+        }
+
+        async function checkUnreadNotifications(userEmail) {
+            if (!userEmail) return;
+            try {
+                const response = await fetch('/api/check-unread-notifications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail }) });
+                const data = await response.json();
+                const bellIcon = document.querySelector('.bell-icon');
+                if (data.success && data.has_unread) { bellIcon.classList.add('has-unread'); } else { bellIcon.classList.remove('has-unread'); }
+            } catch (error) {}
         }
     </script>
 </body>
