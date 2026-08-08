@@ -111,6 +111,13 @@
                     <option value="1">-1.00 Mark</option>
                 </select>
             </div>
+            <div class="input-group" style="margin-top: 10px;">
+                <label>Exam Visibility (Privacy)</label>
+                <select id="exam-privacy">
+                    <option value="false">Public (Visible in Feed to Everyone)</option>
+                    <option value="true">Private (Accessible via Exam Code Only)</option>
+                </select>
+            </div>
         </div>
 
         <!-- 🤖 AI Smart Paste Section -->
@@ -349,7 +356,7 @@ CRITICAL RULES FOR MATH & FORMATTING:
                         questions: tempQuestions 
                     })
                 });
-                const data = await response.json();
+        const data = await response.json();
                 if (response.ok && data.success) {
                     alert(`🎉 Awesome! Exam created.\nCode: ${examCode}`);
                     window.location.href = 'teacher_dashboard.html';
@@ -362,6 +369,20 @@ CRITICAL RULES FOR MATH & FORMATTING:
             if (document.referrer) { window.history.back(); } 
             else { window.location.href = '/teacher_dashboard.html'; }
         });
+        const isPrivate = document.getElementById('exam-privacy').value === 'true';
+            
+            // fetch body-র ভেতরে এটি যুক্ত করুন:
+            body: JSON.stringify({ 
+                exam_code: examCode, 
+                exam_name: examName, 
+                class_name: examClass,
+                subject: examSubject,
+                timer: timer, 
+                negative_marks: negative, 
+                is_private: isPrivate, // 🆕 পাঠানো হলো
+                teacher_email: teacherEmail, 
+                questions: tempQuestions 
+            })
     </script>
 </body>
 </html>
