@@ -6,6 +6,13 @@
     <title>ExamMate | Teacher Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- MathJax for Math Equations -->
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         :root { color-scheme: light; }
         body { 
@@ -44,6 +51,7 @@
             padding: 8px; border-radius: 50%; border: 1px solid #e2e8f0; cursor: pointer; position: relative;
         }
 
+        /* Search Area */
         .search-container { padding: 15px 15px 5px 15px; display: flex; gap: 10px; background: #ffffff; }
         .search-input-wrapper { flex: 1; position: relative; }
         .search-input-wrapper input {
@@ -59,32 +67,74 @@
             display: flex; justify-content: center; align-items: center;
         }
 
+        /* Filter Pills */
         .filter-container {
             padding: 10px 15px 15px 15px; background: #ffffff;
             display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
             border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;
         }
+        .filter-container::-webkit-scrollbar { display: none; }
         .filter-pill {
             background: #ffffff; border: 1px solid #cbd5e1; color: #475569;
             padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
             cursor: pointer; display: flex; align-items: center; gap: 5px; outline: none;
         }
 
-        /* Feed Container */
-        .feed-container { padding: 15px; margin-top: 185px; }
+        /* Feed Cards */
+        .feed-container { padding: 0 15px; margin-top: 195px; }
         .feed-card {
             background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
             padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         }
-        .feed-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; }
+        
+        .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
+        .feed-teacher-info { flex: 1; }
+        .feed-teacher-info strong { display: block; font-size: 0.95rem; color: #0f172a; }
+        .feed-teacher-info span { display: block; font-size: 0.7rem; color: #64748b; }
+
+        .feed-body { margin-bottom: 15px; }
+        .feed-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; line-height: 1.3;}
         .feed-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;}
         .feed-tag { background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; }
         
+        .feed-meta { display: flex; gap: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px dashed #cbd5e1;}
+        .feed-meta span { font-size: 0.8rem; color: #334155; font-weight: 600; display: flex; align-items: center; gap: 5px;}
+        .feed-meta i { color: #3b82f6; }
+
+        /* Social Actions */
+        .feed-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px;
+        }
+        .action-left { display: flex; gap: 15px; }
+        .action-btn {
+            background: transparent; border: none; color: #64748b; font-size: 1.1rem;
+            cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 0;
+        }
+        .action-btn span { font-size: 0.8rem; font-weight: 600; }
+        .like-active { color: #ef4444 !important; }
+        .save-active { color: #f59e0b !important; }
+
+        /* Create Button & View Questions Button */
         .btn-create-exam {
             display: block; width: 100%; background: linear-gradient(135deg, #10b981, #059669);
             color: white; text-align: center; padding: 12px; border-radius: 12px;
             font-weight: bold; text-decoration: none; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(16,185,129,0.3);
+            border: none; cursor: pointer; font-size: 1rem;
         }
+        .btn-view-questions {
+            width: 100%; background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe;
+            padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-view-questions:hover { background: #dbeafe; }
+
+        /* View Questions Modal */
+        .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 450px; text-align: left; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
+        .score-modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; text-align: center;}
+        .q-preview-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem;}
+        .score-modal-close { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 15px;}
 
         /* Bottom Nav */
         .bottom-nav {
@@ -116,20 +166,43 @@
             <div class="search-container">
                 <div class="search-input-wrapper">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="main-search" placeholder="Search your exams...">
+                    <input type="text" id="main-search" placeholder="Search subject, teacher, class, or code...">
                 </div>
-                <button class="search-btn-circle" onclick="loadTeacherFeed()">
+                <button class="search-btn-circle" onclick="performSearch()">
                     <i class="fas fa-arrow-right"></i>
                 </button>
+            </div>
+
+            <div class="filter-container">
+                <select id="filter-class" class="filter-pill" onchange="loadTeacherFeed()">
+                    <option value="All">🎓 All Classes</option>
+                </select>
+                <select id="filter-subject" class="filter-pill" onchange="loadTeacherFeed()">
+                    <option value="All">📚 All Subjects</option>
+                </select>
+                <select id="filter-status" class="filter-pill active" onchange="loadTeacherFeed()">
+                    <option value="All">⚡ All Status</option>
+                    <option value="Public">🌐 Public Exams</option>
+                    <option value="Private">🔒 Private Exams</option>
+                </select>
             </div>
         </div>
 
         <!-- Feed Container -->
-        <div class="feed-container" id="teacher-feed">
-            <a href="create_exam.html" class="btn-create-exam"><i class="fas fa-plus-circle"></i> Create New Exam 📝</a>
+        <div class="feed-container" id="exam-feed">
+            <button class="btn-create-exam" onclick="window.location.href='create_exam.html'"><i class="fas fa-plus-circle"></i> Create New Exam 📝</button>
             <div id="exams-list-container">
-                <p style="text-align:center; color:#64748b;">Loading your exams...</p>
+                <p style="text-align:center; color:#64748b; padding:20px;">Loading feed...</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal for Viewing Questions -->
+    <div class="score-modal-overlay" id="view-questions-modal">
+        <div class="score-modal-box">
+            <div class="score-modal-title" id="vq-title">Exam Questions</div>
+            <div id="vq-container"></div>
+            <button class="score-modal-close" onclick="document.getElementById('view-questions-modal').style.display='none'">Close ✖</button>
         </div>
     </div>
 
@@ -142,45 +215,167 @@
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div><span>Analytics</span>
         </a>
         <a href="teacher_profile.html" class="nav-item">
-            <div class="nav-icon"><far fa-user></far><i class="far fa-user"></i></div><span>Profile</span>
+            <div class="nav-icon"><i class="far fa-user"></i></div><span>Profile</span>
         </a>
     </div>
 
     <script>
-        window.onload = () => {
+        window.onload = async () => {
             const userName = localStorage.getItem('userName') || "Teacher";
             document.getElementById('teacher-name').innerText = "Hi, " + userName.split(' ')[0];
             document.getElementById('nav-avatar').innerText = userName.charAt(0).toUpperCase();
+
+            await loadFilterDropdowns();
             loadTeacherFeed();
         };
 
-        async function loadTeacherFeed() {
+        async function loadFilterDropdowns() {
+            try {
+                const res = await fetch('/api/get-filter-options');
+                const data = await res.json();
+                if(data.success) {
+                    const classSelect = document.getElementById('filter-class');
+                    data.classes.forEach(c => { classSelect.innerHTML += `<option value="${c}">${c}</option>`; });
+                    const subSelect = document.getElementById('filter-subject');
+                    data.subjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+                }
+            } catch(e) { console.log("Filter load error"); }
+        }
+
+        async function loadTeacherFeed(query = "") {
             const userEmail = localStorage.getItem('userEmail');
             const container = document.getElementById('exams-list-container');
+            const selectedClass = document.getElementById('filter-class').value;
+            const selectedSubject = document.getElementById('filter-subject').value;
+            const selectedStatus = document.getElementById('filter-status').value;
             
             try {
-                const response = await fetch('/api/teacher-dashboard', {
+                const response = await fetch('/api/search-feed', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail })
+                    body: JSON.stringify({ email: userEmail, query: query, class_name: selectedClass, subject: selectedSubject, status: selectedStatus })
                 });
                 const data = await response.json();
 
-                if (data.success && data.all_exams.length > 0) {
+                if (data.success && data.feed.length > 0) {
                     container.innerHTML = '';
-                    data.all_exams.forEach(ex => {
+                    data.feed.forEach(ex => {
+                        const heartClass = ex.is_liked ? 'fas fa-heart like-active' : 'far fa-heart';
+                        const saveClass = ex.is_saved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
+
                         container.innerHTML += `
                         <div class="feed-card">
-                            <h3 class="feed-title">${ex.name}</h3>
-                            <div class="feed-tags">
-                                <span class="feed-tag">Code: ${ex.code}</span>
+                            <div class="feed-header">
+                                <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
+                                <div class="feed-teacher-info">
+                                    <strong>${ex.teacher_name}</strong>
+                                    <span>Posted ${ex.date}</span>
+                                </div>
                             </div>
-                            <button class="btn-create-exam" style="background:#3b82f6; margin-top:10px; margin-bottom:0; padding:8px;" onclick="window.location.href='teacher_analytics.html?code=${ex.code}'">View Analysis & Manage 📊</button>
+                            
+                            <div class="feed-body">
+                                <h3 class="feed-title">${ex.name} ${ex.is_private ? '🔒' : ''}</h3>
+                                <div class="feed-tags">
+                                    <span class="feed-tag">Code: ${ex.code}</span>
+                                    <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
+                                    <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
+                                    <span class="feed-tag" style="background:${ex.is_private ? '#fef3c7; color:#92400e;' : '#dcfce7; color:#166534;'}">${ex.is_private ? 'Private' : 'Public'}</span>
+                                </div>
+                                <div class="feed-meta">
+                                    <span><i class="fas fa-clock"></i> ${ex.timer} Mins</span>
+                                </div>
+                            </div>
+
+                            <div class="feed-actions">
+                                <div class="action-left">
+                                    <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
+                                        <i class="${heartClass}"></i> <span>${ex.likes}</span>
+                                    </button>
+                                    <button class="action-btn" onclick="shareExam('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">
+                                        <i class="far fa-share-square"></i> <span>${ex.shares}</span>
+                                    </button>
+                                </div>
+                                <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
+                                    <i class="${saveClass}"></i>
+                                </button>
+                            </div>
+
+                            <button class="btn-view-questions" onclick="viewExamQuestions('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">👁️ View Questions & Answers</button>
                         </div>`;
                     });
                 } else {
-                    container.innerHTML = `<p style="text-align:center; color:#64748b;">No exams created yet.</p>`;
+                    container.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">No exams found.</p>`;
                 }
-            } catch(e) { container.innerHTML = `<p style="text-align:center; color:#ef4444;">Error loading feed.</p>`; }
+            } catch(e) { container.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">Error loading feed.</p>`; }
+        }
+
+        function performSearch() {
+            const query = document.getElementById('main-search').value.trim();
+            loadTeacherFeed(query);
+        }
+
+        // Teacher View Questions Modal Logic
+        async function viewExamQuestions(code, name) {
+            const container = document.getElementById('vq-container');
+            container.innerHTML = '<p style="text-align:center; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading questions...</p>';
+            document.getElementById('vq-title').innerText = name;
+            document.getElementById('view-questions-modal').style.display = 'flex';
+
+            try {
+                const response = await fetch('/api/get-exam-questions', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: code })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    let html = '';
+                    data.questions.forEach((q, idx) => {
+                        html += `
+                        <div class="q-preview-card">
+                            <strong>Q${idx + 1}: ${q.q_text}</strong><br>
+                            <div style="margin-top:5px; font-size:0.85rem; color:#475569;">
+                                A) ${q.opt_a}<br>B) ${q.opt_b}<br>C) ${q.opt_c}<br>D) ${q.opt_d}
+                            </div>
+                            <div style="margin-top:5px; color:#16a34a; font-weight:bold;">🎯 Correct: ${q.correct}</div>
+                        </div>`;
+                    });
+                    container.innerHTML = html;
+                    if (window.MathJax) { MathJax.typesetPromise([container]).catch(err => console.log(err)); }
+                } else { container.innerHTML = '<p style="color:#ef4444;">Failed to load questions.</p>'; }
+            } catch(e) { container.innerHTML = '<p style="color:#ef4444;">Error fetching questions.</p>'; }
+        }
+
+        // Social Interactions
+        async function toggleSocialAction(btn, examCode, actionType) {
+            const userEmail = localStorage.getItem('userEmail');
+            if(!userEmail) return;
+
+            let icon = btn.querySelector('i');
+            if (actionType === 'like') {
+                let span = btn.querySelector('span');
+                let count = parseInt(span.innerText);
+                if (icon.classList.contains('like-active')) {
+                    icon.className = 'far fa-heart'; span.innerText = count - 1;
+                } else {
+                    icon.className = 'fas fa-heart like-active'; span.innerText = count + 1;
+                }
+            } else if (actionType === 'save') {
+                if (icon.classList.contains('save-active')) { icon.className = 'far fa-bookmark'; } 
+                else { icon.className = 'fas fa-bookmark save-active'; }
+            }
+
+            try {
+                await fetch('/api/toggle-social', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, exam_code: examCode, type: actionType })
+                });
+            } catch(e) { console.log("Sync error"); }
+        }
+
+        function shareExam(examCode, examName) {
+            const text = `Check out this exam: ${examName}. Code: ${examCode}`;
+            if (navigator.share) { navigator.share({ title: examName, text: text }).catch(console.error); }
+            else { navigator.clipboard.writeText(`Exam Code: ${examCode}`); alert("Exam Code copied!"); }
         }
     </script>
 </body>
