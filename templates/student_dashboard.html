@@ -275,7 +275,9 @@
                 const data = await response.json();
 
                 if (data.success && data.feed.length > 0) {
-                    renderFeedCards(data.feed);
+                    // অ্যালগরিদম রান করে সার্চ কুয়েরি ও পছন্দ অনুযায়ী ফিড সর্ট করা হচ্ছে
+                    let sortedFeed = sortExamsForStudent(data.feed, query);
+                    renderFeedCards(sortedFeed);
                 } else {
                     feedContainer.innerHTML = `
                         <div style="text-align:center; padding: 40px; color: #64748b;">
@@ -290,6 +292,9 @@
 
         function performSearch() {
             const query = document.getElementById('main-search').value.trim();
+            if (query) {
+                trackStudentPreference(query, "", ""); // সার্চ করার সাথে সাথে এটি ট্র্যাক হবে
+            }
             loadRealFeed(query);
         }
 
@@ -387,7 +392,6 @@
                     icon.className = 'fas fa-heart like-active'; span.innerText = count + 1;
                 }
             } else if (actionType === 'save') {
-                // লোকাল স্টোরেজে সেভ বা আনসেভ করার লজিক
                 if (icon.classList.contains('save-active')) { 
                     icon.className = 'far fa-bookmark'; 
                     localStorage.removeItem('save_' + examCode);
@@ -475,35 +479,52 @@
                 } else { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load questions.</p>'; }
             } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
         }
-        // স্টুডেন্টের পছন্দ ট্র্যাক করা (যখন সে কোনো এক্সাম অ্যাটেম্পট করবে)
-        function trackStudentPreference(className, subject) {
-            let history = JSON.parse(localStorage.getItem('student_pref') || '{"classes": [], "subjects": []}');
-            if(!history.classes.includes(className)) history.classes.push(className);
-            if(!history.subjects.includes(subject)) history.subjects.push(subject);
+
+        // --- Enhanced Recommendation & Search Ranking Algorithm ---
+        function trackStudentPreference(query, className, subject) {
+            let history = JSON.parse(localStorage.getItem('student_pref') || '{"searches": [], "classes": [], "subjects": []}');
+            if (query && !history.searches.includes(query.toLowerCase())) {
+                history.searches.unshift(query.toLowerCase());
+            }
+            if (className && !history.classes.includes(className)) history.classes.push(className);
+            if (subject && !history.subjects.includes(subject)) history.subjects.push(subject);
             localStorage.setItem('student_pref', JSON.stringify(history));
         }
 
-        // স্টুডেন্ট ফিড র‍্যাঙ্কিং অ্যালগরিদম
-        function sortExamsForStudent(feedList) {
-            let pref = JSON.parse(localStorage.getItem('student_pref') || '{"classes": [], "subjects": []}');
-    
+        function sortExamsForStudent(feedList, currentQuery = "") {
+            let pref = JSON.parse(localStorage.getItem('student_pref') || '{"searches": [], "classes": [], "subjects": []}');
+            
+            if (currentQuery && !pref.searches.includes(currentQuery.toLowerCase())) {
+                pref.searches.unshift(currentQuery.toLowerCase());
+            }
+
             return feedList.sort((a, b) => {
                 let scoreA = 0;
                 let scoreB = 0;
 
-                // ১. পছন্দসই ক্লাস ও সাবজেক্টের মিল থাকলে হাই পয়েন্ট
+                // ১. সার্চ হিস্ট্রি বা বর্তমান সার্চের সাথে মিলে গেলে সর্বোচ্চ গুরুত্ব (+১০০ পয়েন্ট)
+                pref.searches.forEach(term => {
+                    if (a.name.toLowerCase().includes(term) || a.subject.toLowerCase().includes(term) || a.class_name.toLowerCase().includes(term)) {
+                        scoreA += 100;
+                    }
+                    if (b.name.toLowerCase().includes(term) || b.subject.toLowerCase().includes(term) || b.class_name.toLowerCase().includes(term)) {
+                        scoreB += 100;
+                    }
+                });
+
+                // ২. পছন্দসই ক্লাস ও সাবজেক্টের মিল থাকলে পয়েন্ট
                 if (pref.classes.includes(a.class_name)) scoreA += 50;
                 if (pref.classes.includes(b.class_name)) scoreB += 50;
                 if (pref.subjects.includes(a.subject)) scoreA += 40;
                 if (pref.subjects.includes(b.subject)) scoreB += 40;
 
-                // ২. রিসেন্টলি আপলোড হলে পয়েন্ট
+                // ৩. রিসেন্টলি আপলোড হলে পয়েন্ট
                 let daysA = (new Date() - new Date(a.date)) / (1000 * 60 * 60 * 24);
                 let daysB = (new Date() - new Date(b.date)) / (1000 * 60 * 60 * 24);
                 if (daysA <= 7) scoreA += Math.max(0, 30 - (daysA * 3));
                 if (daysB <= 7) scoreB += Math.max(0, 30 - (daysB * 3));
 
-                // ৩. লাইক এবং এনগেজমেন্ট পয়েন্ট
+                // ৪. লাইক এবং এনগেজমেন্ট পয়েন্ট
                 scoreA += (a.likes * 2);
                 scoreB += (b.likes * 2);
 
