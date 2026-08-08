@@ -1033,6 +1033,43 @@ def teacher_update_exam():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/get-social-feed', methods=['POST'])
+def get_social_feed():
+    data = request.get_json()
+    email = data.get('email')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        
+        # সমস্ত শিক্ষকের তৈরি করা এক্সাম ডেটাবেস থেকে নিয়ে আসা হচ্ছে
+        cursor.execute("SELECT e.exam_code, e.exam_name, e.timer_minutes, e.created_at, e.teacher_email, u.name as teacher_name FROM exams e LEFT JOIN users u ON e.teacher_email = u.email ORDER BY e.created_at DESC")
+        all_exams = cursor.fetchall()
+        
+        # স্টুডেন্ট আগে কোন পরীক্ষাগুলো দিয়েছে তা চেক করা হচ্ছে
+        cursor.execute("SELECT exam_code, score, total_questions FROM results WHERE student_email = %s", (email,))
+        history_rows = cursor.fetchall()
+        history = {r['exam_code']: r for r in history_rows}
+        
+        feed = []
+        for ex in all_exams:
+            code = ex['exam_code']
+            feed.append({
+                "code": code,
+                "name": ex['exam_name'],
+                "teacher_name": ex['teacher_name'] or "Teacher",
+                "teacher_email": ex['teacher_email'],
+                "timer": ex['timer_minutes'],
+                "date": str(ex['created_at']).split()[0] if ex['created_at'] else "Recently",
+                "is_attempted": code in history,
+                "score": history[code]['score'] if code in history else 0,
+                "total": history[code]['total_questions'] if code in history else 0
+            })
+        conn.close()
+        return jsonify({"success": True, "feed": feed})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
