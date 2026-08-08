@@ -475,6 +475,41 @@
                 } else { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load questions.</p>'; }
             } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
         }
+        // স্টুডেন্টের পছন্দ ট্র্যাক করা (যখন সে কোনো এক্সাম অ্যাটেম্পট করবে)
+        function trackStudentPreference(className, subject) {
+            let history = JSON.parse(localStorage.getItem('student_pref') || '{"classes": [], "subjects": []}');
+            if(!history.classes.includes(className)) history.classes.push(className);
+            if(!history.subjects.includes(subject)) history.subjects.push(subject);
+            localStorage.setItem('student_pref', JSON.stringify(history));
+        }
+
+        // স্টুডেন্ট ফিড র‍্যাঙ্কিং অ্যালগরিদম
+        function sortExamsForStudent(feedList) {
+            let pref = JSON.parse(localStorage.getItem('student_pref') || '{"classes": [], "subjects": []}');
+    
+            return feedList.sort((a, b) => {
+                let scoreA = 0;
+                let scoreB = 0;
+
+                // ১. পছন্দসই ক্লাস ও সাবজেক্টের মিল থাকলে হাই পয়েন্ট
+                if (pref.classes.includes(a.class_name)) scoreA += 50;
+                if (pref.classes.includes(b.class_name)) scoreB += 50;
+                if (pref.subjects.includes(a.subject)) scoreA += 40;
+                if (pref.subjects.includes(b.subject)) scoreB += 40;
+
+                // ২. রিসেন্টলি আপলোড হলে পয়েন্ট
+                let daysA = (new Date() - new Date(a.date)) / (1000 * 60 * 60 * 24);
+                let daysB = (new Date() - new Date(b.date)) / (1000 * 60 * 60 * 24);
+                if (daysA <= 7) scoreA += Math.max(0, 30 - (daysA * 3));
+                if (daysB <= 7) scoreB += Math.max(0, 30 - (daysB * 3));
+
+                // ৩. লাইক এবং এনগেজমেন্ট পয়েন্ট
+                scoreA += (a.likes * 2);
+                scoreB += (b.likes * 2);
+
+                return scoreB - scoreA; // বেশি স্কোর ওয়ালা এক্সাম সবার ওপরে থাকবে
+            });
+        }
     </script>
 </body>
 </html>
