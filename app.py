@@ -1136,6 +1136,81 @@ def search_feed():
                 "class_name": ex.get('class_name', 'General'),
                 "subject": ex.get('subject', 'General'),
                 "timer": ex['timer_minutes'],
+@app.route('/api/search-feed', methods=['POST'])
+def search_feed():
+    data = request.get_json()
+    email = data.get('email')
+    query = data.get('query', '').strip()
+    selected_class = data.get('class_name', 'All')
+    selected_subject = data.get('subject', 'All')
+    status_filter = data.get('status', 'All')
+    
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # ইউজারের রোল চেক করা হচ্ছে (টিচার নাকি স্টুডেন্ট)
+        cursor.execute(f"SELECT category FROM users WHERE email = {ph}", (email,))
+        user_row = cursor.fetchone()
+        user_role = (user_row['category'] if isinstance(user_row, dict) else user_row[0]) if user_row else 'Student'
+        
+        search_term = f"%{query}%"
+        sql = f"""SELECT e.*, u.name as teacher_name, 
+                 (SELECT COUNT(*) FROM likes WHERE exam_code = e.exam_code) as total_likes,
+                 (SELECT COUNT(*) FROM likes WHERE exam_code = e.exam_code AND email = {ph}) as is_liked,
+                 (SELECT COUNT(*) FROM saves WHERE exam_code = e.exam_code AND email = {ph}) as is_saved
+                 FROM exams e 
+                 LEFT JOIN users u ON e.teacher_email = u.email 
+                 WHERE (e.exam_name ILIKE {ph} OR e.exam_code ILIKE {ph} OR e.subject ILIKE {ph} OR e.class_name ILIKE {ph} OR u.name ILIKE {ph})"""
+                 
+        if db_type == 'sqlite':
+            sql = sql.replace("ILIKE", "LIKE")
+            
+        params = [email, email, search_term, search_term, search_term, search_term, search_term]
+        
+        # যদি ইউজার টিচার হয়, তবে অন্য টিচারদের প্রাইভেট এক্সামগুলো তার ফিডে দেখাবে না। 
+        # তবে শিক্ষক যদি নিজে কোনো প্রাইভেট এক্সাম তৈরি করে থাকেন, তা শুধু তিনিই দেখতে পাবেন।
+        if user_role.lower() == 'teacher':
+            sql += f" AND (e.is_private = FALSE OR e.teacher_email = {ph})"
+            params.append(email)
+        
+        if selected_class != 'All':
+            sql += f" AND e.class_name = {ph}"
+            params.append(selected_class)
+            
+        if selected_subject != 'All':
+            sql += f" AND e.subject = {ph}"
+            params.append(selected_subject)
+            
+        if status_filter == 'Private':
+            sql += " AND e.is_private = TRUE"
+        elif status_filter == 'Public':
+            sql += " AND e.is_private = FALSE"
+            
+        sql += " ORDER BY e.created_at DESC"
+        
+        cursor.execute(sql, tuple(params))
+        results = cursor.fetchall()
+        
+        cursor.execute(f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph}", (email,))
+        history = {r['exam_code']: r for r in cursor.fetchall()}
+        
+        feed = []
+        for ex in results:
+            code = ex['exam_code']
+            is_attempted = code in history
+            
+            if status_filter == 'Attempted' and not is_attempted: continue
+            if status_filter == 'Unattempted' and is_attempted: continue
+            
+            feed.append({
+                "code": code,
+                "name": ex['exam_name'],
+                "teacher_name": ex['teacher_name'] or "Teacher",
+                "class_name": ex.get('class_name', 'General'),
+                "subject": ex.get('subject', 'General'),
+                "timer": ex['timer_minutes'],
                 "is_private": ex.get('is_private', False),
                 "date": str(ex['created_at']).split()[0] if ex['created_at'] else "Recently",
                 "likes": ex['total_likes'],
