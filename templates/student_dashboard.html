@@ -377,6 +377,7 @@
             if(!userEmail) return;
 
             let icon = btn.querySelector('i');
+            
             if (actionType === 'like') {
                 let span = btn.querySelector('span');
                 let count = parseInt(span.innerText);
@@ -386,8 +387,14 @@
                     icon.className = 'fas fa-heart like-active'; span.innerText = count + 1;
                 }
             } else if (actionType === 'save') {
-                if (icon.classList.contains('save-active')) { icon.className = 'far fa-bookmark'; } 
-                else { icon.className = 'fas fa-bookmark save-active'; }
+                // লোকাল স্টোরেজে সেভ বা আনসেভ করার লজিক
+                if (icon.classList.contains('save-active')) { 
+                    icon.className = 'far fa-bookmark'; 
+                    localStorage.removeItem('save_' + examCode);
+                } else { 
+                    icon.className = 'fas fa-bookmark save-active'; 
+                    localStorage.setItem('save_' + examCode, 'true');
+                }
             }
 
             try {
