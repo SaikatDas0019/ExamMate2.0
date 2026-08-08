@@ -588,6 +588,8 @@
             container.innerHTML = '';
 
             const prefix = type === 'saved' ? 'save_' : 'like_';
+            
+            // লোকাল স্টোরেজ থেকে সেভ করা এক্সাম কোডগুলো ফিল্টার করা হচ্ছে
             const filteredExams = allSocialExams.filter(ex => localStorage.getItem(prefix + ex.code) === 'true');
 
             if(filteredExams.length === 0) {
@@ -595,12 +597,12 @@
             } else {
                 filteredExams.forEach(ex => {
                     container.innerHTML += `
-                    <div class="feed-card">
+                    <div class="feed-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
                         <div class="feed-info">
-                            <strong>${ex.name}</strong>
-                            <span>Code: ${ex.code} • By ${ex.teacher_name}</span>
+                            <strong style="display:block; font-size:1rem; color:#0f172a; margin-bottom:3px;">${ex.name}</strong>
+                            <span style="font-size:0.75rem; color:#64748b;">Code: ${ex.code} • By ${ex.teacher_name}</span>
                         </div>
-                        <button class="btn-attempt-small" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt</button>
+                        <button class="btn-attempt-small" style="background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; padding:6px 12px; border-radius:6px; font-weight:bold; font-size:0.8rem; cursor:pointer;" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt</button>
                     </div>`;
                 });
             }
