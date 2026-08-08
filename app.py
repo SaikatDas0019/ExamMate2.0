@@ -1098,18 +1098,35 @@ def get_social_feed():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+@app.route('/api/get-filter-options', methods=['GET'])
+def get_filter_options():
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT DISTINCT class_name FROM exams WHERE class_name IS NOT NULL")
+        classes = [r['class_name'] if isinstance(r, dict) else r[0] for r in cursor.fetchall()]
+        
+        cursor.execute("SELECT DISTINCT subject FROM exams WHERE subject IS NOT NULL")
+        subjects = [r['subject'] if isinstance(r, dict) else r[0] for r in cursor.fetchall()]
+        conn.close()
+        return jsonify({"success": True, "classes": classes, "subjects": subjects})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
 @app.route('/api/search-feed', methods=['POST'])
 def search_feed():
     data = request.get_json()
     email = data.get('email')
     query = data.get('query', '').strip()
+    selected_class = data.get('class_name', 'All')
+    selected_subject = data.get('subject', 'All')
+    status_filter = data.get('status', 'All') # 'Attempted', 'Unattempted', 'Private'
     
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # Search by exam name, code, subject, class, or teacher name
         search_term = f"%{query}%"
         sql = f"""SELECT e.*, u.name as teacher_name, 
                  (SELECT COUNT(*) FROM likes WHERE exam_code = e.exam_code) as total_likes,
@@ -1117,23 +1134,43 @@ def search_feed():
                  (SELECT COUNT(*) FROM saves WHERE exam_code = e.exam_code AND email = {ph}) as is_saved
                  FROM exams e 
                  LEFT JOIN users u ON e.teacher_email = u.email 
-                 WHERE e.exam_name ILIKE {ph} OR e.exam_code ILIKE {ph} OR e.subject ILIKE {ph} OR e.class_name ILIKE {ph} OR u.name ILIKE {ph}
-                 ORDER BY e.created_at DESC"""
+                 WHERE (e.exam_name ILIKE {ph} OR e.exam_code ILIKE {ph} OR e.subject ILIKE {ph} OR e.class_name ILIKE {ph} OR u.name ILIKE {ph})"""
                  
-        # SQLite doesn't support ILIKE directly, so if using SQLite, replace ILIKE with LIKE
         if db_type == 'sqlite':
             sql = sql.replace("ILIKE", "LIKE")
             
-        cursor.execute(sql, (email, email, search_term, search_term, search_term, search_term, search_term))
+        params = [email, email, search_term, search_term, search_term, search_term, search_term]
+        
+        if selected_class != 'All':
+            sql += f" AND e.class_name = {ph}"
+            params.append(selected_class)
+            
+        if selected_subject != 'All':
+            sql += f" AND e.subject = {ph}"
+            params.append(selected_subject)
+            
+        if status_filter == 'Private':
+            sql += " AND e.is_private = TRUE"
+        elif status_filter == 'Public':
+            sql += " AND e.is_private = FALSE"
+            
+        sql += " ORDER BY e.created_at DESC"
+        
+        cursor.execute(sql, tuple(params))
         results = cursor.fetchall()
         
-        # Check attempt history
         cursor.execute(f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph}", (email,))
         history = {r['exam_code']: r for r in cursor.fetchall()}
         
         feed = []
         for ex in results:
             code = ex['exam_code']
+            is_attempted = code in history
+            
+            # Status filter for Attempted / Unattempted
+            if status_filter == 'Attempted' and not is_attempted: continue
+            if status_filter == 'Unattempted' and is_attempted: continue
+            
             feed.append({
                 "code": code,
                 "name": ex['exam_name'],
@@ -1141,14 +1178,15 @@ def search_feed():
                 "class_name": ex.get('class_name', 'General'),
                 "subject": ex.get('subject', 'General'),
                 "timer": ex['timer_minutes'],
+                "is_private": ex.get('is_private', False),
                 "date": str(ex['created_at']).split()[0] if ex['created_at'] else "Recently",
                 "likes": ex['total_likes'],
                 "shares": ex.get('shares', 0),
                 "is_liked": ex['is_liked'] > 0,
                 "is_saved": ex['is_saved'] > 0,
-                "is_attempted": code in history,
-                "score": history[code]['score'] if code in history else 0,
-                "total": history[code]['total_questions'] if code in history else 0
+                "is_attempted": is_attempted,
+                "score": history[code]['score'] if is_attempted else 0,
+                "total": history[code]['total_questions'] if is_attempted else 0
             })
         conn.close()
         return jsonify({"success": True, "feed": feed})
