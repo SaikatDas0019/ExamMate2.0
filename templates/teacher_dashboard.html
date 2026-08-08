@@ -3,159 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Teacher Dashboard</title>
+    <title>ExamMate | Teacher Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    
     <style>
-        /* Global Theme (Light Theme & Mobile First) */
         :root { color-scheme: light; }
         body { 
-            background-color: #f9fafb; 
-            color: #333333; 
+            background-color: #f1f5f9; color: #333333; 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
+            margin: 0; display: flex; justify-content: center;
         }
         
-        /* Container updated for fixed header */
         .container { 
-            width: 100%;
-            max-width: 480px; 
-            background-color: #ffffff;
-            min-height: 100vh;
-            padding: 90px 1rem 6rem 1rem; 
-            box-sizing: border-box;
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            margin: 0 auto;
+            width: 100%; max-width: 480px; background-color: #f1f5f9;
+            min-height: 100vh; padding-bottom: 70px; 
+            box-sizing: border-box; margin: 0 auto; position: relative; overflow-x: hidden;
         }
 
-        /* Fully Fixed Header */
+        /* Fixed Top Section */
+        .fixed-top-section {
+            position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; z-index: 999;
+            background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+
         .sticky-header {
-            position: fixed; 
-            top: 0; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            width: 100%; 
-            max-width: 480px; 
-            background-color: #ffffff; 
-            z-index: 999;
-            padding: 1rem;
-            box-sizing: border-box;
-            border-bottom: 1px solid #e5e7eb; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
+            padding: 12px 15px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #f8fafc;
         }
-        
-        .sticky-header-left { justify-content: flex-start; gap: 15px; }
-        .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0;}
-
-        /* Header Section Elements */
         .profile-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .avatar { 
-            width: 45px; height: 45px; background: #e0f2fe; border-radius: 50%; 
+            width: 40px; height: 40px; background: #e0f2fe; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 1.3rem; border: 2px solid #38bdf8; color: #0369a1;
+            font-size: 1.2rem; border: 2px solid #38bdf8; color: #0369a1;
         }
-        .greeting h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #111827; }
-        .greeting p { margin: 0; font-size: 0.75rem; color: #6b7280; }
-        
+        .greeting h3 { margin: 0; font-size: 1rem; font-weight: 800; color: #0f172a; }
+        .greeting p { margin: 0; font-size: 0.7rem; color: #64748b; font-weight: 600;}
         .bell-icon { 
-            font-size: 1.1rem; color: #4b5563; background: #f3f4f6; 
-            padding: 9px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer;
-            position: relative;
+            font-size: 1.1rem; color: #4b5563; background: #f8fafc; 
+            padding: 8px; border-radius: 50%; border: 1px solid #e2e8f0; cursor: pointer; position: relative;
         }
-        .bell-icon.has-unread::after {
-            content: ''; position: absolute; top: 2px; right: 2px;
-            width: 9px; height: 9px; background-color: #ef4444; border-radius: 50%; border: 2px solid #ffffff;
+
+        .search-container { padding: 15px 15px 5px 15px; display: flex; gap: 10px; background: #ffffff; }
+        .search-input-wrapper { flex: 1; position: relative; }
+        .search-input-wrapper input {
+            width: 100%; padding: 12px 15px; padding-left: 35px;
+            background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px;
+            font-size: 0.95rem; outline: none; box-sizing: border-box;
         }
+        .search-input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
         
-        /* Metric Buttons */
-        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
-        .metric-card { 
-            background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 15px; 
-            display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+        .search-btn-circle {
+            width: 45px; height: 45px; border-radius: 50%; background: #3b82f6;
+            color: white; border: none; font-size: 1.1rem; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
         }
-        .metric-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); }
-        .metric-header { font-size: 0.85rem; color: #166534; font-weight: 700;}
-        .metric-val { font-size: 1.6rem; font-weight: 700; color: #14532d; margin: 0; line-height: 1; }
 
-        /* Tables & Panels */
-        .panel-view { display: none; margin-top: 10px; }
-        .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;}
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
-        th { background-color: #f8fafc; color: #374151; font-weight: bold; }
-        td { color: #4b5563; }
-        .student-name-box { display: flex; flex-direction: column; }
-        .student-name-box .email { font-size: 0.7rem; color: #64748b; margin-top: 2px; }
-        .student-select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px; box-sizing: border-box; outline: none;}
-        .btn-del { background: #fee2e2; color: #ef4444; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;}
-        .btn-del:hover { background: #fca5a5; color: white;}
+        .filter-container {
+            padding: 10px 15px 15px 15px; background: #ffffff;
+            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
+            border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;
+        }
+        .filter-pill {
+            background: #ffffff; border: 1px solid #cbd5e1; color: #475569;
+            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 5px; outline: none;
+        }
 
-        /* Action Buttons */
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
-        .btn-create, .btn-ai { border: none; border-radius: 12px; padding: 15px; color: white; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
-        .btn-create { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
-        .btn-ai { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
-        .btn-create:hover, .btn-ai:hover { transform: translateY(-2px); }
+        /* Feed Container */
+        .feed-container { padding: 15px; margin-top: 185px; }
+        .feed-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
+            padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .feed-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; }
+        .feed-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;}
+        .feed-tag { background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; }
+        
+        .btn-create-exam {
+            display: block; width: 100%; background: linear-gradient(135deg, #10b981, #059669);
+            color: white; text-align: center; padding: 12px; border-radius: 12px;
+            font-weight: bold; text-decoration: none; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(16,185,129,0.3);
+        }
 
-        /* Section Titles */
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .section-title { font-size: 1.1rem; font-weight: 700; color: #111827; margin: 0; }
-        .view-all-btn { background: none; border: none; color: #3b82f6; font-weight: 600; cursor: pointer; font-size: 0.9rem;}
-
-        /* Exam Cards Grid */
-        .exam-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
-        .exam-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; }
-        .exam-content { padding: 12px; flex: 1;}
-        .exam-title { font-size: 0.85rem; color: #1e293b; font-weight: 700; margin-bottom: 8px; line-height: 1.2; }
-        .exam-code-box { background: #f1f5f9; padding: 5px 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
-        .exam-code { font-family: monospace; font-size: 0.9rem; color: #0f172a; font-weight: 700; }
-        .ana-btn { background: #f8fafc; border: none; border-top: 1px solid #e2e8f0; width: 100%; padding: 10px; color: #3b82f6; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .ana-btn:hover { background: #eff6ff; }
-
-        /* Student Analytics Bottom Grid */
-        .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
-        .btn-anly { border: none; border-radius: 12px; height: 50px; color: white; font-weight: 600; font-size: 0.95rem; cursor: pointer;}
-        .btn-jee { background: #ef4444; } .btn-neet { background: #f97316; }
-        .btn-wbjee { background: #0ea5e9; } .btn-adv { background: #8b5cf6; }
-
-        /* ANALYSIS VIEW SPECIFIC STYLES */
-        .analysis-metrics { display: flex; justify-content: space-between; margin: 15px 0; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;}
-        .ana-metric { text-align: center; }
-        .ana-metric span { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 5px;}
-        .ana-metric strong { font-size: 1.2rem; color: #0f172a; }
-
-        .rank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
-        .rank-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
-        .rank-box h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: #1e293b; text-align: center;}
-        .rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.8rem;}
-        .rank-list li { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dashed #e2e8f0;}
-        .rank-list li:last-child { border-bottom: none; }
-        .student-info { display: flex; flex-direction: column; }
-        .student-email-text { font-size: 0.65rem; color: #64748b; font-weight: normal; margin-top: 2px;}
-
-        /* Graph Container */
-        .chart-container { position: relative; height: 200px; width: 100%; margin-bottom: 2rem;}
-
-        /* Section Visibility */
-        #dashboard-view { display: block; }
-        #analysis-view { display: none; }
-        #all-exams-view { display: none; }
-        #edit-exam-view { display: none; }
-
-        /* FIXED BOTTOM NAVIGATION BAR STYLING */
+        /* Bottom Nav */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px;
-            background: #ffffff; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around;
-            padding: 8px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
+            display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; text-decoration: none; flex: 1; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
     </style>
@@ -163,13 +100,11 @@
 <body>
 
     <div class="container">
-        
-        <!-- DASHBOARD VIEW -->
-        <div id="dashboard-view">
-            <!-- Fixed Header for Dashboard -->
+        <!-- Fixed Top Section -->
+        <div class="fixed-top-section">
             <div class="sticky-header">
                 <div class="profile-left" onclick="window.location.href='teacher_profile.html'">
-                    <div class="avatar"><i class="fas fa-user-tie"></i></div>
+                    <div class="avatar" id="nav-avatar">T</div>
                     <div class="greeting">
                         <h3 id="teacher-name">Hi, Teacher</h3>
                         <p>Manage your classes! 🎓</p>
@@ -178,625 +113,74 @@
                 <div class="bell-icon" onclick="window.location.href='notification.html'"><i class="fas fa-bell"></i></div>
             </div>
 
-            <!-- Clickable Metric Cards -->
-            <div class="metrics-grid">
-                <div class="metric-card" onclick="openPanel('panel-leaderboard')">
-                    <div class="metric-header">📝 Total Attempts</div>
-                    <div class="metric-val" id="val-attempts">0</div>
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="main-search" placeholder="Search your exams...">
                 </div>
-                <div class="metric-card" onclick="openPanel('panel-students')">
-                    <div class="metric-header">👥 Total Students</div>
-                    <div class="metric-val" id="val-students">0</div>
-                </div>
-                <div class="metric-card" onclick="openPanel('panel-average')">
-                    <div class="metric-header">📈 Avg Score</div>
-                    <div class="metric-val" id="val-avg">0%</div>
-                </div>
-                <div class="metric-card" onclick="openPanel('panel-active')">
-                    <div class="metric-header">🟢 Active Exams</div>
-                    <div class="metric-val" id="val-active">0</div>
-                </div>
-            </div>
-
-            <div class="action-grid">
-                <button class="btn-create" onclick="window.location.href='create_exam.html'">📝 Create New Exam</button>
-                <button class="btn-ai" onclick="alert('AI Generator Module launching soon!')">🤖 AI Generate ✨</button>
-            </div>
-
-            <div class="section-header">
-                <h2 class="section-title">Recent Exams</h2>
-                <button class="view-all-btn" onclick="showAllExams()">View All ➡️</button>
-            </div>
-            
-            <div class="exam-grid" id="recent-exams-container"></div>
-
-            <h2 class="section-title" style="margin-top: 1rem; margin-bottom: 10px;">Student Results & Analytics</h2>
-            <div class="analytics-grid">
-                <button class="btn-anly btn-jee">JEE Main</button>
-                <button class="btn-anly btn-neet">NEET</button>
-                <button class="btn-anly btn-wbjee">WBJEE</button>
-                <button class="btn-anly btn-adv">JEE Advanced</button>
+                <button class="search-btn-circle" onclick="loadTeacherFeed()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
         </div>
 
-        <!-- PANEL 1: TOTAL ATTEMPTS (LEADERBOARD) -->
-        <div id="panel-leaderboard" class="panel-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.4rem; margin: 0;">🏆 Total Attempts</h1>
-            </div>
-            <select id="leaderboard-filter" class="student-select-box" onchange="loadLeaderboard()">
-                <option value="all" selected>🏆 Overall Highest Scores (All Exams)</option>
-            </select>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Rank</th><th>Student Info</th><th>Score/Perf</th></tr></thead>
-                    <tbody id="list-leaderboard-body"></tbody>
-                </table>
+        <!-- Feed Container -->
+        <div class="feed-container" id="teacher-feed">
+            <a href="create_exam.html" class="btn-create-exam"><i class="fas fa-plus-circle"></i> Create New Exam 📝</a>
+            <div id="exams-list-container">
+                <p style="text-align:center; color:#64748b;">Loading your exams...</p>
             </div>
         </div>
-
-        <!-- PANEL 2: TOTAL STUDENTS -->
-        <div id="panel-students" class="panel-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.4rem; margin: 0;">👥 Total Students</h1>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Name (Email)</th><th>Exams Attended</th><th>Overall Avg</th></tr></thead>
-                    <tbody id="list-students-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- PANEL 3: AVG SCORE (ALL EXAMS TABLE) -->
-        <div id="panel-average" class="panel-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.4rem; margin: 0;">📈 Class Average</h1>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Exam Name</th><th>Avg %</th><th>High %</th><th>Low %</th></tr></thead>
-                    <tbody id="list-average-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- PANEL 4: ACTIVE EXAMS (WITH DELETE) -->
-        <div id="panel-active" class="panel-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.4rem; margin: 0;">🟢 Manage Exams</h1>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Exam Name</th><th>Release Date & Time</th><th>Action</th></tr></thead>
-                    <tbody id="list-active-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-
-        <!-- ALL EXAMS VIEW (OLD) -->
-        <div id="all-exams-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.4rem; margin: 0;">All Created Exams</h1>
-            </div>
-            <div class="exam-grid" id="all-exams-container"></div>
-        </div>
-
-        <!-- INDIVIDUAL EXAM ANALYSIS VIEW -->
-        <div id="analysis-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.3rem; margin: 0;">📈 <span id="ana-exam-name">Exam Name</span></h1>
-            </div>
-            
-            <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Exam Code: <strong id="ana-exam-code">CODE</strong></div>
-
-            <div class="analysis-metrics">
-                <div class="ana-metric"><span>Students</span><strong id="ana-total-students">0</strong></div>
-                <div class="ana-metric"><span>Avg Score</span><strong id="ana-avg-score">0</strong></div>
-                <div class="ana-metric"><span>Questions</span><strong id="ana-total-qs">0</strong></div>
-            </div>
-
-            <div class="rank-grid">
-                <div class="rank-box">
-                    <h3>🏆 Top Students</h3>
-                    <ul class="rank-list" id="top-students-list"></ul>
-                </div>
-                <div class="rank-box">
-                    <h3>📉 Bottom Students</h3>
-                    <ul class="rank-list" id="bottom-students-list"></ul>
-                </div>
-            </div>
-
-            <div class="rank-box" style="border: 2px solid #fca5a5; background: #fef2f2; margin-bottom: 1.5rem;">
-                <h3 style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> Suspicious Activity</h3>
-                <p style="font-size:0.75rem; color:#b91c1c; text-align:center; margin-top:-5px; margin-bottom:10px;">যারা ট্যাব পাল্টানো বা মিনিমাইজ করার চেষ্টা করেছে</p>
-                <ul class="rank-list" id="cheater-list"></ul>
-            </div>
-
-            <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 10px;">📊 Score Distribution</h3>
-            <div class="chart-container">
-                <canvas id="scoreChart"></canvas>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px;">
-                <button onclick="editExam()" style="background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1rem;"><i class="fas fa-pen"></i> Edit Exam</button>
-                <button onclick="deleteExam()" style="background: #ef4444; color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1rem;"><i class="fas fa-trash"></i> Delete Exam</button>
-            </div>
-        </div>
-        
-        <!-- EDIT EXAM VIEW -->
-        <div id="edit-exam-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.4rem; margin: 0;" id="edit-exam-title">✏️ Edit Exam</h1>
-            </div>
-            
-            <div style="background: #ffffff; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
-                <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Exam Name</label>
-                <input type="text" id="edit-exam-name" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                    <div>
-                        <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Class/Batch</label>
-                        <input type="text" id="edit-exam-class" placeholder="e.g. Class 11" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
-                    </div>
-                    <div>
-                        <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Subject</label>
-                        <input type="text" id="edit-exam-subject" placeholder="e.g. Physics" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                    <div>
-                        <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Timer (Mins)</label>
-                        <input type="number" id="edit-exam-timer" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
-                    </div>
-                    <div>
-                        <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Negative Marks</label>
-                        <select id="edit-exam-negative" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
-                            <option value="0">0</option>
-                            <option value="0.25">-0.25</option>
-                            <option value="0.33">-0.33</option>
-                            <option value="0.5">-0.50</option>
-                            <option value="1">-1.00</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Exam Visibility (Privacy)</label>
-                    <select id="edit-exam-privacy" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
-                        <option value="false">Public (Visible in Feed to Everyone)</option>
-                        <option value="true">Private (Accessible via Exam Code Only)</option>
-                    </select>
-                </div>
-            </div>
-
-            <h3 style="margin-bottom: 10px; font-size: 1.1rem;">Questions List</h3>
-            <div id="edit-questions-list"></div>
-            <button onclick="addEditQuestion()" style="width:100%; background: #f1f5f9; color: #3b82f6; border: 2px dashed #3b82f6; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 15px;">➕ Add New Question</button>
-            <button id="save-edit-btn" onclick="saveEditedExam()" style="width:100%; background: #10b981; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 6px rgba(16,185,129,0.3);">💾 Save Changes</button>
-        </div>
-
     </div>
 
-    <!-- Fixed Bottom Navigation -->
+    <!-- Bottom Nav -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="showDashboard()">
-            <div class="nav-icon"><i class="fas fa-home"></i></div>
-            <span>Home</span>
-        </div>
-        <div class="nav-item" onclick="window.location.href='/teacher_analytics.html'">
-            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
-            <span>Analytics</span>
-        </div>
-        <div class="nav-item" onclick="window.location.href='/teacher_profile.html'">
-            <div class="nav-icon"><i class="far fa-user"></i></div>
-            <span>Profile</span>
-        </div>
+        <a href="teacher_dashboard.html" class="nav-item active">
+            <div class="nav-icon"><i class="fas fa-home"></i></div><span>Home</span>
+        </a>
+        <a href="teacher_analytics.html" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div><span>Analytics</span>
+        </a>
+        <a href="teacher_profile.html" class="nav-item">
+            <div class="nav-icon"><far fa-user></far><i class="far fa-user"></i></div><span>Profile</span>
+        </a>
     </div>
-
 
     <script>
-        let scoreChart = null;
-        let globalData = {};
+        window.onload = () => {
+            const userName = localStorage.getItem('userName') || "Teacher";
+            document.getElementById('teacher-name').innerText = "Hi, " + userName.split(' ')[0];
+            document.getElementById('nav-avatar').innerText = userName.charAt(0).toUpperCase();
+            loadTeacherFeed();
+        };
 
-        async function checkUnreadNotifications() {
+        async function loadTeacherFeed() {
             const userEmail = localStorage.getItem('userEmail');
-            if (!userEmail) return;
+            const container = document.getElementById('exams-list-container');
+            
             try {
-                const response = await fetch('/api/check-unread-notifications', {
+                const response = await fetch('/api/teacher-dashboard', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: userEmail })
                 });
                 const data = await response.json();
-                const bellIcon = document.querySelector('.bell-icon');
-                if (data.success && data.has_unread) { bellIcon.classList.add('has-unread'); } 
-                else { bellIcon.classList.remove('has-unread'); }
-            } catch (error) { console.log("Notif check error:", error); }
-        }
-        
-        window.onload = async () => {
-            const userName = localStorage.getItem('userName') || "Teacher";
-            const userEmail = localStorage.getItem('userEmail');
-            document.getElementById('teacher-name').innerText = "Hi, " + userName.split(' ')[0];
-            
-            checkUnreadNotifications();
-            
-            if (userEmail) {
-                try {
-                    const response = await fetch('/api/teacher-full-analytics', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: userEmail })
-                    });
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        globalData = data;
-                        
-                        document.getElementById('val-attempts').innerText = data.overall.attempts;
-                        document.getElementById('val-students').innerText = data.overall.students;
-                        document.getElementById('val-avg').innerText = data.overall.avg + '%';
-                        document.getElementById('val-active').innerText = data.overall.exams; 
 
-                        renderExams(data.examStats);
-
-                        const ldFilter = document.getElementById('leaderboard-filter');
-                        data.examStats.forEach(e => {
-                            const opt = document.createElement('option');
-                            opt.value = e.code;
-                            opt.innerText = e.name;
-                            ldFilter.appendChild(opt);
-                        });
-
-                        populatePanels(data);
-                    }
-                } catch (error) { console.log("Error fetching dashboard data:", error); }
-            }
-        };
-
-        function populatePanels(data) {
-            document.getElementById('list-students-body').innerHTML = data.leaderboard.map((s, i) => 
-                `<tr><td><div class="student-name-box"><strong>${i+1}. ${s.name}</strong><span class="email">${s.email}</span></div></td><td>${s.taken} Exams</td><td><strong style="color:#1ea64d;">${s.avg}%</strong></td></tr>`
-            ).join('') || '<tr><td colspan="3">No students found.</td></tr>';
-
-            document.getElementById('list-average-body').innerHTML = data.examStats.map(e => 
-                `<tr><td>${e.name}</td><td><strong style="color:#3b82f6;">${e.avg}%</strong></td><td>${e.high}%</td><td>${e.low}%</td></tr>`
-            ).join('') || '<tr><td colspan="4">No data.</td></tr>';
-
-            document.getElementById('list-active-body').innerHTML = data.examStats.map(e => 
-                `<tr>
-                    <td><strong>${e.name}</strong><br><span style="font-size:0.7rem; color:#64748b;">Code: ${e.code}</span></td>
-                    <td>${e.date}<br><span style="font-size:0.7rem;">${e.time}</span></td>
-                    <td><button class="btn-del" onclick="deleteSpecificExam('${e.code}')"><i class="fas fa-trash"></i> Delete</button></td>
-                </tr>`
-            ).join('') || '<tr><td colspan="3">No exams found.</td></tr>';
-            
-            loadLeaderboard();
-        }
-
-        async function loadLeaderboard() {
-            const filter = document.getElementById('leaderboard-filter').value;
-            const tbody = document.getElementById('list-leaderboard-body');
-            tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
-
-            if(filter === 'all') {
-                tbody.innerHTML = globalData.leaderboard.map((s, i) => 
-                    `<tr>
-                        <td><strong>#${i+1}</strong></td>
-                        <td><div class="student-name-box"><strong>${s.name}</strong><span class="email">${s.email}</span></div></td>
-                        <td><strong style="color:#16a34a;">${s.best}%</strong></td>
-                    </tr>`
-                ).join('') || '<tr><td colspan="3">No records.</td></tr>';
-            } else {
-                try {
-                    const response = await fetch('/api/teacher-analysis', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ exam_code: filter })
-                    });
-                    const data = await response.json();
-                    if(data.success) {
-                        tbody.innerHTML = data.all_students.map((s, i) => 
-                            `<tr>
-                                <td><strong>#${i+1}</strong></td>
-                                <td><div class="student-name-box"><strong>${s.name}</strong><span class="email">${s.email}</span></div></td>
-                                <td><strong style="color:#16a34a;">${s.perf}%</strong><br><span style="font-size:0.7rem;">(${s.score}/${data.total_q})</span></td>
-                            </tr>`
-                        ).join('');
-                    } else { tbody.innerHTML = '<tr><td colspan="3">No attempts yet.</td></tr>'; }
-                } catch(e) { tbody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>'; }
-            }
-        }
-
-        async function deleteSpecificExam(examCode) {
-            if(confirm("আপনি কি সত্যিই এই এক্সামটি ডিলিট করতে চান? এই কাজ বাতিল করা যাবে না।")) {
-                try {
-                    const response = await fetch('/api/teacher-delete-exam', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ exam_code: examCode })
-                    });
-                    const data = await response.json();
-                    if(data.success) {
-                        alert("পরীক্ষাটি সফলভাবে মুছে ফেলা হয়েছে!");
-                        window.location.reload();
-                    } else { alert("Failed to delete exam."); }
-                } catch(e) { alert("Server error."); }
-            }
-        }
-
-        function renderExams(examsList) {
-            const recentContainer = document.getElementById('recent-exams-container');
-            const allContainer = document.getElementById('all-exams-container');
-            recentContainer.innerHTML = ''; allContainer.innerHTML = '';
-
-            if(examsList.length === 0) {
-                recentContainer.innerHTML = '<p style="color:#64748b; font-size:0.9rem; padding: 10px;">No exams created yet.</p>';
-                return;
-            }
-
-            examsList.forEach((exam, index) => {
-                const cardHTML = `
-                    <div class="exam-card">
-                        <div class="exam-content">
-                            <div class="exam-title">${exam.name}</div>
-                            <div class="exam-code-box">
-                                <span style="font-size: 0.7rem; color: #64748b;">Code</span>
-                                <span class="exam-code">${exam.code}</span>
+                if (data.success && data.all_exams.length > 0) {
+                    container.innerHTML = '';
+                    data.all_exams.forEach(ex => {
+                        container.innerHTML += `
+                        <div class="feed-card">
+                            <h3 class="feed-title">${ex.name}</h3>
+                            <div class="feed-tags">
+                                <span class="feed-tag">Code: ${ex.code}</span>
                             </div>
-                        </div>
-                        <button class="ana-btn" onclick="openAnalysis('${exam.code}', '${exam.name.replace(/'/g, "\\'")}')">View Analysis 📈</button>
-                    </div>
-                `;
-                allContainer.innerHTML += cardHTML;
-                if (index < 2) recentContainer.innerHTML += cardHTML;
-            });
-        }
-
-        function openPanel(id) {
-            document.getElementById('dashboard-view').style.display = 'none';
-            document.getElementById('all-exams-view').style.display = 'none';
-            document.getElementById('analysis-view').style.display = 'none';
-            document.getElementById('edit-exam-view').style.display = 'none';
-            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            
-            document.getElementById(id).style.display = 'block';
-            window.scrollTo(0, 0);
-            window.history.pushState({view: id}, "", window.location.href);
-        }
-
-        function closePanels() {
-            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            document.getElementById('dashboard-view').style.display = 'block';
-            window.scrollTo(0, 0);
-        }
-
-        function showDashboard() {
-            closePanels();
-            document.getElementById('all-exams-view').style.display = 'none';
-            document.getElementById('analysis-view').style.display = 'none';
-            document.getElementById('edit-exam-view').style.display = 'none';
-            window.history.pushState({view: 'dashboard'}, "", window.location.href);
-        }
-
-        function showAllExams() {
-            document.getElementById('dashboard-view').style.display = 'none';
-            document.getElementById('all-exams-view').style.display = 'block';
-            window.scrollTo(0, 0);
-            window.history.pushState({view: 'all_exams'}, "", window.location.href);
-        }
-
-        async function openAnalysis(examCode, examName) {
-            document.getElementById('dashboard-view').style.display = 'none';
-            document.getElementById('all-exams-view').style.display = 'none';
-            document.getElementById('analysis-view').style.display = 'block';
-            window.scrollTo(0, 0);
-            window.history.pushState({view: 'analysis'}, "", window.location.href);
-
-            document.getElementById('ana-exam-name').innerText = examName;
-            document.getElementById('ana-exam-code').innerText = examCode;
-
-            try {
-                const response = await fetch('/api/teacher-analysis', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ exam_code: examCode })
-                });
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    document.getElementById('ana-total-students').innerText = data.total_students;
-                    document.getElementById('ana-avg-score').innerText = data.avg_score;
-                    document.getElementById('ana-total-qs').innerText = data.total_q;
-
-                    document.getElementById('top-students-list').innerHTML = data.top.map(s => 
-                        `<li>
-                            <div class="student-info"><span>${s.name}</span><span class="student-email-text">(${s.email})</span></div>
-                            <strong>${s.score}</strong>
-                        </li>`
-                    ).join('');
-
-                    document.getElementById('bottom-students-list').innerHTML = data.bottom.map(s => 
-                        `<li>
-                            <div class="student-info"><span>${s.name}</span><span class="student-email-text">(${s.email})</span></div>
-                            <strong>${s.score}</strong>
-                        </li>`
-                    ).join('');
-                    
-                    const cheaters = data.all_students.filter(s => s.warnings > 0);
-                    if (cheaters.length > 0) {
-                        document.getElementById('cheater-list').innerHTML = cheaters.map(s => 
-                            `<li>
-                                <div class="student-info"><span style="color: #ef4444; font-weight:bold;">${s.name}</span><span class="student-email-text">(${s.email})</span></div>
-                                <strong style="color: #ef4444; background: #fee2e2; padding: 3px 8px; border-radius: 6px;">${s.warnings} Warnings</strong>
-                            </li>`
-                        ).join('');
-                    } else {
-                        document.getElementById('cheater-list').innerHTML = `<li style="justify-content:center; color:#10b981; font-weight:bold;">✅ No suspicious activity detected!</li>`;
-                    }
-
-                    renderChart(data.chartLabels, data.chartData);
-                } else { alert(data.error || "No data available for this exam yet."); }
-            } catch (error) { alert("Server error connecting to database."); }
-        }
-
-        function renderChart(labels, data) {
-            const ctx = document.getElementById('scoreChart').getContext('2d');
-            if(scoreChart !== null) { scoreChart.destroy(); }
-            scoreChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Number of Students', data: data,
-                        backgroundColor: '#3b82f6', borderRadius: 4, barPercentage: 0.6
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#e2e8f0', drawBorder: false }, ticks: { stepSize: 1 } },
-                        x: { grid: { display: false, drawBorder: false } }
-                    }
-                }
-            });
-        }
-
-        window.addEventListener('popstate', function (event) {
-            let isPanelOpen = false;
-            document.querySelectorAll('.panel-view').forEach(p => { if(p.style.display === 'block') isPanelOpen = true; });
-
-            if (document.getElementById('analysis-view').style.display === 'block' || 
-                document.getElementById('all-exams-view').style.display === 'block' || 
-                document.getElementById('edit-exam-view').style.display === 'block' ||
-                isPanelOpen) {
-                showDashboard();
-            } else {
-                if (document.referrer) { window.history.back(); }
-            }
-        });
-        
-        let currentEditingExamCode = "";
-        let currentEditQuestions = [];
-
-        async function deleteExam() {
-            if (confirm("আপনি কি সত্যিই এই এক্সামটি ডিলিট করতে চান? এই কাজ বাতিল করা যাবে না।")) {
-                try {
-                    const response = await fetch('/api/teacher-delete-exam', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ exam_code: document.getElementById('ana-exam-code').innerText })
+                            <button class="btn-create-exam" style="background:#3b82f6; margin-top:10px; margin-bottom:0; padding:8px;" onclick="window.location.href='teacher_analytics.html?code=${ex.code}'">View Analysis & Manage 📊</button>
+                        </div>`;
                     });
-                    const data = await response.json();
-                    if (data.success) { alert("এক্সামটি সফলভাবে ডিলিট হয়েছে!"); window.location.reload(); } 
-                    else { alert("Failed to delete exam."); }
-                } catch(e) { alert("Server error."); }
-            }
-        }
-
-        async function editExam() {
-            const examCode = document.getElementById('ana-exam-code').innerText;
-            currentEditingExamCode = examCode;
-            
-            document.getElementById('analysis-view').style.display = 'none';
-            document.getElementById('edit-exam-view').style.display = 'block';
-            document.getElementById('edit-exam-title').innerText = "Edit Exam: " + examCode;
-            window.scrollTo(0, 0);
-            window.history.pushState({view: 'edit_exam'}, "", window.location.href);
-            
-            const response = await fetch('/api/get-exam-questions', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ exam_code: examCode })
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                document.getElementById('edit-exam-name').value = data.exam_name;
-                document.getElementById('edit-exam-class').value = data.class_name || '';
-                document.getElementById('edit-exam-subject').value = data.subject || '';
-                document.getElementById('edit-exam-timer').value = data.timer_minutes;
-                document.getElementById('edit-exam-negative').value = data.negative_marks;
-                document.getElementById('edit-exam-privacy').value = data.is_private ? 'true' : 'false';
-                
-                currentEditQuestions = data.questions.map(q => ({
-                    question_text: q.q_text, option_a: q.opt_a, option_b: q.opt_b, option_c: q.opt_c, option_d: q.opt_d, correct_option: q.correct
-                }));
-                
-                renderEditQuestions();
-            } else { alert("Failed to load exam data."); }
-        }
-
-        function renderEditQuestions() {
-            const list = document.getElementById('edit-questions-list');
-            list.innerHTML = '';
-            currentEditQuestions.forEach((q, i) => {
-                list.innerHTML += `
-                <div class="exam-card" style="margin-bottom: 15px; padding: 15px; background: #f8fafc;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                        <strong style="color: #3b82f6;">Q${i + 1}:</strong>
-                        <button onclick="removeEditQuestion(${i})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
-                    </div>
-                    <textarea style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px;" onchange="updateEditQ(${i}, 'question_text', this.value)">${q.question_text}</textarea>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom: 10px;">
-                        <div>A) <input type="text" style="width:100%; padding: 5px; border:1px solid #cbd5e1; border-radius:4px;" value="${q.option_a}" onchange="updateEditQ(${i}, 'option_a', this.value)"></div>
-                        <div>B) <input type="text" style="width:100%; padding: 5px; border:1px solid #cbd5e1; border-radius:4px;" value="${q.option_b}" onchange="updateEditQ(${i}, 'option_b', this.value)"></div>
-                        <div>C) <input type="text" style="width:100%; padding: 5px; border:1px solid #cbd5e1; border-radius:4px;" value="${q.option_c}" onchange="updateEditQ(${i}, 'option_c', this.value)"></div>
-                        <div>D) <input type="text" style="width:100%; padding: 5px; border:1px solid #cbd5e1; border-radius:4px;" value="${q.option_d}" onchange="updateEditQ(${i}, 'option_d', this.value)"></div>
-                    </div>
-                    <div style="background:#e0f2fe; padding:8px; border-radius:6px;">
-                        <label style="font-size:0.85rem; font-weight:bold; color:#0369a1;">Correct Option:</label>
-                        <select onchange="updateEditQ(${i}, 'correct_option', this.value)" style="padding:4px; border-radius:4px; border:1px solid #bae6fd;">
-                            <option value="A" ${q.correct_option === 'A' ? 'selected' : ''}>A</option>
-                            <option value="B" ${q.correct_option === 'B' ? 'selected' : ''}>B</option>
-                            <option value="C" ${q.correct_option === 'C' ? 'selected' : ''}>C</option>
-                            <option value="D" ${q.correct_option === 'D' ? 'selected' : ''}>D</option>
-                        </select>
-                    </div>
-                </div>`;
-            });
-        }
-
-        function updateEditQ(index, field, value) { currentEditQuestions[index][field] = value; }
-        function removeEditQuestion(index) { if(confirm("প্রশ্নটি মুছে ফেলতে চান?")) { currentEditQuestions.splice(index, 1); renderEditQuestions(); } }
-        function addEditQuestion() { currentEditQuestions.push({ question_text: "", option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A" }); renderEditQuestions(); }
-
-        async function saveEditedExam() {
-            const name = document.getElementById('edit-exam-name').value;
-            const className = document.getElementById('edit-exam-class').value;
-            const subject = document.getElementById('edit-exam-subject').value;
-            const timer = document.getElementById('edit-exam-timer').value;
-            const negative = document.getElementById('edit-exam-negative').value;
-            const isPrivate = document.getElementById('edit-exam-privacy').value === 'true';
-            
-            const btn = document.getElementById('save-edit-btn');
-            btn.innerText = "Saving... ⏳"; btn.disabled = true;
-            
-            try {
-                const response = await fetch('/api/teacher-update-exam', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        exam_code: currentEditingExamCode, 
-                        exam_name: name, 
-                        class_name: className,
-                        subject: subject,
-                        timer: timer, 
-                        negative_marks: negative, 
-                        is_private: isPrivate,
-                        questions: currentEditQuestions 
-                    })
-                });
-                const data = await response.json();
-                if(data.success) { alert("Exam Updated Successfully!"); window.location.reload(); } 
-                else { alert("Failed to update: " + data.error); }
-            } catch(e) { alert("Server error"); } 
-            finally { btn.innerText = "💾 Save Changes"; btn.disabled = false; }
+                } else {
+                    container.innerHTML = `<p style="text-align:center; color:#64748b;">No exams created yet.</p>`;
+                }
+            } catch(e) { container.innerHTML = `<p style="text-align:center; color:#ef4444;">Error loading feed.</p>`; }
         }
     </script>
 </body>
