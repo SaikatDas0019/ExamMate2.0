@@ -3,666 +3,311 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Student Dashboard</title>
+    <title>ExamMate | Student Dashboard (Feed)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- MathJax for rendering Math in Results -->
-    <script>
-        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
-    </script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
     <style>
         /* Global Theme (Light Theme & Mobile First) */
         :root { color-scheme: light; }
         body { 
-            background-color: #f9fafb; color: #333333; 
+            background-color: #f1f5f9; color: #333333; 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0; display: flex; justify-content: center;
         }
         
         .container { 
-            width: 100%; max-width: 480px; background-color: #ffffff;
-            min-height: 100vh; padding: 90px 1rem 6rem 1rem; 
-            box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            margin: 0 auto; position: relative; overflow-x: hidden;
+            width: 100%; max-width: 480px; background-color: #f1f5f9;
+            min-height: 100vh; padding: 80px 0 70px 0; 
+            box-sizing: border-box; margin: 0 auto; position: relative; overflow-x: hidden;
         }
         
         /* Fully Fixed Header */
         .sticky-header {
             position: fixed; top: 0; left: 50%; transform: translateX(-50%); 
             width: 100%; max-width: 480px; background-color: #ffffff; 
-            z-index: 999; padding: 1rem; box-sizing: border-box;
+            z-index: 999; padding: 12px 15px; box-sizing: border-box;
             border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
-        
-        .sticky-header-left { justify-content: flex-start; gap: 15px; }
-        .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0;}
 
         /* Profile Header */
         .profile-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .avatar { 
-            width: 45px; height: 45px; background: #e0f2fe; border-radius: 50%; 
+            width: 40px; height: 40px; background: #e0f2fe; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 1.3rem; border: 2px solid #38bdf8; color: #0369a1;
+            font-size: 1.2rem; border: 2px solid #38bdf8; color: #0369a1;
         }
-        .greeting h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #111827; }
-        .greeting p { margin: 0; font-size: 0.75rem; color: #6b7280; }
+        .greeting h3 { margin: 0; font-size: 1rem; font-weight: 800; color: #0f172a; }
+        .greeting p { margin: 0; font-size: 0.7rem; color: #64748b; font-weight: 600;}
         .bell-icon { 
-            font-size: 1.1rem; color: #4b5563; background: #f3f4f6; 
-            padding: 9px; border-radius: 50%; border: 1px solid #e5e7eb; cursor: pointer; position: relative;
+            font-size: 1.1rem; color: #4b5563; background: #f8fafc; 
+            padding: 8px; border-radius: 50%; border: 1px solid #e2e8f0; cursor: pointer; position: relative;
         }
         .bell-icon.has-unread::after {
             content: ''; position: absolute; top: 2px; right: 2px;
             width: 9px; height: 9px; background-color: #ef4444; border-radius: 50%; border: 2px solid #ffffff;
         }
 
-        /* My Progress Grid */
-        .section-title { font-size: 1.05rem; font-weight: 700; color: #1f2937; margin: 1.5rem 0 0.8rem 0; display: flex; align-items: center; gap: 6px; }
-        .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
-        .progress-card { 
-            background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; 
-            padding: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+        /* Search Area */
+        .search-container {
+            padding: 15px 15px 5px 15px;
+            display: flex;
+            gap: 10px;
+            background: #ffffff;
         }
-        .progress-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); }
-        .progress-info { width: 100%; display: flex; justify-content: space-between; align-items: center;}
-        .progress-info span { font-size: 0.8rem; color: #166534; font-weight: 700; }
-        .progress-info i { font-size: 1.2rem; color: #22c55e; }
-        .progress-card b { font-size: 1.4rem; color: #14532d; line-height: 1; }
-
-        /* Search & Panels */
-        .search-box { display: flex; gap: 10px; margin-bottom: 1.5rem; }
-        .search-box input { flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 12px; font-size: 0.95rem; outline: none; }
-        .search-box button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .search-input-wrapper input {
+            width: 100%; padding: 12px 15px; padding-left: 35px;
+            background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px;
+            font-size: 0.95rem; outline: none; box-sizing: border-box; transition: 0.2s;
+        }
+        .search-input-wrapper input:focus { border-color: #3b82f6; background: #ffffff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .search-input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
         
-        .nav-breadcrumb { font-size: 0.9rem; color: #1e3a8a; margin-bottom: 10px; font-weight: bold; background: #eff6ff; padding: 10px; border-radius: 8px;}
-        .flow-btn { width: 100%; background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b; padding: 14px 15px; border-radius: 12px; font-size: 0.95rem; font-weight: 600; margin-bottom: 10px; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
-        .flow-btn:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-2px);}
+        .search-btn-circle {
+            width: 45px; height: 45px; border-radius: 50%; background: #3b82f6;
+            color: white; border: none; font-size: 1.1rem; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .search-btn-circle:hover { background: #2563eb; transform: scale(1.05); }
+
+        /* Filter Pills / Chips */
+        .filter-container {
+            padding: 10px 15px 15px 15px; background: #ffffff;
+            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
+            border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;
+        }
+        .filter-container::-webkit-scrollbar { display: none; }
+        .filter-pill {
+            background: #ffffff; border: 1px solid #cbd5e1; color: #475569;
+            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s;
+        }
+        .filter-pill:hover { background: #f8fafc; border-color: #94a3b8; }
+        .filter-pill.active { background: #eff6ff; color: #1e3a8a; border-color: #3b82f6; }
+
+        /* Social Feed Cards */
+        .feed-container { padding: 0 15px; }
+        .feed-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
+            padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
         
-        .panel-view { display: none; margin-top: 10px; }
-        .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;}
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
-        th { background-color: #f8fafc; color: #374151; font-weight: bold; }
-        td { color: #4b5563; }
-        .student-select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px; box-sizing: border-box; outline: none;}
+        /* Teacher Info Header */
+        .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
+        .feed-teacher-info { flex: 1; }
+        .feed-teacher-info strong { display: block; font-size: 0.95rem; color: #0f172a; }
+        .feed-teacher-info span { display: block; font-size: 0.7rem; color: #64748b; }
+        .feed-options { color: #94a3b8; cursor: pointer; padding: 5px; }
 
-        /* Gamification */
-        .level-box { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 16px; padding: 20px; color: white; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);}
-        .level-icon { font-size: 3.5rem; margin-bottom: 10px; color: #fbbf24; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
-        .level-title { font-size: 1.4rem; font-weight: 900; margin: 0 0 5px 0; letter-spacing: 1px;}
-        .level-desc { font-size: 0.85rem; opacity: 0.9; margin: 0; }
-        .level-progress-bg { background: rgba(255, 255, 255, 0.2); border-radius: 20px; height: 12px; width: 100%; margin: 15px 0 8px 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
-        .level-progress-fill { background: linear-gradient(90deg, #fbbf24, #f59e0b); height: 100%; width: 0%; border-radius: 20px; transition: width 0.8s ease-in-out; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); }
-        .level-progress-text { font-size: 0.8rem; font-weight: bold; color: rgba(255, 255, 255, 0.95); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-        .btn-view-tiers { margin-top: 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 20px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        /* Exam Content */
+        .feed-body { margin-bottom: 15px; }
+        .feed-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; line-height: 1.3;}
+        .feed-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;}
+        .feed-tag { background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; }
+        
+        .feed-meta { display: flex; gap: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px dashed #cbd5e1;}
+        .feed-meta span { font-size: 0.8rem; color: #334155; font-weight: 600; display: flex; align-items: center; gap: 5px;}
+        .feed-meta i { color: #3b82f6; }
 
-        .stat-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
-        .stat-btn:hover { background: #eff6ff; border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.15);}
-        .stat-btn span { font-size: 0.75rem; color: #64748b; font-weight: bold; text-transform: uppercase; }
-        .stat-btn strong { display: block; font-size: 1.3rem; color: #0f172a; margin-top: 5px; }
-        .stat-box-small { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-align: center; }
-        .stat-box-small span { font-size: 0.75rem; color: #64748b; font-weight: bold; text-transform: uppercase; }
-        .stat-box-small strong { display: block; font-size: 1.3rem; color: #0f172a; margin-top: 5px; }
+        /* Social Actions */
+        .feed-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px;
+        }
+        .action-left { display: flex; gap: 15px; }
+        .action-btn {
+            background: transparent; border: none; color: #64748b; font-size: 1.1rem;
+            cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; padding: 0;
+        }
+        .action-btn span { font-size: 0.8rem; font-weight: 600; }
+        .action-btn:hover { color: #3b82f6; transform: scale(1.1); }
+        .action-btn.like-btn:hover { color: #ef4444; }
+        .action-btn.save-btn:hover { color: #f59e0b; }
 
-        /* Modals */
-        .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; max-height: 85vh; overflow-y: auto; }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .score-modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
-        .score-modal-content { font-size: 0.95rem; color: #475569; margin-bottom: 20px; line-height: 1.5; }
-        .score-modal-close { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); margin-top: 15px;}
-        .tier-card { display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; text-align: left;}
-        .tier-icon { font-size: 2.2rem; width: 50px; text-align: center;}
+        /* Main Attempt Button */
+        .btn-attempt {
+            width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white; border: none; padding: 12px; border-radius: 10px;
+            font-size: 1rem; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s;
+        }
+        .btn-attempt:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4); }
+        .btn-result {
+            width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981;
+            padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
 
-        /* Detailed Result Review Styles */
-        .review-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; }
-        .review-correct { background: #f0fdf4; border-color: #bbf7d0; }
-        .review-wrong { background: #fef2f2; border-color: #fecaca; }
-        .review-unattempted { background: #f8fafc; border-color: #e2e8f0; }
-        .review-q-text { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 10px; line-height: 1.4; overflow-x: auto; }
-        .review-ans { font-size: 0.9rem; margin-bottom: 5px; }
-        .ans-correct-text { color: #166534; font-weight: bold; }
-        .ans-wrong-text { color: #991b1b; font-weight: bold; }
-        .ans-real-correct { color: #065f46; font-weight: bold; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fca5a5;}
-        .ans-real-correct.unattempted-border { border-top: 1px dashed #cbd5e1; color: #0f172a; }
-
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; padding: 8px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
+        /* Fixed Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
+            display: flex; justify-content: space-around; padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
+        }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
 
-        hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
     </style>
 </head>
 <body>
 
     <div class="container">
         
-        <!-- DASHBOARD VIEW -->
-        <div id="dashboard-view">
-            <div class="sticky-header">
-                <div class="profile-left" onclick="window.location.href='/student_profile.html'">
-                    <div class="avatar"><i class="fas fa-user"></i></div>
-                    <div class="greeting">
-                        <h3 id="student-name">Hi, Student</h3>
-                        <p>Let's ace your exams! 🚀</p>
+        <!-- Fixed Header -->
+        <div class="sticky-header">
+            <div class="profile-left" onclick="window.location.href='/student_profile.html'">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div class="greeting">
+                    <h3 id="student-name">Hi, Student</h3>
+                    <p>Ready to learn today? 🚀</p>
+                </div>
+            </div>
+            <div class="bell-icon" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></div>
+        </div>
+
+        <!-- Search Box Section -->
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="main-search" placeholder="Search subject, teacher, or topic...">
+            </div>
+            <button class="search-btn-circle" onclick="performSearch()">
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- Filter Pills Section -->
+        <div class="filter-container">
+            <button class="filter-pill"><i class="fas fa-graduation-cap"></i> Class <i class="fas fa-caret-down"></i></button>
+            <button class="filter-pill"><i class="fas fa-book"></i> Subject <i class="fas fa-caret-down"></i></button>
+            <button class="filter-pill active"><i class="fas fa-check-circle"></i> Status <i class="fas fa-caret-down"></i></button>
+        </div>
+
+        <!-- Social Media Style Exam Feed -->
+        <div class="feed-container" id="exam-feed">
+            
+            <!-- Dummy Card 1 (Unattempted Public Exam) -->
+            <div class="feed-card">
+                <div class="feed-header">
+                    <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div class="feed-teacher-info">
+                        <strong>Arindam Sir</strong>
+                        <span>arindam.physics@gmail.com • 2 hours ago</span>
+                    </div>
+                    <div class="feed-options"><i class="fas fa-ellipsis-v"></i></div>
+                </div>
+                
+                <div class="feed-body">
+                    <h3 class="feed-title">Physics Mock Test: Kinematics (Set 1)</h3>
+                    <div class="feed-tags">
+                        <span class="feed-tag">Class 11</span>
+                        <span class="feed-tag">Physics</span>
+                        <span class="feed-tag" style="background:#dcfce7; color:#166534;">Public</span>
+                    </div>
+                    <div class="feed-meta">
+                        <span><i class="fas fa-clock"></i> 30 Mins</span>
+                        <span><i class="fas fa-list-ol"></i> 20 Questions</span>
+                        <span><i class="fas fa-minus-circle" style="color:#ef4444;"></i> -0.25 Negative</span>
                     </div>
                 </div>
-                <div class="bell-icon" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></div>
+
+                <div class="feed-actions">
+                    <div class="action-left">
+                        <button class="action-btn like-btn"><i class="far fa-heart"></i> <span>124</span></button>
+                        <button class="action-btn"><i class="far fa-comment"></i> <span>18</span></button>
+                        <button class="action-btn"><i class="far fa-share-square"></i></button>
+                    </div>
+                    <button class="action-btn save-btn"><i class="far fa-bookmark"></i></button>
+                </div>
+
+                <button class="btn-attempt" onclick="alert('Exam Code Auto-Filled. Starting Exam...')">Attempt Exam 🚀</button>
             </div>
 
-            <div class="section-title">📈 My Progress</div>
-            <div class="progress-grid">
-                <div class="progress-card" onclick="openPanel('panel-level')">
-                    <div class="progress-info"><span>My Level</span><i class="fas fa-medal"></i></div>
-                    <b id="stat-score">00</b>
+            <!-- Dummy Card 2 (Already Attempted Exam) -->
+            <div class="feed-card">
+                <div class="feed-header">
+                    <div class="feed-avatar"><i class="fas fa-user-tie"></i></div>
+                    <div class="feed-teacher-info">
+                        <strong>Sourav Math Classes</strong>
+                        <span>sourav.math@gmail.com • 1 day ago</span>
+                    </div>
+                    <div class="feed-options"><i class="fas fa-ellipsis-v"></i></div>
                 </div>
-                <div class="progress-card" onclick="openPanel('panel-exams')">
-                    <div class="progress-info"><span>Total Exams</span><i class="far fa-calendar-alt"></i></div>
-                    <b id="stat-total">00</b>
+                
+                <div class="feed-body">
+                    <h3 class="feed-title">Calculus Revision Test</h3>
+                    <div class="feed-tags">
+                        <span class="feed-tag">Class 12</span>
+                        <span class="feed-tag">Mathematics</span>
+                    </div>
+                    <div class="feed-meta">
+                        <span><i class="fas fa-clock"></i> 45 Mins</span>
+                        <span><i class="fas fa-list-ol"></i> 25 Questions</span>
+                    </div>
                 </div>
-                <div class="progress-card" onclick="openPanel('panel-leaderboard')">
-                    <div class="progress-info"><span>Leaderboard</span><i class="fas fa-trophy"></i></div>
-                    <b>Rank</b>
+
+                <div class="feed-actions">
+                    <div class="action-left">
+                        <button class="action-btn like-btn" style="color:#ef4444;"><i class="fas fa-heart"></i> <span>342</span></button>
+                        <button class="action-btn"><i class="far fa-comment"></i> <span>45</span></button>
+                        <button class="action-btn"><i class="far fa-share-square"></i></button>
+                    </div>
+                    <button class="action-btn save-btn" style="color:#f59e0b;"><i class="fas fa-bookmark"></i></button>
                 </div>
-                <div class="progress-card" onclick="openPanel('panel-recent')">
-                    <div class="progress-info"><span>Recent Activity</span><i class="fas fa-chart-line"></i></div>
-                    <b>View</b>
-                </div>
-            </div>
 
-            <hr>
-
-            <div class="section-title">Teacher's Exam Code</div>
-            <div class="search-box">
-                <input type="text" id="exam-code-input" placeholder="e.g: PHY-101">
-                <button id="search-btn" onclick="searchExam()">🔍 Search</button>
-            </div>
-            <div id="search-error" style="color: #ef4444; font-size: 0.85rem; margin-top: -15px; margin-bottom: 15px; display: none; font-weight: bold;"></div>
-
-            <hr>
-
-            <div class="section-title">Explore Exams &nbsp; <span style="color:#22c55e;"><i class="fas fa-chevron-right"></i></span></div>
-
-            <div id="dynamic-exams-section">
-                <div class="nav-breadcrumb" id="bc-folder"><i class="fas fa-folder-open"></i> Available Exams</div>
-                <button class="btn-del" id="btn-back-folder" onclick="goBackFolder()" style="display:none; margin-bottom:10px; border-radius:8px; padding: 8px 12px; background:#f1f5f9; color:#334155; border:none; font-weight:bold;"><i class="fas fa-arrow-left"></i> Go Back</button>
-                <div id="folder-list"><p style="text-align:center; color:#6b7280;">Loading exams...</p></div>
-                <div id="exam-list" style="margin-top: 15px;"></div>
-            </div>
-        </div>
-
-        <!-- PANEL 1: MY LEVEL & SCORE DETAILS -->
-        <div id="panel-level" class="panel-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.4rem; margin: 0; color:#1e3a8a;">My Level</h1>
-            </div>
-            
-            <div class="level-box">
-                <div class="level-icon" id="badge-icon"><i class="fas fa-seedling"></i></div>
-                <h2 class="level-title" id="badge-title">Novice</h2>
-                <p class="level-desc" id="badge-desc">Keep taking exams to level up!</p>
-                <div class="level-progress-bg"><div class="level-progress-fill" id="level-progress-bar"></div></div>
-                <div class="level-progress-text" id="level-progress-text">0 / 50 XP to next level</div>
-                <button class="btn-view-tiers" onclick="showAllLevels()">👁️ View All Tiers</button>
-            </div>
-
-            <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 10px;">Performance Overview</h3>
-            <div class="stat-grid-2">
-                <div class="stat-btn" onclick="showScoreDetails('highest')">
-                    <span>Highest Score</span><strong id="lvl-high" style="color:#16a34a;">0%</strong>
-                    <div style="font-size:0.65rem; color:#64748b; margin-top:8px;">Tap to view exam 👆</div>
-                </div>
-                <div class="stat-btn" onclick="showScoreDetails('lowest')">
-                    <span>Lowest Score</span><strong id="lvl-low" style="color:#ef4444;">0%</strong>
-                    <div style="font-size:0.65rem; color:#64748b; margin-top:8px;">Tap to view exam 👆</div>
-                </div>
-                <div class="stat-box-small" style="grid-column: span 2;">
-                    <span>Average Score</span><strong id="lvl-avg" style="color:#3b82f6;">0%</strong>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-result" style="flex:1;">View Result 📊</button>
+                    <button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;">Re-attempt</button>
                 </div>
             </div>
-        </div>
 
-        <!-- PANEL 2: EXAM HISTORY -->
-        <div id="panel-exams" class="panel-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.4rem; margin: 0; color:#1e3a8a;">Exam History</h1>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Exam Name</th><th>Score</th><th>Date Taken</th></tr></thead>
-                    <tbody id="list-history-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- PANEL 3: LEADERBOARD -->
-        <div id="panel-leaderboard" class="panel-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.4rem; margin: 0; color:#1e3a8a;">Leaderboard</h1>
-            </div>
-            <select id="leaderboard-filter" class="student-select-box" onchange="loadStudentLeaderboard()">
-                <option value="all" selected>🏆 Overall Performance (All Exams)</option>
-            </select>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Rank</th><th>Student Name</th><th>Score/Perf</th></tr></thead>
-                    <tbody id="list-leaderboard-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- PANEL 4: RECENT ACTIVITY -->
-        <div id="panel-recent" class="panel-view">
-            <div class="sticky-header sticky-header-left">
-                <button class="btn-back" onclick="showDashboard()">&nbsp; ‹ &nbsp;</button>
-                <h1 style="font-size: 1.4rem; margin: 0; color:#1e3a8a;">Recent Activity</h1>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Recent Exams</th><th>Score</th><th>Questions</th></tr></thead>
-                    <tbody id="list-recent-body"></tbody>
-                </table>
-            </div>
         </div>
 
     </div>
 
-    <!-- Exam Detail Modal -->
-    <div class="score-modal-overlay" id="score-detail-modal">
-        <div class="score-modal-box">
-            <div class="score-modal-title" id="sd-title">Exam Detail</div>
-            <div class="score-modal-content" id="sd-content">No data available.</div>
-            <button class="score-modal-close" onclick="document.getElementById('score-detail-modal').style.display='none'">Close ✖</button>
-        </div>
-    </div>
-
-    <!-- Detailed Answer Review Modal -->
-    <div class="score-modal-overlay" id="detailed-result-modal">
-        <div class="score-modal-box" style="width: 95%; max-width: 500px; padding: 15px; text-align: left;">
-            <div class="score-modal-title" id="dr-title" style="text-align: center;">Exam Result</div>
-            <div id="detailed-review-container" style="max-height: 60vh; overflow-y: auto; padding-right: 5px;"></div>
-            <button class="score-modal-close" onclick="document.getElementById('detailed-result-modal').style.display='none'">Close ✖</button>
-        </div>
-    </div>
-
-    <!-- All Levels Modal -->
-    <div class="score-modal-overlay" id="all-levels-modal">
-        <div class="score-modal-box">
-            <div class="score-modal-title" style="color: #1e3a8a;">🏆 All Levels & Tiers</div>
-            <div style="margin-bottom: 20px;">
-                <div class="tier-card" style="background: #ecfdf5; border-color: #6ee7b7;">
-                    <div class="tier-icon" style="color:#10b981;"><i class="fas fa-seedling"></i></div>
-                    <div><strong style="color:#064e3b; font-size:1.1rem;">Novice</strong><br><span style="color:#047857; font-size:0.8rem;">0 - 49 Points</span></div>
-                </div>
-                <div class="tier-card" style="background: #ffedd5; border-color: #fdba74;">
-                    <div class="tier-icon" style="color:#d97706;"><i class="fas fa-medal"></i></div>
-                    <div><strong style="color:#7c2d12; font-size:1.1rem;">Bronze Scholar</strong><br><span style="color:#9a3412; font-size:0.8rem;">50 - 99 Points</span></div>
-                </div>
-                <div class="tier-card" style="background: #f1f5f9; border-color: #cbd5e1;">
-                    <div class="tier-icon" style="color:#64748b;"><i class="fas fa-medal"></i></div>
-                    <div><strong style="color:#1e293b; font-size:1.1rem;">Silver Achiever</strong><br><span style="color:#475569; font-size:0.8rem;">100 - 299 Points</span></div>
-                </div>
-                <div class="tier-card" style="background:#fef9c3; border-color:#fde047;">
-                    <div class="tier-icon" style="color:#eab308;"><i class="fas fa-trophy"></i></div>
-                    <div><strong style="color:#713f12; font-size:1.1rem;">Gold Master</strong><br><span style="color:#a16207; font-size:0.8rem;">300 - 599 Points</span></div>
-                </div>
-                <div class="tier-card" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); border: none; box-shadow: 0 4px 15px rgba(220, 39, 67, 0.4);">
-                    <div class="tier-icon" style="color:#ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);"><i class="fas fa-crown"></i></div>
-                    <div><strong style="color:#ffffff; font-size:1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">Platinum Legend</strong><br><span style="color:rgba(255, 255, 255, 0.9); font-size:0.8rem;">600+ Points</span></div>
-                </div>
-            </div>
-            <button class="score-modal-close" style="background:#3b82f6; box-shadow:0 4px 6px rgba(59,130,246,0.3);" onclick="document.getElementById('all-levels-modal').style.display='none'">Awesome! 🚀</button>
-        </div>
-    </div>
-
-    <!-- Bottom Nav -->
+    <!-- Fixed Bottom Navigation Bar -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="showDashboard()">
-            <div class="nav-icon"><i class="fas fa-home"></i></div><span>Home</span>
+        <div class="nav-item active">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span>Home</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='/student_resources.html'">
-            <div class="nav-icon"><i class="fas fa-folder-open"></i></div><span>Resources</span>
+        <!-- 'Community' Button Concept Added Here -->
+        <div class="nav-item" onclick="alert('Community Chat Features coming soon!')">
+            <div class="nav-icon"><i class="fas fa-users"></i></div>
+            <span>Community</span>
         </div>
         <div class="nav-item" onclick="window.location.href='/student_analytics.html'">
-            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div><span>Analytics</span>
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+            <span>Analytics</span>
         </div>
         <div class="nav-item" onclick="window.location.href='/student_profile.html'">
-            <div class="nav-icon"><i class="far fa-user"></i></div><span>Profile</span>
+            <div class="nav-icon"><i class="far fa-user"></i></div>
+            <span>Profile</span>
         </div>
     </div>
 
     <script>
-        let currentFolderId = 0;
-        let folderHistory = [];
-        let globalHistory = [];
-
-        async function checkUnreadNotifications() {
-            const userEmail = localStorage.getItem('userEmail');
-            if (!userEmail) return;
-            try {
-                const response = await fetch('/api/check-unread-notifications', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail })
-                });
-                const data = await response.json();
-                const bellIcon = document.querySelector('.bell-icon');
-                if (data.success && data.has_unread) { bellIcon.classList.add('has-unread'); } 
-                else { bellIcon.classList.remove('has-unread'); }
-            } catch (error) { console.log("Notif check error:", error); }
-        }
-        
-        window.onload = async () => {
+        // Set User Name
+        window.onload = () => {
             const userName = localStorage.getItem('userName') || "Student";
-            const userEmail = localStorage.getItem('userEmail');
             document.getElementById('student-name').innerText = "Hi, " + userName.split(' ')[0];
-
-            checkUnreadNotifications();
-            
-            if (userEmail) {
-                try {
-                    // Fetch Progress
-                    const response = await fetch('/api/get-student-progress', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: userEmail })
-                    });
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        document.getElementById('stat-score').innerText = data.score;
-                        document.getElementById('stat-total').innerText = data.total_exams;
-                        
-                        const score = parseFloat(data.score);
-                        let badgeTitle = "Novice", badgeIcon = '<i class="fas fa-seedling" style="color:#10b981;"></i>', badgeDesc = "Keep taking exams to level up!";
-                        let nextLevelScore = 50, prevLevelScore = 0;
-                        let boxBg = "#ecfdf5", boxColor = "#064e3b", boxBorder = "1px solid #6ee7b7", boxShadow = "0 10px 20px rgba(16, 185, 129, 0.2)";
-
-                        if(score >= 50 && score < 100) { 
-                            badgeTitle = "Bronze Scholar"; badgeIcon = '<i class="fas fa-medal" style="color:#d97706;"></i>'; badgeDesc = "You are making good progress!"; prevLevelScore = 50; nextLevelScore = 100;
-                            boxBg = "#ffedd5"; boxColor = "#7c2d12"; boxBorder = "1px solid #fdba74"; boxShadow = "0 10px 20px rgba(217, 119, 6, 0.2)";
-                        } else if(score >= 100 && score < 300) { 
-                            badgeTitle = "Silver Achiever"; badgeIcon = '<i class="fas fa-medal" style="color:#64748b;"></i>'; badgeDesc = "Great work! Aim for Gold."; prevLevelScore = 100; nextLevelScore = 300;
-                            boxBg = "#f1f5f9"; boxColor = "#1e293b"; boxBorder = "1px solid #cbd5e1"; boxShadow = "0 10px 20px rgba(100, 116, 139, 0.2)";
-                        } else if(score >= 300 && score < 600) { 
-                            badgeTitle = "Gold Master"; badgeIcon = '<i class="fas fa-trophy" style="color:#eab308;"></i>'; badgeDesc = "Outstanding performance!"; prevLevelScore = 300; nextLevelScore = 600;
-                            boxBg = "#fef9c3"; boxColor = "#713f12"; boxBorder = "1px solid #fde047"; boxShadow = "0 10px 20px rgba(234, 179, 8, 0.2)";
-                        } else if(score >= 600) { 
-                            badgeTitle = "Platinum Legend"; badgeIcon = '<i class="fas fa-crown" style="color:#ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);"></i>'; badgeDesc = "You are at the top of your game!"; prevLevelScore = 600; nextLevelScore = 600;
-                            boxBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; boxColor = "#ffffff"; boxBorder = "none"; boxShadow = "0 10px 20px rgba(220, 39, 67, 0.4)";
-                        }
-
-                        const levelBox = document.querySelector('.level-box');
-                        levelBox.style.background = boxBg; levelBox.style.color = boxColor; levelBox.style.border = boxBorder; levelBox.style.boxShadow = boxShadow;
-
-                        const progText = document.getElementById('level-progress-text');
-                        const viewTiersBtn = document.querySelector('.btn-view-tiers');
-                        if (score >= 600) {
-                            progText.style.color = "#ffffff"; viewTiersBtn.style.background = "rgba(255,255,255,0.2)"; viewTiersBtn.style.color = "white"; viewTiersBtn.style.border = "1px solid rgba(255,255,255,0.3)";
-                        } else {
-                            progText.style.color = boxColor; viewTiersBtn.style.background = "rgba(0,0,0,0.05)"; viewTiersBtn.style.color = boxColor; viewTiersBtn.style.border = "1px solid rgba(0,0,0,0.1)";
-                        }
-
-                        document.getElementById('badge-title').innerHTML = badgeTitle;
-                        document.getElementById('badge-icon').innerHTML = badgeIcon;
-                        document.getElementById('badge-desc').innerText = badgeDesc;
-
-                        let progressPercent = 100;
-                        if(nextLevelScore > prevLevelScore) {
-                            progressPercent = ((score - prevLevelScore) / (nextLevelScore - prevLevelScore)) * 100;
-                            document.getElementById('level-progress-text').innerText = `${score} / ${nextLevelScore} Points to Level Up 🚀`;
-                        } else { document.getElementById('level-progress-text').innerText = `🏆 Max Level Reached! (${score} Points)`; }
-                        setTimeout(() => { document.getElementById('level-progress-bar').style.width = `${progressPercent}%`; }, 300);
-
-                        document.getElementById('lvl-high').innerText = data.highest + '%';
-                        document.getElementById('lvl-low').innerText = data.lowest + '%';
-                        let avg = data.total_exams > 0 ? (score / parseFloat(data.total_exams)).toFixed(2) : 0;
-                        document.getElementById('lvl-avg').innerText = avg + '%';
-                    }
-
-                    // Fetch History
-                    const histRes = await fetch('/api/get-student-history', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: userEmail })
-                    });
-                    const histData = await histRes.json();
-                    
-                    if(histData.success) {
-                        globalHistory = histData.history;
-                        document.getElementById('list-history-body').innerHTML = histData.history.map(h => `<tr><td><strong>${h.exam_name}</strong></td><td><strong style="color:#3b82f6;">${h.score}/${h.total}</strong></td><td>${h.date}</td></tr>`).join('') || '<tr><td colspan="3">No exams taken yet.</td></tr>';
-                        document.getElementById('list-recent-body').innerHTML = histData.history.slice(0,5).map(h => `<tr><td><strong>${h.exam_name}</strong><br><span style="font-size:0.7rem;">${h.date}</span></td><td><strong style="color:#10b981;">${((h.score/h.total)*100).toFixed(1)}%</strong></td><td>${h.total}</td></tr>`).join('') || '<tr><td colspan="3">No recent activity.</td></tr>';
-                        const ldFilter = document.getElementById('leaderboard-filter');
-                        const uniqueExams = [...new Set(histData.history.map(item => item.exam_name))]; 
-                        uniqueExams.forEach(eName => { const opt = document.createElement('option'); opt.value = eName; opt.innerText = eName; ldFilter.appendChild(opt); });
-                    }
-                } catch (error) { console.log("Error fetching progress:", error); }
-            }
-            
-            // Now load folders based on updated history
-            loadExamFolders(); 
         };
 
-        function showAllLevels() { document.getElementById('all-levels-modal').style.display = 'flex'; }
-        
-        function showScoreDetails(type) {
-            if (globalHistory.length === 0) { alert("আপনি এখনো কোনো পরীক্ষা দেননি!"); return; }
-            let targetExam = globalHistory[0]; let maxPercent = (targetExam.score / targetExam.total) * 100; let minPercent = maxPercent;
-            if (type === 'highest') {
-                globalHistory.forEach(h => { let p = (h.score / h.total) * 100; if (p > maxPercent) { maxPercent = p; targetExam = h; } });
-                document.getElementById('sd-title').innerHTML = "🏆 Highest Score Exam"; document.getElementById('sd-title').style.color = "#16a34a";
+        function performSearch() {
+            const query = document.getElementById('main-search').value;
+            if(query) {
+                alert("Searching for: " + query + "\n(Backend filter algorithm will be implemented here later)");
             } else {
-                globalHistory.forEach(h => { let p = (h.score / h.total) * 100; if (p < minPercent) { minPercent = p; targetExam = h; } });
-                document.getElementById('sd-title').innerHTML = "📉 Lowest Score Exam"; document.getElementById('sd-title').style.color = "#ef4444";
-            }
-            const percentage = ((targetExam.score / targetExam.total) * 100).toFixed(1);
-            document.getElementById('sd-content').innerHTML = `
-                <div style="font-size:1.15rem; font-weight:900; color:#0f172a; margin-bottom:15px;">${targetExam.exam_name}</div>
-                <div style="display:flex; justify-content:space-around; background:#f8fafc; padding:15px 10px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02);">
-                    <div><span style="font-size:0.75rem; color:#64748b; display:block; font-weight:bold; text-transform:uppercase;">Score</span><strong style="color:#3b82f6; font-size:1.3rem;">${targetExam.score}/${targetExam.total}</strong></div>
-                    <div style="width:1px; background:#cbd5e1;"></div>
-                    <div><span style="font-size:0.75rem; color:#64748b; display:block; font-weight:bold; text-transform:uppercase;">Percentage</span><strong style="color:${type === 'highest' ? '#16a34a' : '#ef4444'}; font-size:1.3rem;">${percentage}%</strong></div>
-                </div>
-                <div style="font-size:0.85rem; color:#64748b; background:#eff6ff; padding:8px; border-radius:8px;"><i class="far fa-calendar-alt"></i> Date Taken: <strong>${targetExam.date}</strong></div>
-            `;
-            document.getElementById('score-detail-modal').style.display = 'flex';
-        }
-
-        function openPanel(id) {
-            document.getElementById('dashboard-view').style.display = 'none';
-            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            document.getElementById(id).style.display = 'block';
-            window.scrollTo(0, 0); window.history.pushState({view: id}, "", window.location.href);
-            if(id === 'panel-leaderboard') { loadStudentLeaderboard(); }
-        }
-
-        function showDashboard() {
-            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            document.getElementById('dashboard-view').style.display = 'block';
-            window.scrollTo(0, 0); window.history.pushState({view: 'dashboard'}, "", window.location.href);
-        }
-
-        async function loadStudentLeaderboard() {
-            const filter = document.getElementById('leaderboard-filter').value;
-            const tbody = document.getElementById('list-leaderboard-body');
-            tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
-            if(filter === 'all') { tbody.innerHTML = `<tr><td><strong>#1</strong></td><td><div class="student-name-box"><strong>${localStorage.getItem('userName')}</strong><span class="email">You</span></div></td><td><strong style="color:#16a34a;">${document.getElementById('stat-score').innerText}</strong></td></tr>`;
-            } else {
-                const examRecord = globalHistory.find(e => e.exam_name === filter);
-                if(examRecord) { tbody.innerHTML = `<tr><td><strong>#1</strong></td><td><div class="student-name-box"><strong>${localStorage.getItem('userName')}</strong><span class="email">You</span></div></td><td><strong style="color:#16a34a;">${((examRecord.score/examRecord.total)*100).toFixed(1)}%</strong></td></tr>`;
-                } else { tbody.innerHTML = '<tr><td colspan="3">No records found.</td></tr>'; }
+                alert("Please enter a subject, topic, or teacher name to search.");
             }
         }
-
-        async function loadExamFolders() {
-            const folderList = document.getElementById('folder-list');
-            const examList = document.getElementById('exam-list');
-            folderList.innerHTML = '<p style="text-align:center; color:#6b7280;">Loading data...</p>';
-            examList.innerHTML = '';
-
-            try {
-                const res = await fetch('/api/get-student-drive-contents', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ parent_id: currentFolderId, folder_type: 'exam' })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    folderList.innerHTML = ''; examList.innerHTML = '';
-                    if (data.folders.length === 0 && data.exams.length === 0) {
-                        folderList.innerHTML = '<div style="text-align:center; padding:20px; color:#6b7280; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">No exams available here yet.</div>';
-                    }
-
-                    data.folders.forEach(f => {
-                        const btn = document.createElement('button');
-                        btn.className = "flow-btn";
-                        btn.innerHTML = `<span><i class="fas fa-folder" style="color:#f59e0b; margin-right:8px;"></i> ${f.name}</span> <i class="fas fa-chevron-right" style="color:#94a3b8; font-size:0.8rem;"></i>`;
-                        btn.onclick = () => openFolder(f.id, f.name);
-                        folderList.appendChild(btn);
-                    });
-
-                    data.exams.forEach(ex => {
-                        // Check if attempted
-                        const isAttempted = globalHistory.some(h => h.exam_name === ex.name);
-                        
-                        const card = document.createElement('div');
-                        card.style = `background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid ${isAttempted ? '#3b82f6' : '#10b981'}; padding: 12px 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);`;
-                        
-                        card.innerHTML = `
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: ${isAttempted ? '10px' : '0'};">
-                                <div style="text-align: left;">
-                                    <strong style="color:#0f172a; font-size: 1rem;">${ex.name}</strong><br>
-                                    <span style="font-size: 0.75rem; color: #64748b;">Code: ${ex.code} • ${ex.timer} Mins</span>
-                                </div>
-                                ${isAttempted ? `<span style="font-size: 0.7rem; background: #eff6ff; color: #3b82f6; padding: 4px 8px; border-radius: 12px; font-weight: bold; border: 1px solid #bfdbfe;">✅ Attempted</span>` : `<i class="fas fa-play-circle" style="color:#10b981; font-size: 1.8rem; cursor:pointer;" onclick="window.location.href='student_exam.html?code=${ex.code}'"></i>`}
-                            </div>
-                            ${isAttempted ? `
-                                <div style="display: flex; gap: 10px;">
-                                    <button onclick="window.location.href='student_exam.html?code=${ex.code}'" style="flex: 1; background: #f8fafc; color: #3b82f6; border: 1px solid #bfdbfe; padding: 8px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;"><i class="fas fa-redo"></i> Re-attempt</button>
-                                    <button onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')" style="flex: 1; background: #10b981; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(16,185,129,0.2);"><i class="fas fa-poll"></i> Result</button>
-                                </div>
-                            ` : ``}
-                        `;
-                        examList.appendChild(card);
-                    });
-                }
-            } catch (error) { folderList.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load data. Check connection.</p>'; }
-        }
-
-        async function showDetailedResult(code, name) {
-            const container = document.getElementById('detailed-review-container');
-            container.innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Loading results...</p>';
-            document.getElementById('dr-title').innerText = name + " - Result";
-            document.getElementById('detailed-result-modal').style.display = 'flex';
-
-            try {
-                const response = await fetch('/api/get-exam-questions', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ exam_code: code })
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    const savedState = localStorage.getItem('exam_result_' + code);
-                    const studentAnswers = savedState ? JSON.parse(savedState).answers : null;
-
-                    let html = '';
-                    data.questions.forEach((q, idx) => {
-                        const getOptionText = (letter) => {
-                            if(letter === 'A') return q.opt_a; if(letter === 'B') return q.opt_b;
-                            if(letter === 'C') return q.opt_c; if(letter === 'D') return q.opt_d; return '';
-                        };
-
-                        if (studentAnswers) {
-                            const studentAns = studentAnswers[idx];
-                            const isCorrect = studentAns === q.correct;
-                            const isAttempted = studentAns !== undefined && studentAns !== null;
-                            
-                            let cardClass = 'review-unattempted';
-                            if (isAttempted) { cardClass = isCorrect ? 'review-correct' : 'review-wrong'; }
-
-                            html += `<div class="review-card ${cardClass}">`;
-                            html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text}</div>`;
-
-                            if (isAttempted) {
-                                if (isCorrect) {
-                                    html += `<div class="review-ans ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
-                                } else {
-                                    html += `<div class="review-ans ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
-                                    html += `<div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
-                                }
-                            } else {
-                                html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div>`;
-                                html += `<div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
-                            }
-                            html += `</div>`;
-                        } else {
-                            html += `<div class="review-card review-unattempted">`;
-                            html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text}</div>`;
-                            html += `<div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
-                            html += `</div>`;
-                        }
-                    });
-
-                    if (!studentAnswers) {
-                        html = `<div style="background:#fffbeb; color:#92400e; padding:12px; border-radius:8px; margin-bottom:15px; font-size:0.85rem; border:1px solid #fef3c7;">⚠️ Since this is an older attempt, your exact chosen options weren't saved on this device. Showing only the correct answers.</div>` + html;
-                    }
-
-                    container.innerHTML = html;
-                    if (window.MathJax) { MathJax.typesetPromise([container]).catch(err => console.log(err)); }
-                } else { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load questions.</p>'; }
-            } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
-        }
-
-        function openFolder(id, name) {
-            folderHistory.push({ id: currentFolderId, name: document.getElementById('bc-folder').innerText.replace('<i class="fas fa-folder-open"></i> ', '') });
-            currentFolderId = id; document.getElementById('bc-folder').innerHTML = `<i class="fas fa-folder-open"></i> Selected: ${name}`;
-            document.getElementById('btn-back-folder').style.display = 'flex'; loadExamFolders();
-        }
-
-        function goBackFolder() {
-            if (folderHistory.length > 0) {
-                const prev = folderHistory.pop(); currentFolderId = prev.id;
-                document.getElementById('bc-folder').innerHTML = `<i class="fas fa-folder-open"></i> ${prev.name}`;
-                if (folderHistory.length === 0) { document.getElementById('btn-back-folder').style.display = 'none'; document.getElementById('bc-folder').innerHTML = `<i class="fas fa-folder-open"></i> Available Exams`; }
-                loadExamFolders();
-            }
-        }
-
-        async function searchExam() {
-            const code = document.getElementById('exam-code-input').value.trim().toUpperCase();
-            const errorMsg = document.getElementById('search-error'); const searchBtn = document.getElementById('search-btn');
-            if (code === "") { errorMsg.innerText = "Please enter an Exam Code."; errorMsg.style.display = 'block'; return; }
-
-            searchBtn.innerText = "Checking..."; searchBtn.disabled = true;
-            try {
-                const response = await fetch('/api/check-exam', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exam_code: code }) });
-                const data = await response.json();
-                if (response.ok && data.success) { errorMsg.style.display = 'none'; window.location.href = "student_exam.html?code=" + code; } 
-                else { errorMsg.innerText = data.error || "No Exam Found!"; errorMsg.style.display = 'block'; }
-            } catch (error) { errorMsg.innerText = "Server connection error."; errorMsg.style.display = 'block'; } 
-            finally { searchBtn.innerText = "🔍 Search"; searchBtn.disabled = false; }
-        }
-
-        window.addEventListener('popstate', function (event) {
-            let isPanelOpen = false;
-            document.querySelectorAll('.panel-view').forEach(p => { if(p.style.display === 'block') isPanelOpen = true; });
-            const sModal = document.getElementById('score-detail-modal');
-            const lModal = document.getElementById('all-levels-modal');
-            const dModal = document.getElementById('detailed-result-modal');
-
-            if (sModal.style.display === 'flex' || lModal.style.display === 'flex' || dModal.style.display === 'flex') { 
-                sModal.style.display = 'none'; lModal.style.display = 'none'; dModal.style.display = 'none';
-            }
-            else if (isPanelOpen) { showDashboard(); } 
-            else { if (document.referrer) { window.history.back(); } }
-        });
     </script>
 </body>
 </html>
