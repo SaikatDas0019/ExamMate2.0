@@ -181,7 +181,12 @@ def init_db():
                             PRIMARY KEY(email, exam_code)
                         )''')
         conn.commit()
-        
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN is_private BOOLEAN DEFAULT FALSE;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
@@ -374,27 +379,26 @@ def get_student_history():
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
-@app.route('/api/create-exam', methods=['POST'])
+@@app.route('/api/create-exam', methods=['POST'])
 def create_exam_api():
     data = request.get_json()
     exam_code = data.get('exam_code')
     exam_name = data.get('exam_name')
     timer = data.get('timer')
     negative_marks = float(data.get('negative_marks', 0.0))
-    teacher_email = data.get('teacher_email', 'dasbabu938207@gmail.com')
-    folder_id = data.get('folder_id', 0)
-    questions = data.get('questions')
+    teacher_email = data.get('teacher_email', 'teacher@email.com')
     class_name = data.get('class_name', 'General')
     subject = data.get('subject', 'General')
-        
+    is_private = data.get('is_private', False) # 🆕 প্রাইভেট ফিল্ড রিসিভ করা
+    questions = data.get('questions')
 
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        cursor.execute(f"INSERT INTO exams (exam_code, exam_name, timer_minutes, negative_marks, teacher_email, class_name, subject) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
-                       (exam_code, exam_name, timer, negative_marks, teacher_email, class_name, subject))
+        cursor.execute(f"INSERT INTO exams (exam_code, exam_name, timer_minutes, negative_marks, teacher_email, class_name, subject, is_private) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
+                       (exam_code, exam_name, timer, negative_marks, teacher_email, class_name, subject, is_private))
      
         for q in questions:
             cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
@@ -404,7 +408,7 @@ def create_exam_api():
         conn.close()
         return jsonify({"success": True, "message": "Exam published successfully!"})
     except Exception as e:
-        return jsonify({"success": False, "error": "Database error or Code already exists."}), 500
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/teacher-dashboard', methods=['POST'])
 def get_teacher_dashboard():
@@ -1180,7 +1184,7 @@ def toggle_social():
         return jsonify({"success": True, "status": status})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
-        
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
