@@ -148,7 +148,6 @@ def init_db():
             ''')
         conn.commit()
 
-        # যদি টেবিল আগে থেকেই তৈরি থাকে, তবে সেফটির জন্য এই অল্টার কুয়েরিটি রাখতে পারেন:
         try:
             cursor.execute("ALTER TABLE notifications ADD COLUMN link_url TEXT;")
             conn.commit()
@@ -160,16 +159,15 @@ def init_db():
         except Exception:
             if db_type == 'postgres': conn.rollback()
 
-        # Existing exams table modification
         try:
             cursor.execute("ALTER TABLE exams ADD COLUMN class_name VARCHAR(50) DEFAULT 'General';")
             cursor.execute("ALTER TABLE exams ADD COLUMN subject VARCHAR(100) DEFAULT 'General';")
             cursor.execute("ALTER TABLE exams ADD COLUMN shares INT DEFAULT 0;")
+            cursor.execute("ALTER TABLE exams ADD COLUMN is_private BOOLEAN DEFAULT FALSE;")
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
 
-        # Create new tables for likes and saves
         cursor.execute('''CREATE TABLE IF NOT EXISTS likes (
                             email VARCHAR(255), 
                             exam_code VARCHAR(50), 
@@ -181,12 +179,7 @@ def init_db():
                             PRIMARY KEY(email, exam_code)
                         )''')
         conn.commit()
-        try:
-            cursor.execute("ALTER TABLE exams ADD COLUMN is_private BOOLEAN DEFAULT FALSE;")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
-
+        
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
@@ -379,7 +372,7 @@ def get_student_history():
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
 
-@@app.route('/api/create-exam', methods=['POST'])
+@app.route('/api/create-exam', methods=['POST'])
 def create_exam_api():
     data = request.get_json()
     exam_code = data.get('exam_code')
@@ -389,7 +382,7 @@ def create_exam_api():
     teacher_email = data.get('teacher_email', 'teacher@email.com')
     class_name = data.get('class_name', 'General')
     subject = data.get('subject', 'General')
-    is_private = data.get('is_private', False) # 🆕 প্রাইভেট ফিল্ড রিসিভ করা
+    is_private = data.get('is_private', False)
     questions = data.get('questions')
 
     try:
@@ -472,7 +465,6 @@ def get_teacher_analysis():
         return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/teacher-full-analytics', methods=['POST'])
-@app.route('/api/teacher-full-analytics', methods=['POST'])
 def teacher_full_analytics():
     data = request.get_json()
     email = data.get('email')
@@ -482,7 +474,6 @@ def teacher_full_analytics():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        # 🆕 Fetching created_at
         cursor.execute(f"SELECT exam_code, exam_name, created_at FROM exams WHERE teacher_email = {ph} ORDER BY created_at DESC, exam_code DESC", (email,))
         teacher_exams = cursor.fetchall()
 
@@ -507,7 +498,6 @@ def teacher_full_analytics():
         for r in results:
             code = r['exam_code']
             perf = round((float(r['score']) / r['total_questions']) * 100, 1) if r['total_questions'] > 0 else 0
-            score = float(r['score'])
             if code not in exam_map: exam_map[code] = {"name": r['exam_name'], "perfs": [], "attempts": 0}
             exam_map[code]["perfs"].append(perf)
             exam_map[code]["attempts"] += 1
@@ -515,7 +505,6 @@ def teacher_full_analytics():
         exam_stats = []
         for e in teacher_exams:
             code = e['exam_code']
-            # 🆕 Date and Time format
             dt_str = str(e['created_at']).split(' ') if e['created_at'] else ["N/A"]
             date_str = dt_str[0]
             time_str = dt_str[1].split('.')[0] if len(dt_str) > 1 else "N/A"
@@ -544,7 +533,7 @@ def teacher_full_analytics():
             leaderboard.append({"name": data["name"], "email": email_key, "avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "totalScore": sum(data["scores"])})
             student_progress[data["name"]] = {"avg": s_avg, "best": max(data["perfs"]), "taken": len(data["perfs"]), "labels": data["exam_names"], "data": data["perfs"]}
 
-        leaderboard = sorted(leaderboard, key=lambda x: x['best'], reverse=True) # 🆕 Sorted by Best Score
+        leaderboard = sorted(leaderboard, key=lambda x: x['best'], reverse=True)
         return jsonify({"success": True, "overall": {"students": unique_students, "attempts": total_attempts, "avg": class_avg, "high": highest_score, "exams": len(teacher_exams)}, "examStats": exam_stats, "leaderboard": leaderboard, "studentProgress": student_progress})
     except Exception as e:
         return jsonify({"success": False, "error": "Database error"}), 500
@@ -554,7 +543,7 @@ def admin_send_notification():
     data = request.get_json()
     message = data.get('message')
     target_role = data.get('target_role')
-    link_url = data.get('link_url', '') # 🆕 লিংক রিসিভ করা
+    link_url = data.get('link_url', '')
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
@@ -584,7 +573,7 @@ def edit_notification():
     data = request.get_json()
     notif_id = data.get('id')
     new_message = data.get('message')
-    link_url = data.get('link_url', '') # 🆕 এডিট করার সময় লিংক আপডেট
+    link_url = data.get('link_url', '')
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
@@ -673,7 +662,6 @@ def get_drive_contents_api():
     data = request.get_json() if request.is_json else {}
     parent_id = data.get('parent_id', 0)
     folder_type = data.get('folder_type', 'content') 
-    
     is_student_req = request.path == '/api/get-student-drive-contents'
     
     try:
@@ -691,16 +679,9 @@ def get_drive_contents_api():
         else:
             files = []
             if is_student_req:
-                # স্টুডেন্টদের ড্যাশবোর্ডে: শুধুমাত্র আপনার জিমেইল (এডমিন) দিয়ে তৈরি এক্সামগুলো দেখাবে
-                query = f"""
-                    SELECT exam_code, exam_name, timer_minutes 
-                    FROM exams 
-                    WHERE folder_id = {ph} AND teacher_email = 'dasbabu938207@gmail.com' 
-                    ORDER BY position ASC, exam_code DESC
-                """
+                query = f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} AND teacher_email = 'dasbabu938207@gmail.com' ORDER BY position ASC, exam_code DESC"
                 cursor.execute(query, (parent_id,))
             else:
-                # এডমিন প্যানেলে: সবার এক্সাম দেখাবে
                 cursor.execute(f"SELECT exam_code, exam_name, timer_minutes FROM exams WHERE folder_id = {ph} ORDER BY position ASC, exam_code DESC", (parent_id,))
                 
             exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"]} for r in cursor.fetchall()]
@@ -1020,10 +1001,8 @@ def teacher_delete_exam():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # প্রথমে ওই এক্সামের প্রশ্ন এবং রেজাল্ট ডিলিট করা হচ্ছে
         cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
         cursor.execute(f"DELETE FROM results WHERE exam_code = {ph}", (exam_code,))
-        # সবশেষে এক্সাম ডিলিট করা হচ্ছে
         cursor.execute(f"DELETE FROM exams WHERE exam_code = {ph}", (exam_code,))
         
         conn.commit()
@@ -1046,11 +1025,9 @@ def teacher_update_exam():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # এক্সামের মূল ইনফরমেশন আপডেট করা হচ্ছে
         cursor.execute(f"UPDATE exams SET exam_name = {ph}, timer_minutes = {ph}, negative_marks = {ph} WHERE exam_code = {ph}", 
                        (exam_name, timer, negative_marks, exam_code))
         
-        # পুরনো প্রশ্ন মুছে নতুন প্রশ্নগুলো সেভ করা হচ্ছে
         cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
         for q in questions:
             cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
@@ -1061,42 +1038,6 @@ def teacher_update_exam():
         return jsonify({"success": True, "message": "Exam updated successfully!"})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-
-@app.route('/api/get-social-feed', methods=['POST'])
-def get_social_feed():
-    data = request.get_json()
-    email = data.get('email')
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        
-        # সমস্ত শিক্ষকের তৈরি করা এক্সাম ডেটাবেস থেকে নিয়ে আসা হচ্ছে
-        cursor.execute("SELECT e.exam_code, e.exam_name, e.timer_minutes, e.created_at, e.teacher_email, u.name as teacher_name FROM exams e LEFT JOIN users u ON e.teacher_email = u.email ORDER BY e.created_at DESC")
-        all_exams = cursor.fetchall()
-        
-        # স্টুডেন্ট আগে কোন পরীক্ষাগুলো দিয়েছে তা চেক করা হচ্ছে
-        cursor.execute("SELECT exam_code, score, total_questions FROM results WHERE student_email = %s", (email,))
-        history_rows = cursor.fetchall()
-        history = {r['exam_code']: r for r in history_rows}
-        
-        feed = []
-        for ex in all_exams:
-            code = ex['exam_code']
-            feed.append({
-                "code": code,
-                "name": ex['exam_name'],
-                "teacher_name": ex['teacher_name'] or "Teacher",
-                "teacher_email": ex['teacher_email'],
-                "timer": ex['timer_minutes'],
-                "date": str(ex['created_at']).split()[0] if ex['created_at'] else "Recently",
-                "is_attempted": code in history,
-                "score": history[code]['score'] if code in history else 0,
-                "total": history[code]['total_questions'] if code in history else 0
-            })
-        conn.close()
-        return jsonify({"success": True, "feed": feed})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
 
 @app.route('/api/get-filter-options', methods=['GET'])
 def get_filter_options():
@@ -1120,7 +1061,7 @@ def search_feed():
     query = data.get('query', '').strip()
     selected_class = data.get('class_name', 'All')
     selected_subject = data.get('subject', 'All')
-    status_filter = data.get('status', 'All') # 'Attempted', 'Unattempted', 'Private'
+    status_filter = data.get('status', 'All')
     
     try:
         conn, db_type = get_db_connection()
@@ -1167,7 +1108,6 @@ def search_feed():
             code = ex['exam_code']
             is_attempted = code in history
             
-            # Status filter for Attempted / Unattempted
             if status_filter == 'Attempted' and not is_attempted: continue
             if status_filter == 'Unattempted' and is_attempted: continue
             
@@ -1198,7 +1138,7 @@ def toggle_social():
     data = request.get_json()
     email = data.get('email')
     exam_code = data.get('exam_code')
-    action_type = data.get('type') # 'like' or 'save'
+    action_type = data.get('type')
     
     try:
         conn, db_type = get_db_connection()
@@ -1206,7 +1146,6 @@ def toggle_social():
         ph = "%s" if db_type == 'postgres' else "?"
         table_name = "likes" if action_type == 'like' else "saves"
         
-        # Check if already exists
         cursor.execute(f"SELECT * FROM {table_name} WHERE email = {ph} AND exam_code = {ph}", (email, exam_code))
         exists = cursor.fetchone()
         
