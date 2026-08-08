@@ -159,7 +159,29 @@ def init_db():
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
-                
+
+        # Existing exams table modification
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN class_name VARCHAR(50) DEFAULT 'General';")
+            cursor.execute("ALTER TABLE exams ADD COLUMN subject VARCHAR(100) DEFAULT 'General';")
+            cursor.execute("ALTER TABLE exams ADD COLUMN shares INT DEFAULT 0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+
+        # Create new tables for likes and saves
+        cursor.execute('''CREATE TABLE IF NOT EXISTS likes (
+                            email VARCHAR(255), 
+                            exam_code VARCHAR(50), 
+                            PRIMARY KEY(email, exam_code)
+                        )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS saves (
+                            email VARCHAR(255), 
+                            exam_code VARCHAR(50), 
+                            PRIMARY KEY(email, exam_code)
+                        )''')
+        conn.commit()
+        
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
@@ -362,15 +384,18 @@ def create_exam_api():
     teacher_email = data.get('teacher_email', 'dasbabu938207@gmail.com')
     folder_id = data.get('folder_id', 0)
     questions = data.get('questions')
+    class_name = data.get('class_name', 'General')
+    subject = data.get('subject', 'General')
+        
 
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        cursor.execute(f"INSERT INTO exams (exam_code, exam_name, teacher_email, timer_minutes, folder_id, negative_marks) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
-                       (exam_code, exam_name, teacher_email, timer, folder_id, negative_marks))
-        
+        cursor.execute(f"INSERT INTO exams (exam_code, exam_name, timer_minutes, negative_marks, teacher_email, class_name, subject) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
+                       (exam_code, exam_name, timer, negative_marks, teacher_email, class_name, subject))
+     
         for q in questions:
             cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
                            (exam_code, q['question_text'], q['option_a'], q['option_b'], q['option_c'], q['option_d'], q['correct_option']))
@@ -1069,7 +1094,93 @@ def get_social_feed():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+@app.route('/api/search-feed', methods=['POST'])
+def search_feed():
+    data = request.get_json()
+    email = data.get('email')
+    query = data.get('query', '').strip()
+    
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # Search by exam name, code, subject, class, or teacher name
+        search_term = f"%{query}%"
+        sql = f"""SELECT e.*, u.name as teacher_name, 
+                 (SELECT COUNT(*) FROM likes WHERE exam_code = e.exam_code) as total_likes,
+                 (SELECT COUNT(*) FROM likes WHERE exam_code = e.exam_code AND email = {ph}) as is_liked,
+                 (SELECT COUNT(*) FROM saves WHERE exam_code = e.exam_code AND email = {ph}) as is_saved
+                 FROM exams e 
+                 LEFT JOIN users u ON e.teacher_email = u.email 
+                 WHERE e.exam_name ILIKE {ph} OR e.exam_code ILIKE {ph} OR e.subject ILIKE {ph} OR e.class_name ILIKE {ph} OR u.name ILIKE {ph}
+                 ORDER BY e.created_at DESC"""
+                 
+        # SQLite doesn't support ILIKE directly, so if using SQLite, replace ILIKE with LIKE
+        if db_type == 'sqlite':
+            sql = sql.replace("ILIKE", "LIKE")
+            
+        cursor.execute(sql, (email, email, search_term, search_term, search_term, search_term, search_term))
+        results = cursor.fetchall()
+        
+        # Check attempt history
+        cursor.execute(f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph}", (email,))
+        history = {r['exam_code']: r for r in cursor.fetchall()}
+        
+        feed = []
+        for ex in results:
+            code = ex['exam_code']
+            feed.append({
+                "code": code,
+                "name": ex['exam_name'],
+                "teacher_name": ex['teacher_name'] or "Teacher",
+                "class_name": ex.get('class_name', 'General'),
+                "subject": ex.get('subject', 'General'),
+                "timer": ex['timer_minutes'],
+                "date": str(ex['created_at']).split()[0] if ex['created_at'] else "Recently",
+                "likes": ex['total_likes'],
+                "shares": ex.get('shares', 0),
+                "is_liked": ex['is_liked'] > 0,
+                "is_saved": ex['is_saved'] > 0,
+                "is_attempted": code in history,
+                "score": history[code]['score'] if code in history else 0,
+                "total": history[code]['total_questions'] if code in history else 0
+            })
+        conn.close()
+        return jsonify({"success": True, "feed": feed})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
+@app.route('/api/toggle-social', methods=['POST'])
+def toggle_social():
+    data = request.get_json()
+    email = data.get('email')
+    exam_code = data.get('exam_code')
+    action_type = data.get('type') # 'like' or 'save'
+    
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        table_name = "likes" if action_type == 'like' else "saves"
+        
+        # Check if already exists
+        cursor.execute(f"SELECT * FROM {table_name} WHERE email = {ph} AND exam_code = {ph}", (email, exam_code))
+        exists = cursor.fetchone()
+        
+        if exists:
+            cursor.execute(f"DELETE FROM {table_name} WHERE email = {ph} AND exam_code = {ph}", (email, exam_code))
+            status = False
+        else:
+            cursor.execute(f"INSERT INTO {table_name} (email, exam_code) VALUES ({ph}, {ph})", (email, exam_code))
+            status = True
+            
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "status": status})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+        
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
