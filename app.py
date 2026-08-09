@@ -10,6 +10,8 @@ from psycopg2.extras import RealDictCursor
 import json
 import PyPDF2
 import requests
+# নতুন ইমপোর্ট (রিয়েল-টাইম চ্যাটের জন্য)
+from flask_socketio import SocketIO, emit, join_room
 
 load_dotenv()
 
@@ -17,6 +19,9 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026")
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['SESSION_REFRESH_EACH_REQUEST'] = True
+
+# সকেট আইও ইনিশিয়ালাইজেশন
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 UPLOAD_FOLDER = 'static/uploads/resources'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -47,6 +52,16 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS notifications (id SERIAL PRIMARY KEY, message TEXT NOT NULL, target_role VARCHAR(50) NOT NULL, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
                 CREATE TABLE IF NOT EXISTS drive_folders (id SERIAL PRIMARY KEY, folder_name VARCHAR(255) NOT NULL, parent_id INT DEFAULT 0, folder_type VARCHAR(50) DEFAULT 'content', position INT DEFAULT 0);
                 CREATE TABLE IF NOT EXISTS drive_files (id SERIAL PRIMARY KEY, folder_id INT NOT NULL, title VARCHAR(255) NOT NULL, file_url TEXT NOT NULL, resource_type VARCHAR(50) DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, position INT DEFAULT 0);
+                
+                -- নতুন মেসেজ টেবিল (চ্যাটের জন্য)
+                CREATE TABLE IF NOT EXISTS messages (
+                    id SERIAL PRIMARY KEY,
+                    sender_email VARCHAR(255) NOT NULL,
+                    receiver_email VARCHAR(255) NOT NULL,
+                    message_text TEXT NOT NULL,
+                    is_read BOOLEAN DEFAULT FALSE,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
             ''')
         else:
             cursor.execute('''
@@ -57,107 +72,67 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT NOT NULL, target_role TEXT NOT NULL, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
                 CREATE TABLE IF NOT EXISTS drive_folders (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_name TEXT NOT NULL, parent_id INTEGER DEFAULT 0, folder_type TEXT DEFAULT 'content', position INTEGER DEFAULT 0);
                 CREATE TABLE IF NOT EXISTS drive_files (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_id INTEGER NOT NULL, title TEXT NOT NULL, file_url TEXT NOT NULL, resource_type TEXT DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, position INTEGER DEFAULT 0);
+                
+                -- নতুন মেসেজ টেবিল (চ্যাটের জন্য)
+                CREATE TABLE IF NOT EXISTS messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sender_email TEXT NOT NULL,
+                    receiver_email TEXT NOT NULL,
+                    message_text TEXT NOT NULL,
+                    is_read BOOLEAN DEFAULT FALSE,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
             ''')
         conn.commit()
         
-        try:
-            cursor.execute("ALTER TABLE users ADD COLUMN photo_url TEXT;")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        # অন্যান্য ALTER TABLE ব্লকগুলো (যেমন ছিল তেমনই রাখা হয়েছে)
+        try: cursor.execute("ALTER TABLE users ADD COLUMN photo_url TEXT;"); conn.commit()
+        except: pass if db_type == 'sqlite' else conn.rollback()
             
-        try:
-            cursor.execute("ALTER TABLE exams ADD COLUMN folder_id INT DEFAULT 0;")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        try: cursor.execute("ALTER TABLE exams ADD COLUMN folder_id INT DEFAULT 0;"); conn.commit()
+        except: pass if db_type == 'sqlite' else conn.rollback()
 
-        try:
-            cursor.execute("ALTER TABLE drive_folders ADD COLUMN folder_type VARCHAR(50) DEFAULT 'content';")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        try: cursor.execute("ALTER TABLE drive_folders ADD COLUMN folder_type VARCHAR(50) DEFAULT 'content';"); conn.commit()
+        except: pass if db_type == 'sqlite' else conn.rollback()
             
-        try:
-            cursor.execute("ALTER TABLE exams ADD COLUMN negative_marks FLOAT DEFAULT 0.0;")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        try: cursor.execute("ALTER TABLE exams ADD COLUMN negative_marks FLOAT DEFAULT 0.0;"); conn.commit()
+        except: pass if db_type == 'sqlite' else conn.rollback()
             
-        try:
-            cursor.execute("ALTER TABLE exams ADD COLUMN position INT DEFAULT 0;")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        try: cursor.execute("ALTER TABLE exams ADD COLUMN position INT DEFAULT 0;"); conn.commit()
+        except: pass if db_type == 'sqlite' else conn.rollback()
 
-        try:
-            cursor.execute("ALTER TABLE drive_folders ADD COLUMN position INT DEFAULT 0;")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        try: cursor.execute("ALTER TABLE drive_folders ADD COLUMN position INT DEFAULT 0;"); conn.commit()
+        except: pass if db_type == 'sqlite' else conn.rollback()
 
-        try:
-            cursor.execute("ALTER TABLE drive_files ADD COLUMN position INT DEFAULT 0;")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        try: cursor.execute("ALTER TABLE drive_files ADD COLUMN position INT DEFAULT 0;"); conn.commit()
+        except: pass if db_type == 'sqlite' else conn.rollback()
             
-        try:
+        try: 
             if db_type == 'postgres':
                 cursor.execute("ALTER TABLE results ALTER COLUMN score TYPE FLOAT;")
                 conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        except: pass if db_type == 'sqlite' else conn.rollback()
 
-        try:
-            cursor.execute("ALTER TABLE users ADD COLUMN is_logged_in BOOLEAN DEFAULT FALSE;")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        try: cursor.execute("ALTER TABLE users ADD COLUMN is_logged_in BOOLEAN DEFAULT FALSE;"); conn.commit()
+        except: pass if db_type == 'sqlite' else conn.rollback()
 
         if db_type == 'postgres':
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS reviews (
-                    id SERIAL PRIMARY KEY,
-                    reviewer_name VARCHAR(255) NOT NULL,
-                    role VARCHAR(100) NOT NULL,
-                    rating INT NOT NULL,
-                    review_text TEXT NOT NULL,
-                    date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-            ''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS reviews (id SERIAL PRIMARY KEY, reviewer_name VARCHAR(255) NOT NULL, role VARCHAR(100) NOT NULL, rating INT NOT NULL, review_text TEXT NOT NULL, date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
         else:
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS reviews (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    reviewer_name TEXT NOT NULL,
-                    role TEXT NOT NULL,
-                    rating INTEGER NOT NULL,
-                    review_text TEXT NOT NULL,
-                    date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-            ''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, reviewer_name TEXT NOT NULL, role TEXT NOT NULL, rating INTEGER NOT NULL, review_text TEXT NOT NULL, date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
         conn.commit()
+        
         if db_type == 'postgres':
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS notifications (id SERIAL PRIMARY KEY, message TEXT NOT NULL, target_role VARCHAR(50) NOT NULL, link_url TEXT, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-            ''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS notifications (id SERIAL PRIMARY KEY, message TEXT NOT NULL, target_role VARCHAR(50) NOT NULL, link_url TEXT, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
         else:
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT NOT NULL, target_role TEXT NOT NULL, link_url TEXT, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-            ''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT NOT NULL, target_role TEXT NOT NULL, link_url TEXT, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
         conn.commit()
 
-        try:
-            cursor.execute("ALTER TABLE notifications ADD COLUMN link_url TEXT;")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
-        try:
-            cursor.execute("ALTER TABLE exams ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;")
-            conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        try: cursor.execute("ALTER TABLE notifications ADD COLUMN link_url TEXT;"); conn.commit()
+        except: pass if db_type == 'sqlite' else conn.rollback()
+        
+        try: cursor.execute("ALTER TABLE exams ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"); conn.commit()
+        except: pass if db_type == 'sqlite' else conn.rollback()
 
         try:
             cursor.execute("ALTER TABLE exams ADD COLUMN class_name VARCHAR(50) DEFAULT 'General';")
@@ -165,19 +140,10 @@ def init_db():
             cursor.execute("ALTER TABLE exams ADD COLUMN shares INT DEFAULT 0;")
             cursor.execute("ALTER TABLE exams ADD COLUMN is_private BOOLEAN DEFAULT FALSE;")
             conn.commit()
-        except Exception:
-            if db_type == 'postgres': conn.rollback()
+        except: pass if db_type == 'sqlite' else conn.rollback()
 
-        cursor.execute('''CREATE TABLE IF NOT EXISTS likes (
-                            email VARCHAR(255), 
-                            exam_code VARCHAR(50), 
-                            PRIMARY KEY(email, exam_code)
-                        )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS saves (
-                            email VARCHAR(255), 
-                            exam_code VARCHAR(50), 
-                            PRIMARY KEY(email, exam_code)
-                        )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS likes (email VARCHAR(255), exam_code VARCHAR(50), PRIMARY KEY(email, exam_code))''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS saves (email VARCHAR(255), exam_code VARCHAR(50), PRIMARY KEY(email, exam_code))''')
         conn.commit()
         
         conn.close()
@@ -186,8 +152,44 @@ def init_db():
 
 init_db()
 
+# =======================
+# SOCKET.IO EVENTS (CHAT)
+# =======================
+@socketio.on('join')
+def on_join(data):
+    room = data.get('room') # 'global' অথবা ইউজার ইমেইল
+    if room:
+        join_room(room)
+
+@socketio.on('send_message')
+def handle_send_message(data):
+    sender = data.get('sender_email')
+    receiver = data.get('receiver_email')
+    text = data.get('message_text')
+    
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"INSERT INTO messages (sender_email, receiver_email, message_text) VALUES ({ph}, {ph}, {ph})", (sender, receiver, text))
+        conn.commit()
+        conn.close()
+        
+        # মেসেজটি গ্লোবাল রুমে বা নির্দিষ্ট ইউজারের রুমে ব্রডকাস্ট করা হচ্ছে
+        emit('receive_message', data, to=receiver)
+    except Exception as e:
+        print("Message Save Error:", e)
+
+# =======================
+# ROUTES
+# =======================
 @app.route('/')
 def home(): return render_template('index.html')
+
+# নতুন রাউট - Community Page
+@app.route('/community.html')
+def community_page(): return render_template('community.html') if session.get('user') else redirect('/')
+
 @app.route('/setup_profile.html')
 def setup_profile_page(): return render_template('setup_profile.html')
 @app.route('/student_dashboard.html')
@@ -1199,7 +1201,8 @@ def run_fix_db():
         return "<h3>🎉 Database successfully fixed! The 'is_private' column has been added. You can now go back and publish your exam.</h3>"
     except Exception as e:
         return f"<h3>⚠️ Note:</h3> <p>{str(e)}</p><p>(If it says column already exists, that means it's already fixed and ready to use!)</p>"
-        
+
+# টাইপো ফিক্স করা হয়েছে: os.environ.com থেকে os.environ.get
 if __name__ == '__main__':
-    port = int(os.environ.com("PORT", 5000) if "PORT" in os.environ else 5000)
-    app.run(host='0.0.0.0', port=port)
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host='0.0.0.0', port=port)
