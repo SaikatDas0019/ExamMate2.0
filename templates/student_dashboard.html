@@ -149,7 +149,7 @@
         .bottom-nav {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
-            display: flex; justify-content: space-around; padding: 10px 0 20px 0;
+            display: flex; justify-content: space-around; padding: 8px 0;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
         }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
@@ -216,13 +216,13 @@
 
     <div class="bottom-nav">
         <div class="nav-item active">
-            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <div class="nav-icon"><i class="fas fa-home"></i></div><span>        </span>
         </div>
         <div class="nav-item" onclick="window.location.href='/student_analytics.html'">
-            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div><span>        </span>
         </div>
         <div class="nav-item" onclick="window.location.href='/student_profile.html'">
-            <div class="nav-icon"><i class="far fa-user"></i></div>
+            <div class="nav-icon"><i class="far fa-user"></i></div><span>        </span>
         </div>
     </div>
 
