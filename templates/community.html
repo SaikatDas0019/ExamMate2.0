@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExamMate | Community</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Socket.IO Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     
     <style>
@@ -13,21 +12,18 @@
         body { background-color: #f1f5f9; color: #333333; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; display: flex; justify-content: center; overflow: hidden; }
         .container { width: 100%; max-width: 480px; background-color: #f1f5f9; height: 100vh; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
 
-        /* Fixed Top Section & Header */
         .fixed-top-section { position: absolute; top: 0; left: 0; width: 100%; z-index: 999; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .sticky-header { padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; }
         .back-btn-top { font-size: 1.3rem; color: #3b82f6; cursor: pointer; padding: 5px 10px 5px 0; }
         .header-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0; flex: 1; text-align: center; }
         .create-group-btn { color: #3b82f6; font-size: 1.3rem; cursor: pointer; padding: 5px 0 5px 10px; }
         
-        /* Fixed Search CSS */
         .search-container { padding: 0 15px 15px 15px; display: flex; gap: 10px; align-items: center; }
         .search-input-wrapper { flex: 1; position: relative; }
         .search-input-wrapper input { width: 100%; padding: 12px 15px 12px 35px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px; font-size: 0.95rem; outline: none; box-sizing: border-box; }
         .search-input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
         .search-btn-circle { width: 45px; height: 45px; flex-shrink: 0; border-radius: 50%; background: #3b82f6; color: white; border: none; font-size: 1.1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; }
 
-        /* Chat List */
         .chat-list-container { height: 100%; padding-top: 135px; padding-bottom: 70px; overflow-y: auto; background: #ffffff; }
         .chat-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
         .chat-avatar { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold; margin-right: 15px; color: white; flex-shrink: 0;}
@@ -39,7 +35,6 @@
         .chat-time { font-size: 0.75rem; color: #64748b; }
         .chat-last-msg { font-size: 0.85rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
 
-        /* Chat Room */
         .chat-room-container { position: absolute; top: 0; left: 100%; width: 100%; height: 100%; background: #e2e8f0; z-index: 1001; display: flex; flex-direction: column; transition: left 0.3s; }
         .chat-room-container.active { left: 0; }
         .chat-room-header { background: #ffffff; padding: 12px 15px; display: flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 2; }
@@ -54,24 +49,19 @@
         .message-input { flex: 1; background: #f1f5f9; border: none; padding: 12px 15px; border-radius: 20px; font-size: 0.95rem; outline: none; }
         .send-btn { background: #3b82f6; color: white; width: 42px; height: 42px; border-radius: 50%; border: none; font-size: 1.1rem; cursor: pointer; flex-shrink: 0;}
 
-        /* Restored Bottom Nav */
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: #ffffff; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; padding: 8px 0; z-index: 998; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon i { font-size: 1.4rem; margin-bottom: 4px; }
 
-        /* Modals */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
         .modal-box { background: white; width: 90%; max-width: 350px; border-radius: 15px; padding: 20px; text-align: center; }
-        .modal-box h3 { margin-top: 0; color: #0f172a; }
         .modal-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
-        .modal-input:focus { border-color: #3b82f6; }
         .user-list-box { max-height: 150px; overflow-y: auto; text-align: left; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 15px; background: #f8fafc;}
         .user-list-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding: 5px; border-bottom: 1px solid #e2e8f0;}
         .btn-primary { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 10px;}
-        .btn-danger { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
         .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
-
+        .btn-danger { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -80,7 +70,6 @@
         <div id="chat-list-view">
             <div class="fixed-top-section">
                 <div class="sticky-header">
-                    <!-- Fixed Back Button -->
                     <i class="fas fa-chevron-left back-btn-top" onclick="goBackToDashboard()"></i>
                     <h2 class="header-title">Community</h2>
                     <i class="fas fa-edit create-group-btn" onclick="openCreateGroupModal()" title="Create Group"></i>
@@ -88,7 +77,7 @@
                 <div class="search-container">
                     <div class="search-input-wrapper">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="search-chat" placeholder="Search groups...">
+                        <input type="text" placeholder="Search groups...">
                     </div>
                     <button class="search-btn-circle"><i class="fas fa-arrow-right"></i></button>
                 </div>
@@ -101,18 +90,17 @@
                 </div>
             </div>
 
-            <!-- Fixed Bottom Nav Links -->
             <div class="bottom-nav" id="main-bottom-nav">
-                <a href="student_dashboard.html" class="nav-item" id="nav-home">
+                <a href="/student_dashboard.html" class="nav-item" id="nav-home">
                     <div class="nav-icon"><i class="fas fa-home"></i></div><span>Home</span>
                 </a>
-                <a href="community.html" class="nav-item active">
+                <a href="/community.html" class="nav-item active">
                     <div class="nav-icon"><i class="fas fa-users"></i></div><span>Community</span>
                 </a>
-                <a href="student_analytics.html" class="nav-item" id="nav-analytics">
+                <a href="/student_analytics.html" class="nav-item" id="nav-analytics">
                     <div class="nav-icon"><i class="fas fa-chart-bar"></i></div><span>Analytics</span>
                 </a>
-                <a href="student_profile.html" class="nav-item" id="nav-profile">
+                <a href="/student_profile.html" class="nav-item" id="nav-profile">
                     <div class="nav-icon"><i class="far fa-user"></i></div><span>Profile</span>
                 </a>
             </div>
@@ -127,30 +115,23 @@
                     <h3 style="margin:0; font-size:1.1rem;" id="room-name">Loading...</h3>
                 </div>
             </div>
-
             <div class="chat-messages" id="chat-messages-area"></div>
-
             <div class="chat-input-area">
                 <input type="text" class="message-input" id="msg-input" placeholder="Type a message...">
                 <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
 
-        <!-- Create Group Modal (Fixed Search Input) -->
+        <!-- Create Group Modal -->
         <div class="modal-overlay" id="create-group-modal">
             <div class="modal-box">
-                <h3>Create New Group</h3>
+                <h3 style="margin-top:0;">Create New Group</h3>
                 <input type="text" id="group-name-input" class="modal-input" placeholder="Enter Group Name">
-                
-                <!-- Search Box for finding Users -->
                 <div style="position: relative;">
                     <i class="fas fa-search" style="position: absolute; left: 10px; top: 12px; color: #94a3b8;"></i>
                     <input type="text" id="group-user-search" class="modal-input" placeholder="Search students/teachers..." style="padding-left: 30px;" onkeyup="filterUsersModal()">
                 </div>
-
-                <div class="user-list-box" id="users-to-add">
-                    <p style="color:#64748b; font-size:0.8rem; text-align:center;">Loading users...</p>
-                </div>
+                <div class="user-list-box" id="users-to-add"></div>
                 <button class="btn-primary" onclick="submitCreateGroup()">Create Group</button>
                 <button class="btn-cancel" onclick="document.getElementById('create-group-modal').style.display='none'">Cancel</button>
             </div>
@@ -159,7 +140,7 @@
         <!-- Admin Mute Modal -->
         <div class="modal-overlay" id="admin-mute-modal">
             <div class="modal-box">
-                <h3 style="color:#ef4444;">Admin Actions</h3>
+                <h3 style="color:#ef4444; margin-top:0;">Admin Actions</h3>
                 <p id="target-user-name" style="font-weight:bold; margin-bottom:5px;"></p>
                 <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;" id="target-user-email"></p>
                 <button class="btn-danger" onclick="muteUserAction(24)">Mute for 24 Hours</button>
@@ -177,10 +158,8 @@
         const ADMIN_EMAIL = 'dasbabu938207@gmail.com'; 
         let currentRoom = null;
 
-        // Fixed Initialization Block
         window.onload = async () => {
             try {
-                // Sent empty body correctly to avoid 400 Bad Request error
                 const res = await fetch('/api/check-login-status', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -197,64 +176,63 @@
                     localStorage.setItem('userRole', userRole);
                 } 
                 
-                // Fix Nav Links dynamically based on Role
                 if(userRole && userRole.toLowerCase() === 'teacher') {
-                    document.getElementById('nav-home').href = 'teacher_dashboard.html';
-                    document.getElementById('nav-analytics').href = 'teacher_analytics.html';
-                    document.getElementById('nav-profile').href = 'teacher_profile.html';
+                    document.getElementById('nav-home').href = '/teacher_dashboard.html';
+                    document.getElementById('nav-analytics').href = '/teacher_analytics.html';
+                    document.getElementById('nav-profile').href = '/teacher_profile.html';
                 }
-                
-                loadChatList(); 
             } catch (e) {
                 console.error("Auth check failed", e);
-                // Fallback: Use LocalStorage if API fails
-                if(userEmail) {
-                    loadChatList();
-                } else {
-                    document.getElementById('chat-list').innerHTML = `<p style="text-align:center; color:red; padding:20px;">Connection error. Please refresh.</p>`;
-                }
             }
+            // Always attempt to load chat list so it doesn't get stuck
+            loadChatList(); 
 
-            // Socket Listeners
             socket.on('receive_message', (data) => {
-                if(data.receiver_email === currentRoom) {
-                    appendMessage(data);
-                }
+                if(data.receiver_email === currentRoom) appendMessage(data);
                 loadChatList(); 
             });
-            
-            socket.on('error', (err) => {
-                alert(err.msg);
-            });
+            socket.on('error', (err) => { alert(err.msg); });
         };
 
-        // Top Back Button Logic
         function goBackToDashboard() {
             if(userRole && userRole.toLowerCase() === 'teacher') {
-                window.location.href = 'teacher_dashboard.html';
+                window.location.href = '/teacher_dashboard.html';
             } else {
-                window.location.href = 'student_dashboard.html';
+                window.location.href = '/student_dashboard.html';
             }
         }
 
-        // Load Real Chat List
+        // Bulletproof loadChatList
         async function loadChatList() {
-            if(!userEmail) return;
+            const listDiv = document.getElementById('chat-list');
+            let globalHTML = `
+                <div class="chat-item" onclick="openChat('global', 'Global Discussion', 'global')">
+                    <div class="chat-avatar avatar-global"><i class="fas fa-globe-americas"></i></div>
+                    <div class="chat-info">
+                        <div class="chat-header-row"><h4 class="chat-name">Global Discussion</h4><span class="chat-time">Now</span></div>
+                        <p class="chat-last-msg">Tap to view messages</p>
+                    </div>
+                </div>`;
+
+            if(!userEmail) {
+                listDiv.innerHTML = globalHTML + `<p style="text-align:center; color:red; padding:20px;">Please login to load your personal groups.</p>`;
+                return;
+            }
+
             try {
                 const res = await fetch('/api/get-chat-list', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email: userEmail })
                 });
+                
+                if (!res.ok) throw new Error("Server returned " + res.status);
                 const data = await res.json();
                 
                 if(data.success) {
-                    const listDiv = document.getElementById('chat-list');
                     listDiv.innerHTML = '';
-                    
                     data.chats.forEach(chat => {
                         let avatarHTML = chat.id === 'global' ? `<i class="fas fa-globe-americas"></i>` : chat.name.charAt(0);
                         let avatarClass = chat.id === 'global' ? 'avatar-global' : 'avatar-group';
-                        
                         listDiv.innerHTML += `
                         <div class="chat-item" onclick="openChat('${chat.id}', '${chat.name}', '${chat.id === 'global' ? 'global' : 'group'}')">
                             <div class="chat-avatar ${avatarClass}">${avatarHTML}</div>
@@ -267,8 +245,13 @@
                             </div>
                         </div>`;
                     });
+                } else {
+                    // This handles the backend missing table error!
+                    listDiv.innerHTML = globalHTML + `<p style="text-align:center; color:#ef4444; padding:20px;">Backend Error: ${data.error}<br><small>Make sure to update app.py</small></p>`;
                 }
-            } catch(e) { console.log("List error", e); }
+            } catch(e) { 
+                listDiv.innerHTML = globalHTML + `<p style="text-align:center; color:#ef4444; padding:20px;">Connection failed. <br><small>${e.message}</small></p>`;
+            }
         }
 
         async function openChat(roomId, name, type) {
@@ -279,7 +262,7 @@
             avatarBox.innerHTML = type === 'global' ? '<i class="fas fa-globe-americas"></i>' : name.charAt(0);
 
             document.getElementById('chat-room').classList.add('active');
-            document.getElementById('main-bottom-nav').style.display = 'none'; // Hide bottom nav in chat room
+            document.getElementById('main-bottom-nav').style.display = 'none'; 
             
             socket.emit('join', { room: roomId });
 
@@ -289,17 +272,27 @@
                     method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ room_id: roomId })
                 });
+                if (!res.ok) throw new Error("Server error " + res.status);
                 const data = await res.json();
+                
                 if(data.success) {
                     document.getElementById('chat-messages-area').innerHTML = '';
-                    data.messages.forEach(msg => appendMessage(msg));
+                    if(data.messages.length === 0) {
+                        document.getElementById('chat-messages-area').innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;">No messages yet. Start the conversation!</p>';
+                    } else {
+                        data.messages.forEach(msg => appendMessage(msg));
+                    }
+                } else {
+                    document.getElementById('chat-messages-area').innerHTML = `<p style="text-align:center; color:red; padding:20px;">Error: ${data.error}</p>`;
                 }
-            } catch(e) { console.log(e); }
+            } catch(e) { 
+                document.getElementById('chat-messages-area').innerHTML = `<p style="text-align:center; color:red; padding:20px;">Failed to load messages.</p>`;
+            }
         }
 
         function closeChat() {
             document.getElementById('chat-room').classList.remove('active');
-            document.getElementById('main-bottom-nav').style.display = 'flex'; // Restore bottom nav
+            document.getElementById('main-bottom-nav').style.display = 'flex'; 
             currentRoom = null;
         }
 
@@ -330,22 +323,15 @@
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
             if(!text || !currentRoom) return;
-
-            socket.emit('send_message', {
-                sender_email: userEmail,
-                sender_name: userName,
-                receiver_email: currentRoom,
-                message_text: text
-            });
+            socket.emit('send_message', { sender_email: userEmail, sender_name: userName, receiver_email: currentRoom, message_text: text });
             input.value = '';
         }
         document.getElementById('msg-input').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
 
-        // --- GROUP CREATION & MODAL SEARCH ---
         async function openCreateGroupModal() {
             document.getElementById('create-group-modal').style.display = 'flex';
-            document.getElementById('group-user-search').value = ''; // Reset search
-            
+            document.getElementById('group-user-search').value = ''; 
+            document.getElementById('users-to-add').innerHTML = '<p style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading users...</p>';
             try {
                 const res = await fetch('/api/get-all-users');
                 const data = await res.json();
@@ -358,53 +344,41 @@
                     });
                     document.getElementById('users-to-add').innerHTML = html || '<p>No other users found.</p>';
                 } else {
-                    document.getElementById('users-to-add').innerHTML = '<p style="color:red;">Error loading users.</p>';
+                    document.getElementById('users-to-add').innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
                 }
-            } catch(e) { 
-                document.getElementById('users-to-add').innerHTML = '<p style="color:red;">Failed to fetch users.</p>';
-            }
+            } catch(e) { document.getElementById('users-to-add').innerHTML = '<p style="color:red;">Failed to fetch users.</p>'; }
         }
 
-        // Live Filter function inside the modal
         function filterUsersModal() {
             const query = document.getElementById('group-user-search').value.toLowerCase();
             const items = document.querySelectorAll('.user-list-item');
-            
             items.forEach(item => {
                 const nameText = item.querySelector('.u-name').innerText.toLowerCase();
-                if(nameText.includes(query)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
+                item.style.display = nameText.includes(query) ? 'flex' : 'none';
             });
         }
 
         async function submitCreateGroup() {
             const name = document.getElementById('group-name-input').value.trim();
             if(!name) return alert("Enter a group name!");
-            
             const checkboxes = document.querySelectorAll('.group-member-cb:checked');
             const members = Array.from(checkboxes).map(cb => cb.value);
             members.push(userEmail); 
-
             if(members.length < 2) return alert("Select at least 1 other member!");
 
             try {
-                const res = await fetch('/api/create-group', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ name: name, created_by: userEmail, members: members })
-                });
+                const res = await fetch('/api/create-group', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name: name, created_by: userEmail, members: members }) });
                 const data = await res.json();
                 if(data.success) {
                     document.getElementById('create-group-modal').style.display = 'none';
                     loadChatList(); 
                     alert("Group created successfully!");
+                } else {
+                    alert("Failed: " + data.error);
                 }
             } catch(e) { alert("Error creating group"); }
         }
 
-        // --- ADMIN MUTE FEATURE ---
         let targetMuteEmail = '';
         function openAdminModal(email, name) {
             targetMuteEmail = email;
@@ -415,17 +389,12 @@
 
         async function muteUserAction(hours) {
             try {
-                const res = await fetch('/api/admin-mute-user', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ admin_email: userEmail, target_email: targetMuteEmail, hours: hours })
-                });
+                const res = await fetch('/api/admin-mute-user', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ admin_email: userEmail, target_email: targetMuteEmail, hours: hours }) });
                 const data = await res.json();
                 if(data.success) {
                     alert(hours === 0 ? "User Unmuted!" : "User Muted for 24 hours!");
                     document.getElementById('admin-mute-modal').style.display = 'none';
-                } else {
-                    alert("Failed: " + data.error);
-                }
+                } else { alert("Failed: " + data.error); }
             } catch(e) { console.log(e); }
         }
     </script>
