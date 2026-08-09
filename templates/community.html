@@ -101,18 +101,18 @@
                 </div>
             </div>
 
-            <!-- Restored Bottom Nav -->
+            <!-- Fixed Bottom Nav Links -->
             <div class="bottom-nav" id="main-bottom-nav">
-                <a href="/student_dashboard.html" class="nav-item" id="nav-home">
+                <a href="student_dashboard.html" class="nav-item" id="nav-home">
                     <div class="nav-icon"><i class="fas fa-home"></i></div><span>Home</span>
                 </a>
-                <a href="#" class="nav-item active">
+                <a href="community.html" class="nav-item active">
                     <div class="nav-icon"><i class="fas fa-users"></i></div><span>Community</span>
                 </a>
-                <a href="/student_analytics.html" class="nav-item" id="nav-analytics">
+                <a href="student_analytics.html" class="nav-item" id="nav-analytics">
                     <div class="nav-icon"><i class="fas fa-chart-bar"></i></div><span>Analytics</span>
                 </a>
-                <a href="/student_profile.html" class="nav-item" id="nav-profile">
+                <a href="student_profile.html" class="nav-item" id="nav-profile">
                     <div class="nav-icon"><i class="far fa-user"></i></div><span>Profile</span>
                 </a>
             </div>
@@ -136,13 +136,13 @@
             </div>
         </div>
 
-        <!-- Create Group Modal (Now with User Search) -->
+        <!-- Create Group Modal (Fixed Search Input) -->
         <div class="modal-overlay" id="create-group-modal">
             <div class="modal-box">
                 <h3>Create New Group</h3>
                 <input type="text" id="group-name-input" class="modal-input" placeholder="Enter Group Name">
                 
-                <!-- New Search Input for Modal -->
+                <!-- Search Box for finding Users -->
                 <div style="position: relative;">
                     <i class="fas fa-search" style="position: absolute; left: 10px; top: 12px; color: #94a3b8;"></i>
                     <input type="text" id="group-user-search" class="modal-input" placeholder="Search students/teachers..." style="padding-left: 30px;" onkeyup="filterUsersModal()">
@@ -171,37 +171,48 @@
 
     <script>
         const socket = io();
-        let userEmail = '';
-        let userName = '';
-        let userRole = '';
+        let userEmail = localStorage.getItem('userEmail') || '';
+        let userName = localStorage.getItem('userName') || '';
+        let userRole = localStorage.getItem('userRole') || 'student';
         const ADMIN_EMAIL = 'dasbabu938207@gmail.com'; 
         let currentRoom = null;
 
-        // Fixed Initialization (Gets exact email from backend session)
+        // Fixed Initialization Block
         window.onload = async () => {
             try {
-                const res = await fetch('/api/check-login-status', { method: 'POST' });
+                // Sent empty body correctly to avoid 400 Bad Request error
+                const res = await fetch('/api/check-login-status', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
                 const data = await res.json();
                 
                 if (data.logged_in) {
                     userEmail = data.email;
                     userName = data.name;
                     userRole = data.role;
-                    
-                    // Fix Nav Links based on Role
-                    if(userRole.toLowerCase() === 'teacher') {
-                        document.getElementById('nav-home').href = '/teacher_dashboard.html';
-                        document.getElementById('nav-analytics').href = '/teacher_analytics.html';
-                        document.getElementById('nav-profile').href = '/teacher_profile.html';
-                    }
-                    
-                    loadChatList(); // Now safely load chats
-                } else {
-                    window.location.href = '/'; // Go to login if not logged in
+                    localStorage.setItem('userEmail', userEmail);
+                    localStorage.setItem('userName', userName);
+                    localStorage.setItem('userRole', userRole);
+                } 
+                
+                // Fix Nav Links dynamically based on Role
+                if(userRole && userRole.toLowerCase() === 'teacher') {
+                    document.getElementById('nav-home').href = 'teacher_dashboard.html';
+                    document.getElementById('nav-analytics').href = 'teacher_analytics.html';
+                    document.getElementById('nav-profile').href = 'teacher_profile.html';
                 }
+                
+                loadChatList(); 
             } catch (e) {
                 console.error("Auth check failed", e);
-                document.getElementById('chat-list').innerHTML = `<p style="text-align:center; color:red; padding:20px;">Connection error. Please refresh.</p>`;
+                // Fallback: Use LocalStorage if API fails
+                if(userEmail) {
+                    loadChatList();
+                } else {
+                    document.getElementById('chat-list').innerHTML = `<p style="text-align:center; color:red; padding:20px;">Connection error. Please refresh.</p>`;
+                }
             }
 
             // Socket Listeners
@@ -217,12 +228,12 @@
             });
         };
 
-        // Fixed Back Button Logic
+        // Top Back Button Logic
         function goBackToDashboard() {
             if(userRole && userRole.toLowerCase() === 'teacher') {
-                window.location.href = '/teacher_dashboard.html';
+                window.location.href = 'teacher_dashboard.html';
             } else {
-                window.location.href = '/student_dashboard.html';
+                window.location.href = 'student_dashboard.html';
             }
         }
 
@@ -345,16 +356,16 @@
                             html += `<label class="user-list-item"><input type="checkbox" class="group-member-cb" value="${u.email}"> <span class="u-name">${u.name}</span> <small style="color:#94a3b8; margin-left:auto;">${u.role}</small></label>`;
                         }
                     });
-                    document.getElementById('users-to-add').innerHTML = html || '<p>No users found.</p>';
+                    document.getElementById('users-to-add').innerHTML = html || '<p>No other users found.</p>';
                 } else {
                     document.getElementById('users-to-add').innerHTML = '<p style="color:red;">Error loading users.</p>';
                 }
             } catch(e) { 
-                document.getElementById('users-to-add').innerHTML = '<p style="color:red;">Failed to connect.</p>';
+                document.getElementById('users-to-add').innerHTML = '<p style="color:red;">Failed to fetch users.</p>';
             }
         }
 
-        // New function to filter users in the modal
+        // Live Filter function inside the modal
         function filterUsersModal() {
             const query = document.getElementById('group-user-search').value.toLowerCase();
             const items = document.querySelectorAll('.user-list-item');
