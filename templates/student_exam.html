@@ -612,15 +612,13 @@
         }
 
         function openAppOrDownload() {
-            const packageName = "com.saikat.exammate"; 
-            const downloadUrl = "https://exammate-sscn.onrender.com/download";
+            // ব্রাউজার থেকে ডাইরেক্ট ওপেন করা ব্লক থাকায় আমরা ইউজারকে গাইড করছি
+            alert("আপনার ফোনে যদি ExamMate অ্যাপটি আগে থেকেই থাকে, তবে দয়া করে সেটি মেনু থেকে সরাসরি ওপেন করুন। আপনার রেজাল্ট সেখানে সিঙ্ক হয়ে যাবে।\n\nআর অ্যাপ না থাকলে 'OK' প্রেস করে অ্যাপটি ডাউনলোড করে নিন!");
             
-            // আরও শক্তিশালী Intent URL (Action এবং Category যুক্ত করা হয়েছে)
-            const intentUrl = `intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${packageName};S.browser_fallback_url=${encodeURIComponent(downloadUrl)};end`;
-            
-            // লিংকে রিডাইরেক্ট করা
-            window.location.href = intentUrl;
+            // এরপর তাকে ডাউনলোড পেজে নিয়ে যাবে
+            window.location.href = "https://exammate-sscn.onrender.com/download";
         }
+
     </script>
 </body>
 </html>
