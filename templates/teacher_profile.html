@@ -169,10 +169,11 @@
                     <div class="metric-card" onclick="openPanel('panel-average')">
                         <span>📈 Class Average</span><strong id="stat-avg">0%</strong>
                     </div>
-                    <div class="metric-card full-width" onclick="openPanel('panel-active')">
-                        <span>🟢 Active Exams & Manage</span><strong id="stat-exams">0</strong>
+                    <div class="metric-card" onclick="openPanel('panel-active')">
+                        <span>🟢 Active Exams</span><strong id="stat-exams">0</strong>
                     </div>
                 </div>
+
             </div>
         </div>
 
@@ -294,13 +295,11 @@
         <div class="modal-overlay-share" id="custom-share-modal">
             <div class="share-sheet">
                 <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
-                <div class="share-buttons">
-                    <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-                    <button onclick="shareVia('messenger')"><i class="fab fa-facebook-messenger"></i> Messenger</button>
-                    <button onclick="shareVia('instagram')"><i class="fab fa-instagram"></i> Instagram</button>
-                    <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
-                    <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
-                </div>
+            <div class="share-buttons">
+                <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
+                <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
+            </div>
                 <button class="btn-cancel" onclick="closeShareModal()">Cancel</button>
             </div>
         </div>
@@ -709,26 +708,11 @@
             if(platform === 'whatsapp') {
                 shareUrl = `https://api.whatsapp.com/send?text=${fullText}`;
                 window.open(shareUrl, '_blank');
-                closeShareModal();
             } else if(platform === 'telegram') {
                 shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`;
                 window.open(shareUrl, '_blank');
-                closeShareModal();
-            } else if(platform === 'messenger') {
-                navigator.clipboard.writeText(currentShareData.text + currentShareData.url);
-                alert("✅ Link copied! Opening Messenger...");
-                let intentUrl = `intent://send/#Intent;action=android.intent.action.SEND;type=text/plain;putExtra=android.intent.extra.TEXT,${fullText};package=com.facebook.orca;end`;
-                let a = document.createElement('a'); a.href = intentUrl; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                setTimeout(() => { window.location.href = `fb-messenger://share/?link=${urlOnly}`; }, 500);
-                closeShareModal();
-            } else if(platform === 'instagram') {
-                navigator.clipboard.writeText(currentShareData.text + currentShareData.url);
-                alert("✅ Link & Message copied!\n\nOpening Instagram... Paste it inside your chat.");
-                let intentUrl = `intent://send/#Intent;action=android.intent.action.SEND;type=text/plain;putExtra=android.intent.extra.TEXT,${fullText};package=com.instagram.android;end`;
-                let a = document.createElement('a'); a.href = intentUrl; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                setTimeout(() => { window.location.href = `instagram://direct`; }, 500);
-                closeShareModal();
             }
+            closeShareModal();
         }
 
         function copyShareLink() {
