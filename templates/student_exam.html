@@ -612,12 +612,11 @@
         }
 
         function openAppOrDownload() {
-            // আপনার অ্যাপের আসল প্যাকেজ নেম
             const packageName = "com.saikat.exammate"; 
             const downloadUrl = "https://exammate-sscn.onrender.com/download";
             
-            // অ্যান্ড্রয়েডের জন্য স্মার্ট Intent URL (অ্যাপ থাকলে খুলবে, না থাকলে ডাউনলোড পেজে যাবে)
-            const intentUrl = `intent://#Intent;package=${packageName};S.browser_fallback_url=${encodeURIComponent(downloadUrl)};end`;
+            // আরও শক্তিশালী Intent URL (Action এবং Category যুক্ত করা হয়েছে)
+            const intentUrl = `intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${packageName};S.browser_fallback_url=${encodeURIComponent(downloadUrl)};end`;
             
             // লিংকে রিডাইরেক্ট করা
             window.location.href = intentUrl;
