@@ -6,6 +6,9 @@
     <title>ExamMate | Teacher Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root { color-scheme: light; }
         body { 
@@ -28,7 +31,9 @@
         }
         .header-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0; }
         .settings-btn { background: transparent; border: none; font-size: 1.4rem; color: #475569; cursor: pointer; }
+        .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0;}
 
+        /* Profile Box */
         .profile-info-box {
             background: #ffffff; padding: 30px 15px; margin-top: 60px;
             text-align: center; border-bottom: 1px solid #e2e8f0;
@@ -45,46 +50,82 @@
         .content-area { padding: 15px; }
         .section-title { font-size: 1.05rem; font-weight: 700; color: #1f2937; margin: 0 0 1rem 0; }
 
-        /* Metrics Grid */
-        .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
-        .progress-card { 
-            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; 
-            padding: 12px; display: flex; flex-direction: column; gap: 5px; 
+        /* Clickable Metrics Grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+        .metric-card {
+            background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 12px; text-align: center;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
         }
-        .progress-info { width: 100%; display: flex; justify-content: space-between; align-items: center;}
-        .progress-info span { font-size: 0.8rem; color: #475569; font-weight: 700; }
-        .progress-card b { font-size: 1.4rem; color: #0f172a; }
+        .metric-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); }
+        .metric-card.full-width { grid-column: span 2; }
+        .metric-card span { display: block; font-size: 0.85rem; color: #166534; font-weight: 700; margin-bottom: 5px; }
+        .metric-card strong { font-size: 1.4rem; color: #14532d; }
 
-        /* Exam List Cards with Edit/Delete */
-        .exam-manage-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-action-group { display: flex; gap: 6px; }
-        .btn-edit { background: #eff6ff; color: #3b82f6; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
-        .btn-delete { background: #fef2f2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+        /* Analytics Panels CSS */
+        .panel-view { display: none; background: #f3f4f6; min-height: 100vh; padding: 75px 15px 80px 15px; }
+        #main-profile-view { display: block; }
+        .page-header h1 { font-size: 18px; color: #1a1a1a; margin: 0 0 2px 0; }
+        .page-header p { color: #4b5563; margin: 0; font-size: 0.8rem; }
+        .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;}
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+        th { background-color: #f8fafc; color: #374151; font-weight: bold; }
+        .student-name-box { display: flex; flex-direction: column; }
+        .student-name-box .email { font-size: 0.7rem; color: #64748b; margin-top: 2px; }
+        .list-item-btn { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; background: #f8fafc; cursor: pointer; transition: 0.2s;}
+        .list-item-btn:hover { border-color: #3b82f6; background: #eff6ff; }
+
+        /* Feed Cards (Active Exams) */
+        .feed-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
+        .feed-teacher-info { flex: 1; }
+        .feed-teacher-info strong { display: block; font-size: 0.95rem; color: #0f172a; }
+        .feed-teacher-info span { display: block; font-size: 0.7rem; color: #64748b; }
+        .feed-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; line-height: 1.3;}
+        .feed-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;}
+        .feed-tag { background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; }
+        .feed-meta { display: flex; gap: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px dashed #cbd5e1;}
+        .feed-meta span { font-size: 0.8rem; color: #334155; font-weight: 600; display: flex; align-items: center; gap: 5px;}
+        .feed-meta i { color: #3b82f6; }
+        .feed-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px; }
+        .action-left { display: flex; gap: 15px; }
+        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 0; }
+        .action-btn span { font-size: 0.8rem; font-weight: 600; }
+
+        /* Edit Form Elements */
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: bold; color: #475569; margin-bottom: 5px; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; box-sizing: border-box; font-family: inherit;}
+        textarea.form-input { resize: vertical; min-height: 60px; }
+        .btn-save { width: 100%; background: #10b981; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        .q-edit-box { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .q-edit-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; color:#1e293b; align-items: center;}
+        .btn-remove-q { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size:0.8rem; font-weight:bold;}
+        .btn-add-q { background: #eff6ff; color: #3b82f6; border: 2px dashed #bfdbfe; padding: 12px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 20px;}
 
         /* Settings Bottom Sheet */
-        .settings-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: flex-end;
-        }
-        .settings-sheet {
-            background: #ffffff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0;
-            padding: 20px 15px 40px 15px; box-sizing: border-box;
-        }
+        .settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: flex-end; }
+        .settings-sheet { background: #ffffff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 15px 40px 15px; box-sizing: border-box; }
         .sheet-drag-handle { width: 40px; height: 5px; background: #cbd5e1; border-radius: 5px; margin: 0 auto 20px auto; }
-        .settings-option {
-            display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px;
-            font-size: 1rem; font-weight: 600; color: #1e293b; cursor: pointer; margin-bottom: 8px;
-        }
+        .settings-option { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 600; color: #1e293b; cursor: pointer; margin-bottom: 8px; }
         .settings-option:hover { background: #f1f5f9; }
         .opt-logout { color: #ef4444 !important; }
 
-        /* Edit View Panel */
-        .panel-view { display: none; background: #ffffff; min-height: 100vh; padding-top: 60px; }
-        .panel-content { padding: 15px; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 0.85rem; font-weight: bold; color: #475569; margin-bottom: 5px; }
-        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        .btn-save { width: 100%; background: #10b981; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        /* Custom Share Modal CSS */
+        .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
+        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
+        .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
+        .share-buttons i { font-size: 2.2rem; }
+        .share-buttons .fa-whatsapp { color: #25D366; }
+        .share-buttons .fa-facebook-messenger { color: #0084FF; }
+        .share-buttons .fa-instagram { color: #E1306C; }
+        .share-buttons .fa-telegram { color: #0088cc; }
+        .share-buttons .fa-copy { color: #64748b; }
+        .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; font-size: 1rem;}
 
         /* Bottom Nav */
         .bottom-nav {
@@ -117,30 +158,121 @@
             <div class="content-area">
                 <div class="section-title">📊 Teaching Analytics Overview</div>
                 
-                <!-- 4 Metrics Cards moved from Dashboard -->
-                <div class="progress-grid">
-                    <div class="progress-card">
-                        <div class="progress-info"><span>Total Attempts</span><i class="fas fa-file-alt" style="color:#10b981;"></i></div>
-                        <b id="stat-attempts">00</b>
+                <!-- Clickable Metrics Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card" onclick="openPanel('panel-students')">
+                        <span>👥 Total Students</span><strong id="stat-students">0</strong>
                     </div>
-                    <div class="progress-card">
-                        <div class="progress-info"><span>Total Students</span><i class="fas fa-users" style="color:#3b82f6;"></i></div>
-                        <b id="stat-students">00</b>
+                    <div class="metric-card" onclick="openPanel('panel-attempts')">
+                        <span>📝 Total Attempts</span><strong id="stat-attempts">0</strong>
                     </div>
-                    <div class="progress-card">
-                        <div class="progress-info"><span>Avg Score</span><i class="fas fa-chart-line" style="color:#f59e0b;"></i></div>
-                        <b id="stat-avg">0%</b>
+                    <div class="metric-card" onclick="openPanel('panel-average')">
+                        <span>📈 Class Average</span><strong id="stat-avg">0%</strong>
                     </div>
-                    <div class="progress-card">
-                        <div class="progress-info"><span>Active Exams</span><i class="fas fa-layer-group" style="color:#8b5cf6;"></i></div>
-                        <b id="stat-exams">00</b>
+                    <div class="metric-card full-width" onclick="openPanel('panel-active')">
+                        <span>🟢 Active Exams & Manage</span><strong id="stat-exams">0</strong>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="section-title" style="margin-top:20px;">📝 Manage Created Exams</div>
-                <div id="teacher-exams-manage-list">
-                    <p style="color:#64748b; text-align:center;">Loading exams...</p>
+        <!-- ================= PANELS ================= -->
+
+        <!-- PANEL 1: TOTAL STUDENTS -->
+        <div id="panel-students" class="panel-view">
+            <div class="sticky-header" style="justify-content: flex-start;">
+                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header"><h1>Total Students</h1></div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Name (Email)</th><th>Exams Attended</th><th>Overall Avg</th></tr></thead>
+                    <tbody id="list-students-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 2: TOTAL ATTEMPTS (LIST OF EXAMS) -->
+        <div id="panel-attempts" class="panel-view">
+            <div class="sticky-header" style="justify-content: flex-start;">
+                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header"><h1>Exam Attempts</h1><p>Click an exam to view students</p></div>
+            </div>
+            <div id="list-attempts-box"></div>
+        </div>
+
+        <!-- PANEL 2.1: SPECIFIC EXAM ATTEMPT DETAILS -->
+        <div id="panel-attempt-details" class="panel-view">
+            <div class="sticky-header" style="justify-content: flex-start;">
+                <button class="btn-back" onclick="openPanel('panel-attempts')">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header">
+                    <h1 id="sub-attempt-title">Students</h1>
+                    <p>Performance in this specific exam</p>
                 </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Student Name</th><th>Score</th><th>Performance</th></tr></thead>
+                    <tbody id="sub-attempt-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 3: CLASS AVERAGE (ALL EXAMS TABLE) -->
+        <div id="panel-average" class="panel-view">
+            <div class="sticky-header" style="justify-content: flex-start;">
+                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header"><h1>All Exams Stats</h1></div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Exam Name</th><th>Avg %</th><th>High %</th><th>Low %</th></tr></thead>
+                    <tbody id="list-average-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 4: ACTIVE EXAMS (FEED CARDS) -->
+        <div id="panel-active" class="panel-view">
+            <div class="sticky-header" style="justify-content: flex-start;">
+                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header"><h1>Active Exams</h1><p>Manage, Edit or Delete</p></div>
+            </div>
+            <div id="active-exams-feed">
+                <p style="text-align:center; color:#64748b; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading exams...</p>
+            </div>
+        </div>
+
+        <!-- PANEL 5: EDIT EXAM FORM -->
+        <div id="panel-edit-exam" class="panel-view" style="background:#ffffff;">
+            <div class="sticky-header" style="justify-content: flex-start;">
+                <button class="btn-back" onclick="openPanel('panel-active')">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header"><h1 id="edit-exam-header-title">Edit Exam</h1></div>
+            </div>
+            <div id="edit-exam-content" style="padding-bottom: 20px;">
+                <!-- Edit Form will be injected here -->
+            </div>
+        </div>
+
+        <!-- Edit Profile (Old Panel) -->
+        <div id="edit-profile-view" class="panel-view" style="background:#ffffff;">
+            <div class="sticky-header" style="justify-content: flex-start;">
+                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
+                <h1 class="header-title">Edit Profile</h1>
+            </div>
+            <div class="content-area">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="edit-name-input" class="form-input">
+                </div>
+                <div class="input-group">
+                    <label>Account Role</label>
+                    <select id="edit-role-input" class="form-input">
+                        <option value="Teacher">Teacher</option>
+                        <option value="Student">Student</option>
+                    </select>
+                </div>
+                <button class="btn-save" onclick="saveProfileData()">Save Changes</button>
             </div>
         </div>
 
@@ -158,27 +290,21 @@
             </div>
         </div>
 
-        <!-- Edit Profile Panel -->
-        <div id="edit-profile-view" class="panel-view">
-            <div class="sticky-header" style="justify-content: flex-start; gap: 15px;">
-                <button style="background:none; border:none; font-size:1.5rem; font-weight:bold; cursor:pointer;" onclick="showMainProfile()">‹</button>
-                <h1 class="header-title">Edit Profile</h1>
-            </div>
-            <div class="panel-content">
-                <div class="input-group">
-                    <label>Full Name</label>
-                    <input type="text" id="edit-name-input">
+        <!-- Custom Share Modal -->
+        <div class="modal-overlay-share" id="custom-share-modal">
+            <div class="share-sheet">
+                <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
+                <div class="share-buttons">
+                    <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                    <button onclick="shareVia('messenger')"><i class="fab fa-facebook-messenger"></i> Messenger</button>
+                    <button onclick="shareVia('instagram')"><i class="fab fa-instagram"></i> Instagram</button>
+                    <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
+                    <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
                 </div>
-                <div class="input-group">
-                    <label>Account Role</label>
-                    <select id="edit-role-input">
-                        <option value="Teacher">Teacher</option>
-                        <option value="Student">Student</option>
-                    </select>
-                </div>
-                <button class="btn-save" onclick="saveProfileData()">Save Changes</button>
+                <button class="btn-cancel" onclick="closeShareModal()">Cancel</button>
             </div>
         </div>
+
     </div>
 
     <!-- Bottom Nav -->
@@ -195,6 +321,9 @@
     </div>
 
     <script>
+        let globalData = {};
+        let editingExamCode = '';
+
         window.onload = async () => {
             loadProfileData();
             await fetchTeacherMetrics();
@@ -226,36 +355,139 @@
                 const data = await response.json();
                 
                 if (data.success) {
+                    globalData = data;
+                    
                     document.getElementById('stat-attempts').innerText = data.overall.attempts;
                     document.getElementById('stat-students').innerText = data.overall.students;
                     document.getElementById('stat-avg').innerText = data.overall.avg + '%';
                     document.getElementById('stat-exams').innerText = data.overall.exams;
 
-                    const listContainer = document.getElementById('teacher-exams-manage-list');
-                    if(data.examStats.length > 0) {
-                        listContainer.innerHTML = '';
-                        data.examStats.forEach(ex => {
-                            listContainer.innerHTML += `
-                            <div class="exam-manage-card">
-                                <div>
-                                    <strong style="display:block; font-size:0.95rem; color:#0f172a;">${ex.name}</strong>
-                                    <span style="font-size:0.75rem; color:#64748b;">Code: ${ex.code}</span>
-                                </div>
-                                <div class="btn-action-group">
-                                    <button class="btn-edit" onclick="window.location.href='teacher_analytics.html?code=${ex.code}'">Edit/View</button>
-                                    <button class="btn-delete" onclick="deleteExam('${ex.code}')">Delete</button>
-                                </div>
-                            </div>`;
-                        });
-                    } else {
-                        listContainer.innerHTML = `<p style="color:#64748b; text-align:center;">No exams found.</p>`;
-                    }
+                    populateAnalyticsPanels(data);
                 }
             } catch(e) { console.log("Error loading teacher profile stats"); }
         }
 
-        async function deleteExam(examCode) {
-            if(confirm("Are you sure you want to delete this exam?")) {
+        function populateAnalyticsPanels(data) {
+            // Panel 1: Students
+            document.getElementById('list-students-body').innerHTML = data.leaderboard.map((s, i) => 
+                `<tr><td><div class="student-name-box"><strong>${i+1}. ${s.name}</strong><span class="email">${s.email}</span></div></td><td>${s.taken} Exams</td><td><strong style="color:#1ea64d;">${s.avg}%</strong></td></tr>`
+            ).join('') || '<tr><td colspan="3">No students found.</td></tr>';
+
+            // Panel 2: Attempts
+            document.getElementById('list-attempts-box').innerHTML = data.examStats.map(e => 
+                `<div class="list-item-btn" onclick="fetchAttempts('${e.code}', '${e.name.replace(/'/g, "\\'")}')">
+                    <div><strong>${e.name}</strong><br><span>Total Attempts: ${e.attempts}</span></div>
+                    <i class="fas fa-chevron-right" style="color:#94a3b8;"></i>
+                </div>`
+            ).join('') || '<p style="text-align:center;">No exams available.</p>';
+
+            // Panel 3: Class Average
+            document.getElementById('list-average-body').innerHTML = data.examStats.map(e => 
+                `<tr><td>${e.name}</td><td><strong style="color:#3b82f6;">${e.avg}%</strong></td><td>${e.high}%</td><td>${e.low}%</td></tr>`
+            ).join('') || '<tr><td colspan="4">No data.</td></tr>';
+        }
+
+        // Panel Navigation
+        function openPanel(id) {
+            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+            document.getElementById('main-profile-view').style.display = 'none';
+            document.getElementById(id).style.display = 'block';
+            window.scrollTo(0, 0);
+
+            if(id === 'panel-active') {
+                loadActiveExamsFeed();
+            }
+        }
+
+        function showMainProfile() {
+            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+            document.getElementById('main-profile-view').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        // Fetch Individual Exam Attempts
+        async function fetchAttempts(examCode, examName) {
+            openPanel('panel-attempt-details');
+            document.getElementById('sub-attempt-title').innerText = examName.length > 20 ? examName.substring(0, 20) + "..." : examName;
+            const tbody = document.getElementById('sub-attempt-body');
+            tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            
+            try {
+                const response = await fetch('/api/teacher-analysis', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: examCode })
+                });
+                const data = await response.json();
+                if(data.success) {
+                    tbody.innerHTML = data.all_students.map(s => 
+                        `<tr><td><div class="student-name-box"><strong>${s.name}</strong><span class="email">${s.email}</span></div></td><td>${s.score}/${data.total_q}</td><td><strong style="color:#16a34a;">${s.perf}%</strong></td></tr>`
+                    ).join('');
+                } else { tbody.innerHTML = '<tr><td colspan="3">No attempts yet.</td></tr>'; }
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>'; }
+        }
+
+        // Load Active Exams as Feed Cards
+        async function loadActiveExamsFeed() {
+            const userEmail = localStorage.getItem('userEmail');
+            const container = document.getElementById('active-exams-feed');
+            container.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading exams...</p>';
+
+            try {
+                const response = await fetch('/api/search-feed', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, query: "", class_name: "All", subject: "All", status: "All" })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    // Filter exams strictly to those created by this teacher
+                    const myExamCodes = globalData.examStats ? globalData.examStats.map(e => e.code) : [];
+                    const myExams = data.feed.filter(ex => myExamCodes.includes(ex.code));
+
+                    if (myExams.length > 0) {
+                        container.innerHTML = '';
+                        myExams.forEach(ex => {
+                            container.innerHTML += `
+                            <div class="feed-card">
+                                <div class="feed-header">
+                                    <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
+                                    <div class="feed-teacher-info">
+                                        <strong>${ex.teacher_name}</strong>
+                                        <span>Posted ${ex.date}</span>
+                                    </div>
+                                </div>
+                                <div class="feed-body">
+                                    <h3 class="feed-title">${ex.name} ${ex.is_private ? '🔒' : ''}</h3>
+                                    <div class="feed-tags">
+                                        <span class="feed-tag">Code: ${ex.code}</span>
+                                        <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
+                                        <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
+                                        <span class="feed-tag" style="background:${ex.is_private ? '#fef3c7; color:#92400e;' : '#dcfce7; color:#166534;'}">${ex.is_private ? 'Private' : 'Public'}</span>
+                                    </div>
+                                    <div class="feed-meta">
+                                        <span><i class="fas fa-clock"></i> ${ex.timer} Mins</span>
+                                    </div>
+                                </div>
+                                <div class="feed-actions">
+                                    <div class="action-left">
+                                        <button class="action-btn"><i class="fas fa-heart" style="color:#ef4444;"></i> <span>${ex.likes}</span></button>
+                                        <button class="action-btn" onclick="triggerCustomShare('${ex.name.replace(/'/g, "\\'")}', '${ex.code}')"><i class="fas fa-share-alt"></i></button>
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap:10px; margin-top:10px;">
+                                    <button class="btn-save" style="flex:1; background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; font-size:0.9rem;" onclick="openEditExamPanel('${ex.code}')"><i class="fas fa-edit"></i> Edit</button>
+                                    <button class="btn-save" style="flex:1; background:#fef2f2; color:#ef4444; border:1px solid #fecaca; font-size:0.9rem;" onclick="deleteSpecificExam('${ex.code}')"><i class="fas fa-trash"></i> Delete</button>
+                                </div>
+                            </div>`;
+                        });
+                    } else { container.innerHTML = `<p style="text-align:center; color:#64748b;">No active exams found.</p>`; }
+                }
+            } catch(e) { container.innerHTML = `<p style="text-align:center; color:#ef4444;">Error loading exams.</p>`; }
+        }
+
+        // ================= DELETE EXAM =================
+        async function deleteSpecificExam(examCode) {
+            if(confirm("আপনি কি সত্যিই এই এক্সামটি ডিলিট করতে চান? ডিলিট করলে এর সমস্ত ডেটা মুছে যাবে!")) {
                 try {
                     const response = await fetch('/api/teacher-delete-exam', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -263,25 +495,162 @@
                     });
                     const data = await response.json();
                     if(data.success) {
-                        alert("Exam deleted successfully!");
+                        alert("পরীক্ষাটি সফলভাবে মুছে ফেলা হয়েছে!");
                         window.location.reload();
-                    } else { alert("Failed to delete."); }
+                    } else { alert("Failed to delete exam."); }
                 } catch(e) { alert("Server error."); }
             }
         }
 
+        // ================= EDIT EXAM SYSTEM =================
+        let editQuestionCounter = 0;
+
+        async function openEditExamPanel(code) {
+            editingExamCode = code;
+            document.getElementById('edit-exam-header-title').innerText = "Edit: " + code;
+            openPanel('panel-edit-exam');
+            document.getElementById('edit-exam-content').innerHTML = '<p style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading details...</p>';
+            
+            try {
+                const response = await fetch('/api/get-exam-questions', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: code })
+                });
+                const data = await response.json();
+                if(data.success) {
+                    editQuestionCounter = 0;
+                    let html = `
+                        <div class="input-group">
+                            <label>Exam Name</label>
+                            <input type="text" id="edit-ex-name" class="form-input" value="${data.exam_name}">
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <div class="input-group" style="flex:1;">
+                                <label>Time (Mins)</label>
+                                <input type="number" id="edit-ex-time" class="form-input" value="${data.timer_minutes}">
+                            </div>
+                            <div class="input-group" style="flex:1;">
+                                <label>Negative Mark</label>
+                                <input type="number" step="0.1" id="edit-ex-neg" class="form-input" value="${data.negative_marks}">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <div class="input-group" style="flex:1;">
+                                <label>Class</label>
+                                <input type="text" id="edit-ex-class" class="form-input" value="${data.class_name}">
+                            </div>
+                            <div class="input-group" style="flex:1;">
+                                <label>Subject</label>
+                                <input type="text" id="edit-ex-sub" class="form-input" value="${data.subject}">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Privacy Mode</label>
+                            <select id="edit-ex-privacy" class="form-input">
+                                <option value="false" ${!data.is_private ? 'selected':''}>🌐 Public (Visible to all)</option>
+                                <option value="true" ${data.is_private ? 'selected':''}>🔒 Private (Code required)</option>
+                            </select>
+                        </div>
+                        <hr style="border:0; border-top:2px dashed #e2e8f0; margin:20px 0;">
+                        <h3 style="margin-top:0; color:#1e293b;">Edit Questions</h3>
+                        <div id="edit-questions-list"></div>
+                        <button class="btn-add-q" onclick="addEditQuestionBox()">+ Add New Question</button>
+                        <button class="btn-save" style="margin-bottom:40px; font-size:1.1rem; box-shadow: 0 4px 10px rgba(16,185,129,0.3);" onclick="saveEditedExam()">Update Exam 🚀</button>
+                    `;
+                    document.getElementById('edit-exam-content').innerHTML = html;
+                    
+                    const qList = document.getElementById('edit-questions-list');
+                    data.questions.forEach((q) => {
+                        addEditQuestionBox(q);
+                    });
+                }
+            } catch(e) { document.getElementById('edit-exam-content').innerHTML = '<p style="color:red; text-align:center;">Error loading data.</p>'; }
+        }
+
+        function addEditQuestionBox(qData = null) {
+            editQuestionCounter++;
+            let q = qData || { q_text: '', opt_a: '', opt_b: '', opt_c: '', opt_d: '', correct: 'A' };
+            const qList = document.getElementById('edit-questions-list');
+            
+            const div = document.createElement('div');
+            div.className = "q-edit-box";
+            div.innerHTML = `
+                <div class="q-edit-header">
+                    <span>Question</span>
+                    <button class="btn-remove-q" onclick="this.parentElement.parentElement.remove()"><i class="fas fa-times"></i> Remove</button>
+                </div>
+                <textarea class="form-input q-text" placeholder="Write question here...">${q.q_text}</textarea>
+                <input type="text" class="form-input opt-a" placeholder="Option A" value="${q.opt_a}">
+                <input type="text" class="form-input opt-b" placeholder="Option B" value="${q.opt_b}">
+                <input type="text" class="form-input opt-c" placeholder="Option C" value="${q.opt_c}">
+                <input type="text" class="form-input opt-d" placeholder="Option D" value="${q.opt_d}">
+                <div class="input-group" style="margin-bottom:0;">
+                    <label>Correct Answer:</label>
+                    <select class="form-input opt-ans">
+                        <option value="A" ${q.correct === 'A' ? 'selected' : ''}>Option A</option>
+                        <option value="B" ${q.correct === 'B' ? 'selected' : ''}>Option B</option>
+                        <option value="C" ${q.correct === 'C' ? 'selected' : ''}>Option C</option>
+                        <option value="D" ${q.correct === 'D' ? 'selected' : ''}>Option D</option>
+                    </select>
+                </div>
+            `;
+            qList.appendChild(div);
+        }
+
+        async function saveEditedExam() {
+            if(!confirm("আপনি কি নিশ্চিত যে এই এক্সামটি আপডেট করতে চান?")) return;
+            
+            const name = document.getElementById('edit-ex-name').value;
+            const timer = document.getElementById('edit-ex-time').value;
+            const neg = document.getElementById('edit-ex-neg').value;
+            const cls = document.getElementById('edit-ex-class').value;
+            const sub = document.getElementById('edit-ex-sub').value;
+            const isPriv = document.getElementById('edit-ex-privacy').value === "true";
+            
+            let questions = [];
+            let boxes = document.querySelectorAll('.q-edit-box');
+            
+            boxes.forEach(box => {
+                let qt = box.querySelector('.q-text').value.trim();
+                if(qt) {
+                    questions.push({
+                        question_text: qt,
+                        option_a: box.querySelector('.opt-a').value.trim(),
+                        option_b: box.querySelector('.opt-b').value.trim(),
+                        option_c: box.querySelector('.opt-c').value.trim(),
+                        option_d: box.querySelector('.opt-d').value.trim(),
+                        correct_option: box.querySelector('.opt-ans').value
+                    });
+                }
+            });
+            
+            if(questions.length === 0) { alert("Please add at least one question!"); return; }
+            
+            try {
+                const response = await fetch('/api/teacher-update-exam', {
+                    method: 'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        exam_code: editingExamCode,
+                        exam_name: name, timer: timer, negative_marks: neg,
+                        class_name: cls, subject: sub, is_private: isPriv,
+                        questions: questions
+                    })
+                });
+                const data = await response.json();
+                if(data.success) {
+                    alert("✅ Exam updated successfully!");
+                    openPanel('panel-active'); 
+                } else { alert("Error: " + data.error); }
+            } catch(e) { alert("Server error."); }
+        }
+
+        // ================= SETTINGS & PROFILE =================
         function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
         function closeSettingsOverlay(e) { if(e.target.id === 'settings-modal') { document.getElementById('settings-modal').style.display = 'none'; } }
         
         function openEditProfile() {
             document.getElementById('settings-modal').style.display = 'none';
-            document.getElementById('main-profile-view').style.display = 'none';
-            document.getElementById('edit-profile-view').style.display = 'block';
-        }
-
-        function showMainProfile() {
-            document.getElementById('edit-profile-view').style.display = 'none';
-            document.getElementById('main-profile-view').style.display = 'block';
+            openPanel('edit-profile-view');
         }
 
         async function saveProfileData() {
@@ -303,12 +672,8 @@
                     localStorage.setItem('userName', newName);
                     localStorage.setItem('userRole', newRole);
                     alert("Profile updated successfully!");
-                    if (newRole !== oldRole && newRole === 'Student') {
-                        window.location.href = '/student_dashboard.html';
-                    } else {
-                        showMainProfile();
-                        loadProfileData();
-                    }
+                    if (newRole !== oldRole && newRole === 'Student') { window.location.href = '/student_dashboard.html'; } 
+                    else { window.location.reload(); }
                 } else { alert("Failed to update profile."); }
             } catch(e) { alert("Server error."); }
         }
@@ -320,6 +685,57 @@
                 localStorage.removeItem('userRole');
                 window.location.href = '/logout';
             }
+        }
+
+        // ================= CUSTOM SHARE LOGIC =================
+        let currentShareData = {};
+
+        function triggerCustomShare(examName, examCode) {
+            const baseUrl = window.location.origin; 
+            const examLink = `${baseUrl}/student_exam.html?code=${examCode}`;
+            const shareText = `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n`;
+
+            currentShareData = { title: `ExamMate - ${examName}`, text: shareText, url: examLink };
+            document.getElementById('custom-share-modal').style.display = 'flex';
+        }
+
+        function closeShareModal() { document.getElementById('custom-share-modal').style.display = 'none'; }
+
+        function shareVia(platform) {
+            const fullText = encodeURIComponent(currentShareData.text + currentShareData.url);
+            const urlOnly = encodeURIComponent(currentShareData.url);
+            let shareUrl = '';
+
+            if(platform === 'whatsapp') {
+                shareUrl = `https://api.whatsapp.com/send?text=${fullText}`;
+                window.open(shareUrl, '_blank');
+                closeShareModal();
+            } else if(platform === 'telegram') {
+                shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`;
+                window.open(shareUrl, '_blank');
+                closeShareModal();
+            } else if(platform === 'messenger') {
+                navigator.clipboard.writeText(currentShareData.text + currentShareData.url);
+                alert("✅ Link copied! Opening Messenger...");
+                let intentUrl = `intent://send/#Intent;action=android.intent.action.SEND;type=text/plain;putExtra=android.intent.extra.TEXT,${fullText};package=com.facebook.orca;end`;
+                let a = document.createElement('a'); a.href = intentUrl; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(() => { window.location.href = `fb-messenger://share/?link=${urlOnly}`; }, 500);
+                closeShareModal();
+            } else if(platform === 'instagram') {
+                navigator.clipboard.writeText(currentShareData.text + currentShareData.url);
+                alert("✅ Link & Message copied!\n\nOpening Instagram... Paste it inside your chat.");
+                let intentUrl = `intent://send/#Intent;action=android.intent.action.SEND;type=text/plain;putExtra=android.intent.extra.TEXT,${fullText};package=com.instagram.android;end`;
+                let a = document.createElement('a'); a.href = intentUrl; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(() => { window.location.href = `instagram://direct`; }, 500);
+                closeShareModal();
+            }
+        }
+
+        function copyShareLink() {
+            navigator.clipboard.writeText(currentShareData.text + currentShareData.url).then(() => {
+                alert("✅ Exam link and details copied successfully!");
+                closeShareModal();
+            }).catch(() => { alert("Failed to copy."); });
         }
     </script>
 </body>
