@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Community</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root { color-scheme: light; }
+        body { 
+            background-color: #f1f5f9; color: #333333; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; display: flex; justify-content: center; overflow: hidden;
+        }
+        
+        .container { 
+            width: 100%; max-width: 480px; background-color: #f1f5f9;
+            height: 100vh; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* Fixed Top Section for Chat List */
+        .fixed-top-section {
+            position: absolute; top: 0; left: 0; width: 100%; z-index: 999;
+            background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .sticky-header {
+            padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .header-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0; }
+        
+        /* Search Area Update (Added Button) */
+        .search-container { padding: 0 15px 15px 15px; display: flex; gap: 10px; }
+        .search-input-wrapper { flex: 1; position: relative; }
+        .search-input-wrapper input {
+            width: 100%; padding: 12px 15px 12px 35px;
+            background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px;
+            font-size: 0.95rem; outline: none; box-sizing: border-box; transition: 0.2s;
+        }
+        .search-input-wrapper input:focus { border-color: #3b82f6; background: #ffffff; }
+        .search-input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        
+        .search-btn-circle {
+            width: 45px; height: 45px; border-radius: 50%; background: #3b82f6;
+            color: white; border: none; font-size: 1.1rem; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .search-btn-circle:hover { background: #2563eb; transform: scale(1.05); }
+
+        /* Chat List View */
+        .chat-list-container {
+            height: 100%; padding-top: 135px; padding-bottom: 70px; 
+            overflow-y: auto; background: #ffffff;
+        }
+        
+        .chat-item {
+            display: flex; align-items: center; padding: 15px;
+            border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s;
+        }
+        .chat-item:hover { background: #f8fafc; }
+        
+        /* Updated Avatars (Teacher, Global, Student Levels) */
+        .chat-avatar {
+            width: 50px; height: 50px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; font-weight: bold; margin-right: 15px; position: relative; color: white;
+        }
+        
+        /* Global Earth Icon */
+        .avatar-global { background: #e0f2fe; color: #0284c7; border: 2px solid #0ea5e9; font-size: 1.5rem; }
+        
+        /* Uniform Teacher Color */
+        .avatar-teacher { background: #0f172a; color: #38bdf8; border: 2px solid #38bdf8; }
+        
+        /* Student Level Colors */
+        .lvl-bronze { background: linear-gradient(135deg, #b45309, #d97706); } /* Level 1 */
+        .lvl-silver { background: linear-gradient(135deg, #94a3b8, #64748b); } /* Level 2 */
+        .lvl-gold { background: linear-gradient(135deg, #eab308, #ca8a04); } /* Level 3 */
+        .lvl-diamond { background: linear-gradient(135deg, #8b5cf6, #3b82f6); } /* Level 4 (Highest) */
+        
+        /* Online Indicator */
+        .online-dot {
+            position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
+            background: #22c55e; border: 2px solid white; border-radius: 50%;
+        }
+
+        .chat-info { flex: 1; overflow: hidden; }
+        .chat-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+        .chat-name { font-size: 1rem; font-weight: 600; color: #1e293b; margin: 0; }
+        .chat-time { font-size: 0.75rem; color: #64748b; }
+        
+        .chat-msg-row { display: flex; justify-content: space-between; align-items: center; }
+        .chat-last-msg { font-size: 0.85rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; padding-right: 10px;}
+        
+        /* Unread Styles */
+        .chat-item.unread .chat-name { font-weight: 800; color: #000000; }
+        .chat-item.unread .chat-last-msg { font-weight: 700; color: #1e293b; }
+        .chat-item.unread .chat-time { color: #3b82f6; font-weight: bold; }
+        .unread-badge {
+            background: #ef4444; color: white; font-size: 0.75rem; font-weight: bold;
+            padding: 2px 7px; border-radius: 10px; min-width: 12px; text-align: center;
+        }
+
+        /* Chat Room View (Hidden by default) */
+        .chat-room-container {
+            position: absolute; top: 0; left: 100%; width: 100%; height: 100%;
+            background: #e2e8f0; z-index: 1001; display: flex; flex-direction: column;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chat-room-container.active { left: 0; }
+
+        .chat-room-header {
+            background: #ffffff; padding: 12px 15px; display: flex; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 2;
+        }
+        .back-btn { font-size: 1.2rem; color: #3b82f6; cursor: pointer; padding-right: 15px; border: none; background: transparent; }
+        .chat-room-header .chat-avatar { width: 40px; height: 40px; font-size: 1rem; margin-right: 10px; }
+        .room-title { font-weight: bold; font-size: 1.1rem; color: #0f172a; margin: 0; }
+        .room-status { font-size: 0.75rem; color: #22c55e; margin: 0; }
+
+        .chat-messages {
+            flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+            background: #f8fafc;
+        }
+        
+        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; font-size: 0.9rem; line-height: 1.4; position: relative; }
+        .msg-received { background: #ffffff; color: #1e293b; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .msg-sent { background: #3b82f6; color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 1px 2px rgba(59,130,246,0.2); }
+        
+        .msg-sender-name { font-size: 0.7rem; font-weight: bold; color: #3b82f6; margin-bottom: 3px; display: block; }
+        .msg-sent .msg-sender-name { display: none; } 
+        .msg-time { font-size: 0.65rem; opacity: 0.7; text-align: right; margin-top: 4px; display: block; }
+
+        .chat-input-area {
+            background: #ffffff; padding: 10px 15px; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+        }
+        .attach-btn { color: #64748b; font-size: 1.2rem; background: transparent; border: none; cursor: pointer; }
+        .message-input {
+            flex: 1; background: #f1f5f9; border: none; padding: 12px 15px;
+            border-radius: 20px; font-size: 0.95rem; outline: none;
+        }
+        .send-btn {
+            background: #3b82f6; color: white; width: 42px; height: 42px;
+            border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; cursor: pointer; box-shadow: 0 2px 6px rgba(59,130,246,0.4);
+        }
+
+        /* Updated Bottom Nav with Icons */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; width: 100%; background: #ffffff; 
+            border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; padding: 8px 0; z-index: 998;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
+        .nav-item.active { color: #3b82f6; font-weight: bold; }
+        .nav-icon i { font-size: 1.4rem; margin-bottom: 4px; } /* Ensures icons are big and visible */
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- ================= CHAT LIST VIEW ================= -->
+        <div id="chat-list-view">
+            <div class="fixed-top-section">
+                <div class="sticky-header">
+                    <h2 class="header-title">Community</h2>
+                    <i class="fas fa-edit" style="color: #3b82f6; font-size: 1.2rem; cursor: pointer;"></i>
+                </div>
+                <!-- Updated Search Bar with Button -->
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search groups or classmates...">
+                    </div>
+                    <button class="search-btn-circle">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-list-container">
+                <!-- 1. Global Chat (Earth Icon) -->
+                <div class="chat-item unread" onclick="openChat('Global Discussion', 'global')">
+                    <div class="chat-avatar avatar-global">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-header-row">
+                            <h4 class="chat-name">Global Discussion</h4>
+                            <span class="chat-time">10:45 AM</span>
+                        </div>
+                        <div class="chat-msg-row">
+                            <p class="chat-last-msg">Rahul: Can anyone explain Q5 from today's test?</p>
+                            <span class="unread-badge">5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Teacher Chat (Uniform Dark Blue Color) -->
+                <div class="chat-item unread" onclick="openChat('Soumitra Sir', 'teacher')">
+                    <div class="chat-avatar avatar-teacher">S<div class="online-dot"></div></div>
+                    <div class="chat-info">
+                        <div class="chat-header-row">
+                            <h4 class="chat-name">Soumitra Sir (Physics)</h4>
+                            <span class="chat-time">09:12 AM</span>
+                        </div>
+                        <div class="chat-msg-row">
+                            <p class="chat-last-msg">I have published the new mock test. Try it!</p>
+                            <span class="unread-badge">1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Student Chat - Diamond Level (High Score) -->
+                <div class="chat-item" onclick="openChat('Arijit Das', 'student-diamond')">
+                    <div class="chat-avatar lvl-diamond">A</div>
+                    <div class="chat-info">
+                        <div class="chat-header-row">
+                            <h4 class="chat-name">Arijit Das (Pro)</h4>
+                            <span class="chat-time">Yesterday</span>
+                        </div>
+                        <div class="chat-msg-row">
+                            <p class="chat-last-msg">Thanks bro! That trick really helped.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Student Chat - Bronze Level (Beginner) -->
+                <div class="chat-item" onclick="openChat('Bikram Roy', 'student-bronze')">
+                    <div class="chat-avatar lvl-bronze">B</div>
+                    <div class="chat-info">
+                        <div class="chat-header-row">
+                            <h4 class="chat-name">Bikram Roy</h4>
+                            <span class="chat-time">Tuesday</span>
+                        </div>
+                        <div class="chat-msg-row">
+                            <p class="chat-last-msg">Can you send me the biology notes?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fixed Bottom Nav (Icons and Text) -->
+            <div class="bottom-nav" id="main-bottom-nav">
+                <a href="student_dashboard.html" class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-home"></i></div><span>Home</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <div class="nav-icon"><i class="fas fa-users"></i></div><span>Community</span>
+                </a>
+                <a href="student_analytics.html" class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-chart-bar"></i></div><span>Analytics</span>
+                </a>
+                <a href="student_profile.html" class="nav-item">
+                    <div class="nav-icon"><i class="far fa-user"></i></div><span>Profile</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- ================= CHAT ROOM VIEW ================= -->
+        <div class="chat-room-container" id="chat-room">
+            <div class="chat-room-header">
+                <button class="back-btn" onclick="closeChat()"><i class="fas fa-arrow-left"></i></button>
+                <div class="chat-avatar avatar-global" id="room-avatar">
+                    <i class="fas fa-globe-americas"></i>
+                </div>
+                <div>
+                    <h3 class="room-title" id="room-name">Global Discussion</h3>
+                    <p class="room-status" id="room-status">125 members, 12 online</p>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages-area">
+                <div class="msg-bubble msg-received">
+                    <span class="msg-sender-name">Nandini Madam</span>
+                    Welcome to the Global Discussion group!
+                    <span class="msg-time">08:00 AM</span>
+                </div>
+                <div class="msg-bubble msg-sent">
+                    Thank you, Ma'am!
+                    <span class="msg-time">08:05 AM</span>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <button class="attach-btn"><i class="fas fa-paperclip"></i></button>
+                <input type="text" class="message-input" id="msg-input" placeholder="Type a message...">
+                <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function openChat(name, type) {
+            document.getElementById('room-name').innerText = name;
+            const avatarBox = document.getElementById('room-avatar');
+            const statusTxt = document.getElementById('room-status');
+            
+            if(type === 'global') {
+                avatarBox.className = 'chat-avatar avatar-global';
+                avatarBox.innerHTML = '<i class="fas fa-globe-americas"></i>';
+                statusTxt.innerText = 'All Teachers & Students';
+            } else if(type === 'teacher') {
+                avatarBox.className = 'chat-avatar avatar-teacher';
+                avatarBox.innerText = name.charAt(0);
+                statusTxt.innerText = 'Teacher • Online';
+            } else if(type === 'student-diamond') {
+                avatarBox.className = 'chat-avatar lvl-diamond';
+                avatarBox.innerText = name.charAt(0);
+                statusTxt.innerText = 'Pro Student';
+            } else {
+                avatarBox.className = 'chat-avatar lvl-bronze';
+                avatarBox.innerText = name.charAt(0);
+                statusTxt.innerText = 'Student';
+            }
+
+            document.getElementById('chat-room').classList.add('active');
+            document.getElementById('main-bottom-nav').style.display = 'none';
+        }
+
+        function closeChat() {
+            document.getElementById('chat-room').classList.remove('active');
+            setTimeout(() => { document.getElementById('main-bottom-nav').style.display = 'flex'; }, 200);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if(!text) return;
+            const msgArea = document.getElementById('chat-messages-area');
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            msgArea.innerHTML += `<div class="msg-bubble msg-sent">${text}<span class="msg-time">${time}</span></div>`;
+            input.value = '';
+            msgArea.scrollTop = msgArea.scrollHeight;
+        }
+
+        document.getElementById('msg-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
