@@ -10,9 +10,6 @@ from psycopg2.extras import RealDictCursor
 import json
 import PyPDF2
 import requests
-import uuid
-from datetime import datetime, timedelta as dt_timedelta
-from flask_socketio import SocketIO, emit, join_room
 
 load_dotenv()
 
@@ -20,8 +17,6 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "exam_mate_super_secret_key_2026")
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['SESSION_REFRESH_EACH_REQUEST'] = True
-
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 UPLOAD_FOLDER = 'static/uploads/resources'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -52,11 +47,6 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS notifications (id SERIAL PRIMARY KEY, message TEXT NOT NULL, target_role VARCHAR(50) NOT NULL, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
                 CREATE TABLE IF NOT EXISTS drive_folders (id SERIAL PRIMARY KEY, folder_name VARCHAR(255) NOT NULL, parent_id INT DEFAULT 0, folder_type VARCHAR(50) DEFAULT 'content', position INT DEFAULT 0);
                 CREATE TABLE IF NOT EXISTS drive_files (id SERIAL PRIMARY KEY, folder_id INT NOT NULL, title VARCHAR(255) NOT NULL, file_url TEXT NOT NULL, resource_type VARCHAR(50) DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, position INT DEFAULT 0);
-                
-                CREATE TABLE IF NOT EXISTS messages (id SERIAL PRIMARY KEY, sender_email VARCHAR(255) NOT NULL, receiver_email VARCHAR(255) NOT NULL, message_text TEXT NOT NULL, is_read BOOLEAN DEFAULT FALSE, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-                CREATE TABLE IF NOT EXISTS chat_groups (id VARCHAR(100) PRIMARY KEY, name VARCHAR(255) NOT NULL, created_by VARCHAR(255) NOT NULL);
-                CREATE TABLE IF NOT EXISTS group_members (group_id VARCHAR(100) NOT NULL, user_email VARCHAR(255) NOT NULL);
-                CREATE TABLE IF NOT EXISTS muted_users (email VARCHAR(255) PRIMARY KEY, muted_until TIMESTAMP);
             ''')
         else:
             cursor.execute('''
@@ -67,15 +57,9 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT NOT NULL, target_role TEXT NOT NULL, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
                 CREATE TABLE IF NOT EXISTS drive_folders (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_name TEXT NOT NULL, parent_id INTEGER DEFAULT 0, folder_type TEXT DEFAULT 'content', position INTEGER DEFAULT 0);
                 CREATE TABLE IF NOT EXISTS drive_files (id INTEGER PRIMARY KEY AUTOINCREMENT, folder_id INTEGER NOT NULL, title TEXT NOT NULL, file_url TEXT NOT NULL, resource_type TEXT DEFAULT 'Notes', date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, position INTEGER DEFAULT 0);
-                
-                CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_email TEXT NOT NULL, receiver_email TEXT NOT NULL, message_text TEXT NOT NULL, is_read BOOLEAN DEFAULT FALSE, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-                CREATE TABLE IF NOT EXISTS chat_groups (id TEXT PRIMARY KEY, name TEXT NOT NULL, created_by TEXT NOT NULL);
-                CREATE TABLE IF NOT EXISTS group_members (group_id TEXT NOT NULL, user_email TEXT NOT NULL);
-                CREATE TABLE IF NOT EXISTS muted_users (email TEXT PRIMARY KEY, muted_until TIMESTAMP);
             ''')
         conn.commit()
         
-        # Fixed the syntax error here
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN photo_url TEXT;")
             conn.commit()
@@ -87,7 +71,7 @@ def init_db():
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
-            
+
         try:
             cursor.execute("ALTER TABLE drive_folders ADD COLUMN folder_type VARCHAR(50) DEFAULT 'content';")
             conn.commit()
@@ -105,26 +89,26 @@ def init_db():
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
-            
+
         try:
             cursor.execute("ALTER TABLE drive_folders ADD COLUMN position INT DEFAULT 0;")
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
-            
+
         try:
             cursor.execute("ALTER TABLE drive_files ADD COLUMN position INT DEFAULT 0;")
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
             
-        try: 
+        try:
             if db_type == 'postgres':
                 cursor.execute("ALTER TABLE results ALTER COLUMN score TYPE FLOAT;")
                 conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
-            
+
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN is_logged_in BOOLEAN DEFAULT FALSE;")
             conn.commit()
@@ -132,10 +116,22 @@ def init_db():
             if db_type == 'postgres': conn.rollback()
 
         if db_type == 'postgres':
-            cursor.execute('''CREATE TABLE IF NOT EXISTS reviews (id SERIAL PRIMARY KEY, reviewer_name VARCHAR(255) NOT NULL, role VARCHAR(100) NOT NULL, rating INT NOT NULL, review_text TEXT NOT NULL, date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS reviews (
+                    id SERIAL PRIMARY KEY, reviewer_name VARCHAR(255) NOT NULL, role VARCHAR(100) NOT NULL, rating INT NOT NULL, review_text TEXT NOT NULL, date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            ''')
+        else:
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS reviews (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, reviewer_name TEXT NOT NULL, role TEXT NOT NULL, rating INTEGER NOT NULL, review_text TEXT NOT NULL, date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            ''')
+        conn.commit()
+        
+        if db_type == 'postgres':
             cursor.execute('''CREATE TABLE IF NOT EXISTS notifications (id SERIAL PRIMARY KEY, message TEXT NOT NULL, target_role VARCHAR(50) NOT NULL, link_url TEXT, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
         else:
-            cursor.execute('''CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, reviewer_name TEXT NOT NULL, role TEXT NOT NULL, rating INTEGER NOT NULL, review_text TEXT NOT NULL, date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
             cursor.execute('''CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT NOT NULL, target_role TEXT NOT NULL, link_url TEXT, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
         conn.commit()
 
@@ -150,7 +146,7 @@ def init_db():
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
-            
+
         try:
             cursor.execute("ALTER TABLE exams ADD COLUMN class_name VARCHAR(50) DEFAULT 'General';")
             cursor.execute("ALTER TABLE exams ADD COLUMN subject VARCHAR(100) DEFAULT 'General';")
@@ -170,137 +166,8 @@ def init_db():
 
 init_db()
 
-@socketio.on('join')
-def on_join(data):
-    room = data.get('room')
-    if room: join_room(room)
-
-@socketio.on('send_message')
-def handle_send_message(data):
-    sender = data.get('sender_email')
-    receiver = data.get('receiver_email')
-    text = data.get('message_text')
-    
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        
-        if receiver == 'global':
-            cursor.execute(f"SELECT muted_until FROM muted_users WHERE email = {ph}", (sender,))
-            muted_data = cursor.fetchone()
-            if muted_data:
-                muted_until = muted_data['muted_until'] if isinstance(muted_data, dict) else muted_data[0]
-                if muted_until and muted_until > datetime.now():
-                    emit('error', {'msg': 'You have been muted by Admin.'})
-                    conn.close()
-                    return
-
-        cursor.execute(f"INSERT INTO messages (sender_email, receiver_email, message_text) VALUES ({ph}, {ph}, {ph})", (sender, receiver, text))
-        conn.commit()
-        conn.close()
-        emit('receive_message', data, to=receiver)
-    except Exception as e:
-        print("Message Error:", e)
-
-# =======================
-# COMMUNITY API ROUTES
-# =======================
-
-@app.route('/api/get-all-users', methods=['GET'])
-def get_all_users():
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT name, email, category FROM users")
-        users = [{"name": r["name"], "email": r["email"], "role": r["category"]} for r in cursor.fetchall()]
-        conn.close()
-        return jsonify({"success": True, "users": users})
-    except Exception as e: return jsonify({"success": False, "error": str(e)})
-
-@app.route('/api/create-group', methods=['POST'])
-def create_group():
-    data = request.get_json()
-    group_id = str(uuid.uuid4())[:8]
-    name = data.get('name')
-    creator = data.get('created_by')
-    members = data.get('members', [])
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"INSERT INTO chat_groups (id, name, created_by) VALUES ({ph}, {ph}, {ph})", (group_id, name, creator))
-        for member in members:
-            cursor.execute(f"INSERT INTO group_members (group_id, user_email) VALUES ({ph}, {ph})", (group_id, member))
-        conn.commit()
-        conn.close()
-        return jsonify({"success": True, "group_id": group_id})
-    except Exception as e: return jsonify({"success": False, "error": str(e)})
-
-@app.route('/api/get-chat-list', methods=['POST'])
-def get_chat_list():
-    data = request.get_json()
-    email = data.get('email')
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        
-        chats = []
-        cursor.execute(f"SELECT g.id, g.name FROM chat_groups g JOIN group_members m ON g.id = m.group_id WHERE m.user_email = {ph}", (email,))
-        groups = cursor.fetchall()
-        for g in groups:
-            chats.append({"id": g['id'] if isinstance(g, dict) else g[0], "name": g['name'] if isinstance(g, dict) else g[1], "last_msg": "Group chat", "time": ""})
-            
-        conn.close()
-        return jsonify({"success": True, "chats": chats})
-    except Exception as e: return jsonify({"success": False, "error": str(e)})
-
-@app.route('/api/get-chat-history', methods=['POST'])
-def get_chat_history():
-    data = request.get_json()
-    room_id = data.get('room_id')
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT m.message_text, m.sender_email, m.timestamp, u.name as sender_name FROM messages m LEFT JOIN users u ON m.sender_email = u.email WHERE m.receiver_email = {ph} ORDER BY m.timestamp ASC LIMIT 50", (room_id,))
-        msgs = [{"message_text": r["message_text"], "sender_email": r["sender_email"], "sender_name": r["sender_name"] or "User", "timestamp": str(r["timestamp"])} for r in cursor.fetchall()]
-        conn.close()
-        return jsonify({"success": True, "messages": msgs})
-    except Exception as e: return jsonify({"success": False, "error": str(e)})
-
-@app.route('/api/admin-mute-user', methods=['POST'])
-def admin_mute_user():
-    data = request.get_json()
-    admin = data.get('admin_email')
-    target = data.get('target_email')
-    hours = int(data.get('hours', 0))
-    if admin != 'dasbabu938207@gmail.com': return jsonify({"success": False, "error": "Unauthorized."})
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        if hours > 0:
-            mute_time = datetime.now() + dt_timedelta(hours=hours)
-            cursor.execute(f"INSERT INTO muted_users (email, muted_until) VALUES ({ph}, {ph}) ON CONFLICT (email) DO UPDATE SET muted_until = {ph}", (target, mute_time, mute_time))
-        else:
-            cursor.execute(f"DELETE FROM muted_users WHERE email = {ph}", (target,))
-        conn.commit()
-        conn.close()
-        return jsonify({"success": True})
-    except Exception as e: return jsonify({"success": False, "error": str(e)})
-
-# =======================
-# OTHER ROUTES
-# =======================
-
 @app.route('/')
 def home(): return render_template('index.html')
-
-@app.route('/community.html')
-def community_page(): return render_template('community.html')
-
 @app.route('/setup_profile.html')
 def setup_profile_page(): return render_template('setup_profile.html')
 @app.route('/student_dashboard.html')
@@ -358,7 +225,8 @@ def google_login():
         else:
             conn.close()
             return jsonify({"success": True, "is_new": True})
-    except Exception as e: return jsonify({"success": False, "error": "Database error occurred."}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 @app.route('/api/complete-signup', methods=['POST'])
 def complete_signup():
@@ -377,7 +245,8 @@ def complete_signup():
         session.permanent = True
         session['user'] = {'email': email, 'name': name, 'role': role}
         return jsonify({"success": True, "redirect_url": "/student_dashboard.html" if role.lower() == "student" else "/teacher_dashboard.html"})
-    except Exception as e: return jsonify({"success": False, "error": "Failed to create account."}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Failed to create account."}), 500
 
 @app.route('/api/get-student-progress', methods=['POST'])
 def get_student_progress():
@@ -395,7 +264,8 @@ def get_student_progress():
         mn_sc = (stats['min_score'] if isinstance(stats, dict) else stats[2]) or 0
         s_sc = (stats['sum_score'] if isinstance(stats, dict) else stats[3]) or 0
         return jsonify({ "success": True, "total_exams": f"{c_id:02d}", "highest": f"{m_sc:.2f}", "lowest": f"{mn_sc:.2f}", "score": f"{s_sc:.2f}" })
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/check-exam', methods=['POST'])
 def check_exam():
@@ -410,7 +280,8 @@ def check_exam():
         conn.close()
         if exam: return jsonify({"success": True, "exam_name": exam['exam_name'] if isinstance(exam, dict) else exam[0]})
         return jsonify({"success": False, "error": "No Exam Found!"})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/get-exam-questions', methods=['POST'])
 def get_exam_questions():
@@ -457,7 +328,8 @@ def get_exam_questions():
             "is_private": is_priv,
             "questions": questions_list 
         })
-    except Exception as e: return jsonify({"success": False, "error": "Database error occurred."}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error occurred."}), 500
 
 @app.route('/api/submit-exam-result', methods=['POST'])
 def submit_exam_result():
@@ -476,7 +348,8 @@ def submit_exam_result():
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Result saved successfully!"})
-    except Exception as e: return jsonify({"success": False, "error": "Failed to save result."}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Failed to save result."}), 500
 
 @app.route('/api/get-student-history', methods=['POST'])
 def get_student_history():
@@ -491,7 +364,8 @@ def get_student_history():
         conn.close()
         history_list = [{"exam_name": r["exam_name"], "score": float(r["score"]), "total": r["total_questions"], "date": str(r["date_taken"]).split(' ')[0]} for r in rows]
         return jsonify({"success": True, "history": history_list})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/create-exam', methods=['POST'])
 def create_exam_api():
@@ -521,7 +395,8 @@ def create_exam_api():
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Exam published successfully!"})
-    except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/teacher-dashboard', methods=['POST'])
 def get_teacher_dashboard():
@@ -548,7 +423,8 @@ def get_teacher_dashboard():
         
         exams_list = [{"name": r["exam_name"], "code": r["exam_code"]} for r in all_exams]
         return jsonify({"success": True, "total_exams": total_exams, "total_students": total_students, "avg_score": avg_score, "all_exams": exams_list})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/teacher-analysis', methods=['POST'])
 def get_teacher_analysis():
@@ -580,7 +456,8 @@ def get_teacher_analysis():
         labels = [str(i) for i in range(total_q + 1)]
             
         return jsonify({ "success": True, "total_students": total_students, "avg_score": avg_score, "total_q": total_q, "top": top_students, "bottom": bottom_students, "all_students": sorted_students, "chartLabels": labels, "chartData": chart_data })
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/teacher-full-analytics', methods=['POST'])
 def teacher_full_analytics():
@@ -653,7 +530,8 @@ def teacher_full_analytics():
 
         leaderboard = sorted(leaderboard, key=lambda x: x['best'], reverse=True)
         return jsonify({"success": True, "overall": {"students": unique_students, "attempts": total_attempts, "avg": class_avg, "high": highest_score, "exams": len(teacher_exams)}, "examStats": exam_stats, "leaderboard": leaderboard, "studentProgress": student_progress})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/admin/send-notification', methods=['POST'])
 def admin_send_notification():
@@ -669,7 +547,8 @@ def admin_send_notification():
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Broadcasted!"})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/admin/get-notifications', methods=['GET'])
 def admin_get_notifications():
@@ -681,7 +560,8 @@ def admin_get_notifications():
         conn.close()
         notifs = [{"id": r["id"], "message": r["message"], "target_role": r["target_role"], "link_url": r["link_url"] or '', "date": str(r["date_sent"])} for r in rows]
         return jsonify({"success": True, "notifications": notifs})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/admin/edit-notification', methods=['POST'])
 def edit_notification():
@@ -697,7 +577,8 @@ def edit_notification():
         conn.commit()
         conn.close()
         return jsonify({"success": True})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"})
 
 @app.route('/api/get-notifications-page', methods=['POST'])
 def get_notifications_page():
@@ -716,7 +597,8 @@ def get_notifications_page():
         conn.close()
         notifs = [{"id": r["id"], "message": r["message"], "target_role": r["target_role"], "link_url": r["link_url"] or '', "date": str(r["date_sent"]).split('.')[0], "is_unread": str(r["date_sent"]) > last_read} for r in rows]
         return jsonify({"success": True, "notifications": notifs})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/admin/delete-notification', methods=['POST'])
 def delete_notification():
@@ -730,7 +612,8 @@ def delete_notification():
         conn.commit()
         conn.close()
         return jsonify({"success": True})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"})
 
 @app.route('/api/check-unread-notifications', methods=['POST'])
 def check_unread_notifications():
@@ -750,7 +633,8 @@ def check_unread_notifications():
         conn.close()
         unread_count = row['count'] if isinstance(row, dict) else row[0]
         return jsonify({"success": True, "has_unread": unread_count > 0})
-    except Exception as e: return jsonify({"success": False, "has_unread": False})
+    except Exception as e:
+        return jsonify({"success": False, "has_unread": False})
 
 @app.route('/api/mark-notifications-read', methods=['POST'])
 def mark_notifications_read():
@@ -764,7 +648,8 @@ def mark_notifications_read():
         conn.commit()
         conn.close()
         return jsonify({"success": True})
-    except Exception as e: return jsonify({"success": False})
+    except Exception as e:
+        return jsonify({"success": False})
 
 @app.route('/api/admin/get-drive-contents', methods=['POST'])
 @app.route('/api/get-student-drive-contents', methods=['POST'])
@@ -798,7 +683,8 @@ def get_drive_contents_api():
             
         conn.close()
         return jsonify({"success": True, "folders": folders, "files": files, "exams": exams})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/admin/create-drive-folder', methods=['POST'])
 def create_drive_folder():
@@ -814,7 +700,8 @@ def create_drive_folder():
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Folder created!"})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/admin/upload-drive-file', methods=['POST'])
 def upload_drive_file():
@@ -832,7 +719,8 @@ def upload_drive_file():
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Link saved successfully!"})
-    except Exception as e: return jsonify({"success": False, "error": "Save Failed"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Save Failed"}), 500
 
 @app.route('/api/admin/delete-drive-item', methods=['POST'])
 def delete_drive_item():
@@ -854,7 +742,8 @@ def delete_drive_item():
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Deleted!"})
-    except Exception as e: return jsonify({"success": False, "error": "Delete Failed"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Delete Failed"}), 500
 
 @app.route('/api/upload-profile-pic', methods=['POST'])
 def upload_profile_pic():
@@ -873,7 +762,8 @@ def get_profile_data():
         conn.close()
         if user: return jsonify({"success": True, "name": user['name']})
         return jsonify({"success": False})
-    except Exception as e: return jsonify({"success": False})
+    except Exception as e:
+        return jsonify({"success": False})
 
 @app.route('/api/extract-pdf-gemini', methods=['POST'])
 def extract_pdf_gemini():
@@ -940,7 +830,8 @@ def update_profile():
             session.modified = True
         redirect_url = "/teacher_dashboard.html" if role.lower() == 'teacher' else "/student_dashboard.html"
         return jsonify({"success": True, "redirect_url": redirect_url})
-    except Exception as e: return jsonify({"success": False, "error": "Database error occurred."}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error occurred."}), 500
         
 @app.route('/logout')
 def logout():
@@ -951,8 +842,12 @@ def logout():
 def check_login_status():
     data = request.get_json() or {}
     email = data.get('email')
-    if not email and 'user' in session: email = session['user'].get('email')
-    if not email: return jsonify({"logged_in": False})
+    
+    if not email and 'user' in session:
+        email = session['user'].get('email')
+
+    if not email:
+        return jsonify({"logged_in": False})
         
     try:
         conn, db_type = get_db_connection()
@@ -965,15 +860,25 @@ def check_login_status():
         if user:
             role = user['category'] if isinstance(user, dict) else user[0]
             name = user['name'] if isinstance(user, dict) else user[1]
+            
             session.permanent = True
             session['user'] = {'email': email, 'role': role, 'name': name}
-            return jsonify({"logged_in": True, "email": email, "role": role, "name": name, "redirect_url": "/teacher_dashboard.html" if role.lower() == 'teacher' else "/student_dashboard.html"})
+            
+            return jsonify({
+                "logged_in": True,
+                "email": email,
+                "role": role,
+                "name": name,
+                "redirect_url": "/teacher_dashboard.html" if role.lower() == 'teacher' else "/student_dashboard.html"
+            })
             
         return jsonify({"logged_in": False})
-    except Exception as e: return jsonify({"logged_in": False})
+    except Exception as e:
+        return jsonify({"logged_in": False})
 
 @app.route('/download')
-def download_page(): return render_template('download.html')
+def download_page(): 
+    return render_template('download.html')
 
 @app.route('/api/submit-review', methods=['POST'])
 def submit_review():
@@ -983,17 +888,20 @@ def submit_review():
     rating = int(data.get('rating', 5))
     text = data.get('text')
     
-    if not name or not text: return jsonify({"success": False, "error": "Name and Review text are required!"}), 400
+    if not name or not text:
+        return jsonify({"success": False, "error": "Name and Review text are required!"}), 400
         
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"INSERT INTO reviews (reviewer_name, role, rating, review_text) VALUES ({ph}, {ph}, {ph}, {ph})", (name, role, rating, text))
+        cursor.execute(f"INSERT INTO reviews (reviewer_name, role, rating, review_text) VALUES ({ph}, {ph}, {ph}, {ph})", 
+                       (name, role, rating, text))
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Review submitted successfully!"})
-    except Exception as e: return jsonify({"success": False, "error": "Failed to submit review."}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Failed to submit review."}), 500
 
 @app.route('/api/get-reviews', methods=['GET'])
 def get_reviews():
@@ -1007,12 +915,25 @@ def get_reviews():
         reviews_list = []
         total_rating = 0
         for r in rows:
-            reviews_list.append({"name": r["reviewer_name"], "role": r["role"], "rating": r["rating"], "text": r["review_text"], "date": str(r["date_submitted"]).split(' ')[0]})
+            reviews_list.append({
+                "name": r["reviewer_name"],
+                "role": r["role"],
+                "rating": r["rating"],
+                "text": r["review_text"],
+                "date": str(r["date_submitted"]).split(' ')[0]
+            })
             total_rating += r["rating"]
             
         avg_rating = round(total_rating / len(reviews_list), 1) if reviews_list else 5.0
-        return jsonify({"success": True, "reviews": reviews_list, "avg_rating": avg_rating, "total_reviews": len(reviews_list)})
-    except Exception as e: return jsonify({"success": False, "error": "Failed to fetch reviews."}), 500
+        
+        return jsonify({
+            "success": True, 
+            "reviews": reviews_list,
+            "avg_rating": avg_rating,
+            "total_reviews": len(reviews_list)
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": "Failed to fetch reviews."}), 500
 
 @app.route('/api/admin/move-item', methods=['POST'])
 def move_drive_item():
@@ -1020,17 +941,24 @@ def move_drive_item():
     item_type = data.get('type')
     item_id = data.get('id')
     new_folder_id = data.get('new_folder_id', 0)
+    
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        if item_type == 'folder': cursor.execute(f"UPDATE drive_folders SET parent_id = {ph} WHERE id = {ph}", (new_folder_id, item_id))
-        elif item_type == 'exam': cursor.execute(f"UPDATE exams SET folder_id = {ph} WHERE exam_code = {ph}", (new_folder_id, item_id))
-        else: cursor.execute(f"UPDATE drive_files SET folder_id = {ph} WHERE id = {ph}", (new_folder_id, item_id))
+        
+        if item_type == 'folder':
+            cursor.execute(f"UPDATE drive_folders SET parent_id = {ph} WHERE id = {ph}", (new_folder_id, item_id))
+        elif item_type == 'exam':
+            cursor.execute(f"UPDATE exams SET folder_id = {ph} WHERE exam_code = {ph}", (new_folder_id, item_id))
+        else:
+            cursor.execute(f"UPDATE drive_files SET folder_id = {ph} WHERE id = {ph}", (new_folder_id, item_id))
+            
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Moved successfully!"})
-    except Exception as e: return jsonify({"success": False, "error": "Failed to move item."}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Failed to move item."}), 500
 
 @app.route('/api/admin/update-position', methods=['POST'])
 def update_item_position():
@@ -1040,17 +968,24 @@ def update_item_position():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
+        
         for item in items:
             it_type = item.get('type')
             it_id = item.get('id')
             pos = item.get('position', 0)
-            if it_type == 'folder': cursor.execute(f"UPDATE drive_folders SET position = {ph} WHERE id = {ph}", (pos, it_id))
-            elif it_type == 'exam': cursor.execute(f"UPDATE exams SET position = {ph} WHERE exam_code = {ph}", (pos, it_id))
-            elif it_type == 'file': cursor.execute(f"UPDATE drive_files SET position = {ph} WHERE id = {ph}", (pos, it_id))
+            
+            if it_type == 'folder':
+                cursor.execute(f"UPDATE drive_folders SET position = {ph} WHERE id = {ph}", (pos, it_id))
+            elif it_type == 'exam':
+                cursor.execute(f"UPDATE exams SET position = {ph} WHERE exam_code = {ph}", (pos, it_id))
+            elif it_type == 'file':
+                cursor.execute(f"UPDATE drive_files SET position = {ph} WHERE id = {ph}", (pos, it_id))
+                
         conn.commit()
         conn.close()
         return jsonify({"success": True})
-    except Exception as e: return jsonify({"success": False, "error": "Failed to update order."}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Failed to update order."}), 500
 
 @app.route('/api/teacher-delete-exam', methods=['POST'])
 def teacher_delete_exam():
@@ -1060,13 +995,16 @@ def teacher_delete_exam():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
+        
         cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
         cursor.execute(f"DELETE FROM results WHERE exam_code = {ph}", (exam_code,))
         cursor.execute(f"DELETE FROM exams WHERE exam_code = {ph}", (exam_code,))
+        
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Exam deleted successfully!"})
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 @app.route('/api/teacher-update-exam', methods=['POST'])
 def teacher_update_exam():
@@ -1079,18 +1017,25 @@ def teacher_update_exam():
     subject = data.get('subject', 'General')
     is_private = data.get('is_private', False)
     questions = data.get('questions')
+
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"UPDATE exams SET exam_name = {ph}, timer_minutes = {ph}, negative_marks = {ph}, class_name = {ph}, subject = {ph}, is_private = {ph} WHERE exam_code = {ph}", (exam_name, timer, negative_marks, class_name, subject, is_private, exam_code))
+        
+        cursor.execute(f"UPDATE exams SET exam_name = {ph}, timer_minutes = {ph}, negative_marks = {ph}, class_name = {ph}, subject = {ph}, is_private = {ph} WHERE exam_code = {ph}", 
+                       (exam_name, timer, negative_marks, class_name, subject, is_private, exam_code))
+        
         cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
         for q in questions:
-            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", (exam_code, q['question_text'], q['option_a'], q['option_b'], q['option_c'], q['option_d'], q['correct_option']))
+            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
+                           (exam_code, q['question_text'], q['option_a'], q['option_b'], q['option_c'], q['option_d'], q['correct_option']))
+        
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Exam updated successfully!"})
-    except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/get-filter-options', methods=['GET'])
 def get_filter_options():
@@ -1099,11 +1044,13 @@ def get_filter_options():
         cursor = conn.cursor()
         cursor.execute("SELECT DISTINCT class_name FROM exams WHERE class_name IS NOT NULL")
         classes = [r['class_name'] if isinstance(r, dict) else r[0] for r in cursor.fetchall()]
+        
         cursor.execute("SELECT DISTINCT subject FROM exams WHERE subject IS NOT NULL")
         subjects = [r['subject'] if isinstance(r, dict) else r[0] for r in cursor.fetchall()]
         conn.close()
         return jsonify({"success": True, "classes": classes, "subjects": subjects})
-    except Exception as e: return jsonify({"success": False, "error": str(e)})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
 @app.route('/api/search-feed', methods=['POST'])
 def search_feed():
@@ -1113,31 +1060,49 @@ def search_feed():
     selected_class = data.get('class_name', 'All')
     selected_subject = data.get('subject', 'All')
     status_filter = data.get('status', 'All')
+    
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
+        
         cursor.execute(f"SELECT category FROM users WHERE email = {ph}", (email,))
         user_row = cursor.fetchone()
         user_role = (user_row['category'] if isinstance(user_row, dict) else user_row[0]) if user_row else 'Student'
+        
         search_term = f"%{query}%"
-        sql = f"SELECT e.*, u.name as teacher_name, (SELECT COUNT(*) FROM likes WHERE exam_code = e.exam_code) as total_likes, (SELECT COUNT(*) FROM likes WHERE exam_code = e.exam_code AND email = {ph}) as is_liked, (SELECT COUNT(*) FROM saves WHERE exam_code = e.exam_code AND email = {ph}) as is_saved FROM exams e LEFT JOIN users u ON e.teacher_email = u.email WHERE (e.exam_name ILIKE {ph} OR e.exam_code ILIKE {ph} OR e.subject ILIKE {ph} OR e.class_name ILIKE {ph} OR u.name ILIKE {ph})"
-        if db_type == 'sqlite': sql = sql.replace("ILIKE", "LIKE")
+        sql = f"""SELECT e.*, u.name as teacher_name, 
+                 (SELECT COUNT(*) FROM likes WHERE exam_code = e.exam_code) as total_likes,
+                 (SELECT COUNT(*) FROM likes WHERE exam_code = e.exam_code AND email = {ph}) as is_liked,
+                 (SELECT COUNT(*) FROM saves WHERE exam_code = e.exam_code AND email = {ph}) as is_saved
+                 FROM exams e 
+                 LEFT JOIN users u ON e.teacher_email = u.email 
+                 WHERE (e.exam_name ILIKE {ph} OR e.exam_code ILIKE {ph} OR e.subject ILIKE {ph} OR e.class_name ILIKE {ph} OR u.name ILIKE {ph})"""
+                 
+        if db_type == 'sqlite':
+            sql = sql.replace("ILIKE", "LIKE")
+            
         params = [email, email, search_term, search_term, search_term, search_term, search_term]
         
         if user_role.lower() == 'teacher':
             sql += f" AND (e.is_private = FALSE OR e.teacher_email = {ph})"
             params.append(email)
+        
         if selected_class != 'All':
             sql += f" AND e.class_name = {ph}"
             params.append(selected_class)
+            
         if selected_subject != 'All':
             sql += f" AND e.subject = {ph}"
             params.append(selected_subject)
-        if status_filter == 'Private': sql += " AND e.is_private = TRUE"
-        elif status_filter == 'Public': sql += " AND e.is_private = FALSE"
-        
+            
+        if status_filter == 'Private':
+            sql += " AND e.is_private = TRUE"
+        elif status_filter == 'Public':
+            sql += " AND e.is_private = FALSE"
+            
         sql += " ORDER BY e.created_at DESC"
+        
         cursor.execute(sql, tuple(params))
         results = cursor.fetchall()
         
@@ -1148,21 +1113,31 @@ def search_feed():
         for ex in results:
             code = ex['exam_code']
             is_attempted = code in history
+            
             if status_filter == 'Attempted' and not is_attempted: continue
             if status_filter == 'Unattempted' and is_attempted: continue
+            
             feed.append({
-                "code": code, "name": ex['exam_name'], "teacher_name": ex['teacher_name'] or "Teacher",
-                "class_name": ex.get('class_name', 'General'), "subject": ex.get('subject', 'General'),
-                "timer": ex['timer_minutes'], "is_private": ex.get('is_private', False),
+                "code": code,
+                "name": ex['exam_name'],
+                "teacher_name": ex['teacher_name'] or "Teacher",
+                "class_name": ex.get('class_name', 'General'),
+                "subject": ex.get('subject', 'General'),
+                "timer": ex['timer_minutes'],
+                "is_private": ex.get('is_private', False),
                 "date": str(ex['created_at']).split()[0] if ex['created_at'] else "Recently",
-                "likes": ex['total_likes'], "shares": ex.get('shares', 0),
-                "is_liked": ex['is_liked'] > 0, "is_saved": ex['is_saved'] > 0,
-                "is_attempted": is_attempted, "score": history[code]['score'] if is_attempted else 0,
+                "likes": ex['total_likes'],
+                "shares": ex.get('shares', 0),
+                "is_liked": ex['is_liked'] > 0,
+                "is_saved": ex['is_saved'] > 0,
+                "is_attempted": is_attempted,
+                "score": history[code]['score'] if is_attempted else 0,
                 "total": history[code]['total_questions'] if is_attempted else 0
             })
         conn.close()
         return jsonify({"success": True, "feed": feed})
-    except Exception as e: return jsonify({"success": False, "error": str(e)})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
 @app.route('/api/toggle-social', methods=['POST'])
 def toggle_social():
@@ -1170,23 +1145,28 @@ def toggle_social():
     email = data.get('email')
     exam_code = data.get('exam_code')
     action_type = data.get('type')
+    
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         table_name = "likes" if action_type == 'like' else "saves"
+        
         cursor.execute(f"SELECT * FROM {table_name} WHERE email = {ph} AND exam_code = {ph}", (email, exam_code))
         exists = cursor.fetchone()
+        
         if exists:
             cursor.execute(f"DELETE FROM {table_name} WHERE email = {ph} AND exam_code = {ph}", (email, exam_code))
             status = False
         else:
             cursor.execute(f"INSERT INTO {table_name} (email, exam_code) VALUES ({ph}, {ph})", (email, exam_code))
             status = True
+            
         conn.commit()
         conn.close()
         return jsonify({"success": True, "status": status})
-    except Exception as e: return jsonify({"success": False, "error": str(e)})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
 @app.route('/run-fix-db', methods=['GET'])
 def run_fix_db():
@@ -1196,9 +1176,10 @@ def run_fix_db():
         cursor.execute("ALTER TABLE exams ADD COLUMN is_private BOOLEAN DEFAULT FALSE;")
         conn.commit()
         conn.close()
-        return "<h3>🎉 Database successfully fixed!</h3>"
-    except Exception as e: return f"<h3>⚠️ Note:</h3> <p>{str(e)}</p>"
-
+        return "<h3>🎉 Database successfully fixed! The 'is_private' column has been added. You can now go back and publish your exam.</h3>"
+    except Exception as e:
+        return f"<h3>⚠️ Note:</h3> <p>{str(e)}</p><p>(If it says column already exists, that means it's already fixed and ready to use!)</p>"
+        
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port)
