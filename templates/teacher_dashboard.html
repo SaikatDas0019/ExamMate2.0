@@ -423,6 +423,33 @@
             if (navigator.share) { navigator.share({ title: examName, text: text }).catch(console.error); }
             else { navigator.clipboard.writeText(`Exam Code: ${examCode}`); alert("Exam Code copied!"); }
         }
+        // Native Share Function for ExamMate
+        function shareExam(examName, examCode) {
+            // আপনার ওয়েবসাইটের আসল লিংক (render এর লিংকটি)
+            const baseUrl = window.location.origin; 
+            const examLink = `${baseUrl}/student_exam.html?code=${examCode}`;
+    
+            // প্রফেশনাল মেসেজ ফরম্যাট
+            const shareTitle = `ExamMate - ${examName}`;
+            const shareText = `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n🔗 Exam Link: `;
+
+            // মোবাইলের নেটিভ শেয়ার অপশন (WhatsApp, FB, Telegram ইত্যাদি) ওপেন করার কোড
+            if (navigator.share) {
+                navigator.share({
+                    title: shareTitle,
+                    text: shareText,
+                    url: examLink
+                }).then(() => {
+                    console.log('Exam shared successfully!');
+                    // আপনি চাইলে এখানে API কল করে ডাটাবেসে শেয়ার কাউন্ট বাড়াতে পারেন
+                }).catch((error) => console.log('Error sharing', error));
+            } 
+            else {
+                // যদি ব্রাউজার নেটিভ শেয়ার সাপোর্ট না করে (যেমন পিসিতে), তবে লিংক কপি হয়ে যাবে
+                navigator.clipboard.writeText(shareText + examLink);
+                alert("Exam link and details copied to clipboard!");
+            }
+        }
     </script>
 </body>
 </html>
