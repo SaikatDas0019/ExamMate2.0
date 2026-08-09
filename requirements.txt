@@ -6,5 +6,3 @@ python-dotenv
 werkzeug
 PyPDF2
 requests
-Flask-SocketIO==5.3.6
-eventlet==0.33.3
