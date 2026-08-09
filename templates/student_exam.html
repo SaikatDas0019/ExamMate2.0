@@ -202,6 +202,11 @@
             </div>
 
             <button class="btn btn-next" style="width:100%; margin-top:20px;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
+
+            <!-- App Download Button (শুরুতে লুকানো থাকবে, শুধু ব্রাউজারে দেখা যাবে) -->
+            <a href="https://exammate-sscn.onrender.com/download" id="app-download-btn" target="_blank" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 1.1rem; margin-top: 15px; text-align: center; width: 100%; box-sizing: border-box; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                <i class="fas fa-download" style="margin-right: 8px;"></i> Download ExamMate App
+            </a>
         </div>
 
     </div>
@@ -544,7 +549,9 @@
             });
 
             let displayScore = Number.isInteger(score) ? score : parseFloat(score.toFixed(2));
-            const userEmail = localStorage.getItem('userEmail') || "student@email.com";
+            
+            // Guest User Logic Added Here
+            const userEmail = localStorage.getItem('userEmail') || "Guest_Student";
 
             try {
                 await fetch('/api/submit-exam-result', {
@@ -577,21 +584,27 @@
             // Call the function to render detailed review
             renderDetailedReview();
         }
-        // Check if URL has an exam code shared via link
+
+        // চেক করা হচ্ছে ইউজার অ্যাপে আছে নাকি ব্রাউজারে (WebView Detection)
         window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const sharedCode = urlParams.get('code');
-    
-            if (sharedCode) {
-                // এক্সাম কোড ইনপুট বক্সে কোডটি বসিয়ে দেবে
-                const codeInput = document.getElementById('exam-code-input'); // আপনার ইনপুট বক্সের ID দিন
-                if(codeInput) {
-                    codeInput.value = sharedCode;
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+            // Android App (WebView) সাধারণত 'wv' বা 'Version/' ট্যাগ নিয়ে থাকে
+            const isAppWebView = /wv/.test(userAgent) || /Android.*Version\/[0-9].[0-9]/.test(userAgent);
+            
+            // যদি কেউ PWA বা Add to Home Screen করে থাকে
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            const downloadBtn = document.getElementById('app-download-btn');
+            
+            if (downloadBtn) {
+                // যদি ইউজার অ্যাপের ভেতর না থাকে (অর্থাৎ ব্রাউজারে থাকে), তবেই বাটনটি দেখাবে
+                if (!isAppWebView && !isStandalone) {
+                    downloadBtn.style.display = 'block';
+                } else {
+                    // অ্যাপের ভেতর থাকলে পুরোপুরি মুছে ফেলবে
+                    downloadBtn.remove();
                 }
-        
-                // অটোমেটিক 'Search' বা 'Enter Exam' বাটনে ক্লিক করে দেবে
-                // 'checkExam()' হলো সেই ফাংশন যা আপনি এক্সাম সার্চ করার জন্য ব্যবহার করেন
-                checkExam(); 
             }
         });
     </script>
