@@ -138,7 +138,7 @@
                     <div>
                         <strong>Strict Anti-Cheat Policy:</strong><br>
                         ১. পরীক্ষা চলাকালীন ট্যাব বা অ্যাপ পরিবর্তন করা নিষেধ।<br>
-                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো (Floating Window) ব্যবহার করা যাবে না।<br>
+                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো (Floating Window) ব্যবহার করা যাবে লম্বা।<br>
                         ৩. স্ক্রিনশট তোলা বা ওপর থেকে নোটিফিকেশন/নেভিগেশন বার টানা সম্পূর্ণ নিষিদ্ধ।<br><br>
                         <i>এই নিয়ম ভাঙলে আপনি ওয়ার্নিং পাবেন। ৫ বার ওয়ার্নিং পেলে পরীক্ষা স্বয়ংক্রিয়ভাবে বাতিল (Auto-Submit) হয়ে যাবে!</i>
                     </div>
@@ -202,13 +202,13 @@
                 <div id="detailed-review-container"></div>
             </div>
 
-            <!-- Dashboard Button -->
+            <!-- Dashboard Button (শুধু অ্যাপের ভেতরে বা লগইন অবস্থায় দেখা যাবে) -->
             <button class="btn btn-next" id="btn-return-dashboard" style="width:100%; margin-top:20px; display: none;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
 
-            <!-- App Download Button -->
-            <a href="https://exammate-sscn.onrender.com/download" id="app-download-btn" target="_blank" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 1.1rem; margin-top: 15px; text-align: center; width: 100%; box-sizing: border-box; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
-                <i class="fas fa-download" style="margin-right: 8px;"></i> Download ExamMate App
-            </a>
+            <!-- Continue to App Button (শুধু ব্রাউজারে গেস্ট অবস্থায় দেখা যাবে) -->
+            <button id="btn-continue-app" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 15px; width: 100%; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openAppOrDownload()">
+                <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> View Analysis in App
+            </button>
         </div>
 
     </div>
@@ -246,21 +246,26 @@
             const urlParams = new URLSearchParams(window.location.search);
             examCode = urlParams.get('code');
 
-            // --- স্মার্ট লগইন/গেস্ট চেকিং লজিক ---
+            // --- অ্যাপ (WebView) এবং ব্রাউজার চেকিং লজিক ---
             const currentUserEmail = localStorage.getItem('userEmail');
             const dashBtn = document.getElementById('btn-return-dashboard');
-            const downBtn = document.getElementById('app-download-btn');
+            const continueBtn = document.getElementById('btn-continue-app');
             const headBackBtn = document.getElementById('header-back-btn');
 
-            if (currentUserEmail && currentUserEmail.trim() !== "") {
-                // ইউজারের ইমেইল পাওয়া গেছে (অর্থাৎ সে লগইন করা আছে)
-                if(dashBtn) dashBtn.style.display = 'block';     // ড্যাশবোর্ড বাটন দেখাবে
-                if(downBtn) downBtn.style.display = 'none';      // ডাউনলোড বাটন লুকাবে
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isAppWebView = /wv/.test(userAgent) || /Android.*Version\/[0-9].[0-9]/.test(userAgent);
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            if (isAppWebView || isStandalone || (currentUserEmail && currentUserEmail.trim() !== "")) {
+                // ইউজার অলরেডি অ্যাপের ভেতরে আছে বা লগইন করা আছে
+                if(dashBtn) dashBtn.style.display = 'block';     
+                if(continueBtn) continueBtn.style.display = 'none';      
+                if(headBackBtn) headBackBtn.style.display = 'block'; 
             } else {
-                // কোনো ইমেইল পাওয়া যায়নি (অর্থাৎ সে গেস্ট)
-                if(dashBtn) dashBtn.style.display = 'none';      // ড্যাশবোর্ড বাটন লুকাবে
-                if(downBtn) downBtn.style.display = 'block';     // ডাউনলোড বাটন দেখাবে
-                if(headBackBtn) headBackBtn.style.display = 'none'; // হেডার ব্যাক বাটনটিও লুকিয়ে দেওয়া হলো যাতে ভুল করে আটকে না যায়
+                // ইউজার Chrome বা অন্য কোনো মোবাইল ব্রাউজারে আছে এবং লগইন নেই (গেস্ট)
+                if(dashBtn) dashBtn.style.display = 'none';      
+                if(continueBtn) continueBtn.style.display = 'block';     
+                if(headBackBtn) headBackBtn.style.display = 'none'; 
             }
             // ------------------------------------
             
@@ -604,6 +609,18 @@
             
             // Call the function to render detailed review
             renderDetailedReview();
+        }
+
+        function openAppOrDownload() {
+            // আপনার অ্যাপের আসল প্যাকেজ নেম
+            const packageName = "com.saikat.exammate"; 
+            const downloadUrl = "https://exammate-sscn.onrender.com/download";
+            
+            // অ্যান্ড্রয়েডের জন্য স্মার্ট Intent URL (অ্যাপ থাকলে খুলবে, না থাকলে ডাউনলোড পেজে যাবে)
+            const intentUrl = `intent://#Intent;package=${packageName};S.browser_fallback_url=${encodeURIComponent(downloadUrl)};end`;
+            
+            // লিংকে রিডাইরেক্ট করা
+            window.location.href = intentUrl;
         }
     </script>
 </body>
