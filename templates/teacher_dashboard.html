@@ -423,29 +423,34 @@
             if (navigator.share) { navigator.share({ title: examName, text: text }).catch(console.error); }
             else { navigator.clipboard.writeText(`Exam Code: ${examCode}`); alert("Exam Code copied!"); }
         }
-        // Native Share Function (ফোনের ডিফল্ট শেয়ার প্যানেল খুলবে)
-        function shareExam(examName, examCode) {
+        // Advanced Native Share Function
+        async function shareExam(examName, examCode) {
             const baseUrl = window.location.origin; 
             const examLink = `${baseUrl}/student_exam.html?code=${examCode}`;
     
-            const shareTitle = `ExamMate - ${examName}`;
-            const shareText = `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n`;
+            const shareData = {
+                title: `ExamMate - ${examName}`,
+                text: `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n`,
+                url: examLink
+            };
 
-            // ফোনের ডিফল্ট শেয়ার প্যানেল ওপেন করার চেক
+            // চেক করা হচ্ছে ব্রাউজার শেয়ার সাপোর্ট করে কি না
             if (navigator.share) {
-                navigator.share({
-                    title: shareTitle,
-                    text: shareText,
-                    url: examLink
-                }).then(() => {
+                try {
+                    // ফোনের ডিফল্ট শেয়ার প্যানেল ফোর্স ওপেন করা
+                    await navigator.share(shareData);
                     console.log('Exam shared successfully!');
-                }).catch((error) => {
-                    console.log('Error sharing:', error);
-                });
+                } catch (err) {
+                    // যদি ইউজার শেয়ার প্যানেল কেটে দেয় (Cancel), তাহলে যেন কোনো অ্যালার্ট না দেখায়
+                    if (err.name !== 'AbortError') {
+                        navigator.clipboard.writeText(shareData.text + shareData.url);
+                        alert("শেয়ার প্যানেল খুলতে সমস্যা হচ্ছে। লিংকটি কপি করা হয়েছে!");
+                    }
+                }
             } else {
-                // যদি কারো ব্রাউজার এটি সাপোর্ট না করে (যেমন পুরোনো পিসি), তবে লিংক কপি হবে
-                navigator.clipboard.writeText(shareText + "\n" + examLink);
-                alert("Exam link copied! You can now paste and send it.");
+                // শুধুমাত্র যদি ব্রাউজার একদমই সাপোর্ট না করে
+                navigator.clipboard.writeText(shareData.text + shareData.url);
+                alert("আপনার ব্রাউজার নেটিভ শেয়ার সাপোর্ট করছে না। লিংক কপি করা হয়েছে!");
             }
         }
     </script>
