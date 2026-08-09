@@ -6,7 +6,6 @@
     <title>ExamMate | Teacher Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- MathJax for Math Equations -->
     <script>
         window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
     </script>
@@ -27,7 +26,6 @@
             box-sizing: border-box; margin: 0 auto; position: relative; overflow-x: hidden;
         }
 
-        /* Fixed Top Section */
         .fixed-top-section {
             position: fixed; top: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; z-index: 999;
@@ -51,7 +49,6 @@
             padding: 8px; border-radius: 50%; border: 1px solid #e2e8f0; cursor: pointer; position: relative;
         }
 
-        /* Search Area */
         .search-container { padding: 15px 15px 5px 15px; display: flex; gap: 10px; background: #ffffff; }
         .search-input-wrapper { flex: 1; position: relative; }
         .search-input-wrapper input {
@@ -67,7 +64,6 @@
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* Filter Pills */
         .filter-container {
             padding: 10px 15px 15px 15px; background: #ffffff;
             display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
@@ -80,7 +76,6 @@
             cursor: pointer; display: flex; align-items: center; gap: 5px; outline: none;
         }
 
-        /* Feed Cards */
         .feed-container { padding: 0 15px; margin-top: 195px; }
         .feed-card {
             background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
@@ -102,7 +97,6 @@
         .feed-meta span { font-size: 0.8rem; color: #334155; font-weight: 600; display: flex; align-items: center; gap: 5px;}
         .feed-meta i { color: #3b82f6; }
 
-        /* Social Actions */
         .feed-actions {
             display: flex; justify-content: space-between; align-items: center;
             border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px;
@@ -116,14 +110,12 @@
         .like-active { color: #ef4444 !important; }
         .save-active { color: #f59e0b !important; }
 
-        /* View Questions Button */
         .btn-view-questions {
             width: 100%; background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe;
             padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
         .btn-view-questions:hover { background: #dbeafe; }
 
-        /* Floating Action Button (FAB) */
         .floating-fab {
             position: fixed; bottom: 75px; right: 20px;
             width: 56px; height: 56px; background: linear-gradient(135deg, #10b981, #059669);
@@ -133,14 +125,12 @@
         }
         .floating-fab:hover { transform: scale(1.08); }
 
-        /* View Questions Modal */
         .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 450px; text-align: left; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
         .score-modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; text-align: center;}
         .q-preview-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem;}
         .score-modal-close { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 15px;}
 
-        /* Bottom Nav */
         .bottom-nav {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
@@ -168,7 +158,6 @@
 <body>
 
     <div class="container">
-        <!-- Fixed Top Section -->
         <div class="fixed-top-section">
             <div class="sticky-header">
                 <div class="profile-left" onclick="window.location.href='teacher_profile.html'">
@@ -206,7 +195,6 @@
             </div>
         </div>
 
-        <!-- Feed Container -->
         <div class="feed-container" id="exam-feed">
             <div id="exams-list-container">
                 <p style="text-align:center; color:#64748b; padding:20px;">Loading feed...</p>
@@ -214,12 +202,10 @@
         </div>
     </div>
 
-    <!-- Floating Action Button (FAB) for Creating Exam -->
     <a href="create_exam.html" class="floating-fab" title="Create New Exam">
         <i class="fas fa-plus"></i>
     </a>
 
-    <!-- Modal for Viewing Questions -->
     <div class="score-modal-overlay" id="view-questions-modal">
         <div class="score-modal-box">
             <div class="score-modal-title" id="vq-title">Exam Questions</div>
@@ -228,7 +214,6 @@
         </div>
     </div>
 
-    <!-- Custom Share Modal (Appended above bottom nav) -->
     <div class="modal-overlay-share" id="custom-share-modal">
         <div class="share-sheet">
             <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
@@ -243,7 +228,6 @@
         </div>
     </div>
 
-    <!-- Bottom Nav -->
     <div class="bottom-nav">
         <a href="teacher_dashboard.html" class="nav-item active">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
@@ -346,8 +330,9 @@
                                     <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
                                         <i class="${heartClass}"></i> <span>${ex.likes}</span>
                                     </button>
+                                    <!-- Share Count Removed -->
                                     <button class="action-btn" onclick="shareExam('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">
-                                        <i class="fas fa-share-alt" style="cursor: pointer;" onclick="shareExam('${ex.name}', '${ex.code}')"></i>
+                                        <i class="fas fa-share-alt"></i>
                                     </button>
                                 </div>
                                 <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
@@ -364,7 +349,6 @@
             } catch(e) { container.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">Error loading feed.</p>`; }
         }
 
-        // Recommendation Algorithm: Track Activity & Sort
         function trackTeacherActivity(searchTerm, subject) {
             let activity = JSON.parse(localStorage.getItem('teacher_activity') || '{"searches": [], "viewedSubjects": []}');
             if(searchTerm && !activity.searches.includes(searchTerm)) activity.searches.unshift(searchTerm);
@@ -461,7 +445,6 @@
             document.getElementById('custom-share-modal').style.display = 'flex';
         }
 
-        // Safe Share Function (Handles nested onclick bug safely without changing feed logic)
         function shareExam(param1, param2) {
             let examCode, examName;
             if (param1.includes(' ') || param2.length < param1.length) { 
@@ -488,11 +471,10 @@
                 shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`;
                 window.open(shareUrl, '_blank');
             } else if(platform === 'messenger') {
-                // Facebook Messenger Direct Link
+                // Fix: Changed window.open to window.location.href to prevent App crash
                 shareUrl = `fb-messenger://share/?link=${urlOnly}`;
-                window.open(shareUrl, '_blank');
+                window.location.href = shareUrl;
             } else if(platform === 'instagram') {
-                // Instagram-এ ডাইরেক্ট লেখার কোনো অপশন নেই, তাই কপি করে অ্যাপ ওপেন করতে হবে
                 navigator.clipboard.writeText(currentShareData.text + currentShareData.url);
                 alert("✅ Link & Message copied!\n\nOpening Instagram... Paste it inside your chat.");
                 window.location.href = `instagram://direct`;
