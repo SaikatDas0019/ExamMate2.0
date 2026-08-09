@@ -264,9 +264,10 @@
             await loadFilterDropdowns();
             loadRealFeed();
             
-            // নতুন অ্যাড করা লাইনটি
-            setAvatarLevelColor(); 
+            // ডাটাবেস থেকে স্কোর ফেচ করে প্রোফাইল আইকনে ডায়নামিক কালার সেট করবে
+            fetchAndSetAvatarColor(); 
         };
+
 
 
         async function loadFilterDropdowns() {
@@ -592,52 +593,64 @@
                 alert("Failed to copy. Please try again.");
             });
         }
-        function setAvatarLevelColor(score) {
-            // যদি ফাংশনে স্কোর না দেওয়া থাকে, তবে localStorage থেকে স্কোর নেওয়ার চেষ্টা করবে
-            if (score === undefined || score === null) {
-                score = parseFloat(localStorage.getItem('studentScore')) || 0; 
-            }
+        async function fetchAndSetAvatarColor() {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) return;
 
             const avatar = document.getElementById('nav-avatar');
             if (!avatar) return;
 
-            // ডিফল্ট: Novice (Score < 50)
-            let avatarBg = "linear-gradient(135deg, #34d399, #10b981)"; 
-            let borderColor = "#10b981";
+            try {
+                // ডাটাবেস থেকে স্টুডেন্টের প্রোগ্রেস বা স্কোর নিয়ে আসা হচ্ছে
+                const response = await fetch('/api/get-student-progress', {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ email: userEmail })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const score = parseFloat(data.score) || 0;
+                    
+                    // ডিফল্ট: Novice (Score < 50)
+                    let avatarBg = "linear-gradient(135deg, #34d399, #10b981)"; 
+                    let borderColor = "#10b981";
 
-            if (score >= 50 && score < 100) { 
-                // Bronze Scholar
-                avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)";
-                borderColor = "#d97706";
-            } 
-            else if (score >= 100 && score < 300) { 
-                // Silver Achiever
-                avatarBg = "linear-gradient(135deg, #94a3b8, #475569)";
-                borderColor = "#475569";
-            } 
-            else if (score >= 300 && score < 600) { 
-                // Gold Master
-                avatarBg = "linear-gradient(135deg, #fde047, #eab308)";
-                borderColor = "#eab308";
-            } 
-            else if (score >= 600) { 
-                // Platinum Legend
-                avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
-                borderColor = "transparent"; // প্লাটিনামের জন্য বর্ডার লাগবে না
-            }
+                    if (score >= 50 && score < 100) { 
+                        // Bronze Scholar
+                        avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)";
+                        borderColor = "#d97706";
+                    } 
+                    else if (score >= 100 && score < 300) { 
+                        // Silver Achiever
+                        avatarBg = "linear-gradient(135deg, #94a3b8, #475569)";
+                        borderColor = "#475569";
+                    } 
+                    else if (score >= 300 && score < 600) { 
+                        // Gold Master
+                        avatarBg = "linear-gradient(135deg, #fde047, #eab308)";
+                        borderColor = "#eab308";
+                    } 
+                    else if (score >= 600) { 
+                        // Platinum Legend
+                        avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
+                        borderColor = "transparent";
+                    }
 
-            // আইকনে কালারগুলো অ্যাপ্লাই করা
-            avatar.style.background = avatarBg;
-            avatar.style.color = "#ffffff"; // ব্যাকগ্রাউন্ড গ্রেডিয়েন্ট তাই সাদা টেক্সট ভালো ফুটবে
-            
-            if (score >= 600) {
-                avatar.style.border = "none";
-            } else {
-                avatar.style.border = `2px solid ${borderColor}`;
+                    // আইকনে কালার অ্যাপ্লাই করা হচ্ছে
+                    avatar.style.background = avatarBg;
+                    avatar.style.color = "#ffffff";
+                    
+                    if (score >= 600) {
+                        avatar.style.border = "none";
+                    } else {
+                        avatar.style.border = `2px solid ${borderColor}`;
+                    }
+                }
+            } catch (error) {
+                console.log("Error fetching score for avatar color.");
             }
         }
-
-
     </script>
 </body>
 </html>
