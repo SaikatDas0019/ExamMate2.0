@@ -263,7 +263,11 @@
 
             await loadFilterDropdowns();
             loadRealFeed();
+            
+            // নতুন অ্যাড করা লাইনটি
+            setAvatarLevelColor(); 
         };
+
 
         async function loadFilterDropdowns() {
             try {
@@ -588,6 +592,36 @@
                 alert("Failed to copy. Please try again.");
             });
         }
+        function setAvatarLevelColor() {
+            const avatar = document.getElementById('nav-avatar');
+            
+            // এখানে আপনি আপনার ডেটাবেস বা লজিক অনুযায়ী লেভেল বসাবেন। 
+            // উদাহরণস্বরূপ, ধরলাম localStorage থেকে 'studentLevel' নেওয়া হচ্ছে।
+            // (আপনি চাইলে পয়েন্ট বা স্কোরের ওপর ভিত্তি করেও লেভেল বানাতে পারেন)
+            const level = localStorage.getItem('studentLevel') || 'Bronze'; 
+
+            if (level === 'Bronze') {
+                avatar.style.background = '#ffedd5'; // হালকা কমলা/ব্রোঞ্জ
+                avatar.style.borderColor = '#f97316'; 
+                avatar.style.color = '#9a3412';
+            } 
+            else if (level === 'Silver') {
+                avatar.style.background = '#f1f5f9'; // সিলভার/ধূসর
+                avatar.style.borderColor = '#94a3b8';
+                avatar.style.color = '#334155';
+            } 
+            else if (level === 'Gold') {
+                avatar.style.background = '#fef08a'; // সোনালী
+                avatar.style.borderColor = '#eab308';
+                avatar.style.color = '#854d0e';
+            } 
+            else if (level === 'Diamond') {
+                avatar.style.background = '#e0e7ff'; // ডায়মন্ড/নীলচে
+                avatar.style.borderColor = '#6366f1';
+                avatar.style.color = '#3730a3';
+            }
+        }
+
     </script>
 </body>
 </html>
