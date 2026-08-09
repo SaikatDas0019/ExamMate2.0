@@ -592,35 +592,51 @@
                 alert("Failed to copy. Please try again.");
             });
         }
-        function setAvatarLevelColor() {
-            const avatar = document.getElementById('nav-avatar');
-            
-            // এখানে আপনি আপনার ডেটাবেস বা লজিক অনুযায়ী লেভেল বসাবেন। 
-            // উদাহরণস্বরূপ, ধরলাম localStorage থেকে 'studentLevel' নেওয়া হচ্ছে।
-            // (আপনি চাইলে পয়েন্ট বা স্কোরের ওপর ভিত্তি করেও লেভেল বানাতে পারেন)
-            const level = localStorage.getItem('studentLevel') || 'Bronze'; 
+        function setAvatarLevelColor(score) {
+            // যদি ফাংশনে স্কোর না দেওয়া থাকে, তবে localStorage থেকে স্কোর নেওয়ার চেষ্টা করবে
+            if (score === undefined || score === null) {
+                score = parseFloat(localStorage.getItem('studentScore')) || 0; 
+            }
 
-            if (level === 'Bronze') {
-                avatar.style.background = '#ffedd5'; // হালকা কমলা/ব্রোঞ্জ
-                avatar.style.borderColor = '#f97316'; 
-                avatar.style.color = '#9a3412';
+            const avatar = document.getElementById('nav-avatar');
+            if (!avatar) return;
+
+            // ডিফল্ট: Novice (Score < 50)
+            let avatarBg = "linear-gradient(135deg, #34d399, #10b981)"; 
+            let borderColor = "#10b981";
+
+            if (score >= 50 && score < 100) { 
+                // Bronze Scholar
+                avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)";
+                borderColor = "#d97706";
             } 
-            else if (level === 'Silver') {
-                avatar.style.background = '#f1f5f9'; // সিলভার/ধূসর
-                avatar.style.borderColor = '#94a3b8';
-                avatar.style.color = '#334155';
+            else if (score >= 100 && score < 300) { 
+                // Silver Achiever
+                avatarBg = "linear-gradient(135deg, #94a3b8, #475569)";
+                borderColor = "#475569";
             } 
-            else if (level === 'Gold') {
-                avatar.style.background = '#fef08a'; // সোনালী
-                avatar.style.borderColor = '#eab308';
-                avatar.style.color = '#854d0e';
+            else if (score >= 300 && score < 600) { 
+                // Gold Master
+                avatarBg = "linear-gradient(135deg, #fde047, #eab308)";
+                borderColor = "#eab308";
             } 
-            else if (level === 'Diamond') {
-                avatar.style.background = '#e0e7ff'; // ডায়মন্ড/নীলচে
-                avatar.style.borderColor = '#6366f1';
-                avatar.style.color = '#3730a3';
+            else if (score >= 600) { 
+                // Platinum Legend
+                avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
+                borderColor = "transparent"; // প্লাটিনামের জন্য বর্ডার লাগবে না
+            }
+
+            // আইকনে কালারগুলো অ্যাপ্লাই করা
+            avatar.style.background = avatarBg;
+            avatar.style.color = "#ffffff"; // ব্যাকগ্রাউন্ড গ্রেডিয়েন্ট তাই সাদা টেক্সট ভালো ফুটবে
+            
+            if (score >= 600) {
+                avatar.style.border = "none";
+            } else {
+                avatar.style.border = `2px solid ${borderColor}`;
             }
         }
+
 
     </script>
 </body>
