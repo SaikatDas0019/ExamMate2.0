@@ -75,27 +75,61 @@ def init_db():
             ''')
         conn.commit()
         
-        try: cursor.execute("ALTER TABLE users ADD COLUMN photo_url TEXT;"); conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
-        try: cursor.execute("ALTER TABLE exams ADD COLUMN folder_id INT DEFAULT 0;"); conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
-        try: cursor.execute("ALTER TABLE drive_folders ADD COLUMN folder_type VARCHAR(50) DEFAULT 'content';"); conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
-        try: cursor.execute("ALTER TABLE exams ADD COLUMN negative_marks FLOAT DEFAULT 0.0;"); conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
-        try: cursor.execute("ALTER TABLE exams ADD COLUMN position INT DEFAULT 0;"); conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
-        try: cursor.execute("ALTER TABLE drive_folders ADD COLUMN position INT DEFAULT 0;"); conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
-        try: cursor.execute("ALTER TABLE drive_files ADD COLUMN position INT DEFAULT 0;"); conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
+        # Fixed the syntax error here
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN photo_url TEXT;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN folder_id INT DEFAULT 0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
+        try:
+            cursor.execute("ALTER TABLE drive_folders ADD COLUMN folder_type VARCHAR(50) DEFAULT 'content';")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN negative_marks FLOAT DEFAULT 0.0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN position INT DEFAULT 0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
+        try:
+            cursor.execute("ALTER TABLE drive_folders ADD COLUMN position INT DEFAULT 0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
+        try:
+            cursor.execute("ALTER TABLE drive_files ADD COLUMN position INT DEFAULT 0;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
         try: 
             if db_type == 'postgres':
                 cursor.execute("ALTER TABLE results ALTER COLUMN score TYPE FLOAT;")
                 conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
-        try: cursor.execute("ALTER TABLE users ADD COLUMN is_logged_in BOOLEAN DEFAULT FALSE;"); conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN is_logged_in BOOLEAN DEFAULT FALSE;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
 
         if db_type == 'postgres':
             cursor.execute('''CREATE TABLE IF NOT EXISTS reviews (id SERIAL PRIMARY KEY, reviewer_name VARCHAR(255) NOT NULL, role VARCHAR(100) NOT NULL, rating INT NOT NULL, review_text TEXT NOT NULL, date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
@@ -105,17 +139,26 @@ def init_db():
             cursor.execute('''CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT NOT NULL, target_role TEXT NOT NULL, link_url TEXT, date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
         conn.commit()
 
-        try: cursor.execute("ALTER TABLE notifications ADD COLUMN link_url TEXT;"); conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
-        try: cursor.execute("ALTER TABLE exams ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"); conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
+        try:
+            cursor.execute("ALTER TABLE notifications ADD COLUMN link_url TEXT;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
         try:
             cursor.execute("ALTER TABLE exams ADD COLUMN class_name VARCHAR(50) DEFAULT 'General';")
             cursor.execute("ALTER TABLE exams ADD COLUMN subject VARCHAR(100) DEFAULT 'General';")
             cursor.execute("ALTER TABLE exams ADD COLUMN shares INT DEFAULT 0;")
             cursor.execute("ALTER TABLE exams ADD COLUMN is_private BOOLEAN DEFAULT FALSE;")
             conn.commit()
-        except: pass if db_type == 'sqlite' else conn.rollback()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS likes (email VARCHAR(255), exam_code VARCHAR(50), PRIMARY KEY(email, exam_code))''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS saves (email VARCHAR(255), exam_code VARCHAR(50), PRIMARY KEY(email, exam_code))''')
@@ -908,7 +951,6 @@ def logout():
 def check_login_status():
     data = request.get_json() or {}
     email = data.get('email')
-    
     if not email and 'user' in session: email = session['user'].get('email')
     if not email: return jsonify({"logged_in": False})
         
