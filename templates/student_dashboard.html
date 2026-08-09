@@ -301,7 +301,6 @@
                 const data = await response.json();
 
                 if (data.success && data.feed.length > 0) {
-                    // অ্যালগরিদম রান করে সার্চ কুয়েরি ও পছন্দ অনুযায়ী ফিড সর্ট করা হচ্ছে
                     let sortedFeed = sortExamsForStudent(data.feed, query);
                     renderFeedCards(sortedFeed);
                 } else {
@@ -319,7 +318,7 @@
         function performSearch() {
             const query = document.getElementById('main-search').value.trim();
             if (query) {
-                trackStudentPreference(query, "", ""); // সার্চ করার সাথে সাথে এটি ট্র্যাক হবে
+                trackStudentPreference(query, "", "");
             }
             loadRealFeed(query);
         }
@@ -378,8 +377,9 @@
                             <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
                                 <i class="${heartClass}"></i> <span>${ex.likes}</span>
                             </button>
+                            <!-- Share Count Removed -->
                             <button class="action-btn" onclick="shareRealExam('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">
-                                <i class="far fa-share-square"></i> <span>${ex.shares}</span>
+                                <i class="far fa-share-square"></i>
                             </button>
                         </div>
                         <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
@@ -578,11 +578,10 @@
                 shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`;
                 window.open(shareUrl, '_blank');
             } else if(platform === 'messenger') {
-                // Facebook Messenger Direct Link
+                // Fix: Changed window.open to window.location.href to prevent App crash
                 shareUrl = `fb-messenger://share/?link=${urlOnly}`;
-                window.open(shareUrl, '_blank');
+                window.location.href = shareUrl;
             } else if(platform === 'instagram') {
-                // Instagram-এ ডাইরেক্ট লেখার কোনো অপশন নেই, তাই কপি করে অ্যাপ ওপেন করতে হবে
                 navigator.clipboard.writeText(currentShareData.text + currentShareData.url);
                 alert("✅ Link & Message copied!\n\nOpening Instagram... Paste it inside your chat.");
                 window.location.href = `instagram://direct`;
