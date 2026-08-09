@@ -219,8 +219,6 @@
             <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
             <div class="share-buttons">
                 <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-                <button onclick="shareVia('messenger')"><i class="fab fa-facebook-messenger"></i> Messenger</button>
-                <button onclick="shareVia('instagram')"><i class="fab fa-instagram"></i> Instagram</button>
                 <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
                 <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
             </div>
@@ -459,7 +457,7 @@
             document.getElementById('custom-share-modal').style.display = 'none';
         }
 
-        function shareVia(platform) {
+                function shareVia(platform) {
             const fullText = encodeURIComponent(currentShareData.text + currentShareData.url);
             const urlOnly = encodeURIComponent(currentShareData.url);
             let shareUrl = '';
@@ -470,14 +468,6 @@
             } else if(platform === 'telegram') {
                 shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`;
                 window.open(shareUrl, '_blank');
-            } else if(platform === 'messenger') {
-                // Fix: Changed window.open to window.location.href to prevent App crash
-                shareUrl = `fb-messenger://share/?link=${urlOnly}`;
-                window.location.href = shareUrl;
-            } else if(platform === 'instagram') {
-                navigator.clipboard.writeText(currentShareData.text + currentShareData.url);
-                alert("✅ Link & Message copied!\n\nOpening Instagram... Paste it inside your chat.");
-                window.location.href = `instagram://direct`;
             }
             closeShareModal();
         }
