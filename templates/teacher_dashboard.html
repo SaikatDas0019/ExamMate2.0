@@ -149,6 +149,20 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
+
+        /* Custom Share Modal CSS */
+        .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
+        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
+        .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
+        .share-buttons i { font-size: 2.2rem; }
+        .share-buttons .fa-whatsapp { color: #25D366; }
+        .share-buttons .fa-facebook-messenger { color: #0084FF; }
+        .share-buttons .fa-instagram { color: #E1306C; }
+        .share-buttons .fa-telegram { color: #0088cc; }
+        .share-buttons .fa-copy { color: #64748b; }
+        .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; font-size: 1rem;}
     </style>
 </head>
 <body>
@@ -211,6 +225,21 @@
             <div class="score-modal-title" id="vq-title">Exam Questions</div>
             <div id="vq-container"></div>
             <button class="score-modal-close" onclick="document.getElementById('view-questions-modal').style.display='none'">Close ✖</button>
+        </div>
+    </div>
+
+    <!-- Custom Share Modal (Appended above bottom nav) -->
+    <div class="modal-overlay-share" id="custom-share-modal">
+        <div class="share-sheet">
+            <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
+            <div class="share-buttons">
+                <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                <button onclick="shareVia('messenger')"><i class="fab fa-facebook-messenger"></i> Messenger</button>
+                <button onclick="shareVia('instagram')"><i class="fab fa-instagram"></i> Instagram</button>
+                <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
+                <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
+            </div>
+            <button class="btn-cancel" onclick="closeShareModal()">Cancel</button>
         </div>
     </div>
 
@@ -418,40 +447,66 @@
             } catch(e) { console.log("Sync error"); }
         }
 
-        function shareExam(examCode, examName) {
-            const text = `Check out this exam: ${examName}. Code: ${examCode}`;
-            if (navigator.share) { navigator.share({ title: examName, text: text }).catch(console.error); }
-            else { navigator.clipboard.writeText(`Exam Code: ${examCode}`); alert("Exam Code copied!"); }
-        }
-        // Advanced Native Share Function
-        async function shareExam(examName, examCode) {
+        // ==========================================
+        // CUSTOM SHARE MODAL LOGIC (New Addition)
+        // ==========================================
+        let currentShareData = {};
+
+        function triggerCustomShare(examName, examCode) {
             const baseUrl = window.location.origin; 
             const examLink = `${baseUrl}/student_exam.html?code=${examCode}`;
-    
-            const shareData = {
-                title: `ExamMate - ${examName}`,
-                text: `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n`,
-                url: examLink
-            };
+            const shareText = `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n`;
 
-            // চেক করা হচ্ছে ব্রাউজার শেয়ার সাপোর্ট করে কি না
-            if (navigator.share) {
-                try {
-                    // ফোনের ডিফল্ট শেয়ার প্যানেল ফোর্স ওপেন করা
-                    await navigator.share(shareData);
-                    console.log('Exam shared successfully!');
-                } catch (err) {
-                    // যদি ইউজার শেয়ার প্যানেল কেটে দেয় (Cancel), তাহলে যেন কোনো অ্যালার্ট না দেখায়
-                    if (err.name !== 'AbortError') {
-                        navigator.clipboard.writeText(shareData.text + shareData.url);
-                        alert("শেয়ার প্যানেল খুলতে সমস্যা হচ্ছে। লিংকটি কপি করা হয়েছে!");
-                    }
-                }
+            currentShareData = { title: `ExamMate - ${examName}`, text: shareText, url: examLink };
+            document.getElementById('custom-share-modal').style.display = 'flex';
+        }
+
+        // Safe Share Function (Handles nested onclick bug safely without changing feed logic)
+        function shareExam(param1, param2) {
+            let examCode, examName;
+            if (param1.includes(' ') || param2.length < param1.length) { 
+                examName = param1; examCode = param2;
             } else {
-                // শুধুমাত্র যদি ব্রাউজার একদমই সাপোর্ট না করে
-                navigator.clipboard.writeText(shareData.text + shareData.url);
-                alert("আপনার ব্রাউজার নেটিভ শেয়ার সাপোর্ট করছে না। লিংক কপি করা হয়েছে!");
+                examCode = param1; examName = param2;
             }
+            triggerCustomShare(examName, examCode);
+        }
+
+        function closeShareModal() {
+            document.getElementById('custom-share-modal').style.display = 'none';
+        }
+
+        function shareVia(platform) {
+            const fullText = encodeURIComponent(currentShareData.text + currentShareData.url);
+            const urlOnly = encodeURIComponent(currentShareData.url);
+            let shareUrl = '';
+
+            if(platform === 'whatsapp') {
+                shareUrl = `https://api.whatsapp.com/send?text=${fullText}`;
+                window.open(shareUrl, '_blank');
+            } else if(platform === 'telegram') {
+                shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`;
+                window.open(shareUrl, '_blank');
+            } else if(platform === 'messenger') {
+                // Facebook Messenger Direct Link
+                shareUrl = `fb-messenger://share/?link=${urlOnly}`;
+                window.open(shareUrl, '_blank');
+            } else if(platform === 'instagram') {
+                // Instagram-এ ডাইরেক্ট লেখার কোনো অপশন নেই, তাই কপি করে অ্যাপ ওপেন করতে হবে
+                navigator.clipboard.writeText(currentShareData.text + currentShareData.url);
+                alert("✅ Link & Message copied!\n\nOpening Instagram... Paste it inside your chat.");
+                window.location.href = `instagram://direct`;
+            }
+            closeShareModal();
+        }
+
+        function copyShareLink() {
+            navigator.clipboard.writeText(currentShareData.text + currentShareData.url).then(() => {
+                alert("✅ Exam link and details copied successfully!");
+                closeShareModal();
+            }).catch(() => {
+                alert("Failed to copy. Please try again.");
+            });
         }
     </script>
 </body>
