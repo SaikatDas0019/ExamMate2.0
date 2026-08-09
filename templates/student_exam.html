@@ -577,6 +577,23 @@
             // Call the function to render detailed review
             renderDetailedReview();
         }
+        // Check if URL has an exam code shared via link
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedCode = urlParams.get('code');
+    
+            if (sharedCode) {
+                // এক্সাম কোড ইনপুট বক্সে কোডটি বসিয়ে দেবে
+                const codeInput = document.getElementById('exam-code-input'); // আপনার ইনপুট বক্সের ID দিন
+                if(codeInput) {
+                    codeInput.value = sharedCode;
+                }
+        
+                // অটোমেটিক 'Search' বা 'Enter Exam' বাটনে ক্লিক করে দেবে
+                // 'checkExam()' হলো সেই ফাংশন যা আপনি এক্সাম সার্চ করার জন্য ব্যবহার করেন
+                checkExam(); 
+            }
+        });
     </script>
 </body>
 </html>
