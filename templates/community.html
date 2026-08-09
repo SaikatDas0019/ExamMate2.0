@@ -20,16 +20,17 @@
         .header-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0; flex: 1; text-align: center; }
         .create-group-btn { color: #3b82f6; font-size: 1.3rem; cursor: pointer; padding: 5px 0 5px 10px; }
         
-        .search-container { padding: 0 15px 15px 15px; display: flex; gap: 10px; }
+        /* Fixed Search CSS */
+        .search-container { padding: 0 15px 15px 15px; display: flex; gap: 10px; align-items: center; }
         .search-input-wrapper { flex: 1; position: relative; }
-        .search-input-wrapper input { width: 100%; padding: 12px 15px 12px 35px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px; font-size: 0.95rem; outline: none; }
+        .search-input-wrapper input { width: 100%; padding: 12px 15px 12px 35px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px; font-size: 0.95rem; outline: none; box-sizing: border-box; }
         .search-input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-        .search-btn-circle { width: 45px; height: 45px; border-radius: 50%; background: #3b82f6; color: white; border: none; font-size: 1.1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .search-btn-circle { width: 45px; height: 45px; flex-shrink: 0; border-radius: 50%; background: #3b82f6; color: white; border: none; font-size: 1.1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; }
 
         /* Chat List */
         .chat-list-container { height: 100%; padding-top: 135px; padding-bottom: 70px; overflow-y: auto; background: #ffffff; }
         .chat-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
-        .chat-avatar { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold; margin-right: 15px; color: white; }
+        .chat-avatar { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold; margin-right: 15px; color: white; flex-shrink: 0;}
         .avatar-global { background: #e0f2fe; color: #0284c7; border: 2px solid #0ea5e9; font-size: 1.5rem; }
         .avatar-group { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .chat-info { flex: 1; overflow: hidden; }
@@ -51,15 +52,22 @@
         .msg-time { font-size: 0.65rem; opacity: 0.7; text-align: right; margin-top: 4px; display: block; }
         .chat-input-area { background: #ffffff; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
         .message-input { flex: 1; background: #f1f5f9; border: none; padding: 12px 15px; border-radius: 20px; font-size: 0.95rem; outline: none; }
-        .send-btn { background: #3b82f6; color: white; width: 42px; height: 42px; border-radius: 50%; border: none; font-size: 1.1rem; cursor: pointer; }
+        .send-btn { background: #3b82f6; color: white; width: 42px; height: 42px; border-radius: 50%; border: none; font-size: 1.1rem; cursor: pointer; flex-shrink: 0;}
+
+        /* Restored Bottom Nav */
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: #ffffff; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; padding: 8px 0; z-index: 998; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
+        .nav-item.active { color: #3b82f6; font-weight: bold; }
+        .nav-icon i { font-size: 1.4rem; margin-bottom: 4px; }
 
         /* Modals */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
         .modal-box { background: white; width: 90%; max-width: 350px; border-radius: 15px; padding: 20px; text-align: center; }
         .modal-box h3 { margin-top: 0; color: #0f172a; }
-        .modal-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; }
-        .user-list-box { max-height: 150px; overflow-y: auto; text-align: left; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 15px; }
-        .user-list-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .modal-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
+        .modal-input:focus { border-color: #3b82f6; }
+        .user-list-box { max-height: 150px; overflow-y: auto; text-align: left; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 15px; background: #f8fafc;}
+        .user-list-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding: 5px; border-bottom: 1px solid #e2e8f0;}
         .btn-primary { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 10px;}
         .btn-danger { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
         .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
@@ -72,7 +80,8 @@
         <div id="chat-list-view">
             <div class="fixed-top-section">
                 <div class="sticky-header">
-                    <i class="fas fa-chevron-left back-btn-top" onclick="history.back()"></i>
+                    <!-- Fixed Back Button -->
+                    <i class="fas fa-chevron-left back-btn-top" onclick="goBackToDashboard()"></i>
                     <h2 class="header-title">Community</h2>
                     <i class="fas fa-edit create-group-btn" onclick="openCreateGroupModal()" title="Create Group"></i>
                 </div>
@@ -86,7 +95,26 @@
             </div>
 
             <div class="chat-list-container" id="chat-list">
-                <div style="text-align:center; padding: 20px; color: #64748b;"><i class="fas fa-spinner fa-spin"></i> Loading chats...</div>
+                <div style="text-align:center; padding: 40px 20px; color: #64748b;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p>Loading chats...</p>
+                </div>
+            </div>
+
+            <!-- Restored Bottom Nav -->
+            <div class="bottom-nav" id="main-bottom-nav">
+                <a href="/student_dashboard.html" class="nav-item" id="nav-home">
+                    <div class="nav-icon"><i class="fas fa-home"></i></div><span>Home</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <div class="nav-icon"><i class="fas fa-users"></i></div><span>Community</span>
+                </a>
+                <a href="/student_analytics.html" class="nav-item" id="nav-analytics">
+                    <div class="nav-icon"><i class="fas fa-chart-bar"></i></div><span>Analytics</span>
+                </a>
+                <a href="/student_profile.html" class="nav-item" id="nav-profile">
+                    <div class="nav-icon"><i class="far fa-user"></i></div><span>Profile</span>
+                </a>
             </div>
         </div>
 
@@ -108,16 +136,23 @@
             </div>
         </div>
 
-        <!-- Create Group Modal -->
+        <!-- Create Group Modal (Now with User Search) -->
         <div class="modal-overlay" id="create-group-modal">
             <div class="modal-box">
                 <h3>Create New Group</h3>
                 <input type="text" id="group-name-input" class="modal-input" placeholder="Enter Group Name">
+                
+                <!-- New Search Input for Modal -->
+                <div style="position: relative;">
+                    <i class="fas fa-search" style="position: absolute; left: 10px; top: 12px; color: #94a3b8;"></i>
+                    <input type="text" id="group-user-search" class="modal-input" placeholder="Search students/teachers..." style="padding-left: 30px;" onkeyup="filterUsersModal()">
+                </div>
+
                 <div class="user-list-box" id="users-to-add">
                     <p style="color:#64748b; font-size:0.8rem; text-align:center;">Loading users...</p>
                 </div>
                 <button class="btn-primary" onclick="submitCreateGroup()">Create Group</button>
-                <button class="btn-cancel" style="margin-top:10px;" onclick="document.getElementById('create-group-modal').style.display='none'">Cancel</button>
+                <button class="btn-cancel" onclick="document.getElementById('create-group-modal').style.display='none'">Cancel</button>
             </div>
         </div>
 
@@ -136,18 +171,45 @@
 
     <script>
         const socket = io();
-        const userEmail = localStorage.getItem('userEmail');
-        const userName = localStorage.getItem('userName') || 'User';
+        let userEmail = '';
+        let userName = '';
+        let userRole = '';
         const ADMIN_EMAIL = 'dasbabu938207@gmail.com'; 
         let currentRoom = null;
 
-        window.onload = () => {
-            loadChatList();
+        // Fixed Initialization (Gets exact email from backend session)
+        window.onload = async () => {
+            try {
+                const res = await fetch('/api/check-login-status', { method: 'POST' });
+                const data = await res.json();
+                
+                if (data.logged_in) {
+                    userEmail = data.email;
+                    userName = data.name;
+                    userRole = data.role;
+                    
+                    // Fix Nav Links based on Role
+                    if(userRole.toLowerCase() === 'teacher') {
+                        document.getElementById('nav-home').href = '/teacher_dashboard.html';
+                        document.getElementById('nav-analytics').href = '/teacher_analytics.html';
+                        document.getElementById('nav-profile').href = '/teacher_profile.html';
+                    }
+                    
+                    loadChatList(); // Now safely load chats
+                } else {
+                    window.location.href = '/'; // Go to login if not logged in
+                }
+            } catch (e) {
+                console.error("Auth check failed", e);
+                document.getElementById('chat-list').innerHTML = `<p style="text-align:center; color:red; padding:20px;">Connection error. Please refresh.</p>`;
+            }
+
+            // Socket Listeners
             socket.on('receive_message', (data) => {
                 if(data.receiver_email === currentRoom) {
                     appendMessage(data);
                 }
-                loadChatList(); // Refresh list for last message update
+                loadChatList(); 
             });
             
             socket.on('error', (err) => {
@@ -155,8 +217,18 @@
             });
         };
 
+        // Fixed Back Button Logic
+        function goBackToDashboard() {
+            if(userRole && userRole.toLowerCase() === 'teacher') {
+                window.location.href = '/teacher_dashboard.html';
+            } else {
+                window.location.href = '/student_dashboard.html';
+            }
+        }
+
         // Load Real Chat List
         async function loadChatList() {
+            if(!userEmail) return;
             try {
                 const res = await fetch('/api/get-chat-list', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -185,10 +257,9 @@
                         </div>`;
                     });
                 }
-            } catch(e) { console.log(e); }
+            } catch(e) { console.log("List error", e); }
         }
 
-        // Open Real Chat Room
         async function openChat(roomId, name, type) {
             currentRoom = roomId;
             document.getElementById('room-name').innerText = name;
@@ -197,9 +268,10 @@
             avatarBox.innerHTML = type === 'global' ? '<i class="fas fa-globe-americas"></i>' : name.charAt(0);
 
             document.getElementById('chat-room').classList.add('active');
+            document.getElementById('main-bottom-nav').style.display = 'none'; // Hide bottom nav in chat room
+            
             socket.emit('join', { room: roomId });
 
-            // Fetch history
             document.getElementById('chat-messages-area').innerHTML = '<div style="text-align:center; padding:10px;"><i class="fas fa-spinner fa-spin"></i></div>';
             try {
                 const res = await fetch('/api/get-chat-history', {
@@ -216,6 +288,7 @@
 
         function closeChat() {
             document.getElementById('chat-room').classList.remove('active');
+            document.getElementById('main-bottom-nav').style.display = 'flex'; // Restore bottom nav
             currentRoom = null;
         }
 
@@ -224,7 +297,6 @@
             const isMe = msg.sender_email === userEmail;
             const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
             
-            // Admin can click on names in global chat to mute them
             let nameTag = '';
             if(!isMe) {
                 if(userEmail === ADMIN_EMAIL && currentRoom === 'global') {
@@ -258,9 +330,11 @@
         }
         document.getElementById('msg-input').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
 
-        // --- GROUP CREATION ---
+        // --- GROUP CREATION & MODAL SEARCH ---
         async function openCreateGroupModal() {
             document.getElementById('create-group-modal').style.display = 'flex';
+            document.getElementById('group-user-search').value = ''; // Reset search
+            
             try {
                 const res = await fetch('/api/get-all-users');
                 const data = await res.json();
@@ -268,12 +342,31 @@
                     let html = '';
                     data.users.forEach(u => {
                         if(u.email !== userEmail) {
-                            html += `<label class="user-list-item"><input type="checkbox" class="group-member-cb" value="${u.email}"> ${u.name} (${u.role})</label>`;
+                            html += `<label class="user-list-item"><input type="checkbox" class="group-member-cb" value="${u.email}"> <span class="u-name">${u.name}</span> <small style="color:#94a3b8; margin-left:auto;">${u.role}</small></label>`;
                         }
                     });
-                    document.getElementById('users-to-add').innerHTML = html;
+                    document.getElementById('users-to-add').innerHTML = html || '<p>No users found.</p>';
+                } else {
+                    document.getElementById('users-to-add').innerHTML = '<p style="color:red;">Error loading users.</p>';
                 }
-            } catch(e) {}
+            } catch(e) { 
+                document.getElementById('users-to-add').innerHTML = '<p style="color:red;">Failed to connect.</p>';
+            }
+        }
+
+        // New function to filter users in the modal
+        function filterUsersModal() {
+            const query = document.getElementById('group-user-search').value.toLowerCase();
+            const items = document.querySelectorAll('.user-list-item');
+            
+            items.forEach(item => {
+                const nameText = item.querySelector('.u-name').innerText.toLowerCase();
+                if(nameText.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         }
 
         async function submitCreateGroup() {
@@ -282,7 +375,7 @@
             
             const checkboxes = document.querySelectorAll('.group-member-cb:checked');
             const members = Array.from(checkboxes).map(cb => cb.value);
-            members.push(userEmail); // Add self
+            members.push(userEmail); 
 
             if(members.length < 2) return alert("Select at least 1 other member!");
 
@@ -294,7 +387,7 @@
                 const data = await res.json();
                 if(data.success) {
                     document.getElementById('create-group-modal').style.display = 'none';
-                    loadChatList(); // Refresh list
+                    loadChatList(); 
                     alert("Group created successfully!");
                 }
             } catch(e) { alert("Error creating group"); }
