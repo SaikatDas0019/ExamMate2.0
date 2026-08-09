@@ -318,7 +318,7 @@
                                         <i class="${heartClass}"></i> <span>${ex.likes}</span>
                                     </button>
                                     <button class="action-btn" onclick="shareExam('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">
-                                        <i class="far fa-share-square"></i> <span>${ex.shares}</span>
+                                        <i class="fas fa-share-alt" style="cursor: pointer;" onclick="shareExam('${ex.name}', '${ex.code}')"></i>
                                     </button>
                                 </div>
                                 <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
