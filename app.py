@@ -195,6 +195,18 @@ def handle_send_message(data):
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
+        
+        # Check if user is muted (Only for Global Chat)
+        if receiver == 'global':
+            cursor.execute(f"SELECT muted_until FROM muted_users WHERE email = {ph}", (sender,))
+            muted_data = cursor.fetchone()
+            if muted_data:
+                muted_until = muted_data['muted_until'] if isinstance(muted_data, dict) else muted_data[0]
+                if muted_until and muted_until > datetime.now():
+                    emit('error', {'msg': 'You have been muted by Admin.'})
+                    conn.close()
+                    return
+
         cursor.execute(f"INSERT INTO messages (sender_email, receiver_email, message_text) VALUES ({ph}, {ph}, {ph})", (sender, receiver, text))
         conn.commit()
         conn.close()
