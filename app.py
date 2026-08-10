@@ -159,9 +159,10 @@ def init_db():
         cursor.execute('''CREATE TABLE IF NOT EXISTS likes (email VARCHAR(255), exam_code VARCHAR(50), PRIMARY KEY(email, exam_code))''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS saves (email VARCHAR(255), exam_code VARCHAR(50), PRIMARY KEY(email, exam_code))''')
         conn.commit()
-        # === UPDATE FOR VERSION 2.0 (Subjective Questions & Images) ===
+        # === UPDATE FOR VERSION 2.0 ===
         try:
             cursor.execute("ALTER TABLE questions ADD COLUMN question_type VARCHAR(20) DEFAULT 'mcq';")
+            cursor.execute("ALTER TABLE questions ADD COLUMN max_marks FLOAT DEFAULT 1.0;") # নতুন যোগ করা হয়েছে
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
@@ -350,7 +351,6 @@ def submit_exam_result():
     data = request.get_json()
     email = data.get('email')
     
-    # যদি লগইন না থাকে, তাহলে গেস্ট হিসেবে সেভ হবে (সার্ভার ক্র্যাশ করবে না)
     if not email or email.strip() == "":
         email = "Guest_Student"
         
@@ -358,12 +358,18 @@ def submit_exam_result():
     exam_name = data.get('exam_name')
     score = float(data.get('score', 0))
     total_q = data.get('total_questions')
+    subj_answers = data.get('subjective_answers', []) # স্টুডেন্টের আপলোড করা ছবিগুলো
 
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         cursor.execute(f"INSERT INTO results (student_email, exam_code, exam_name, score, total_questions) VALUES ({ph}, {ph}, {ph}, {ph}, {ph})", (email, exam_code, exam_name, score, total_q))
+        
+        # ডাটাবেসে ছবির লিংকগুলো সেভ করা হচ্ছে
+        for sa in subj_answers:
+            cursor.execute(f"INSERT INTO subjective_answers (exam_code, student_email, question_id, image_url) VALUES ({ph}, {ph}, {ph}, {ph})", (exam_code, email, sa['question_id'], sa['image_url']))
+
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Result saved successfully!"})
@@ -1075,27 +1081,20 @@ def get_pending_evaluations():
         return jsonify({"success": True, "evaluations": evaluations})
     except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/teacher-submit-evaluation', methods=['POST'])
-def submit_evaluation():
+@app.route('/api/teacher-pending-evaluations', methods=['POST'])
+def get_pending_evaluations():
     data = request.get_json()
-    ans_id = data.get('answer_id')
-    marks = float(data.get('marks', 0.0))
-    student_email = data.get('student_email')
     exam_code = data.get('exam_code')
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        
-        # ১. খাতা চেকড করা এবং মার্কস সেভ করা
-        cursor.execute(f"UPDATE subjective_answers SET marks = {ph}, is_checked = TRUE WHERE id = {ph}", (marks, ans_id))
-        
-        # ২. স্টুডেন্টের মেইন রেজাল্ট টেবিলের স্কোরের সাথে ম্যানুয়াল মার্কস যোগ করে দেওয়া
-        cursor.execute(f"UPDATE results SET score = score + {ph} WHERE student_email = {ph} AND exam_code = {ph}", (marks, student_email, exam_code))
-        
-        conn.commit()
+        # max_marks যোগ করা হয়েছে
+        cursor.execute(f"SELECT s.id, s.student_email, s.image_url, q.question_text, q.max_marks FROM subjective_answers s JOIN questions q ON s.question_id = q.id WHERE s.exam_code = {ph} AND s.is_checked = FALSE", (exam_code,))
+        rows = cursor.fetchall()
         conn.close()
-        return jsonify({"success": True})
+        evaluations = [{"id": r["id"], "student_email": r["student_email"], "image_url": r["image_url"], "question_text": r["question_text"], "max_marks": r["max_marks"] or 1.0} for r in rows]
+        return jsonify({"success": True, "evaluations": evaluations})
     except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
