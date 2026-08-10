@@ -159,6 +159,19 @@ def init_db():
         cursor.execute('''CREATE TABLE IF NOT EXISTS likes (email VARCHAR(255), exam_code VARCHAR(50), PRIMARY KEY(email, exam_code))''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS saves (email VARCHAR(255), exam_code VARCHAR(50), PRIMARY KEY(email, exam_code))''')
         conn.commit()
+        # === UPDATE FOR VERSION 2.0 (Subjective Questions & Images) ===
+        try:
+            cursor.execute("ALTER TABLE questions ADD COLUMN question_type VARCHAR(20) DEFAULT 'mcq';")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
+        if db_type == 'postgres':
+            cursor.execute('''CREATE TABLE IF NOT EXISTS subjective_answers (id SERIAL PRIMARY KEY, exam_code VARCHAR(100), student_email VARCHAR(255), question_id INT, image_url TEXT, marks FLOAT DEFAULT 0.0, is_checked BOOLEAN DEFAULT FALSE);''')
+        else:
+            cursor.execute('''CREATE TABLE IF NOT EXISTS subjective_answers (id INTEGER PRIMARY KEY AUTOINCREMENT, exam_code TEXT, student_email TEXT, question_id INTEGER, image_url TEXT, marks REAL DEFAULT 0.0, is_checked BOOLEAN DEFAULT FALSE);''')
+        conn.commit()
+        # ==============================================================
         
         conn.close()
     except Exception as e:
@@ -296,11 +309,13 @@ def get_exam_questions():
             conn.close()
             return jsonify({"success": False, "error": "Exam not found!"}), 404
 
-        cursor.execute(f"SELECT id, question_text, option_a, option_b, option_c, option_d, correct_option FROM questions WHERE exam_code = {ph}", (exam_code,))
+        # Database fetch update
+        cursor.execute(f"SELECT id, question_text, option_a, option_b, option_c, option_d, correct_option, question_type FROM questions WHERE exam_code = {ph}", (exam_code,))
         questions_rows = cursor.fetchall()
         conn.close()
 
-        questions_list = [{"id": q["id"], "q_text": q["question_text"], "opt_a": q["option_a"], "opt_b": q["option_b"], "opt_c": q["option_c"], "opt_d": q["option_d"], "correct": q["correct_option"]} for q in questions_rows]
+        # Questions list build update
+        questions_list = [{"id": q["id"], "q_text": q["question_text"], "opt_a": q["option_a"], "opt_b": q["option_b"], "opt_c": q["option_c"], "opt_d": q["option_d"], "correct": q["correct_option"], "question_type": q["question_type"] if "question_type" in q.keys() else "mcq"} for q in questions_rows]
         
         if isinstance(exam_info, dict):
             e_name = exam_info['exam_name']
@@ -389,8 +404,9 @@ def create_exam_api():
         cursor.execute(f"INSERT INTO exams (exam_code, exam_name, timer_minutes, negative_marks, teacher_email, class_name, subject, is_private) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
                        (exam_code, exam_name, timer, negative_marks, teacher_email, class_name, subject, is_private))
         for q in questions:
-            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
-                           (exam_code, q['question_text'], q['option_a'], q['option_b'], q['option_c'], q['option_d'], q['correct_option']))
+            q_type = q.get('question_type', 'mcq')
+            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option, question_type) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
+                           (exam_code, q['question_text'], q.get('option_a', ''), q.get('option_b', ''), q.get('option_c', ''), q.get('option_d', ''), q.get('correct_option', ''), q_type))
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Exam published successfully!"})
@@ -739,20 +755,20 @@ def extract_pdf_gemini():
             if text: extracted_text += text
         if not extracted_text.strip(): return jsonify({"success": False, "error": "No readable text found in the PDF!"}), 400
         prompt = """
-        Extract all the multiple-choice questions from the following text. 
+        Extract all the questions from the following text. Categorize each question as either 'mcq' or 'subjective' (long descriptive question).
         You must respond ONLY with a valid JSON array of objects. Do not include markdown formatting like ```json or ```.
         Each object must strictly follow this exact structure:
         [
             {
+                "question_type": "mcq", /* use "mcq" if it has options, or "subjective" if it is a long question without options */
                 "question_text": "The question here?",
-                "option_a": "Option A text",
-                "option_b": "Option B text",
-                "option_c": "Option C text",
-                "option_d": "Option D text",
-                "correct_option": "A" 
+                "option_a": "Option A text", /* leave empty string "" if subjective */
+                "option_b": "Option B text", /* leave empty string "" if subjective */
+                "option_c": "Option C text", /* leave empty string "" if subjective */
+                "option_d": "Option D text", /* leave empty string "" if subjective */
+                "correct_option": "A" /* leave empty string "" if subjective */
             }
         ]
-        Make sure 'correct_option' only contains A, B, C, or D.
         Text to analyze:
         """ + extracted_text
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key={api_key}"
@@ -929,7 +945,9 @@ def teacher_update_exam():
         cursor.execute(f"UPDATE exams SET exam_name = {ph}, timer_minutes = {ph}, negative_marks = {ph}, class_name = {ph}, subject = {ph}, is_private = {ph} WHERE exam_code = {ph}", (exam_name, timer, negative_marks, class_name, subject, is_private, exam_code))
         cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
         for q in questions:
-            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", (exam_code, q['question_text'], q['option_a'], q['option_b'], q['option_c'], q['option_d'], q['correct_option']))
+            q_type = q.get('question_type', 'mcq')
+            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option, question_type) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
+                           (exam_code, q['question_text'], q.get('option_a', ''), q.get('option_b', ''), q.get('option_c', ''), q.get('option_d', ''), q.get('correct_option', ''), q_type))
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Exam updated successfully!"})
