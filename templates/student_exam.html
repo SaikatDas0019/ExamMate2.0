@@ -138,7 +138,7 @@
                     <div>
                         <strong>Strict Anti-Cheat Policy:</strong><br>
                         ১. পরীক্ষা চলাকালীন ট্যাব বা অ্যাপ পরিবর্তন করা নিষেধ।<br>
-                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো (Floating Window) ব্যবহার করা যাবে লম্বা।<br>
+                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো (Floating Window) ব্যবহার করা যাবে না।<br>
                         ৩. স্ক্রিনশট তোলা বা ওপর থেকে নোটিফিকেশন/নেভিগেশন বার টানা সম্পূর্ণ নিষিদ্ধ।<br><br>
                         <i>এই নিয়ম ভাঙলে আপনি ওয়ার্নিং পাবেন। ৫ বার ওয়ার্নিং পেলে পরীক্ষা স্বয়ংক্রিয়ভাবে বাতিল (Auto-Submit) হয়ে যাবে!</i>
                     </div>
@@ -188,7 +188,6 @@
 
         <div id="result-section" class="result-box">
             <div class="sticky-header">
-                <!-- Back button - ID যুক্ত করা হয়েছে যাতে গেস্টদের জন্য লুকানো যায় -->
                 <button class="btn-back" id="header-back-btn" onclick="window.location.href='student_dashboard.html'">‹</button>
                 <h2 style="margin:0; font-size: 1.2rem;">Exam Completed</h2>
             </div>
@@ -202,10 +201,10 @@
                 <div id="detailed-review-container"></div>
             </div>
 
-            <!-- Dashboard Button (শুধু অ্যাপের ভেতরে বা লগইন অবস্থায় দেখা যাবে) -->
+            <!-- Dashboard Button -->
             <button class="btn btn-next" id="btn-return-dashboard" style="width:100%; margin-top:20px; display: none;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
 
-            <!-- Continue to App Button (শুধু ব্রাউজারে গেস্ট অবস্থায় দেখা যাবে) -->
+            <!-- Continue to App Button -->
             <button id="btn-continue-app" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 15px; width: 100%; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openAppOrDownload()">
                 <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> View Analysis in App
             </button>
@@ -214,6 +213,8 @@
     </div>
 
     <script>
+        const IMGBB_API_KEY = "ba43fc54f2948f599fa2b205647bf8cc"; // ImgBB API Key
+
         let dbQuestions = [];
         let examName = "";
         let examCode = "";
@@ -246,7 +247,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             examCode = urlParams.get('code');
 
-            // --- অ্যাপ (WebView) এবং ব্রাউজার চেকিং লজিক ---
             const currentUserEmail = localStorage.getItem('userEmail');
             const dashBtn = document.getElementById('btn-return-dashboard');
             const continueBtn = document.getElementById('btn-continue-app');
@@ -257,17 +257,14 @@
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
             if (isAppWebView || isStandalone || (currentUserEmail && currentUserEmail.trim() !== "")) {
-                // ইউজার অলরেডি অ্যাপের ভেতরে আছে বা লগইন করা আছে
                 if(dashBtn) dashBtn.style.display = 'block';     
                 if(continueBtn) continueBtn.style.display = 'none';      
                 if(headBackBtn) headBackBtn.style.display = 'block'; 
             } else {
-                // ইউজার Chrome বা অন্য কোনো মোবাইল ব্রাউজারে আছে এবং লগইন নেই (গেস্ট)
                 if(dashBtn) dashBtn.style.display = 'none';      
                 if(continueBtn) continueBtn.style.display = 'block';     
                 if(headBackBtn) headBackBtn.style.display = 'none'; 
             }
-            // ------------------------------------
             
             if(!examCode) {
                 document.getElementById('error-msg').innerText = "No Exam Code Selected!";
@@ -290,15 +287,13 @@
                     examMinutesLimit = data.timer_minutes;
                     negativeMarksPerWrong = parseFloat(data.negative_marks) || 0;
                     
-                    // Setup Instruction Screen
                     document.getElementById('inst-q').innerText = totalQuestions;
                     document.getElementById('inst-time').innerText = examMinutesLimit;
                     document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
 
-                    // Check if resuming exam
                     const savedState = localStorage.getItem(`exam_state_${examCode}`);
                     if(savedState) {
-                        startActualExam(true); // Bypass instruction if returning from pause/refresh
+                        startActualExam(true); 
                     } else {
                         document.getElementById('error-section').style.display = 'none';
                         document.getElementById('instruction-section').style.display = 'block';
@@ -318,7 +313,6 @@
             document.getElementById('exam-section').style.display = 'block';
             document.getElementById('display-exam-name').innerText = examName;
             
-            // Full Screen Mode Enforce
             enterFullScreen();
 
             if(isResuming) {
@@ -342,8 +336,7 @@
             setInterval(saveExamState, 5000);
         }
 
-        // ---------------- Security / Anti-Cheat Module Start ----------------
-        
+        // Anti-Cheat Logic
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('copy', event => {
             event.preventDefault();
@@ -372,28 +365,23 @@
             }
         }
 
-        // Anti-Cheat 1: Tab Switch Detection
         document.addEventListener("visibilitychange", () => {
             if (document.hidden && isExamActive && !isPaused) {
                 triggerWarning("আপনি ট্যাব পরিবর্তন করেছেন বা ব্রাউজার মিনিমাইজ করার চেষ্টা করেছেন!");
             }
         });
 
-        // Anti-Cheat 2: Floating window / Lost Focus (Google Lens detection)
         window.addEventListener("blur", () => {
             if (isExamActive && !isPaused) {
                 triggerWarning("আপনি অন্য উইন্ডো বা অ্যাপে (যেমন গুগল লেন্স) টাচ করার চেষ্টা করেছেন!");
             }
         });
 
-        // Anti-Cheat 3: Exited Full Screen (Notification bar / Split screen / Screenshot attempt)
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement && isExamActive && !isPaused) {
                 triggerWarning("আপনি ফুল-স্ক্রিন মোড থেকে বের হওয়ার বা নোটিফিকেশন/নেভিগেশন বার টানার চেষ্টা করেছেন!");
             }
         });
-        
-        // ---------------- Security / Anti-Cheat Module End ----------------
 
         function startTimer() {
             timerInterval = setInterval(() => {
@@ -445,6 +433,72 @@
             }
         }
 
+        // Image Compression Function 
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = event => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; // Limit image resolution to save space/bandwidth
+                        let scaleSize = 1;
+                        if (img.width > MAX_WIDTH) { scaleSize = MAX_WIDTH / img.width; }
+                        canvas.width = img.width * scaleSize;
+                        canvas.height = img.height * scaleSize;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        canvas.toBlob((blob) => {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', 0.6); // 60% quality compression
+                    };
+                };
+            });
+        }
+
+        // Upload to ImgBB Function
+        async function uploadImageToImgBB(fileInputId, index) {
+            const fileInput = document.getElementById(fileInputId);
+            if (!fileInput.files || fileInput.files.length === 0) return;
+            
+            const file = fileInput.files[0];
+            const statusText = document.getElementById(`upload-status-${index}`);
+            statusText.innerHTML = "⏳ Uploading... Please wait / আপলোড হচ্ছে...";
+            statusText.style.color = "#d97706";
+            
+            const compressedFile = await compressImage(file);
+            let formData = new FormData();
+            formData.append("image", compressedFile);
+            
+            try {
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    const imgUrl = data.data.url;
+                    studentAnswers[index] = imgUrl; // Save ImgBB URL in answers
+                    saveExamState();
+                    statusText.innerHTML = "✅ Uploaded Successfully! / আপলোড সফল হয়েছে!";
+                    statusText.style.color = "#10b981";
+                    
+                    const thumb = document.getElementById(`thumb-${index}`);
+                    thumb.src = imgUrl;
+                    thumb.style.display = "block";
+                } else {
+                    statusText.innerHTML = "❌ Upload Failed. Try again.";
+                    statusText.style.color = "#ef4444";
+                }
+            } catch (e) {
+                statusText.innerHTML = "❌ Network Error.";
+                statusText.style.color = "#ef4444";
+            }
+        }
+
         function loadQuestion(index) {
             const q = dbQuestions[index];
             const qTextElement = document.getElementById('question-text');
@@ -457,36 +511,58 @@
             const optsContainer = document.getElementById('options-container');
             optsContainer.innerHTML = ""; 
             
-            const options = [
-                { letter: 'A', text: q.opt_a }, { letter: 'B', text: q.opt_b },
-                { letter: 'C', text: q.opt_c }, { letter: 'D', text: q.opt_d }
-            ];
+            if (q.question_type === 'subjective') {
+                // UI for Subjective Questions
+                const savedUrl = (studentAnswers[index] && studentAnswers[index].startsWith('http')) ? studentAnswers[index] : '';
+                optsContainer.innerHTML = `
+                    <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; text-align: center; border-radius: 12px; margin-top: 15px;">
+                        <i class="fas fa-camera" style="font-size: 2rem; color: #94a3b8; margin-bottom: 10px;"></i>
+                        <p style="margin:0 0 15px 0; color:#475569; font-size:0.95rem;">খাতায় উত্তর লিখে ছবি আপলোড করুন</p>
+                        
+                        <input type="file" id="file-upload-${index}" accept="image/*" capture="environment" style="display:none;" onchange="uploadImageToImgBB('file-upload-${index}', ${index})">
+                        
+                        <button onclick="document.getElementById('file-upload-${index}').click()" style="background:#3b82f6; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">
+                            <i class="fas fa-upload"></i> Choose Image / ছবি তুলুন
+                        </button>
+                        
+                        <p id="upload-status-${index}" style="margin-top:10px; font-size:0.85rem; font-weight:bold;"></p>
+                        
+                        <img id="thumb-${index}" src="${savedUrl}" style="max-width: 100%; border-radius: 8px; margin-top: 10px; display: ${savedUrl ? 'block' : 'none'}; border: 1px solid #e2e8f0;">
+                    </div>
+                `;
+            } else {
+                // UI for MCQ Questions
+                const options = [
+                    { letter: 'A', text: q.opt_a }, { letter: 'B', text: q.opt_b },
+                    { letter: 'C', text: q.opt_c }, { letter: 'D', text: q.opt_d }
+                ];
 
-            options.forEach(opt => {
-                const isSelected = studentAnswers[index] === opt.letter;
-                const label = document.createElement('label');
-                label.className = `option-label ${isSelected ? 'selected' : ''}`;
-                
-                const input = document.createElement('input');
-                input.type = 'radio';
-                input.name = `q${index}`;
-                input.value = opt.letter;
-                if(isSelected) input.checked = true;
-                
-                input.onclick = () => {
-                    studentAnswers[index] = opt.letter;
-                    saveExamState(); 
-                    loadQuestion(index); 
-                };
+                options.forEach(opt => {
+                    const isSelected = studentAnswers[index] === opt.letter;
+                    const label = document.createElement('label');
+                    label.className = `option-label ${isSelected ? 'selected' : ''}`;
+                    
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = `q${index}`;
+                    input.value = opt.letter;
+                    if(isSelected) input.checked = true;
+                    
+                    input.onclick = () => {
+                        studentAnswers[index] = opt.letter;
+                        saveExamState(); 
+                        loadQuestion(index); 
+                    };
 
-                label.appendChild(input);
-                
-                const span = document.createElement('span');
-                span.innerHTML = ` ${opt.letter}. ${opt.text}`;
-                label.appendChild(span);
-                
-                optsContainer.appendChild(label);
-            });
+                    label.appendChild(input);
+                    
+                    const span = document.createElement('span');
+                    span.innerHTML = ` ${opt.letter}. ${opt.text}`;
+                    label.appendChild(span);
+                    
+                    optsContainer.appendChild(label);
+                });
+            }
 
             document.getElementById('btn-prev').disabled = (index === 0);
             if (index === totalQuestions - 1) {
@@ -510,42 +586,55 @@
             loadQuestion(currentIndex);
         }
 
-        // Render Detailed Review Function
         function renderDetailedReview() {
             const container = document.getElementById('detailed-review-container');
             let html = '';
 
             dbQuestions.forEach((q, idx) => {
                 const studentAns = studentAnswers[idx];
+                const isAttempted = studentAns !== undefined && studentAns !== "";
                 const isCorrect = studentAns === q.correct;
-                const isAttempted = studentAns !== undefined;
 
                 let cardClass = 'review-unattempted';
                 if (isAttempted) {
-                    cardClass = isCorrect ? 'review-correct' : 'review-wrong';
+                    if (q.question_type === 'subjective') {
+                        cardClass = 'review-unattempted'; // Subjectives are pending review by default
+                    } else {
+                        cardClass = isCorrect ? 'review-correct' : 'review-wrong';
+                    }
                 }
-
-                const getOptionText = (letter) => {
-                    if(letter === 'A') return q.opt_a;
-                    if(letter === 'B') return q.opt_b;
-                    if(letter === 'C') return q.opt_c;
-                    if(letter === 'D') return q.opt_d;
-                    return '';
-                };
 
                 html += `<div class="review-card ${cardClass}">`;
                 html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text}</div>`;
 
-                if (isAttempted) {
-                    if (isCorrect) {
-                        html += `<div class="review-ans ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                if (q.question_type === 'subjective') {
+                    if (isAttempted && studentAns.startsWith('http')) {
+                        html += `<div class="review-ans" style="color: #0369a1; font-weight:bold;">✅ Answer Uploaded:</div>`;
+                        html += `<img src="${studentAns}" style="max-width:100%; border-radius:8px; margin-top:10px; border:1px solid #cbd5e1;">`;
+                        html += `<div class="ans-real-correct" style="color:#d97706; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fcd34d;">⏳ Pending Teacher Review</div>`;
                     } else {
-                        html += `<div class="review-ans ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
-                        html += `<div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                        html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ No Image Uploaded</div>`;
                     }
                 } else {
-                    html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div>`;
-                    html += `<div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                    const getOptionText = (letter) => {
+                        if(letter === 'A') return q.opt_a;
+                        if(letter === 'B') return q.opt_b;
+                        if(letter === 'C') return q.opt_c;
+                        if(letter === 'D') return q.opt_d;
+                        return '';
+                    };
+
+                    if (isAttempted) {
+                        if (isCorrect) {
+                            html += `<div class="review-ans ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                        } else {
+                            html += `<div class="review-ans ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                            html += `<div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                        }
+                    } else {
+                        html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div>`;
+                        html += `<div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                    }
                 }
 
                 html += `</div>`;
@@ -563,8 +652,9 @@
             clearInterval(timerInterval); 
             
             let score = 0;
+            // Calculate marks only for MCQs right now. Subjective will be evaluated later.
             dbQuestions.forEach((q, idx) => {
-                if (studentAnswers[idx]) { 
+                if (q.question_type === 'mcq' && studentAnswers[idx]) { 
                     if (studentAnswers[idx] === q.correct) {
                         score += 1;
                     } else {
@@ -575,11 +665,11 @@
 
             let displayScore = Number.isInteger(score) ? score : parseFloat(score.toFixed(2));
             
-            // Guest User/Logged In Logic
             const storedEmail = localStorage.getItem('userEmail');
             const userEmail = (storedEmail && storedEmail.trim() !== "") ? storedEmail : "Guest Account";
 
             try {
+                // MCQ Result Submission API
                 await fetch('/api/submit-exam-result', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -592,6 +682,9 @@
                         warnings: warningsCount
                     })
                 });
+
+                // (পরবর্তী আপডেটে Subjective Question-এর লিংকগুলো ডাটাবেসে সেভ করার API কল এখানে যুক্ত হবে)
+
                 localStorage.setItem('exam_result_' + examCode, JSON.stringify({ answers: studentAnswers, score: displayScore, total: totalQuestions }));
                 localStorage.removeItem(`exam_state_${examCode}`);
             } catch (e) { 
@@ -602,23 +695,17 @@
             document.getElementById('pause-overlay').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
             
-            // Exit fullscreen after submission
             if (document.fullscreenElement) { document.exitFullscreen(); }
             
             document.getElementById('final-score').innerText = `${displayScore}/${totalQuestions}`;
             
-            // Call the function to render detailed review
             renderDetailedReview();
         }
 
         function openAppOrDownload() {
-            // ব্রাউজার থেকে ডাইরেক্ট ওপেন করা ব্লক থাকায় আমরা ইউজারকে গাইড করছি
             alert("আপনার ফোনে যদি ExamMate অ্যাপটি আগে থেকেই থাকে, তবে দয়া করে সেটি মেনু থেকে সরাসরি ওপেন করুন। আপনার রেজাল্ট সেখানে সিঙ্ক হয়ে যাবে।\n\nআর অ্যাপ না থাকলে 'OK' প্রেস করে অ্যাপটি ডাউনলোড করে নিন!");
-            
-            // এরপর তাকে ডাউনলোড পেজে নিয়ে যাবে
             window.location.href = "https://exammate-sscn.onrender.com/download";
         }
-
     </script>
 </body>
 </html>
