@@ -162,7 +162,12 @@ def init_db():
         # === UPDATE FOR VERSION 2.0 ===
         try:
             cursor.execute("ALTER TABLE questions ADD COLUMN question_type VARCHAR(20) DEFAULT 'mcq';")
-            cursor.execute("ALTER TABLE questions ADD COLUMN max_marks FLOAT DEFAULT 1.0;") # নতুন যোগ করা হয়েছে
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
+        try:
+            cursor.execute("ALTER TABLE questions ADD COLUMN max_marks FLOAT DEFAULT 1.0;")
             conn.commit()
         except Exception:
             if db_type == 'postgres': conn.rollback()
@@ -1060,11 +1065,34 @@ def run_fix_db():
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("ALTER TABLE exams ADD COLUMN is_private BOOLEAN DEFAULT FALSE;")
+        
+        try: 
+            cursor.execute("ALTER TABLE exams ADD COLUMN is_private BOOLEAN DEFAULT FALSE;")
+            conn.commit()
+        except: 
+            if db_type == 'postgres': conn.rollback()
+            
+        try: 
+            cursor.execute("ALTER TABLE questions ADD COLUMN question_type VARCHAR(20) DEFAULT 'mcq';")
+            conn.commit()
+        except: 
+            if db_type == 'postgres': conn.rollback()
+            
+        try: 
+            cursor.execute("ALTER TABLE questions ADD COLUMN max_marks FLOAT DEFAULT 1.0;")
+            conn.commit()
+        except: 
+            if db_type == 'postgres': conn.rollback()
+            
+        if db_type == 'postgres':
+            cursor.execute('''CREATE TABLE IF NOT EXISTS subjective_answers (id SERIAL PRIMARY KEY, exam_code VARCHAR(100), student_email VARCHAR(255), question_id INT, image_url TEXT, marks FLOAT DEFAULT 0.0, is_checked BOOLEAN DEFAULT FALSE);''')
+        else:
+            cursor.execute('''CREATE TABLE IF NOT EXISTS subjective_answers (id INTEGER PRIMARY KEY AUTOINCREMENT, exam_code TEXT, student_email TEXT, question_id INTEGER, image_url TEXT, marks REAL DEFAULT 0.0, is_checked BOOLEAN DEFAULT FALSE);''')
+        
         conn.commit()
         conn.close()
-        return "<h3>🎉 Database successfully fixed!</h3>"
-    except Exception as e: return f"<h3>⚠️ Note:</h3> <p>{str(e)}</p>"
+        return "<h3>🎉 Database successfully fixed! Version 2.0 tables and columns are ready!</h3>"
+    except Exception as e: return f"<h3>⚠️ Error:</h3> <p>{str(e)}</p>"
 
 
 # === এখানে শুধু একটি ফাংশন রাখা হলো ===
