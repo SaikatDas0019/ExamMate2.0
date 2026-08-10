@@ -136,27 +136,33 @@
                 
                 <div class="prompt-code">
                     <button onclick="copyPrompt('ai-prompt', 'copy-btn')" id="copy-btn" class="copy-btn"><i class="fas fa-copy"></i> Copy Prompt</button>
-                    <code id="ai-prompt">You are an expert Math text formatter and AI assistant. Please read the provided text/images and extract the multiple-choice questions with absolute accuracy.
-You MUST format the extracted output EXACTLY like this:
-[Question Text with all numbers, variables, and math symbols enclosed in single dollar signs]
+                    <code id="ai-prompt">You are an expert Math text formatter and AI assistant. Please read the provided text/images and extract the questions.
+
+1. If a question is multiple-choice, format it EXACTLY like this:
+Q: [Question Text]
 A) [Option A]
 B) [Option B]
 C) [Option C]
 D) [Option D]
 Ans: [Correct Option A/B/C/D]
 
+2. If a question is descriptive/subjective (long question without options), format it EXACTLY like this:
+Q: [Question Text]
+
 CRITICAL RULES FOR MATH & FORMATTING:
 1. You MUST enclose ALL numbers, formulas, fractions, variables, and math symbols strictly inside single dollar signs (...). Example: \frac{1}{2}, x^2, 5.
-2. ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped! You must write \frac{a}{b},\sin,\cos,\tan,\sqrt{x}. Do NOT use double dollar signs ($$).
-3. Keep the regular text (Bengali/English) completely outside the dollar signs. Do not use markdown code blocks.
-4. Once the formatting is complete, generate and provide the final output inside a downloadable or copyable .txt file format.</code>
+2. ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped!
+3. Keep the regular text completely outside the dollar signs. Do not use markdown code blocks.</code>
                 </div>
             </div>
 
             <div class="manual-guide">
                 <div class="manual-guide-title"><i class="fas fa-edit"></i> <span id="manual-title-text">ম্যানুয়ালি প্রশ্ন দেওয়ার নিয়ম:</span></div>
                 <span id="manual-desc-text">আপনি চাইলে নিজে টাইপ করেও প্রশ্ন দিতে পারেন। শুধু নিচের মতো করে সাজিয়ে বক্সে পেস্ট করুন:</span>
-                <div style="background: #ffffff; padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; color: #334155; border: 1px solid #e2e8f0;">
+                <div style="background: #ffffff; padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; color: #334155; border: 1px solid #e2e8f0; font-size: 0.8rem;">
+                    <strong>লং কোশ্চেন (Subjective):</strong><br>
+                    Q: নিউটনের দ্বিতীয় সূত্রটি লেখো।<br><br>
+                    <strong>এমসিকিউ (MCQ):</strong><br>
                     Q: What is the capital of France?<br>
                     A) Berlin<br>
                     B) Paris<br>
@@ -235,27 +241,20 @@ CRITICAL RULES FOR MATH & FORMATTING:
                 previewSection.classList.remove('hidden');
                 let html = '';
                 tempQuestions.forEach((q, i) => {
-                    html += `
-                    <div class="q-card">
-                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                            <strong style="color: #3b82f6;">Q${i + 1}:</strong>
-                            <button onclick="removeQuestion(${i})" style="background:none; border:none; color:#ef4444; font-size:0.85rem; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
-                        </div>
-                        
-                        <div class="math-preview">
-                            <strong>Q:</strong> ${q.question_text} <br><br>
+                    let typeBadge = q.question_type === 'mcq' 
+                        ? `<span style="background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:12px; font-size:0.75rem;">MCQ</span>` 
+                        : `<span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:12px; font-size:0.75rem;">Subjective (Image Upload)</span>`;
+
+                    let optionsHtml = q.question_type === 'mcq' ? `
+                        <div class="math-preview" style="font-size: 0.85rem; color: #475569;">
                             A) ${q.option_a} &nbsp;&nbsp; B) ${q.option_b} &nbsp;&nbsp; C) ${q.option_c} &nbsp;&nbsp; D) ${q.option_d}
                         </div>
-
-                        <textarea onchange="updateQData(${i}, 'question_text', this.value)">${q.question_text}</textarea>
-                        
                         <div class="grid-2x2" style="gap:5px; margin-bottom: 10px;">
                             <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">A)</strong> <input type="text" value="${q.option_a}" onchange="updateQData(${i}, 'option_a', this.value)"></div>
                             <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">B)</strong> <input type="text" value="${q.option_b}" onchange="updateQData(${i}, 'option_b', this.value)"></div>
                             <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">C)</strong> <input type="text" value="${q.option_c}" onchange="updateQData(${i}, 'option_c', this.value)"></div>
                             <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">D)</strong> <input type="text" value="${q.option_d}" onchange="updateQData(${i}, 'option_d', this.value)"></div>
                         </div>
-                        
                         <div style="display:flex; align-items:center; gap:10px; background:#e0f2fe; padding:8px; border-radius:6px;">
                             <label style="font-size:0.85rem; font-weight:bold; color:#0369a1; margin:0;">সঠিক উত্তর সিলেক্ট করুন:</label>
                             <select onchange="updateQData(${i}, 'correct_option', this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #bae6fd;">
@@ -265,6 +264,25 @@ CRITICAL RULES FOR MATH & FORMATTING:
                                 <option value="D" ${q.correct_option === 'D' ? 'selected' : ''}>D</option>
                             </select>
                         </div>
+                    ` : `
+                        <div style="background:#fef3c7; padding:10px; border-radius:6px; color:#b45309; font-size:0.85rem; text-align:center; margin-top:10px; border:1px dashed #f59e0b;">
+                            <i class="fas fa-camera"></i> পরীক্ষার সময় স্টুডেন্টরা এখানে খাতার ছবি আপলোড করবে।
+                        </div>
+                    `;
+
+                    html += `
+                    <div class="q-card">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px; align-items: center;">
+                            <strong style="color: #3b82f6;">Q${i + 1}: ${typeBadge}</strong>
+                            <button onclick="removeQuestion(${i})" style="background:none; border:none; color:#ef4444; font-size:0.85rem; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                        
+                        <div class="math-preview" style="margin-bottom: 5px;">
+                            <strong>Q:</strong> ${q.question_text}
+                        </div>
+                        <textarea onchange="updateQData(${i}, 'question_text', this.value)">${q.question_text}</textarea>
+                        
+                        ${optionsHtml}
                     </div>`;
                 });
                 previewList.innerHTML = html;
@@ -287,8 +305,10 @@ CRITICAL RULES FOR MATH & FORMATTING:
                 let line = lines[i];
                 let optMatch = line.match(/^[\(]?([A-D])[a-z]?[\)\.]?\s+(.*)/i); 
                 let ansMatch = line.match(/^(Ans|Answer|উত্তর)[\s\:\.\-]*([A-D])/i);
+                let qMatch = line.match(/^(Q|Question|প্রশ্ন)[\s\:\.\-]+(.*)/i);
 
-                if (ansMatch && currentQ) { currentQ.correct_option = ansMatch[2].toUpperCase();
+                if (ansMatch && currentQ) { 
+                    currentQ.correct_option = ansMatch[2].toUpperCase();
                 } else if (optMatch && currentQ) {
                     let optChar = optMatch[1].toUpperCase();
                     if (optChar === 'A') currentQ.option_a = optMatch[2];
@@ -296,17 +316,27 @@ CRITICAL RULES FOR MATH & FORMATTING:
                     if (optChar === 'C') currentQ.option_c = optMatch[2];
                     if (optChar === 'D') currentQ.option_d = optMatch[2];
                 } else {
-                    if (currentQ && (!currentQ.option_a || !currentQ.option_b)) { currentQ.question_text += " \n" + line; 
-                    } else {
-                        if (currentQ) { tempQuestions.push(currentQ); addedCount++; }
-                        let qText = line.replace(/^(Q|Question|প্রশ্ন)[\s\:\.\-]+/i, '');
-                        currentQ = { question_text: qText, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A" };
+                    if (qMatch || (!currentQ && line.length > 0)) {
+                        if (currentQ) { 
+                            currentQ.question_type = (currentQ.option_a && currentQ.option_b) ? 'mcq' : 'subjective';
+                            tempQuestions.push(currentQ); 
+                            addedCount++; 
+                        }
+                        let qText = qMatch ? qMatch[2] : line;
+                        currentQ = { question_text: qText, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A", question_type: "subjective" };
+                    } else if (currentQ) {
+                        if (!currentQ.option_a) { currentQ.question_text += " \n" + line; }
                     }
                 }
             }
-            if (currentQ) { tempQuestions.push(currentQ); addedCount++; }
+            if (currentQ) { 
+                currentQ.question_type = (currentQ.option_a && currentQ.option_b) ? 'mcq' : 'subjective';
+                tempQuestions.push(currentQ); 
+                addedCount++; 
+            }
 
-            document.getElementById('scanned-text-result').value = ""; updateUI();
+            document.getElementById('scanned-text-result').value = ""; 
+            updateUI();
             alert(`✅ ${addedCount} Questions added successfully!`);
         }
 
