@@ -1066,21 +1066,8 @@ def run_fix_db():
         return "<h3>🎉 Database successfully fixed!</h3>"
     except Exception as e: return f"<h3>⚠️ Note:</h3> <p>{str(e)}</p>"
 
-@app.route('/api/teacher-pending-evaluations', methods=['POST'])
-def get_pending_evaluations():
-    data = request.get_json()
-    exam_code = data.get('exam_code')
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT s.id, s.student_email, s.image_url, q.question_text FROM subjective_answers s JOIN questions q ON s.question_id = q.id WHERE s.exam_code = {ph} AND s.is_checked = FALSE", (exam_code,))
-        rows = cursor.fetchall()
-        conn.close()
-        evaluations = [{"id": r["id"], "student_email": r["student_email"], "image_url": r["image_url"], "question_text": r["question_text"]} for r in rows]
-        return jsonify({"success": True, "evaluations": evaluations})
-    except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
 
+# === এখানে শুধু একটি ফাংশন রাখা হলো ===
 @app.route('/api/teacher-pending-evaluations', methods=['POST'])
 def get_pending_evaluations():
     data = request.get_json()
@@ -1097,6 +1084,32 @@ def get_pending_evaluations():
         return jsonify({"success": True, "evaluations": evaluations})
     except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
 
+
+@app.route('/api/teacher-submit-evaluation', methods=['POST'])
+def submit_evaluation():
+    data = request.get_json()
+    ans_id = data.get('answer_id')
+    marks = float(data.get('marks', 0.0))
+    student_email = data.get('student_email')
+    exam_code = data.get('exam_code')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # ১. খাতা চেকড করা এবং মার্কস সেভ করা
+        cursor.execute(f"UPDATE subjective_answers SET marks = {ph}, is_checked = TRUE WHERE id = {ph}", (marks, ans_id))
+        
+        # ২. স্টুডেন্টের মেইন রেজাল্ট টেবিলের স্কোরের সাথে ম্যানুয়াল মার্কস যোগ করে দেওয়া
+        cursor.execute(f"UPDATE results SET score = score + {ph} WHERE student_email = {ph} AND exam_code = {ph}", (marks, student_email, exam_code))
+        
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
+
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+
