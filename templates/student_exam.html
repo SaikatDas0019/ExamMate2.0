@@ -28,7 +28,6 @@
         }
         .container { width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh; padding: 0 1.5rem 1.5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
         
-        /* Fixed Sticky Header Style */
         .sticky-header {
             position: sticky;
             top: 0;
@@ -42,7 +41,6 @@
             gap: 12px;
         }
 
-        /* Fixed Back Button Style ("‹") */
         .btn-back {
             background: transparent;
             border: none;
@@ -57,7 +55,6 @@
         .message-box { text-align: center; margin-top: 50px; }
         .message-box h2 { color: #ef4444; }
         
-        /* Instruction Screen Styling */
         .instruction-box { background: white; border-radius: 12px; margin-top: 10px; text-align: center; }
         .instruction-box h2 { color: #1e3a8a; margin-top: 0; font-size: 1.4rem;}
         .rule-list { text-align: left; background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; list-style: none; margin-bottom: 20px;}
@@ -95,7 +92,6 @@
         .score-circle { width: 150px; height: 150px; border-radius: 50%; background: #eff6ff; border: 8px solid #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 900; color: #1e3a8a; margin: 0 auto 20px auto; }
         .success-text { color: #16a34a; font-weight: 600; margin-bottom: 20px; }
         
-        /* Detailed Review Styles */
         .review-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; }
         .review-correct { background: #f0fdf4; border-color: #bbf7d0; }
         .review-wrong { background: #fef2f2; border-color: #fecaca; }
@@ -133,7 +129,6 @@
             <button class="btn btn-next" style="margin-top:20px;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
         </div>
 
-        <!-- Pre-Exam Instructions Section -->
         <div id="instruction-section" class="instruction-box">
             <div class="sticky-header">
                 <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
@@ -149,8 +144,8 @@
                         <strong>Strict Anti-Cheat Policy:</strong><br>
                         ১. পরীক্ষা চলাকালীন ট্যাব বা অ্যাপ পরিবর্তন করা নিষেধ।<br>
                         ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো (Floating Window) ব্যবহার করা যাবে না।<br>
-                        ৩. স্ক্রিনশট তোলা বা ওপর থেকে নোটিফিকেশন/নেভিগেশন বার টানা সম্পূর্ণ নিষিদ্ধ।<br><br>
-                        <i>এই নিয়ম ভাঙলে আপনি ওয়ার্নিং পাবেন। ৫ বার ওয়ার্নিং পেলে পরীক্ষা স্বয়ংক্রিয়ভাবে বাতিল (Auto-Submit) হয়ে যাবে!</i>
+                        ৩. স্ক্রিনশট তোলা বা ওপর থেকে নোটিফিকেশন বার টানা সম্পূর্ণ নিষিদ্ধ।<br><br>
+                        <i>এই নিয়ম ভাঙলে আপনি ওয়ার্নিং পাবেন। ৫ বার ওয়ার্নিং পেলে পরীক্ষা স্বয়ংক্রিয়ভাবে বাতিল হয়ে যাবে!</i>
                     </div>
                 </li>
             </ul>
@@ -205,16 +200,13 @@
             <div class="score-circle" id="final-score">0/0</div>
             <p class="success-text">Your answers have been submitted successfully!</p>
             
-            <!-- Detailed Review Section -->
             <div style="text-align: left; margin-top: 30px;">
                 <h3 style="font-size: 1.1rem; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px;">📋 Detailed Answer Review</h3>
                 <div id="detailed-review-container"></div>
             </div>
 
-            <!-- Dashboard Button -->
             <button class="btn btn-next" id="btn-return-dashboard" style="width:100%; margin-top:20px; display: none;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
 
-            <!-- Continue to App Button -->
             <button id="btn-continue-app" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 15px; width: 100%; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openAppOrDownload()">
                 <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> View Analysis in App
             </button>
@@ -233,7 +225,7 @@
     </div>
 
     <script>
-        const IMGBB_API_KEY = "ba43fc59f3848f599fa2b205647bf8cc"; // ImgBB API Key
+        const IMGBB_API_KEY = "ba43fc59f3848f599fa2b205647bf8cc";
 
         let dbQuestions = [];
         let examName = "";
@@ -255,16 +247,14 @@
         let isUploadingImage = false; 
         let currentUploadIndex = -1;
         let cropperInstance = null;
+        let filePickerTimeout = null;
 
-        // Checkbox Logic for Start Button
         document.getElementById('agree-check').onchange = function(e) {
             const btn = document.getElementById('start-btn');
             if(e.target.checked) {
-                btn.disabled = false;
-                btn.style.opacity = '1';
+                btn.disabled = false; btn.style.opacity = '1';
             } else {
-                btn.disabled = true;
-                btn.style.opacity = '0.5';
+                btn.disabled = true; btn.style.opacity = '0.5';
             }
         };
 
@@ -299,8 +289,7 @@
 
             try {
                 const response = await fetch('/api/get-exam-questions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ exam_code: examCode })
                 });
                 const data = await response.json();
@@ -317,9 +306,8 @@
                     document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
 
                     const savedState = localStorage.getItem(`exam_state_${examCode}`);
-                    if(savedState) {
-                        startActualExam(true); 
-                    } else {
+                    if(savedState) { startActualExam(true); } 
+                    else {
                         document.getElementById('error-section').style.display = 'none';
                         document.getElementById('instruction-section').style.display = 'block';
                     }
@@ -361,8 +349,7 @@
             setInterval(saveExamState, 5000);
         }
 
-        // ---------------- Security / Anti-Cheat Module Start ----------------
-        
+        // ---------------- Security / Anti-Cheat Module ----------------
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('copy', event => {
             event.preventDefault();
@@ -377,6 +364,7 @@
         }
 
         function triggerWarning(reason) {
+            // Check if uploading image - bypass warning
             if (!isExamActive || isPaused || isUploadingImage) return;
 
             warningsCount++;
@@ -391,36 +379,24 @@
             }
         }
 
-        // Anti-Cheat: Tab Switch Detection (Ignored if opening camera)
         document.addEventListener("visibilitychange", () => {
             if (document.hidden && isExamActive && !isPaused && !isUploadingImage) {
                 triggerWarning("আপনি ট্যাব পরিবর্তন করেছেন বা ব্রাউজার মিনিমাইজ করার চেষ্টা করেছেন!");
             }
         });
 
-        // Anti-Cheat: Lost Focus (Ignored if opening camera)
         window.addEventListener("blur", () => {
             if (isExamActive && !isPaused && !isUploadingImage) {
                 triggerWarning("আপনি অন্য উইন্ডো বা অ্যাপে টাচ করার চেষ্টা করেছেন!");
             }
         });
 
-        // Anti-Cheat: Exited Full Screen (Ignored if opening camera)
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement && isExamActive && !isPaused && !isUploadingImage) {
                 triggerWarning("আপনি ফুল-স্ক্রিন মোড থেকে বের হওয়ার বা নোটিফিকেশন বার টানার চেষ্টা করেছেন!");
             }
         });
-
-        // Reset anti-cheat bypass when returning to the app window
-        window.addEventListener("focus", () => {
-            if (isUploadingImage) {
-                // Give a small delay so anti-cheat doesn't trigger immediately
-                setTimeout(() => { isUploadingImage = false; }, 1500); 
-            }
-        });
-        
-        // ---------------- Security / Anti-Cheat Module End ----------------
+        // --------------------------------------------------------------
 
         function startTimer() {
             timerInterval = setInterval(() => {
@@ -474,16 +450,36 @@
 
         // ================= IMAGE UPLOAD & CROPPER SYSTEM =================
         function triggerCamera(index) {
-            isUploadingImage = true; // Tell anti-cheat to relax
+            isUploadingImage = true; // Suspend anti-cheat
             currentUploadIndex = index;
             document.getElementById(`file-upload-${index}`).click();
+            
+            // Listen for window focus to detect if user canceled file picker
+            const onFocus = () => {
+                window.removeEventListener('focus', onFocus);
+                // Give it 2 seconds to see if handleFileSelect triggers
+                filePickerTimeout = setTimeout(() => {
+                    const cropModal = document.getElementById('crop-modal');
+                    if (cropModal.style.display !== 'flex') {
+                        isUploadingImage = false; // Turn anti-cheat back on
+                        enterFullScreen();
+                    }
+                }, 2000);
+            };
+            window.addEventListener('focus', onFocus);
         }
 
         function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) { isUploadingImage = false; return; }
+            clearTimeout(filePickerTimeout); // User didn't cancel
+            isUploadingImage = true; // Keep suspended
 
-            // Show Cropper Modal
+            const file = event.target.files[0];
+            if (!file) { 
+                isUploadingImage = false; 
+                enterFullScreen();
+                return; 
+            }
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 document.getElementById('crop-modal').style.display = 'flex';
@@ -502,7 +498,12 @@
         function cancelCrop() {
             document.getElementById('crop-modal').style.display = 'none';
             if(cropperInstance) cropperInstance.destroy();
-            isUploadingImage = false;
+            
+            // Allow state to settle, then resume anti-cheat
+            setTimeout(() => {
+                isUploadingImage = false;
+                enterFullScreen();
+            }, 500);
         }
 
         function confirmCropAndUpload() {
@@ -513,7 +514,6 @@
             
             document.getElementById('crop-modal').style.display = 'none';
             
-            // Getting cropped image directly as a Blob
             cropperInstance.getCroppedCanvas({ maxWidth: 1000, maxHeight: 1000 }).toBlob(async (blob) => {
                 let formData = new FormData();
                 formData.append("image", blob, "answer.jpg");
@@ -522,7 +522,7 @@
                     const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
                     const data = await res.json();
                     if (data.success) {
-                        studentAnswers[currentUploadIndex] = data.data.url; // Save ImgBB URL
+                        studentAnswers[currentUploadIndex] = data.data.url; 
                         statusText.innerText = "✅ Uploaded Successfully! / আপলোড সফল হয়েছে!";
                         statusText.style.color = "#10b981";
                         const thumb = document.getElementById(`thumb-${currentUploadIndex}`);
@@ -538,9 +538,12 @@
                     statusText.style.color = "#ef4444";
                 }
                 
-                // Allow a tiny delay before turning anti-cheat fully back on
-                setTimeout(() => { isUploadingImage = false; }, 1000); 
-            }, 'image/jpeg', 0.7); // 70% quality compression
+                // Allow network requests to finish, then resume anti-cheat
+                setTimeout(() => { 
+                    isUploadingImage = false; 
+                    enterFullScreen();
+                }, 1000); 
+            }, 'image/jpeg', 0.7);
         }
         // =================================================================
 
@@ -708,7 +711,6 @@
                     }
                 }
                 
-                // Subjective image URLs collection
                 if (q.question_type === 'subjective' && studentAnswers[idx] && studentAnswers[idx].startsWith('http')) {
                     subjArray.push({
                         question_id: q.id,
@@ -733,7 +735,7 @@
                         score: displayScore, 
                         total_questions: totalQuestions,
                         warnings: warningsCount,
-                        subjective_answers: subjArray // Sending images to backend
+                        subjective_answers: subjArray 
                     })
                 });
                 localStorage.setItem('exam_result_' + examCode, JSON.stringify({ answers: studentAnswers, score: displayScore, total: totalQuestions }));
