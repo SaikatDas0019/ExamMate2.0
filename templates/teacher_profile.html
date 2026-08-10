@@ -237,7 +237,7 @@
         <div id="panel-active" class="panel-view">
             <div class="sticky-header" style="justify-content: flex-start;">
                 <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1>Active Exams</h1><p>Manage, Edit or Delete</p></div>
+                <div class="page-header"><h1>Active Exams</h1><p>Manage, Edit or Evaluate</p></div>
             </div>
             <div id="active-exams-feed">
                 <p style="text-align:center; color:#64748b; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading exams...</p>
@@ -252,6 +252,17 @@
             </div>
             <div id="edit-exam-content" style="padding-bottom: 20px;">
                 <!-- Edit Form will be injected here -->
+            </div>
+        </div>
+
+        <!-- PANEL 6: MANUAL EVALUATION (খাতা দেখা) -->
+        <div id="panel-evaluate" class="panel-view">
+            <div class="sticky-header" style="justify-content: flex-start;">
+                <button class="btn-back" onclick="openPanel('panel-active')">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header"><h1 id="eval-exam-header-title">View Answers</h1><p>Check pending subjective papers</p></div>
+            </div>
+            <div id="eval-content" style="padding-bottom: 20px;">
+                <!-- Answer Cards will be injected here -->
             </div>
         </div>
 
@@ -439,7 +450,6 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Filter exams strictly to those created by this teacher
                     const myExamCodes = globalData.examStats ? globalData.examStats.map(e => e.code) : [];
                     const myExams = data.feed.filter(ex => myExamCodes.includes(ex.code));
 
@@ -474,6 +484,7 @@
                                     </div>
                                 </div>
                                 <div style="display:flex; gap:10px; margin-top:10px;">
+                                    <button class="btn-save" style="flex:1; background:#fef3c7; color:#d97706; border:1px solid #fde68a; font-size:0.9rem;" onclick="openEvaluationPanel('${ex.code}')"><i class="fas fa-check-double"></i> খাতা দেখুন</button>
                                     <button class="btn-save" style="flex:1; background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; font-size:0.9rem;" onclick="openEditExamPanel('${ex.code}')"><i class="fas fa-edit"></i> Edit</button>
                                     <button class="btn-save" style="flex:1; background:#fef2f2; color:#ef4444; border:1px solid #fecaca; font-size:0.9rem;" onclick="deleteSpecificExam('${ex.code}')"><i class="fas fa-trash"></i> Delete</button>
                                 </div>
@@ -482,6 +493,84 @@
                     } else { container.innerHTML = `<p style="text-align:center; color:#64748b;">No active exams found.</p>`; }
                 }
             } catch(e) { container.innerHTML = `<p style="text-align:center; color:#ef4444;">Error loading exams.</p>`; }
+        }
+
+        // ================= EVALUATION SYSTEM (খাতা দেখা) =================
+        async function openEvaluationPanel(code) {
+            openPanel('panel-evaluate');
+            document.getElementById('eval-exam-header-title').innerText = "Evaluate: " + code;
+            const container = document.getElementById('eval-content');
+            container.innerHTML = '<p style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> খাতা খোঁজা হচ্ছে...</p>';
+
+            try {
+                const response = await fetch('/api/teacher-pending-evaluations', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ exam_code: code })
+                });
+                const data = await response.json();
+                
+                if(data.success) {
+                    if(data.evaluations.length === 0) {
+                        container.innerHTML = '<div style="text-align:center; padding:40px 20px;"><i class="fas fa-check-circle" style="font-size:3rem; color:#10b981; margin-bottom:15px;"></i><h3 style="color:#1e293b; margin:0;">কোনো খাতা বাকি নেই!</h3><p style="color:#64748b; font-size:0.9rem;">সব স্টুডেন্টের খাতা দেখা সম্পন্ন হয়েছে।</p></div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.evaluations.forEach(ans => {
+                        html += `
+                            <div class="feed-card" id="eval-card-${ans.id}" style="border-left: 4px solid #3b82f6;">
+                                <div style="font-size:0.85rem; color:#64748b; margin-bottom:10px;">Student: <strong>${ans.student_email}</strong></div>
+                                <div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:1.1rem;"><span style="color:#3b82f6;">Q:</span> ${ans.question_text}</div>
+                                <div style="position:relative; margin-bottom:15px; border-radius:8px; overflow:hidden; border:1px solid #cbd5e1;">
+                                    <img src="${ans.image_url}" style="width:100%; display:block;" onclick="window.open('${ans.image_url}', '_blank')">
+                                    <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); color:white; padding:4px 8px; border-radius:6px; font-size:0.8rem; pointer-events:none;"><i class="fas fa-search-plus"></i> Tap to zoom</div>
+                                </div>
+                                <div class="input-group">
+                                    <label>Marks / প্রাপ্ত নম্বর দিন:</label>
+                                    <input type="number" step="0.5" id="mark-${ans.id}" class="form-input" placeholder="e.g. 5" style="border: 2px solid #3b82f6;">
+                                </div>
+                                <button class="btn-save" style="width:100%; box-shadow:0 4px 6px rgba(16,185,129,0.3);" onclick="submitEvaluation(${ans.id}, '${ans.student_email}', '${code}')"><i class="fas fa-paper-plane"></i> Submit Marks</button>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading papers.</p>';
+                }
+            } catch(e) {
+                container.innerHTML = '<p style="text-align:center; color:#ef4444;">Network Error. Please try again.</p>';
+            }
+        }
+
+        async function submitEvaluation(ansId, studentEmail, examCode) {
+            const markInput = document.getElementById(`mark-${ansId}`).value;
+            if(markInput === "") { alert("দয়া করে নম্বর দিন!"); return; }
+
+            const btn = event.currentTarget;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/teacher-submit-evaluation', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ answer_id: ansId, marks: markInput, student_email: studentEmail, exam_code: examCode })
+                });
+                const data = await response.json();
+                if(data.success) {
+                    const card = document.getElementById(`eval-card-${ansId}`);
+                    card.style.transition = "opacity 0.3s ease";
+                    card.style.opacity = "0";
+                    setTimeout(() => { card.style.display = 'none'; }, 300);
+                } else {
+                    alert("Error submitting marks.");
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Marks';
+                    btn.disabled = false;
+                }
+            } catch(e) { 
+                alert("Network Error."); 
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Marks';
+                btn.disabled = false;
+            }
         }
 
         // ================= DELETE EXAM =================
@@ -558,7 +647,6 @@
                     `;
                     document.getElementById('edit-exam-content').innerHTML = html;
                     
-                    const qList = document.getElementById('edit-questions-list');
                     data.questions.forEach((q) => {
                         addEditQuestionBox(q);
                     });
@@ -566,31 +654,57 @@
             } catch(e) { document.getElementById('edit-exam-content').innerHTML = '<p style="color:red; text-align:center;">Error loading data.</p>'; }
         }
 
+        // Changed logic to handle Question Type (Subjective vs MCQ)
+        function toggleEditOptions(selectElem) {
+            const box = selectElem.closest('.q-edit-box');
+            const mcqArea = box.querySelector('.mcq-options-area');
+            if(selectElem.value === 'subjective') {
+                mcqArea.style.display = 'none';
+            } else {
+                mcqArea.style.display = 'block';
+            }
+        }
+
         function addEditQuestionBox(qData = null) {
             editQuestionCounter++;
-            let q = qData || { q_text: '', opt_a: '', opt_b: '', opt_c: '', opt_d: '', correct: 'A' };
+            let q = qData || { q_text: '', opt_a: '', opt_b: '', opt_c: '', opt_d: '', correct: 'A', question_type: 'mcq' };
             const qList = document.getElementById('edit-questions-list');
             
             const div = document.createElement('div');
             div.className = "q-edit-box";
+            
+            let mcqDisplay = q.question_type === 'subjective' ? 'none' : 'block';
+
             div.innerHTML = `
                 <div class="q-edit-header">
                     <span>Question</span>
                     <button class="btn-remove-q" onclick="this.parentElement.parentElement.remove()"><i class="fas fa-times"></i> Remove</button>
                 </div>
-                <textarea class="form-input q-text" placeholder="Write question here...">${q.q_text}</textarea>
-                <input type="text" class="form-input opt-a" placeholder="Option A" value="${q.opt_a}">
-                <input type="text" class="form-input opt-b" placeholder="Option B" value="${q.opt_b}">
-                <input type="text" class="form-input opt-c" placeholder="Option C" value="${q.opt_c}">
-                <input type="text" class="form-input opt-d" placeholder="Option D" value="${q.opt_d}">
-                <div class="input-group" style="margin-bottom:0;">
-                    <label>Correct Answer:</label>
-                    <select class="form-input opt-ans">
-                        <option value="A" ${q.correct === 'A' ? 'selected' : ''}>Option A</option>
-                        <option value="B" ${q.correct === 'B' ? 'selected' : ''}>Option B</option>
-                        <option value="C" ${q.correct === 'C' ? 'selected' : ''}>Option C</option>
-                        <option value="D" ${q.correct === 'D' ? 'selected' : ''}>Option D</option>
+                
+                <div class="input-group" style="margin-bottom:10px;">
+                    <label>Question Type / ধরন:</label>
+                    <select class="form-input q-type" style="background:#f8fafc;" onchange="toggleEditOptions(this)">
+                        <option value="mcq" ${q.question_type !== 'subjective' ? 'selected' : ''}>MCQ (Multiple Choice)</option>
+                        <option value="subjective" ${q.question_type === 'subjective' ? 'selected' : ''}>Subjective (Image Upload)</option>
                     </select>
+                </div>
+
+                <textarea class="form-input q-text" placeholder="Write question here...">${q.q_text}</textarea>
+                
+                <div class="mcq-options-area" style="display: ${mcqDisplay}; margin-top:10px;">
+                    <input type="text" class="form-input opt-a" placeholder="Option A" value="${q.opt_a || ''}" style="margin-bottom:10px;">
+                    <input type="text" class="form-input opt-b" placeholder="Option B" value="${q.opt_b || ''}" style="margin-bottom:10px;">
+                    <input type="text" class="form-input opt-c" placeholder="Option C" value="${q.opt_c || ''}" style="margin-bottom:10px;">
+                    <input type="text" class="form-input opt-d" placeholder="Option D" value="${q.opt_d || ''}" style="margin-bottom:10px;">
+                    <div class="input-group" style="margin-bottom:0;">
+                        <label>Correct Answer:</label>
+                        <select class="form-input opt-ans">
+                            <option value="A" ${q.correct === 'A' ? 'selected' : ''}>Option A</option>
+                            <option value="B" ${q.correct === 'B' ? 'selected' : ''}>Option B</option>
+                            <option value="C" ${q.correct === 'C' ? 'selected' : ''}>Option C</option>
+                            <option value="D" ${q.correct === 'D' ? 'selected' : ''}>Option D</option>
+                        </select>
+                    </div>
                 </div>
             `;
             qList.appendChild(div);
@@ -611,15 +725,24 @@
             
             boxes.forEach(box => {
                 let qt = box.querySelector('.q-text').value.trim();
+                let qType = box.querySelector('.q-type').value;
+
                 if(qt) {
-                    questions.push({
-                        question_text: qt,
-                        option_a: box.querySelector('.opt-a').value.trim(),
-                        option_b: box.querySelector('.opt-b').value.trim(),
-                        option_c: box.querySelector('.opt-c').value.trim(),
-                        option_d: box.querySelector('.opt-d').value.trim(),
-                        correct_option: box.querySelector('.opt-ans').value
-                    });
+                    if (qType === 'subjective') {
+                        questions.push({
+                            question_text: qt, option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'A', question_type: 'subjective'
+                        });
+                    } else {
+                        questions.push({
+                            question_text: qt,
+                            option_a: box.querySelector('.opt-a').value.trim(),
+                            option_b: box.querySelector('.opt-b').value.trim(),
+                            option_c: box.querySelector('.opt-c').value.trim(),
+                            option_d: box.querySelector('.opt-d').value.trim(),
+                            correct_option: box.querySelector('.opt-ans').value,
+                            question_type: 'mcq'
+                        });
+                    }
                 }
             });
             
