@@ -542,9 +542,20 @@
             }
         }
 
-        async function submitEvaluation(ansId, studentEmail, examCode) {
+        async function submitEvaluation(ansId, studentEmail, examCode, maxMarks) {
             const markInput = document.getElementById(`mark-${ansId}`).value;
+            
             if(markInput === "") { alert("দয়া করে নম্বর দিন!"); return; }
+            
+            // Validation: Max Marks Check
+            if(parseFloat(markInput) > parseFloat(maxMarks)) {
+                alert(`⚠️ আপনি সর্বোচ্চ ${maxMarks} এর বেশি নম্বর দিতে পারবেন না!`);
+                return;
+            }
+            if(parseFloat(markInput) < 0) {
+                alert(`⚠️ নম্বর 0 এর কম হতে পারে না!`);
+                return;
+            }
 
             const btn = event.currentTarget;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
@@ -561,17 +572,10 @@
                     card.style.transition = "opacity 0.3s ease";
                     card.style.opacity = "0";
                     setTimeout(() => { card.style.display = 'none'; }, 300);
-                } else {
-                    alert("Error submitting marks.");
-                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Marks';
-                    btn.disabled = false;
-                }
-            } catch(e) { 
-                alert("Network Error."); 
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Marks';
-                btn.disabled = false;
-            }
+                } else { alert("Error submitting marks."); btn.disabled = false; }
+            } catch(e) { alert("Network Error."); btn.disabled = false; }
         }
+
 
         // ================= DELETE EXAM =================
         async function deleteSpecificExam(examCode) {
