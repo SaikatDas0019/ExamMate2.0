@@ -27,7 +27,7 @@
         
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; color: #333333; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
-        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 10px; background-color: #ffffff; color: #1a1a1a; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; outline: none; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 10px; background-color: #ffffff; color: #1a1a1a; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; outline: none; font-family: inherit;}
         .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: #3b82f6; }
         
         .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -60,7 +60,7 @@
 <body>
 
     <div class="container">
-        <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
+        <button class="back-btn" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
 
         <h1>Create Custom Exam</h1>
 
@@ -277,6 +277,11 @@ CRITICAL RULES FOR MATH & FORMATTING:
                             <button onclick="removeQuestion(${i})" style="background:none; border:none; color:#ef4444; font-size:0.85rem; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
                         </div>
                         
+                        <div class="input-group" style="margin-bottom: 10px;">
+                            <label style="color:#10b981; font-size:0.85rem;">Marks (প্রশ্নের মান):</label>
+                            <input type="number" step="0.5" value="${q.max_marks || (q.question_type==='mcq' ? 1.0 : 5.0)}" onchange="updateQData(${i}, 'max_marks', this.value)" style="border: 2px solid #10b981; border-radius:6px; font-weight:bold;">
+                        </div>
+
                         <div class="math-preview" style="margin-bottom: 5px;">
                             <strong>Q:</strong> ${q.question_text}
                         </div>
@@ -290,8 +295,13 @@ CRITICAL RULES FOR MATH & FORMATTING:
             } else { previewSection.classList.add('hidden'); }
         }
 
-        function updateQData(index, field, value) { tempQuestions[index][field] = value; updateUI(); }
-        function removeQuestion(index) { if(confirm("প্রশ্নটি মুছে ফেলতে চান?")) { tempQuestions.splice(index, 1); updateUI(); } }
+        function updateQData(index, field, value) { 
+            tempQuestions[index][field] = field === 'max_marks' ? parseFloat(value) : value; 
+            updateUI(); 
+        }
+        function removeQuestion(index) { 
+            if(confirm("প্রশ্নটি মুছে ফেলতে চান?")) { tempQuestions.splice(index, 1); updateUI(); } 
+        }
 
         function processScannedText() {
             const text = document.getElementById('scanned-text-result').value;
@@ -319,11 +329,12 @@ CRITICAL RULES FOR MATH & FORMATTING:
                     if (qMatch || (!currentQ && line.length > 0)) {
                         if (currentQ) { 
                             currentQ.question_type = (currentQ.option_a && currentQ.option_b) ? 'mcq' : 'subjective';
+                            currentQ.max_marks = currentQ.question_type === 'mcq' ? 1.0 : 5.0;
                             tempQuestions.push(currentQ); 
                             addedCount++; 
                         }
                         let qText = qMatch ? qMatch[2] : line;
-                        currentQ = { question_text: qText, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A", question_type: "subjective" };
+                        currentQ = { question_text: qText, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A", question_type: "subjective", max_marks: 5.0 };
                     } else if (currentQ) {
                         if (!currentQ.option_a) { currentQ.question_text += " \n" + line; }
                     }
@@ -331,6 +342,7 @@ CRITICAL RULES FOR MATH & FORMATTING:
             }
             if (currentQ) { 
                 currentQ.question_type = (currentQ.option_a && currentQ.option_b) ? 'mcq' : 'subjective';
+                currentQ.max_marks = currentQ.question_type === 'mcq' ? 1.0 : 5.0;
                 tempQuestions.push(currentQ); 
                 addedCount++; 
             }
