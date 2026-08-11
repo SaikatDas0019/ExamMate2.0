@@ -731,10 +731,13 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email: userEmail, exam_code: examCode, exam_name: examName, 
-                        score: displayScore, total_questions: totalQuestions, warnings: warningsCount,
+                        score: displayScore, 
+                        total_questions: totalMarks, // <-- এখানে আগে totalQuestions ছিল, এখন totalMarks করে দেওয়া হয়েছে
+                        warnings: warningsCount,
                         subjective_answers: subjArray 
                     })
                 });
+
                 localStorage.setItem('exam_result_' + examCode, JSON.stringify({ answers: studentAnswers, score: displayScore, total: totalMarks }));
                 localStorage.removeItem(`exam_state_${examCode}`);
             } catch (e) { console.log("Failed to save score"); }
