@@ -268,8 +268,6 @@
             fetchAndSetAvatarColor(); 
         };
 
-
-
         async function loadFilterDropdowns() {
             try {
                 const res = await fetch('/api/get-filter-options');
@@ -336,23 +334,35 @@
                 const saveClass = ex.is_saved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
 
                 let actionHTML = '';
-                if (ex.is_private) {
-                    actionHTML = `<button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Exam Code to Unlock</button>`;
-                } else if (ex.is_attempted) {
+                
+                // ১. চেক করা হচ্ছে পরীক্ষা আগে দেওয়া হয়েছে কিনা (প্রাইভেট ও পাবলিক দুটোর জন্যই)
+                if (ex.is_attempted) {
                     let displayScore = Number.isInteger(ex.score) ? ex.score : parseFloat(ex.score).toFixed(2);
                     let displayTotal = Number.isInteger(ex.total) ? ex.total : parseFloat(ex.total).toFixed(2);
                     let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
                     
+                    let reattemptBtn = '';
+                    if (ex.is_private) {
+                        reattemptBtn = `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExam('${ex.code}')">🔒 Re-attempt</button>`;
+                    } else {
+                        reattemptBtn = `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}'">Re-attempt</button>`;
+                    }
+
                     actionHTML = `
                     <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">
                         ✅ Already Attempted (Score: ${displayScore}/${displayTotal} - ${acc}%)
                     </div>
                     <div style="display:flex; gap:10px;">
                         <button class="btn-result" style="flex:1;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
-                        <button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}'">Re-attempt</button>
+                        ${reattemptBtn}
                     </div>`;
                 } else {
-                    actionHTML = `<button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
+                    // ২. পরীক্ষা না দেওয়া থাকলে
+                    if (ex.is_private) {
+                        actionHTML = `<button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Exam Code to Unlock</button>`;
+                    } else {
+                        actionHTML = `<button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
+                    }
                 }
 
                 container.innerHTML += `
@@ -369,7 +379,7 @@
                     <div class="feed-body">
                         <h3 class="feed-title">${ex.name} ${ex.is_private ? '🔒' : ''}</h3>
                         <div class="feed-tags">
-                            <span class="feed-tag">Code: ${ex.is_private ? 'HIDDEN' : ex.code}</span>
+                            <!-- Code tag has been removed -->
                             <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
                             <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
                             <span class="feed-tag" style="background:${ex.is_private ? '#fef3c7; color:#92400e;' : '#dcfce7; color:#166534;'}">${ex.is_private ? 'Private' : 'Public'}</span>
@@ -384,7 +394,6 @@
                             <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
                                 <i class="${heartClass}"></i> <span>${ex.likes}</span>
                             </button>
-                            <!-- Share Count Removed -->
                             <button class="action-btn" onclick="shareRealExam('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">
                                 <i class="far fa-share-square"></i>
                             </button>
@@ -600,7 +609,7 @@
         }
 
         // ==========================================
-        // CUSTOM SHARE MODAL LOGIC (New Addition)
+        // CUSTOM SHARE MODAL LOGIC
         // ==========================================
         let currentShareData = {};
 
@@ -652,7 +661,6 @@
             if (!avatar) return;
 
             try {
-                // ডাটাবেস থেকে স্টুডেন্টের প্রোগ্রেস বা স্কোর নিয়ে আসা হচ্ছে
                 const response = await fetch('/api/get-student-progress', {
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
@@ -663,32 +671,26 @@
                 if (data.success) {
                     const score = parseFloat(data.score) || 0;
                     
-                    // ডিফল্ট: Novice (Score < 50)
                     let avatarBg = "linear-gradient(135deg, #34d399, #10b981)"; 
                     let borderColor = "#10b981";
 
                     if (score >= 50 && score < 100) { 
-                        // Bronze Scholar
                         avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)";
                         borderColor = "#d97706";
                     } 
                     else if (score >= 100 && score < 300) { 
-                        // Silver Achiever
                         avatarBg = "linear-gradient(135deg, #94a3b8, #475569)";
                         borderColor = "#475569";
                     } 
                     else if (score >= 300 && score < 600) { 
-                        // Gold Master
                         avatarBg = "linear-gradient(135deg, #fde047, #eab308)";
                         borderColor = "#eab308";
                     } 
                     else if (score >= 600) { 
-                        // Platinum Legend
                         avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
                         borderColor = "transparent";
                     }
 
-                    // আইকনে কালার অ্যাপ্লাই করা হচ্ছে
                     avatar.style.background = avatarBg;
                     avatar.style.color = "#ffffff";
                     
