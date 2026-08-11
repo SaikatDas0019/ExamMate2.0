@@ -416,8 +416,9 @@ def create_exam_api():
                        (exam_code, exam_name, timer, negative_marks, teacher_email, class_name, subject, is_private))
         for q in questions:
             q_type = q.get('question_type', 'mcq')
-            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option, question_type) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
-                           (exam_code, q['question_text'], q.get('option_a', ''), q.get('option_b', ''), q.get('option_c', ''), q.get('option_d', ''), q.get('correct_option', ''), q_type))
+            max_marks = float(q.get('max_marks', 1.0)) # <-- Fix applied here
+            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option, question_type, max_marks) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
+                           (exam_code, q['question_text'], q.get('option_a', ''), q.get('option_b', ''), q.get('option_c', ''), q.get('option_d', ''), q.get('correct_option', ''), q_type, max_marks))
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Exam published successfully!"})
@@ -957,8 +958,9 @@ def teacher_update_exam():
         cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
         for q in questions:
             q_type = q.get('question_type', 'mcq')
-            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option, question_type) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
-                           (exam_code, q['question_text'], q.get('option_a', ''), q.get('option_b', ''), q.get('option_c', ''), q.get('option_d', ''), q.get('correct_option', ''), q_type))
+            max_marks = float(q.get('max_marks', 1.0)) # <-- Fix applied here
+            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option, question_type, max_marks) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
+                           (exam_code, q['question_text'], q.get('option_a', ''), q.get('option_b', ''), q.get('option_c', ''), q.get('option_d', ''), q.get('correct_option', ''), q_type, max_marks))
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Exam updated successfully!"})
@@ -1136,7 +1138,40 @@ def submit_evaluation():
         return jsonify({"success": True})
     except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
 
-
+@app.route('/api/get-student-exam-review', methods=['POST'])
+def get_student_exam_review():
+    data = request.get_json()
+    email = data.get('email')
+    exam_code = data.get('exam_code')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # স্টুডেন্ট আগে পরীক্ষা দিয়েছে কি না এবং তার আপডেট স্কোর কত সেটা চেক করা
+        cursor.execute(f"SELECT score FROM results WHERE student_email = {ph} AND exam_code = {ph}", (email, exam_code))
+        res = cursor.fetchone()
+        if not res:
+            conn.close()
+            return jsonify({"success": True, "taken": False})
+        
+        total_score = res['score'] if isinstance(res, dict) else res[0]
+        
+        # শিক্ষকের দেওয়া নম্বরগুলো তুলে আনা
+        cursor.execute(f"SELECT question_id, marks, is_checked FROM subjective_answers WHERE student_email = {ph} AND exam_code = {ph}", (email, exam_code))
+        subj_rows = cursor.fetchall()
+        subj_data = {}
+        for r in subj_rows:
+            qid = r['question_id'] if isinstance(r, dict) else r[0]
+            mks = r['marks'] if isinstance(r, dict) else r[1]
+            chk = r['is_checked'] if isinstance(r, dict) else r[2]
+            subj_data[str(qid)] = {"marks": mks, "is_checked": chk}
+            
+        conn.close()
+        return jsonify({"success": True, "taken": True, "total_score": total_score, "subjective_data": subj_data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+        
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
