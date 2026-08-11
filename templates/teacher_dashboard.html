@@ -328,7 +328,6 @@
                                     <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
                                         <i class="${heartClass}"></i> <span>${ex.likes}</span>
                                     </button>
-                                    <!-- Share Count Removed -->
                                     <button class="action-btn" onclick="shareExam('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">
                                         <i class="fas fa-share-alt"></i>
                                     </button>
@@ -338,7 +337,7 @@
                                 </button>
                             </div>
 
-                            <button class="btn-view-questions" onclick="viewExamQuestions('${ex.code}', '${ex.subject}', '${ex.name.replace(/'/g, "\\'")}')">👁️ View Questions & Answers</button>
+                            <button class="btn-view-questions" onclick="viewExamQuestions('${ex.code}', '${ex.subject}', '${ex.name.replace(/'/g, "\\'")}', ${ex.is_private})">👁️ View Questions & Answers</button>
                         </div>`;
                     });
                 } else {
@@ -371,7 +370,15 @@
             });
         }
 
-        async function viewExamQuestions(code, subject, name) {
+        async function viewExamQuestions(code, subject, name, isPrivate) {
+            if (isPrivate) {
+                const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code to view questions:");
+                if (!enteredCode || enteredCode.trim().toUpperCase() !== code.toUpperCase()) {
+                    alert("❌ Incorrect Exam Code! Access denied.");
+                    return;
+                }
+            }
+            
             trackTeacherActivity("", subject);
             const container = document.getElementById('vq-container');
             container.innerHTML = '<p style="text-align:center; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading questions...</p>';
