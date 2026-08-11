@@ -198,6 +198,51 @@
     </div>
 
     <script>
+        // ================= SMART DEEP LINK REDIRECT =================
+        document.addEventListener("DOMContentLoaded", () => {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            // চেক করা হচ্ছে ইউজার অ্যাপের ভেতরে আছেন নাকি বাইরের ব্রাউজারে
+            const isAppWebView = /wv/.test(userAgent) || /Android.*Version\/[0-9].[0-9]/.test(userAgent);
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            if (!isAppWebView && !isStandalone) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const currentExamCode = urlParams.get('code');
+                
+                if (currentExamCode) {
+                    // Android Intent URI (আপনার অ্যাপের প্যাকেজ নেম দিয়ে)
+                    const fallbackUrl = encodeURIComponent(window.location.href);
+                    const intentUrl = `intent://${window.location.host}/student_exam.html?code=${currentExamCode}#Intent;scheme=https;package=com.saikat.exammate;S.browser_fallback_url=${fallbackUrl};end`;
+                    
+                    // স্ক্রিনের একদম ওপরে একটি "Open App" ব্যানার অ্যাড করা হচ্ছে
+                    const bannerHTML = `
+                        <div id="deep-link-banner" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 15px 20px; text-align: center; position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 12px;">
+                            <span style="font-weight: 600; font-size: 0.95rem;">📱 ভালো অভিজ্ঞতার জন্য সরাসরি অ্যাপে পরীক্ষা দিন!</span>
+                            <div style="display: flex; gap: 10px; justify-content: center;">
+                                <button onclick="window.location.href='${intentUrl}'" style="flex: 1; max-width: 150px; background: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">Open App 🚀</button>
+                                <button onclick="hideDeepLinkBanner()" style="max-width: 120px; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.5); padding: 10px; border-radius: 8px; cursor: pointer;">Stay in Browser</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.insertAdjacentHTML('afterbegin', bannerHTML);
+                    
+                    // ব্যানারের জন্য কন্টেন্ট সামান্য নিচে নামিয়ে দেওয়া
+                    const container = document.querySelector('.container');
+                    if(container) {
+                        container.style.paddingTop = "110px";
+                        container.style.transition = "padding-top 0.3s ease";
+                    }
+                }
+            }
+        });
+
+        function hideDeepLinkBanner() {
+            document.getElementById('deep-link-banner').style.display = 'none';
+            const container = document.querySelector('.container');
+            if(container) container.style.paddingTop = "0";
+        }
+        // =============================================================
+
         const IMGBB_API_KEY = "ba43fc59f3848f599fa2b205647bf8cc"; 
 
         let dbQuestions = [];
