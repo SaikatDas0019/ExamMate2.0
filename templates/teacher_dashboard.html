@@ -313,7 +313,6 @@
                             <div class="feed-body">
                                 <h3 class="feed-title">${ex.name} ${ex.is_private ? '🔒' : ''}</h3>
                                 <div class="feed-tags">
-                                    <span class="feed-tag">Code: ${ex.code}</span>
                                     <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
                                     <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
                                     <span class="feed-tag" style="background:${ex.is_private ? '#fef3c7; color:#92400e;' : '#dcfce7; color:#166534;'}">${ex.is_private ? 'Private' : 'Public'}</span>
@@ -395,9 +394,10 @@
                 if (data.success) {
                     let html = '';
                     data.questions.forEach((q, idx) => {
+                        let maxMarks = q.max_marks || (q.question_type === 'mcq' ? 1.0 : 5.0);
                         html += `
                         <div class="q-preview-card">
-                            <strong>Q${idx + 1}: ${q.q_text}</strong><br>
+                            <strong>Q${idx + 1}: ${q.q_text}</strong> <span style="font-size:0.8rem; color:#64748b;">(Marks: ${maxMarks})</span><br>
                             <div style="margin-top:5px; font-size:0.85rem; color:#475569;">
                                 A) ${q.opt_a}<br>B) ${q.opt_b}<br>C) ${q.opt_c}<br>D) ${q.opt_d}
                             </div>
@@ -437,7 +437,7 @@
         }
 
         // ==========================================
-        // CUSTOM SHARE MODAL LOGIC (New Addition)
+        // CUSTOM SHARE MODAL LOGIC
         // ==========================================
         let currentShareData = {};
 
