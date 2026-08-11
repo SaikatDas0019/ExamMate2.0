@@ -835,7 +835,7 @@ def update_profile():
 @app.route('/logout')
 def logout():
     session.pop('user', None)
-    return redirect('/?logout=1')
+    return redirect('/login') 
 
 @app.route('/api/check-login-status', methods=['POST'])
 def check_login_status():
