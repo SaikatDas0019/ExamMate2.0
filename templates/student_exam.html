@@ -20,6 +20,7 @@
         body { 
             background-color: #f9fafb; color: #333333; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; justify-content: center; 
             -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none;
+            overscroll-behavior-y: none; /* Pull-to-refresh Block */
         }
         .container { width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh; padding: 0 1.5rem 1.5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
         
@@ -110,7 +111,7 @@
                     <div>
                         <strong>Strict Anti-Cheat Policy:</strong><br>
                         ১. পরীক্ষা চলাকালীন ট্যাব বা অ্যাপ পরিবর্তন করা নিষেধ।<br>
-                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো ব্যবহার করা যাবে না।<br>
+                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো ব্যবহার করা যাবেবিধা।<br>
                         ৩. স্ক্রিনশট তোলা সম্পূর্ণ নিষিদ্ধ।<br><br>
                         <i>এই নিয়ম ভাঙলে আপনি ওয়ার্নিং পাবেন। ৫ বার ওয়ার্নিং পেলে পরীক্ষা বাতিল হয়ে যাবে! (ছবি তোলার সময় সিস্টেম নিজে থেকেই কিছুক্ষণের জন্য অ্যান্টি-চিট পজ করে রাখবে, তাই চিন্তার কিছু নেই।)</i>
                     </div>
@@ -232,7 +233,6 @@
             examCode = urlParams.get('code');
             const isReattempt = urlParams.get('reattempt') === 'true'; 
 
-            // রিএটেম্পট হলে পুরনো লোকাল ডেটা মুছে ফেলা হচ্ছে যাতে নতুন করে পরীক্ষা শুরু করা যায়
             if (isReattempt) {
                 localStorage.removeItem(`exam_state_${examCode}`);
                 localStorage.removeItem(`exam_result_${examCode}`);
@@ -296,7 +296,6 @@
                     });
                     const reviewData = await reviewResp.json();
 
-                    // এখানে নিশ্চিত করা হয়েছে যে Reattempt হলে আগের রেজাল্ট পেজ দেখাবে না
                     if(reviewData.success && reviewData.taken && !isReattempt) {
                         document.getElementById('instruction-section').style.display = 'none';
                         document.getElementById('exam-section').style.display = 'none';
@@ -716,6 +715,23 @@
             alert("আপনার ফোনে যদি ExamMate অ্যাপটি আগে থেকেই থাকে, তবে দয়া করে সেটি মেনু থেকে সরাসরি ওপেন করুন।");
             window.location.href = "https://exammate-sscn.onrender.com/download";
         }
+
+        // ================= PULL-TO-REFRESH BLOCKER =================
+        let touchStartY = 0;
+        
+        document.addEventListener('touchstart', e => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: false });
+
+        document.addEventListener('touchmove', e => {
+            const touchY = e.touches[0].clientY;
+            const touchDiff = touchY - touchStartY;
+            
+            if (window.scrollY === 0 && touchDiff > 0) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        // ===========================================================
     </script>
 </body>
 </html>
