@@ -11,6 +11,7 @@
             background-color: #05070f; background: linear-gradient(180deg, #08101f 0%, #04060d 100%);
             color: #e8eef8; font-family: 'Segoe UI', sans-serif;
             margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            overscroll-behavior-y: none; /* Pull-to-refresh Block */
         }
         .setup-card {
             background: rgba(17, 29, 52, 0.8); border-radius: 20px; padding: 40px;
@@ -200,6 +201,23 @@
                 alert("Something went wrong!");
             }
         }
+
+        // ================= PULL-TO-REFRESH BLOCKER =================
+        let touchStartY = 0;
+        
+        document.addEventListener('touchstart', e => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: false });
+
+        document.addEventListener('touchmove', e => {
+            const touchY = e.touches[0].clientY;
+            const touchDiff = touchY - touchStartY;
+            
+            if (window.scrollY === 0 && touchDiff > 0) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        // ===========================================================
     </script>
 </body>
 </html>
