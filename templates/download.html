@@ -13,158 +13,196 @@
             color: #e8eef8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .container { padding: 2rem; max-width: 900px; width: 100%; box-sizing: border-box; text-align: center; }
+        .container { padding: 2rem; max-width: 1000px; width: 100%; box-sizing: border-box; text-align: center; }
         
-        /* 🔴 আপডেট করা লোগো নেম */
-        .logo { width: 120px; height: 120px; margin-bottom: 1rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(34, 192, 93, 0.2); object-fit: contain; }
-        .header-section h1 { margin: 0 0 0.5rem 0; color: #22c05d; font-size: 3.2rem; letter-spacing: -0.03em; }
-        .header-section p { margin: 0 0 2rem 0; color: #c8d3ea; font-size: 1.2rem; }
+        /* Logo & Header */
+        .logo { width: 130px; height: 130px; margin-bottom: 1rem; border-radius: 25px; box-shadow: 0 10px 30px rgba(34, 192, 93, 0.2); object-fit: contain; }
+        .header-section h1 { margin: 0 0 0.5rem 0; color: #22c05d; font-size: 3.5rem; letter-spacing: -0.03em; font-weight: 900;}
+        .header-section p { margin: 0 0 2.5rem 0; color: #c8d3ea; font-size: 1.25rem; font-weight: 500;}
 
+        /* Download Card */
         .download-card {
-            background: rgba(17, 29, 52, 0.4); border-radius: 26px; padding: 40px 30px;
-            margin-bottom: 3rem; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
-            border: 2px solid rgba(34, 192, 93, 0.5);
+            background: rgba(17, 29, 52, 0.6); border-radius: 30px; padding: 50px 30px;
+            margin-bottom: 4rem; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(34, 192, 93, 0.4); position: relative; overflow: hidden;
+        }
+        .download-card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(34, 192, 93, 0.1) 0%, transparent 60%); z-index: -1;
         }
         
         .btn-download { 
-            display: inline-block; text-decoration: none;
-            background: #22c05d; color: #ffffff; border: none; 
-            border-radius: 25px; padding: 1.2rem 2.5rem; font-size: 1.2rem; font-weight: bold; 
-            cursor: pointer; transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(34, 192, 93, 0.3);
+            display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
+            background: linear-gradient(135deg, #22c05d, #16a34a); color: #ffffff; border: none; 
+            border-radius: 30px; padding: 1.2rem 3rem; font-size: 1.3rem; font-weight: 800; 
+            cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 25px rgba(34, 192, 93, 0.4);
         }
-        .btn-download:hover { 
-            background: #1eab52; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(34, 192, 93, 0.4); 
+        .btn-download:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(34, 192, 93, 0.6); }
+        .btn-download i { margin-right: 12px; font-size: 1.6rem; }
+
+        .section-title { font-size: 2.2rem; color: #ffffff; margin-bottom: 2rem; padding-bottom: 10px; display: inline-block; position: relative;}
+        .section-title::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60px; height: 4px; background: #22c05d; border-radius: 2px;}
+
+        /* Comprehensive Features Section */
+        .features-wrapper { text-align: left; margin-bottom: 4rem; }
+        .feature-block { 
+            background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; transition: transform 0.3s ease;
         }
-        .btn-download i { margin-right: 10px; font-size: 1.3rem; }
-
-        .section-title { font-size: 2rem; color: #f2f7ff; margin-bottom: 1.5rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: inline-block;}
-
-        /* Features Section */
-        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; text-align: left; margin-bottom: 3rem;}
-        @media (max-width: 768px) { .features-grid { grid-template-columns: 1fr; } }
+        .feature-block:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.04); border-color: rgba(34, 192, 93, 0.3);}
+        .feature-block h3 { margin: 0 0 20px 0; font-size: 1.6rem; display: flex; align-items: center; gap: 12px; }
         
-        .feature-box {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px; padding: 2rem; transition: transform 0.3s ease;
+        .h-teacher { color: #f59e0b; }
+        .h-student { color: #3b82f6; }
+        .h-security { color: #ef4444; }
+
+        .feature-list { list-style: none; padding: 0; margin: 0; }
+        .feature-list li { 
+            position: relative; padding-left: 30px; margin-bottom: 15px; 
+            color: #b0c4de; font-size: 1.05rem; line-height: 1.6; 
         }
-        .feature-box:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.05); }
-        .feature-box h3 { margin: 0 0 15px 0; font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
-        .feature-box h3.student { color: #3b82f6; }
-        .feature-box h3.teacher { color: #f59e0b; }
-        .feature-box ul { padding-left: 20px; margin: 0; color: #c8d3ea; font-size: 1rem; line-height: 1.8; }
-        .feature-box ul li { margin-bottom: 10px; }
+        .feature-list li::before { 
+            content: '\f00c'; font-family: 'Font Awesome 5 Free'; font-weight: 900; 
+            position: absolute; left: 0; top: 2px; color: #22c05d; 
+        }
+        .feature-list li strong { color: #e8eef8; }
+
+        /* Question Type Badge */
+        .q-badge { display: inline-block; font-size: 0.8rem; padding: 3px 8px; border-radius: 12px; font-weight: bold; margin-left: 5px; vertical-align: middle;}
+        .b-mcq { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6;}
+        .b-subj { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b;}
 
         /* Review Form Section */
         .review-form-card {
-            background: rgba(17, 29, 52, 0.5); border-radius: 20px; padding: 25px;
-            margin-bottom: 2.5rem; border: 1px solid rgba(255, 255, 255, 0.1); text-align: left;
+            background: rgba(17, 29, 52, 0.6); border-radius: 20px; padding: 30px;
+            margin-bottom: 3rem; border: 1px solid rgba(255, 255, 255, 0.1); text-align: left;
         }
-        .review-form-card h3 { margin-top: 0; color: #81c784; font-size: 1.3rem; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: #c8d3ea; font-size: 0.95rem; }
+        .review-form-card h3 { margin-top: 0; color: #81c784; font-size: 1.5rem; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #c8d3ea; font-size: 1rem; font-weight: 600;}
         .form-control {
-            width: 100%; padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.3); color: #fff; font-size: 1rem; box-sizing: border-box;
+            width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4); color: #fff; font-size: 1rem; box-sizing: border-box; transition: 0.3s;
         }
-        .star-rating-select { font-size: 1.5rem; color: #f59e0b; cursor: pointer; display: flex; gap: 5px; }
+        .form-control:focus { outline: none; border-color: #22c05d; background: rgba(0,0,0,0.6);}
+        .star-rating-select { font-size: 1.8rem; color: #f59e0b; cursor: pointer; display: flex; gap: 8px; }
+        .star-rating-select i { transition: transform 0.2s; }
+        .star-rating-select i:hover { transform: scale(1.2); }
         .btn-submit-review {
-            background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 20px;
-            font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s;
+            background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px 25px; border-radius: 25px;
+            font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); width: 100%;
         }
-        .btn-submit-review:hover { background: #2563eb; }
+        .btn-submit-review:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);}
 
         /* Reviews Section */
-        .reviews-section { margin-top: 2rem; }
-        .rating-summary { margin-bottom: 2rem; }
-        .rating-summary .stars { color: #f59e0b; font-size: 1.8rem; letter-spacing: 2px; }
-        .rating-summary p { font-size: 1.1rem; color: #c8d3ea; margin-top: 5px; }
+        .reviews-section { margin-top: 2rem; width: 100%; }
+        .rating-summary { margin-bottom: 2.5rem; }
+        .rating-summary .stars { color: #f59e0b; font-size: 2.2rem; letter-spacing: 3px; }
+        .rating-summary p { font-size: 1.2rem; color: #c8d3ea; margin-top: 10px; }
 
-        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; text-align: left; }
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; text-align: left; }
         
         .review-card {
-            background: rgba(17, 29, 52, 0.3); padding: 1.5rem; border-radius: 15px; 
-            border: 1px solid rgba(34, 192, 93, 0.2); position: relative;
+            background: rgba(17, 29, 52, 0.4); padding: 1.8rem; border-radius: 20px; 
+            border: 1px solid rgba(34, 192, 93, 0.2); position: relative; transition: 0.3s;
         }
-        .review-card i.quote { position: absolute; top: 15px; right: 15px; color: rgba(255,255,255,0.05); font-size: 3rem; }
-        .review-stars { color: #f59e0b; font-size: 1rem; margin-bottom: 10px; }
-        .review-text { font-style: italic; color: #e8eef8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 15px; }
-        .reviewer-info { display: flex; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;}
-        .reviewer-info .avatar { width: 40px; height: 40px; background: #22c05d; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
+        .review-card:hover { border-color: rgba(34, 192, 93, 0.6); transform: translateY(-3px);}
+        .review-card i.quote { position: absolute; top: 20px; right: 20px; color: rgba(255,255,255,0.03); font-size: 4rem; }
+        .review-stars { color: #f59e0b; font-size: 1.1rem; margin-bottom: 15px; }
+        .review-text { font-style: italic; color: #e8eef8; font-size: 1rem; line-height: 1.7; margin-bottom: 20px; position: relative; z-index: 1;}
+        .reviewer-info { display: flex; align-items: center; gap: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;}
+        .reviewer-info .avatar { width: 45px; height: 45px; background: linear-gradient(135deg, #22c05d, #16a34a); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; }
         .reviewer-info div { display: flex; flex-direction: column; }
-        .reviewer-info .name { font-weight: bold; color: #f5f9ff; font-size: 1rem; }
-        .reviewer-info .role { font-size: 0.8rem; color: #81c784; }
+        .reviewer-info .name { font-weight: bold; color: #f5f9ff; font-size: 1.1rem; }
+        .reviewer-info .role { font-size: 0.85rem; color: #81c784; margin-top: 2px;}
 
-        footer { margin-top: 4rem; padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.1); color: gray; font-size: 0.9rem; }
+        footer { margin-top: 5rem; padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.05); color: #64748b; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- 🔴 আপডেট করা লোগো নাম -->
+        
         <img src="/static/24741.png" alt="ExamMate Logo" class="logo">
         
         <div class="header-section">
             <h1>ExamMate</h1>
-            <p>The Ultimate Platform for MCQ Practice & Mock Exams</p>
+            <p>The Ultimate Smart Evaluation & Examination Platform</p>
         </div>
 
         <!-- Download Section -->
         <div class="download-card">
-            <h2 style="margin-top: 0; color: #f2f7ff; font-size: 1.8rem;">Ready to Boost Your Preparation?</h2>
-            <p style="color: #c8d3ea; margin-bottom: 2rem; font-size: 1.1rem;">Download the official Android app now and join students and teachers.</p>
+            <h2 style="margin-top: 0; color: #ffffff; font-size: 2rem; margin-bottom: 10px;">Experience Seamless Learning</h2>
+            <p style="color: #94a3b8; margin-bottom: 2.5rem; font-size: 1.1rem;">Download the official Android app to unlock advanced features for both Teachers and Students.</p>
             
-            <!-- 🔴 আপডেট করা এপিকে ফাইলের নাম -->
             <a href="/static/app-release.apk" download class="btn-download">
-                <i class="fab fa-android"></i> Download APK for Free
+                <i class="fab fa-android"></i> Download App for Android
             </a>
-            <p style="margin-top: 15px; font-size: 0.85rem; color: #64748b;">100% Free & Secure | Version 1.0</p>
+            <p style="margin-top: 20px; font-size: 0.9rem; color: #475569; font-weight: bold;"><i class="fas fa-shield-alt" style="color: #22c05d;"></i> 100% Free, Secure & Ad-Free | Version 2.0</p>
         </div>
 
-        <h2 class="section-title">How It Works</h2>
+        <h2 class="section-title">Platform Features & Guidelines</h2>
 
-        <!-- Features Section -->
-        <div class="features-grid">
-            <div class="feature-box">
-                <h3 class="student"><i class="fas fa-user-graduate"></i> For Students</h3>
-                <ul>
-                    <li><strong>Real-Time Mock Tests:</strong> Practice MCQs with strict exam timers to improve your time management.</li>
-                    <li><strong>Instant Analytics & Leaderboard:</strong> Get your score immediately after submission, see class averages, and check your rank on the leaderboard.</li>
-                    <li><strong>Performance Tracking:</strong> Monitor your highest/lowest scores and total progress over time.</li>
-                    <li><strong>Resource Center:</strong> Access study materials, notes, and PDFs uploaded by your teachers directly from Google Drive.</li>
+        <!-- Comprehensive Features Section -->
+        <div class="features-wrapper">
+            
+            <!-- For Teachers -->
+            <div class="feature-block">
+                <h3 class="h-teacher"><i class="fas fa-chalkboard-teacher"></i> Ultimate Control for Teachers</h3>
+                <ul class="feature-list">
+                    <li><strong>Versatile Question Creation:</strong> Create highly customized exams supporting multiple question types. Assign specific marks for each question individually.</li>
+                    <li><strong>MCQ Automated Grading <span class="q-badge b-mcq">MCQ</span> :</strong> Set up 4-option multiple-choice questions. The system automatically grades them and calculates negative marking instantly.</li>
+                    <li><strong>Subjective Smart Evaluation <span class="q-badge b-subj">Descriptive</span> :</strong> Ask long/descriptive questions. Students will upload images of their handwritten answers. You can view these images directly in your dashboard, zoom in, and manually award marks which instantly reflect in their final score.</li>
+                    <li><strong>AI Smart Paste (Gemini AI):</strong> Don't type manually! Upload your PDF/Image to Gemini or ChatGPT, extract the questions, and use our "Smart Paste" to load all questions instantly.</li>
+                    <li><strong>Privacy & Security:</strong> Create "Public" exams visible to all, or "Private" exams locked behind a secret Exam Code that only your specific students can access.</li>
+                    <li><strong>Advanced Analytics:</strong> Monitor class averages, individual student attempts, and specific answer sheets from a dedicated analytics dashboard.</li>
                 </ul>
             </div>
-            <div class="feature-box">
-                <h3 class="teacher"><i class="fas fa-chalkboard-teacher"></i> For Teachers</h3>
-                <ul>
-                    <li><strong>Full Exam Control:</strong> Create customized exams, set specific time limits, and apply negative marking for wrong answers.</li>
-                    <li><strong>AI Question Extractor:</strong> Save time by uploading your PDF notes; our Gemini AI will automatically extract MCQ questions and options for you.</li>
-                    <li><strong>Advanced Dashboard:</strong> Track your entire class's performance, identify top/bottom students, and view detailed analytical charts.</li>
-                    <li><strong>Broadcast Notifications:</strong> Send instant updates and important messages to all your students with one click.</li>
+
+            <!-- For Students -->
+            <div class="feature-block">
+                <h3 class="h-student"><i class="fas fa-user-graduate"></i> Seamless Experience for Students</h3>
+                <ul class="feature-list">
+                    <li><strong>Dynamic Exam Interface:</strong> Answer MCQs with a single tap, and utilize our built-in Smart Camera to capture, crop, and upload handwritten answers for subjective questions without leaving the exam page.</li>
+                    <li><strong>Live Feed & Recommendations:</strong> Discover exams tailored to your class and subject. Search for specific teachers or exam codes effortlessly.</li>
+                    <li><strong>Instant Results & Detailed Review:</strong> Get your MCQ scores immediately. Once teachers evaluate your uploaded subjective papers, your updated total score and detailed review will be visible.</li>
+                    <li><strong>Progress Tracking:</strong> Level up your profile! Your avatar changes color dynamically based on your overall performance and consistency.</li>
                 </ul>
             </div>
+
+            <!-- Anti-Cheat -->
+            <div class="feature-block">
+                <h3 class="h-security"><i class="fas fa-shield-alt"></i> Military-Grade Anti-Cheat System</h3>
+                <ul class="feature-list">
+                    <li><strong>Tab/App Switching Detection:</strong> If a student tries to minimize the app, switch tabs, or open Google Lens, the system immediately registers a warning.</li>
+                    <li><strong>Auto-Submission Protocol:</strong> The system allows a maximum of 5 warnings. On the 5th violation, the exam is automatically terminated and submitted.</li>
+                    <li><strong>Smart Pausing:</strong> During the subjective image upload process, the anti-cheat system intelligently pauses itself to allow students to use their camera, resuming instantly upon return.</li>
+                    <li><strong>Copy & Screenshot Block:</strong> Text copying is strictly disabled, and taking screenshots within the exam room is entirely blocked (on supported Android versions).</li>
+                </ul>
+            </div>
+
         </div>
 
-        <!-- 🔴 কাস্টম রিভিউ দেয়ার ফর্ম -->
+        <!-- Review Form Section -->
         <div class="review-form-card">
-            <h3><i class="fas fa-pen-nib"></i> Leave Your Review</h3>
+            <h3><i class="fas fa-pen-nib"></i> Share Your Experience</h3>
             <form id="reviewForm">
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <div class="form-group" style="flex: 1; min-width: 200px;">
-                        <label>Your Name</label>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 250px;">
+                        <label>Your Full Name</label>
                         <input type="text" id="revName" class="form-control" placeholder="e.g. Rahul Sharma" required>
                     </div>
-                    <div class="form-group" style="flex: 1; min-width: 200px;">
-                        <label>Your Role</label>
+                    <div class="form-group" style="flex: 1; min-width: 250px;">
+                        <label>Select Your Role</label>
                         <select id="revRole" class="form-control">
-                            <option value="Student">Student</option>
-                            <option value="Teacher">Teacher</option>
+                            <option value="Student">I am a Student</option>
+                            <option value="Teacher">I am a Teacher</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label>Rating</label>
+                    <label>Rate the App</label>
                     <div class="star-rating-select" id="starContainer">
                         <i class="fas fa-star" data-val="1"></i>
                         <i class="fas fa-star" data-val="2"></i>
@@ -175,42 +213,42 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Your Feedback</label>
-                    <textarea id="revText" class="form-control" rows="3" placeholder="Write your experience with ExamMate..." required></textarea>
+                    <label>Detailed Feedback</label>
+                    <textarea id="revText" class="form-control" rows="4" placeholder="How was your experience using ExamMate? Any suggestions?" required></textarea>
                 </div>
 
-                <button type="submit" class="btn-submit-review">Submit Review</button>
+                <button type="submit" class="btn-submit-review">Publish Review</button>
             </form>
         </div>
 
-        <!-- 🔴 লাইভ রিভিউ এবং রেটিং সেকশন -->
+        <!-- Live Reviews Section -->
         <div class="reviews-section">
-            <h2 class="section-title">User Reviews & Ratings</h2>
+            <h2 class="section-title" style="font-size: 1.8rem;">Community Feedback</h2>
             
             <div class="rating-summary">
                 <div class="stars" id="avgStars">
                     <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                 </div>
-                <p><strong id="avgScore">5.0</strong>/5 Based on <span id="totalCount">0</span> review(s)</p>
+                <p><strong id="avgScore" style="color:#ffffff; font-size:1.4rem;">5.0</strong> / 5.0 Based on <span id="totalCount" style="font-weight:bold;">0</span> review(s)</p>
             </div>
 
             <div class="reviews-grid" id="reviewsGrid">
-                <!-- রিভিউগুলো ডাইনামিক্যালি লোড হবে -->
+                <!-- Reviews dynamically loaded here -->
             </div>
         </div>
 
         <!-- Footer -->
         <footer>
-            <p>© 2026 ExamMate. All rights reserved.</p>
-            <p>Designed for better education.</p>
+            <p>© 2026 ExamMate Educational Platform. All rights reserved.</p>
+            <p>Designed with ❤️ for Teachers & Students.</p>
         </footer>
     </div>
 
-    <!-- Review JS Logic -->
+    <!-- Script for Reviews & Stars -->
     <script>
         let selectedRating = 5;
 
-        // স্টার সিলেক্ট করার লজিক
+        // Star Selection Logic
         const stars = document.querySelectorAll('#starContainer i');
         stars.forEach(star => {
             star.addEventListener('click', () => {
@@ -229,7 +267,7 @@
             });
         }
 
-        // লাইভ রিভিউ লোড করার ফাংশন
+        // Fetch Live Reviews
         async function loadReviews() {
             try {
                 const res = await fetch('/api/get-reviews');
@@ -242,15 +280,17 @@
                     grid.innerHTML = '';
 
                     if (data.reviews.length === 0) {
-                        grid.innerHTML = '<p style="color: gray; grid-column: 1/-1; text-align: center;">No reviews yet. Be the first to leave one!</p>';
+                        grid.innerHTML = '<p style="color: #64748b; grid-column: 1/-1; text-align: center; font-size:1.1rem; padding: 30px;">No reviews yet. Be the first to leave one!</p>';
                         return;
                     }
 
                     data.reviews.forEach(r => {
                         let starHtml = '';
                         for(let i=1; i<=5; i++) {
-                            starHtml += i <= r.rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+                            starHtml += i <= r.rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star" style="color: rgba(245, 158, 11, 0.3);"></i>';
                         }
+
+                        let roleColor = r.role.toLowerCase() === 'teacher' ? '#f59e0b' : '#3b82f6';
 
                         const card = `
                             <div class="review-card">
@@ -261,7 +301,7 @@
                                     <div class="avatar">${r.name.charAt(0).toUpperCase()}</div>
                                     <div>
                                         <span class="name">${r.name}</span>
-                                        <span class="role">${r.role} • ${r.date}</span>
+                                        <span class="role" style="color: ${roleColor};"><i class="fas ${r.role.toLowerCase() === 'teacher' ? 'fa-chalkboard-teacher' : 'fa-user-graduate'}"></i> ${r.role} • ${r.date}</span>
                                     </div>
                                 </div>
                             </div>
@@ -269,17 +309,19 @@
                         grid.innerHTML += card;
                     });
                 }
-            } catch (e) {
-                console.log("Error loading reviews:", e);
-            }
+            } catch (e) { console.log("Error loading reviews:", e); }
         }
 
-        // ফর্ম সাবমিট
+        // Form Submit Logic
         document.getElementById('reviewForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('revName').value;
             const role = document.getElementById('revRole').value;
             const text = document.getElementById('revText').value;
+
+            const submitBtn = document.querySelector('.btn-submit-review');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            submitBtn.disabled = true;
 
             try {
                 const res = await fetch('/api/submit-review', {
@@ -289,20 +331,20 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    alert('Thank you for your feedback!');
+                    alert('Thank you! Your feedback has been published successfully.');
                     document.getElementById('reviewForm').reset();
                     selectedRating = 5;
                     updateStarDisplay();
-                    loadReviews(); // লাইভ আপডেট
-                } else {
-                    alert(data.error || 'Failed to submit review.');
-                }
-            } catch (e) {
-                alert('Error submitting review.');
+                    loadReviews(); 
+                } else { alert(data.error || 'Failed to submit review.'); }
+            } catch (e) { alert('Error submitting review. Check your connection.'); } 
+            finally { 
+                submitBtn.innerHTML = 'Publish Review'; 
+                submitBtn.disabled = false; 
             }
         });
 
-        // পেজ লোড হলেই রিভিউ নিয়ে আসবে
+        // Load reviews on page start
         window.addEventListener('DOMContentLoaded', loadReviews);
     </script>
 
