@@ -242,6 +242,7 @@
         let currentIndex = 0;
         let studentAnswers = {}; 
         let totalQuestions = 0;
+        let totalMarks = 0; // মোট নম্বর ট্র‍্যাক করার ভেরিয়েবল
         let timerInterval;
         let timeInSeconds = 0;
         let examMinutesLimit = 0;
@@ -307,6 +308,14 @@
                     dbQuestions = data.questions;
                     examName = data.exam_name;
                     totalQuestions = dbQuestions.length;
+                    
+                    // ২. মোট নম্বর গণনা করা হচ্ছে (Total Marks Calculation)
+                    totalMarks = dbQuestions.reduce((sum, q) => {
+                        let m = parseFloat(q.max_marks);
+                        if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0);
+                        return sum + m;
+                    }, 0);
+
                     examMinutesLimit = data.timer_minutes;
                     negativeMarksPerWrong = parseFloat(data.negative_marks) || 0;
                     
@@ -314,7 +323,7 @@
                     document.getElementById('inst-time').innerText = examMinutesLimit;
                     document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
 
-                    // ২. এবার চেক করা স্টুডেন্ট আগেই পরীক্ষা দিয়েছে কি না (ব্যাকএন্ড থেকে)
+                    // ৩. এবার চেক করা স্টুডেন্ট আগেই পরীক্ষা দিয়েছে কি না (ব্যাকএন্ড থেকে)
                     const reviewResp = await fetch('/api/get-student-exam-review', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
@@ -328,13 +337,14 @@
                         document.getElementById('result-section').style.display = 'block';
                         
                         let displayScore = Number.isInteger(reviewData.total_score) ? reviewData.total_score : parseFloat(reviewData.total_score).toFixed(2);
-                        document.getElementById('final-score').innerText = `${displayScore}/${totalQuestions}`;
+                        // totalQuestions এর বদলে totalMarks বসানো হয়েছে
+                        document.getElementById('final-score').innerText = `${displayScore}/${totalMarks}`;
                         
                         renderDetailedReview(reviewData.subjective_data); // শিক্ষকের দেওয়া নম্বর রেন্ডার হবে
                         return;
                     }
 
-                    // ৩. যদি পরীক্ষা না দিয়ে থাকে, তবে লোকাল স্টোরেজ চেক করা (Resuming)
+                    // ৪. যদি পরীক্ষা না দিয়ে থাকে, তবে লোকাল স্টোরেজ চেক করা (Resuming)
                     const savedState = localStorage.getItem(`exam_state_${examCode}`);
                     if(savedState) { startActualExam(true); } 
                     else {
@@ -625,12 +635,10 @@
 
         function changeQuestion(step) { currentIndex += step; saveExamState(); loadQuestion(currentIndex); }
 
-        // ব্যাকএন্ড ডেটা গ্রহণ করার জন্য আপডেট করা হয়েছে
         function renderDetailedReview(backendSubjData = null) {
             const container = document.getElementById('detailed-review-container');
             let html = '';
 
-            // লোকাল স্টোরেজ থেকে ডেটা নিলে আগের মতো দেখাবে, ব্যাকএন্ড থেকে নিলে স্যারের নম্বর দেখাবে
             let localAnsData = {};
             const savedState = localStorage.getItem('exam_result_' + examCode);
             if(savedState) { localAnsData = JSON.parse(savedState).answers || {}; }
@@ -639,7 +647,6 @@
                 const studentAns = studentAnswers[idx] || localAnsData[idx];
                 let isAttempted = false;
                 
-                // ব্যাকএন্ড ডেটা থাকলে খাতা আপলোড হয়েছিল কিনা চেক করা
                 if(q.question_type === 'subjective' && backendSubjData && backendSubjData[q.id]) {
                     isAttempted = true;
                 } else if (studentAns !== undefined && studentAns !== "") {
@@ -654,17 +661,16 @@
                 }
 
                 html += `<div class="review-card ${cardClass}">`;
-                html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text} <span style="font-size:0.8rem; color:#64748b;">(Marks: ${q.max_marks})</span></div>`;
+                html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text} <span style="font-size:0.8rem; color:#64748b;">(Marks: ${q.max_marks || (q.question_type==='mcq'?1.0:5.0)})</span></div>`;
 
                 if (q.question_type === 'subjective') {
                     if (isAttempted) {
                         html += `<div class="review-ans" style="color: #0369a1; font-weight:bold;">✅ Answer Uploaded</div>`;
                         
-                        // যদি ব্যাকএন্ড ডেটা থাকে (অর্থাৎ স্যার খাতা দেখেছেন কিনা)
                         if(backendSubjData && backendSubjData[q.id]) {
                             const bData = backendSubjData[q.id];
                             if(bData.is_checked) {
-                                html += `<div class="ans-real-correct" style="color:#10b981; font-size:1rem;">✅ <b>শিক্ষক নম্বর দিয়েছেন:</b> ${bData.marks} / ${q.max_marks} Marks</div>`;
+                                html += `<div class="ans-real-correct" style="color:#10b981; font-size:1rem;">✅ <b>শিক্ষক নম্বর দিয়েছেন:</b> ${bData.marks} / ${q.max_marks || 5.0} Marks</div>`;
                             } else {
                                 html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b> (Pending Review)</div>`;
                             }
@@ -729,7 +735,7 @@
                         subjective_answers: subjArray 
                     })
                 });
-                localStorage.setItem('exam_result_' + examCode, JSON.stringify({ answers: studentAnswers, score: displayScore, total: totalQuestions }));
+                localStorage.setItem('exam_result_' + examCode, JSON.stringify({ answers: studentAnswers, score: displayScore, total: totalMarks }));
                 localStorage.removeItem(`exam_state_${examCode}`);
             } catch (e) { console.log("Failed to save score"); }
 
@@ -737,7 +743,8 @@
             document.getElementById('pause-overlay').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
             if (document.fullscreenElement) { document.exitFullscreen(); }
-            document.getElementById('final-score').innerText = `${displayScore}/${totalQuestions}`;
+            // totalQuestions এর বদলে totalMarks বসানো হয়েছে
+            document.getElementById('final-score').innerText = `${displayScore}/${totalMarks}`; 
             
             renderDetailedReview();
         }
