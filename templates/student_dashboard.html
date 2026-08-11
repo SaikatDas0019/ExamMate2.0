@@ -343,9 +343,10 @@
                     
                     let reattemptBtn = '';
                     if (ex.is_private) {
-                        reattemptBtn = `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExam('${ex.code}')">🔒 Re-attempt</button>`;
+                        reattemptBtn = `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExamReattempt('${ex.code}')">🔒 Re-attempt</button>`;
                     } else {
-                        reattemptBtn = `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}'">Re-attempt</button>`;
+                        // reattempt=true যুক্ত করা হলো
+                        reattemptBtn = `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
                     }
 
                     actionHTML = `
@@ -413,6 +414,18 @@
             if (enteredCode) {
                 if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) {
                     window.location.href = `student_exam.html?code=${actualCode}`;
+                } else {
+                    alert("❌ Incorrect Exam Code! Access denied.");
+                }
+            }
+        }
+
+        // রিএটেম্পট এর জন্য নতুন ফাংশন
+        function accessPrivateExamReattempt(actualCode) {
+            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code provided by your teacher to unlock and re-attempt:");
+            if (enteredCode) {
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) {
+                    window.location.href = `student_exam.html?code=${actualCode}&reattempt=true`;
                 } else {
                     alert("❌ Incorrect Exam Code! Access denied.");
                 }
