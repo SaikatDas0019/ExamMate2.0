@@ -198,59 +198,6 @@
     </div>
 
     <script>
-        // ================= SAFE APP LAUNCHER & COPY CODE =================
-        document.addEventListener("DOMContentLoaded", () => {
-            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            const isAppWebView = /wv/.test(userAgent) || /Android.*Version\/[0-9].[0-9]/.test(userAgent);
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-
-            if (!isAppWebView && !isStandalone) {
-                const urlParams = new URLSearchParams(window.location.search);
-                const currentExamCode = urlParams.get('code');
-                
-                if (currentExamCode) {
-                    // শুধু অ্যাপটি ওপেন করার নিরাপদ Intent (URL পাস করা হচ্ছে না, তাই ক্র্যাশ করবে না)
-                    const intentUrl = `intent:#Intent;package=com.saikat.exammate;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;end;`;
-                    
-                    const bannerHTML = `
-                        <div id="safe-app-banner" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 15px 20px; text-align: center; position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 10px;">
-                            <span style="font-weight: bold; font-size: 1rem;">📱 ExamMate অ্যাপে পরীক্ষা দিন!</span>
-                            <span style="font-size: 0.85rem; color: #bfdbfe;">নিচের বাটনে ক্লিক করে কোডটি কপি করুন এবং অ্যাপ ওপেন করুন।</span>
-                            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 5px;">
-                                <button onclick="copyAndOpenApp('${currentExamCode}', '${intentUrl}')" style="flex: 1; max-width: 200px; background: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"><i class="fas fa-copy"></i> Copy Code & Open App</button>
-                                <button onclick="hideAppBanner()" style="max-width: 90px; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.5); padding: 10px; border-radius: 8px; cursor: pointer;">Close</button>
-                            </div>
-                        </div>
-                    `;
-                    document.body.insertAdjacentHTML('afterbegin', bannerHTML);
-                    
-                    const container = document.querySelector('.container');
-                    if(container) {
-                        container.style.paddingTop = "125px";
-                        container.style.transition = "padding-top 0.3s ease";
-                    }
-                }
-            }
-        });
-
-        function copyAndOpenApp(code, intentUrl) {
-            // ১. এক্সাম কোডটি ক্লিপবোর্ডে কপি করা হচ্ছে
-            navigator.clipboard.writeText(code).then(() => {
-                // ২. অ্যাপটি ওপেন করা হচ্ছে
-                window.location.href = intentUrl;
-            }).catch(() => {
-                // কপি করতে কোনো সমস্যা হলেও অ্যাপ ওপেন হবে
-                window.location.href = intentUrl;
-            });
-        }
-
-        function hideAppBanner() {
-            document.getElementById('safe-app-banner').style.display = 'none';
-            const container = document.querySelector('.container');
-            if(container) container.style.paddingTop = "0";
-        }
-        // =================================================================
-
         const IMGBB_API_KEY = "ba43fc59f3848f599fa2b205647bf8cc"; 
 
         let dbQuestions = [];
