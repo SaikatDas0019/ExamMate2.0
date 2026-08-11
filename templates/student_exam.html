@@ -6,7 +6,6 @@
     <title>ExamMate | Exam Room</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Cropper.js for Image Cropping -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
@@ -20,38 +19,12 @@
         :root { color-scheme: light; }
         body { 
             background-color: #f9fafb; color: #333333; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; justify-content: center; 
-            /* Anti-select & Anti-copy */
-            -webkit-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
+            -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none;
         }
         .container { width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh; padding: 0 1.5rem 1.5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
         
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            background-color: #ffffff;
-            z-index: 999;
-            padding: 1rem 0 0.8rem 0;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .btn-back {
-            background: transparent;
-            border: none;
-            color: #111827;
-            font-size: 2.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 0.8;
-            padding: 0;
-        }
-
+        .sticky-header { position: sticky; top: 0; background-color: #ffffff; z-index: 999; padding: 1rem 0 0.8rem 0; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px; }
+        .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0; }
         .message-box { text-align: center; margin-top: 50px; }
         .message-box h2 { color: #ef4444; }
         
@@ -104,18 +77,10 @@
         .ans-real-correct.unattempted-border { border-top: 1px dashed #cbd5e1; color: #0f172a; }
 
         #exam-section, #result-section, #error-section, #instruction-section { display: none; }
-
-        #pause-overlay {
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.98); z-index: 100; text-align: center;
-            flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px);
-        }
+        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); z-index: 100; text-align: center; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         #pause-overlay h2 { color: #d97706; font-size: 2rem; margin-bottom: 10px; }
         #pause-overlay p { color: #4b5563; font-size: 1rem; margin-bottom: 30px; padding: 0 20px;}
-
-        /* Smart Upload & Cropper Modal Styles */
         #upload-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 9998; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); }
-        
         #crop-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
         .crop-container { width: 95%; max-width: 400px; height: 60vh; background: #000; position: relative; }
         .crop-actions { display: flex; gap: 15px; margin-top: 20px; }
@@ -213,17 +178,15 @@
                 <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> View Analysis in App
             </button>
         </div>
-
     </div>
 
-    <!-- Smart Upload Overlay (Anti-Cheat Pauser) -->
+    <!-- Upload Overlays -->
     <div id="upload-overlay">
         <h2 id="upload-overlay-title" style="color:#3b82f6; font-size:1.8rem; margin-bottom:10px;"><i class="fas fa-camera"></i> Camera Open</h2>
         <p id="upload-overlay-desc" style="color:#4b5563; font-size:1rem; margin-bottom:30px; line-height:1.5;">খাতার ছবি তুলুন।<br>যদি ছবি না তুলে ব্যাক করে থাকেন, তবে নিচের বাটনে ক্লিক করে পরীক্ষায় ফিরে যান।</p>
         <button id="upload-overlay-btn" onclick="resumeFromUpload()" style="background:#ef4444; color:white; border:none; padding:12px 25px; border-radius:8px; font-weight:bold; font-size:1.1rem; cursor:pointer; box-shadow:0 4px 6px rgba(239,68,68,0.3);">❌ Cancel & Return</button>
     </div>
 
-    <!-- Cropper Modal -->
     <div id="crop-modal">
         <h3 style="color:white; margin-bottom: 10px; font-family:sans-serif;">Crop Your Answer / ছবি ক্রপ করুন</h3>
         <div class="crop-container"><img id="crop-image" src="" style="max-width: 100%;"></div>
@@ -242,7 +205,7 @@
         let currentIndex = 0;
         let studentAnswers = {}; 
         let totalQuestions = 0;
-        let totalMarks = 0; // মোট নম্বর ট্র‍্যাক করার ভেরিয়েবল
+        let totalMarks = 0; 
         let timerInterval;
         let timeInSeconds = 0;
         let examMinutesLimit = 0;
@@ -254,7 +217,6 @@
         let isUploadingImage = false; 
         let currentUploadIndex = -1;
         let cropperInstance = null;
-        let filePickerTimeout = null;
 
         document.getElementById('agree-check').onchange = function(e) {
             const btn = document.getElementById('start-btn');
@@ -268,6 +230,13 @@
         window.onload = async () => {
             const urlParams = new URLSearchParams(window.location.search);
             examCode = urlParams.get('code');
+            const isReattempt = urlParams.get('reattempt') === 'true'; 
+
+            // রিএটেম্পট হলে পুরনো লোকাল ডেটা মুছে ফেলা হচ্ছে যাতে নতুন করে পরীক্ষা শুরু করা যায়
+            if (isReattempt) {
+                localStorage.removeItem(`exam_state_${examCode}`);
+                localStorage.removeItem(`exam_result_${examCode}`);
+            }
 
             const storedEmail = localStorage.getItem('userEmail');
             const currentUserEmail = (storedEmail && storedEmail.trim() !== "") ? storedEmail : "Guest Account";
@@ -297,7 +266,6 @@
             }
 
             try {
-                // ১. প্রথমে প্রশ্নগুলো লোড করা
                 const response = await fetch('/api/get-exam-questions', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ exam_code: examCode })
@@ -309,7 +277,6 @@
                     examName = data.exam_name;
                     totalQuestions = dbQuestions.length;
                     
-                    // ২. মোট নম্বর গণনা করা হচ্ছে (Total Marks Calculation)
                     totalMarks = dbQuestions.reduce((sum, q) => {
                         let m = parseFloat(q.max_marks);
                         if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0);
@@ -323,28 +290,25 @@
                     document.getElementById('inst-time').innerText = examMinutesLimit;
                     document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
 
-                    // ৩. এবার চেক করা স্টুডেন্ট আগেই পরীক্ষা দিয়েছে কি না (ব্যাকএন্ড থেকে)
                     const reviewResp = await fetch('/api/get-student-exam-review', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
                     });
                     const reviewData = await reviewResp.json();
 
-                    if(reviewData.success && reviewData.taken) {
-                        // স্টুডেন্ট আগেই পরীক্ষা দিয়েছে, সরাসরি আপডেটেড রেজাল্ট দেখান
+                    // এখানে নিশ্চিত করা হয়েছে যে Reattempt হলে আগের রেজাল্ট পেজ দেখাবে না
+                    if(reviewData.success && reviewData.taken && !isReattempt) {
                         document.getElementById('instruction-section').style.display = 'none';
                         document.getElementById('exam-section').style.display = 'none';
                         document.getElementById('result-section').style.display = 'block';
                         
                         let displayScore = Number.isInteger(reviewData.total_score) ? reviewData.total_score : parseFloat(reviewData.total_score).toFixed(2);
-                        // totalQuestions এর বদলে totalMarks বসানো হয়েছে
                         document.getElementById('final-score').innerText = `${displayScore}/${totalMarks}`;
                         
-                        renderDetailedReview(reviewData.subjective_data); // শিক্ষকের দেওয়া নম্বর রেন্ডার হবে
+                        renderDetailedReview(reviewData.subjective_data); 
                         return;
                     }
 
-                    // ৪. যদি পরীক্ষা না দিয়ে থাকে, তবে লোকাল স্টোরেজ চেক করা (Resuming)
                     const savedState = localStorage.getItem(`exam_state_${examCode}`);
                     if(savedState) { startActualExam(true); } 
                     else {
@@ -389,7 +353,6 @@
             setInterval(saveExamState, 5000);
         }
 
-        // ================= ANTI CHEAT & TIMER =================
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('copy', event => {
             event.preventDefault();
@@ -476,7 +439,6 @@
             }
         }
 
-        // ================= SMART UPLOAD OVERLAY =================
         function triggerCamera(index) {
             isUploadingImage = true; 
             currentUploadIndex = index;
@@ -577,7 +539,6 @@
             }, 'image/jpeg', 0.7);
         }
 
-        // ================= QUESTIONS & UI =================
         function loadQuestion(index) {
             const q = dbQuestions[index];
             const qTextElement = document.getElementById('question-text');
@@ -660,8 +621,10 @@
                     else { cardClass = isCorrect ? 'review-correct' : 'review-wrong'; }
                 }
 
+                let maxMarks = q.max_marks || (q.question_type === 'mcq' ? 1.0 : 5.0);
+
                 html += `<div class="review-card ${cardClass}">`;
-                html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text} <span style="font-size:0.8rem; color:#64748b;">(Marks: ${q.max_marks || (q.question_type==='mcq'?1.0:5.0)})</span></div>`;
+                html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text} <span style="font-size:0.8rem; color:#64748b;">(Marks: ${maxMarks})</span></div>`;
 
                 if (q.question_type === 'subjective') {
                     if (isAttempted) {
@@ -670,7 +633,7 @@
                         if(backendSubjData && backendSubjData[q.id]) {
                             const bData = backendSubjData[q.id];
                             if(bData.is_checked) {
-                                html += `<div class="ans-real-correct" style="color:#10b981; font-size:1rem;">✅ <b>শিক্ষক নম্বর দিয়েছেন:</b> ${bData.marks} / ${q.max_marks || 5.0} Marks</div>`;
+                                html += `<div class="ans-real-correct" style="color:#10b981; font-size:1rem;">✅ <b>শিক্ষক নম্বর দিয়েছেন:</b> ${bData.marks} / ${maxMarks} Marks</div>`;
                             } else {
                                 html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b> (Pending Review)</div>`;
                             }
@@ -731,13 +694,10 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email: userEmail, exam_code: examCode, exam_name: examName, 
-                        score: displayScore, 
-                        total_questions: totalMarks, // <-- এখানে আগে totalQuestions ছিল, এখন totalMarks করে দেওয়া হয়েছে
-                        warnings: warningsCount,
+                        score: displayScore, total_questions: totalMarks, warnings: warningsCount,
                         subjective_answers: subjArray 
                     })
                 });
-
                 localStorage.setItem('exam_result_' + examCode, JSON.stringify({ answers: studentAnswers, score: displayScore, total: totalMarks }));
                 localStorage.removeItem(`exam_state_${examCode}`);
             } catch (e) { console.log("Failed to save score"); }
@@ -746,7 +706,7 @@
             document.getElementById('pause-overlay').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
             if (document.fullscreenElement) { document.exitFullscreen(); }
-            // totalQuestions এর বদলে totalMarks বসানো হয়েছে
+            
             document.getElementById('final-score').innerText = `${displayScore}/${totalMarks}`; 
             
             renderDetailedReview();
