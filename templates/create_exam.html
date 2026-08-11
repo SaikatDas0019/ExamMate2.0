@@ -14,7 +14,11 @@
 
     <style>
         :root { color-scheme: light; }
-        body { background-color: #f3f4f6; color: #1a1a1a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; justify-content: center; }
+        body { 
+            background-color: #f3f4f6; color: #1a1a1a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; display: flex; justify-content: center; 
+            overscroll-behavior-y: none; /* Pull-to-refresh Block */
+        }
         .container { width: 100%; max-width: 500px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem 1.5rem 5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
         
         .back-btn { background: transparent; color: #10b981; border: none; font-weight: bold; font-size: 14px; cursor: pointer; padding: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
@@ -397,6 +401,23 @@ CRITICAL RULES FOR MATH & FORMATTING:
             if (document.referrer) { window.history.back(); } 
             else { window.location.href = '/teacher_dashboard.html'; }
         });
+
+        // ================= PULL-TO-REFRESH BLOCKER =================
+        let touchStartY = 0;
+        
+        document.addEventListener('touchstart', e => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: false });
+
+        document.addEventListener('touchmove', e => {
+            const touchY = e.touches[0].clientY;
+            const touchDiff = touchY - touchStartY;
+            
+            if (window.scrollY === 0 && touchDiff > 0) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        // ===========================================================
     </script>
 </body>
 </html>
