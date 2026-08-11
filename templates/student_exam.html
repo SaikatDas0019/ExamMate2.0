@@ -113,7 +113,9 @@
         #pause-overlay h2 { color: #d97706; font-size: 2rem; margin-bottom: 10px; }
         #pause-overlay p { color: #4b5563; font-size: 1rem; margin-bottom: 30px; padding: 0 20px;}
 
-        /* Cropper Modal Styles */
+        /* Smart Upload & Cropper Modal Styles */
+        #upload-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 9998; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); }
+        
         #crop-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
         .crop-container { width: 95%; max-width: 400px; height: 60vh; background: #000; position: relative; }
         .crop-actions { display: flex; gap: 15px; margin-top: 20px; }
@@ -143,9 +145,9 @@
                     <div>
                         <strong>Strict Anti-Cheat Policy:</strong><br>
                         ১. পরীক্ষা চলাকালীন ট্যাব বা অ্যাপ পরিবর্তন করা নিষেধ।<br>
-                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো (Floating Window) ব্যবহার করা যাবে না।<br>
-                        ৩. স্ক্রিনশট তোলা বা ওপর থেকে নোটিফিকেশন বার টানা সম্পূর্ণ নিষিদ্ধ।<br><br>
-                        <i>এই নিয়ম ভাঙলে আপনি ওয়ার্নিং পাবেন। ৫ বার ওয়ার্নিং পেলে পরীক্ষা স্বয়ংক্রিয়ভাবে বাতিল হয়ে যাবে!</i>
+                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো ব্যবহার করা যাবে না।<br>
+                        ৩. স্ক্রিনশট তোলা সম্পূর্ণ নিষিদ্ধ।<br><br>
+                        <i>এই নিয়ম ভাঙলে আপনি ওয়ার্নিং পাবেন। ৫ বার ওয়ার্নিং পেলে পরীক্ষা বাতিল হয়ে যাবে! (ছবি তোলার সময় সিস্টেম নিজে থেকেই কিছুক্ষণের জন্য অ্যান্টি-চিট পজ করে রাখবে, তাই চিন্তার কিছু নেই।)</i>
                     </div>
                 </li>
             </ul>
@@ -214,6 +216,13 @@
 
     </div>
 
+    <!-- Smart Upload Overlay (Anti-Cheat Pauser) -->
+    <div id="upload-overlay">
+        <h2 id="upload-overlay-title" style="color:#3b82f6; font-size:1.8rem; margin-bottom:10px;"><i class="fas fa-camera"></i> Camera Open</h2>
+        <p id="upload-overlay-desc" style="color:#4b5563; font-size:1rem; margin-bottom:30px; line-height:1.5;">খাতার ছবি তুলুন।<br>যদি ছবি না তুলে ব্যাক করে থাকেন, তবে নিচের বাটনে ক্লিক করে পরীক্ষায় ফিরে যান।</p>
+        <button id="upload-overlay-btn" onclick="resumeFromUpload()" style="background:#ef4444; color:white; border:none; padding:12px 25px; border-radius:8px; font-weight:bold; font-size:1.1rem; cursor:pointer; box-shadow:0 4px 6px rgba(239,68,68,0.3);">❌ Cancel & Return</button>
+    </div>
+
     <!-- Cropper Modal -->
     <div id="crop-modal">
         <h3 style="color:white; margin-bottom: 10px; font-family:sans-serif;">Crop Your Answer / ছবি ক্রপ করুন</h3>
@@ -225,7 +234,7 @@
     </div>
 
     <script>
-        const IMGBB_API_KEY = "ba43fc59f3848f599fa2b205647bf8cc";
+        const IMGBB_API_KEY = "ba43fc59f3848f599fa2b205647bf8cc"; // Correct API Key
 
         let dbQuestions = [];
         let examName = "";
@@ -244,10 +253,10 @@
         let negativeMarksPerWrong = 0;
 
         // --- Anti-Cheat Bypass Variables ---
+        // এই ভেরিয়েবলটি true থাকলে অ্যান্টি-চিট কোনো ওয়ার্নিং দেবে না।
         let isUploadingImage = false; 
         let currentUploadIndex = -1;
         let cropperInstance = null;
-        let filePickerTimeout = null;
 
         document.getElementById('agree-check').onchange = function(e) {
             const btn = document.getElementById('start-btn');
@@ -364,7 +373,7 @@
         }
 
         function triggerWarning(reason) {
-            // Check if uploading image - bypass warning
+            // যদি ছবি আপলোড করার মোডে থাকে (isUploadingImage = true), তবে অ্যান্টি-চিট কোনো কাজ করবে না।
             if (!isExamActive || isPaused || isUploadingImage) return;
 
             warningsCount++;
@@ -379,20 +388,19 @@
             }
         }
 
+        // Anti-Cheat: Tab Switch Detection
         document.addEventListener("visibilitychange", () => {
-            if (document.hidden && isExamActive && !isPaused && !isUploadingImage) {
-                triggerWarning("আপনি ট্যাব পরিবর্তন করেছেন বা ব্রাউজার মিনিমাইজ করার চেষ্টা করেছেন!");
-            }
+            if (document.hidden) { triggerWarning("আপনি ট্যাব পরিবর্তন করেছেন বা ব্রাউজার মিনিমাইজ করার চেষ্টা করেছেন!"); }
         });
 
+        // Anti-Cheat: Lost Focus
         window.addEventListener("blur", () => {
-            if (isExamActive && !isPaused && !isUploadingImage) {
-                triggerWarning("আপনি অন্য উইন্ডো বা অ্যাপে টাচ করার চেষ্টা করেছেন!");
-            }
+            triggerWarning("আপনি অন্য উইন্ডো বা অ্যাপে টাচ করার চেষ্টা করেছেন!");
         });
 
+        // Anti-Cheat: Exited Full Screen
         document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement && isExamActive && !isPaused && !isUploadingImage) {
+            if (!document.fullscreenElement) {
                 triggerWarning("আপনি ফুল-স্ক্রিন মোড থেকে বের হওয়ার বা নোটিফিকেশন বার টানার চেষ্টা করেছেন!");
             }
         });
@@ -448,38 +456,48 @@
             }
         }
 
-        // ================= IMAGE UPLOAD & CROPPER SYSTEM =================
+        // ================= SMART IMAGE UPLOAD & CROPPER SYSTEM =================
         function triggerCamera(index) {
-            isUploadingImage = true; // Suspend anti-cheat
+            // ১. অ্যান্টি-চিট পুরোপুরি পজ করে দেওয়া হলো
+            isUploadingImage = true; 
             currentUploadIndex = index;
-            document.getElementById(`file-upload-${index}`).click();
             
-            // Listen for window focus to detect if user canceled file picker
-            const onFocus = () => {
-                window.removeEventListener('focus', onFocus);
-                // Give it 2 seconds to see if handleFileSelect triggers
-                filePickerTimeout = setTimeout(() => {
-                    const cropModal = document.getElementById('crop-modal');
-                    if (cropModal.style.display !== 'flex') {
-                        isUploadingImage = false; // Turn anti-cheat back on
-                        enterFullScreen();
-                    }
-                }, 2000);
-            };
-            window.addEventListener('focus', onFocus);
+            // ২. স্ক্রিনের সামনে ওয়েটিং ওভারলে নিয়ে আসা হলো
+            const title = document.getElementById('upload-overlay-title');
+            const desc = document.getElementById('upload-overlay-desc');
+            const btn = document.getElementById('upload-overlay-btn');
+            
+            title.innerHTML = '<i class="fas fa-camera"></i> Camera Open';
+            title.style.color = '#3b82f6';
+            desc.innerHTML = 'খাতার ছবি তুলুন।<br>যদি ছবি না তুলে ব্যাক করে থাকেন, তবে নিচের বাটনে ক্লিক করে পরীক্ষায় ফিরে যান।';
+            btn.innerHTML = '❌ Cancel & Return';
+            btn.style.background = '#ef4444';
+            btn.style.display = 'block';
+            btn.onclick = resumeFromUpload;
+            
+            document.getElementById('upload-overlay').style.display = 'flex';
+            
+            // ৩. ক্যামেরা/গ্যালারি ওপেন করা হলো
+            document.getElementById(`file-upload-${index}`).click();
+        }
+
+        // যখন ইউজার নিজে থেকে "Return" বাটন চাপবে
+        function resumeFromUpload() {
+            document.getElementById('upload-overlay').style.display = 'none';
+            // অ্যান্টি-চিট আবার চালু করা হলো
+            isUploadingImage = false; 
+            enterFullScreen();
         }
 
         function handleFileSelect(event) {
-            clearTimeout(filePickerTimeout); // User didn't cancel
-            isUploadingImage = true; // Keep suspended
-
             const file = event.target.files[0];
-            if (!file) { 
-                isUploadingImage = false; 
-                enterFullScreen();
-                return; 
-            }
+            
+            // যদি ইউজার ফাইল সিলেক্ট না করে ক্যান্সেল করে, তবে ওভারলে স্ক্রিনেই থাকবে, তাকে ম্যানুয়ালি "Return" বাটন চাপতে হবে।
+            if (!file) return; 
 
+            // ফাইল সিলেক্ট হলে ওভারলে লুকিয়ে ক্রপার ওপেন হবে। (অ্যান্টি-চিট কিন্তু পজ করাই আছে!)
+            document.getElementById('upload-overlay').style.display = 'none';
+            
             const reader = new FileReader();
             reader.onload = (e) => {
                 document.getElementById('crop-modal').style.display = 'flex';
@@ -487,10 +505,7 @@
                 image.src = e.target.result;
                 
                 if(cropperInstance) cropperInstance.destroy();
-                cropperInstance = new Cropper(image, { 
-                    viewMode: 1, 
-                    autoCropArea: 1 
-                });
+                cropperInstance = new Cropper(image, { viewMode: 1, autoCropArea: 1 });
             };
             reader.readAsDataURL(file);
         }
@@ -499,20 +514,37 @@
             document.getElementById('crop-modal').style.display = 'none';
             if(cropperInstance) cropperInstance.destroy();
             
-            // Allow state to settle, then resume anti-cheat
-            setTimeout(() => {
-                isUploadingImage = false;
-                enterFullScreen();
-            }, 500);
+            // ইনপুট ভ্যালু ফাঁকা করা হচ্ছে যাতে একই ছবি আবার সিলেক্ট করা যায়
+            document.getElementById(`file-upload-${currentUploadIndex}`).value = "";
+            
+            // ওভারলে আবার দেখানো হচ্ছে যাতে ইউজার "Resume" বাটনে ক্লিক করে এক্সামে ফিরতে পারে
+            const title = document.getElementById('upload-overlay-title');
+            const desc = document.getElementById('upload-overlay-desc');
+            
+            title.innerHTML = '<i class="fas fa-times-circle"></i> Canceled';
+            title.style.color = '#ef4444';
+            desc.innerHTML = 'আপনি ছবি আপলোড ক্যান্সেল করেছেন।<br>নিচের বাটনে ক্লিক করে পরীক্ষায় ফিরে যান।';
+            document.getElementById('upload-overlay-btn').onclick = resumeFromUpload;
+            
+            document.getElementById('upload-overlay').style.display = 'flex';
         }
 
         function confirmCropAndUpload() {
             if (!cropperInstance) return;
-            const statusText = document.getElementById(`upload-status-${currentUploadIndex}`);
-            statusText.innerText = "⏳ Uploading... Please Wait / আপলোড হচ্ছে...";
-            statusText.style.color = "#d97706";
             
             document.getElementById('crop-modal').style.display = 'none';
+            
+            const title = document.getElementById('upload-overlay-title');
+            const desc = document.getElementById('upload-overlay-desc');
+            const btn = document.getElementById('upload-overlay-btn');
+            
+            // আপলোড চলাকালীন ওভারলে
+            title.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            title.style.color = '#d97706';
+            desc.innerHTML = 'দয়া করে অপেক্ষা করুন, আপনার ছবি আপলোড হচ্ছে...';
+            btn.style.display = 'none'; // বাটন হাইড করা হলো যাতে আপলোডের সময় কেউ ক্যান্সেল না করতে পারে
+            
+            document.getElementById('upload-overlay').style.display = 'flex';
             
             cropperInstance.getCroppedCanvas({ maxWidth: 1000, maxHeight: 1000 }).toBlob(async (blob) => {
                 let formData = new FormData();
@@ -523,29 +555,34 @@
                     const data = await res.json();
                     if (data.success) {
                         studentAnswers[currentUploadIndex] = data.data.url; 
-                        statusText.innerText = "✅ Uploaded Successfully! / আপলোড সফল হয়েছে!";
-                        statusText.style.color = "#10b981";
-                        const thumb = document.getElementById(`thumb-${currentUploadIndex}`);
-                        thumb.src = data.data.url;
-                        thumb.style.display = 'block';
+                        document.getElementById(`thumb-${currentUploadIndex}`).src = data.data.url;
+                        document.getElementById(`thumb-${currentUploadIndex}`).style.display = 'block';
                         saveExamState();
+                        
+                        // আপলোড সফল হলে
+                        title.innerHTML = '<i class="fas fa-check-circle"></i> Upload Successful!';
+                        title.style.color = '#10b981';
+                        desc.innerHTML = 'ছবি সফলভাবে সেভ হয়েছে।';
                     } else { 
-                        statusText.innerText = "❌ Upload Failed."; 
-                        statusText.style.color = "#ef4444";
+                        title.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Upload Failed';
+                        title.style.color = '#ef4444';
+                        desc.innerHTML = 'আপলোডে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।';
                     }
                 } catch(e) { 
-                    statusText.innerText = "❌ Network Error."; 
-                    statusText.style.color = "#ef4444";
+                    title.innerHTML = '<i class="fas fa-wifi"></i> Network Error';
+                    title.style.color = '#ef4444';
+                    desc.innerHTML = 'ইন্টারনেট কানেকশন চেক করুন।';
                 }
                 
-                // Allow network requests to finish, then resume anti-cheat
-                setTimeout(() => { 
-                    isUploadingImage = false; 
-                    enterFullScreen();
-                }, 1000); 
+                // আপলোড শেষে আবার "Continue Exam" বাটন দেখানো হলো
+                btn.innerHTML = '▶️ Continue Exam';
+                btn.style.background = '#10b981';
+                btn.style.display = 'block';
+                btn.onclick = resumeFromUpload; // ক্লিক করলে অ্যান্টি-চিট আবার চালু হবে
+                
             }, 'image/jpeg', 0.7);
         }
-        // =================================================================
+        // =======================================================================
 
         function loadQuestion(index) {
             const q = dbQuestions[index];
@@ -574,9 +611,7 @@
                             <i class="fas fa-camera-retro"></i> Take Photo / ছবি তুলুন
                         </button>
                         
-                        <p id="upload-status-${index}" style="margin-top:10px; font-size:0.85rem; font-weight:bold;"></p>
-                        
-                        <img id="thumb-${index}" src="${savedUrl}" style="max-width: 100%; border-radius: 8px; margin-top: 10px; display: ${savedUrl ? 'block' : 'none'}; border: 1px solid #e2e8f0;">
+                        <img id="thumb-${index}" src="${savedUrl}" style="max-width: 100%; border-radius: 8px; margin-top: 15px; display: ${savedUrl ? 'block' : 'none'}; border: 1px solid #e2e8f0;">
                     </div>
                 `;
             } else {
@@ -711,6 +746,7 @@
                     }
                 }
                 
+                // Subjective image URLs collection
                 if (q.question_type === 'subjective' && studentAnswers[idx] && studentAnswers[idx].startsWith('http')) {
                     subjArray.push({
                         question_id: q.id,
@@ -735,7 +771,7 @@
                         score: displayScore, 
                         total_questions: totalQuestions,
                         warnings: warningsCount,
-                        subjective_answers: subjArray 
+                        subjective_answers: subjArray // Sending images to backend
                     })
                 });
                 localStorage.setItem('exam_result_' + examCode, JSON.stringify({ answers: studentAnswers, score: displayScore, total: totalQuestions }));
