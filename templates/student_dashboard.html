@@ -339,10 +339,13 @@
                 if (ex.is_private) {
                     actionHTML = `<button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Exam Code to Unlock</button>`;
                 } else if (ex.is_attempted) {
-                    let acc = ((ex.score / ex.total) * 100).toFixed(1);
+                    let displayScore = Number.isInteger(ex.score) ? ex.score : parseFloat(ex.score).toFixed(2);
+                    let displayTotal = Number.isInteger(ex.total) ? ex.total : parseFloat(ex.total).toFixed(2);
+                    let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
+                    
                     actionHTML = `
                     <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">
-                        ✅ Already Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)
+                        ✅ Already Attempted (Score: ${displayScore}/${displayTotal} - ${acc}%)
                     </div>
                     <div style="display:flex; gap:10px;">
                         <button class="btn-result" style="flex:1;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
@@ -446,33 +449,86 @@
             document.getElementById('dr-title').innerText = name + " - Result";
             document.getElementById('detailed-result-modal').style.display = 'flex';
 
+            const userEmail = localStorage.getItem('userEmail') || "Guest Account";
+
             try {
-                const response = await fetch('/api/get-exam-questions', {
+                // ১. এক্সামের প্রশ্নগুলো নিয়ে আসা
+                const qResponse = await fetch('/api/get-exam-questions', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ exam_code: code })
                 });
-                const data = await response.json();
+                const qData = await qResponse.json();
 
-                if (data.success) {
+                // ২. ব্যাকএন্ড থেকে টিচারের দেওয়া নম্বর ও আপডেট স্কোর নিয়ে আসা
+                const reviewResp = await fetch('/api/get-student-exam-review', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, exam_code: code })
+                });
+                const reviewData = await reviewResp.json();
+
+                if (qData.success) {
                     const savedState = localStorage.getItem('exam_result_' + code);
-                    const studentAnswers = savedState ? JSON.parse(savedState).answers : null;
+                    const localAnsData = savedState ? JSON.parse(savedState).answers : null;
+                    const backendSubjData = (reviewData.success && reviewData.taken) ? reviewData.subjective_data : null;
+
+                    let totalMarks = qData.questions.reduce((sum, q) => {
+                        let m = parseFloat(q.max_marks);
+                        if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0);
+                        return sum + m;
+                    }, 0);
+
+                    let displayScore = (reviewData.success && reviewData.taken) ? reviewData.total_score : 0;
+                    displayScore = Number.isInteger(displayScore) ? displayScore : parseFloat(displayScore).toFixed(2);
+                    totalMarks = Number.isInteger(totalMarks) ? totalMarks : parseFloat(totalMarks).toFixed(2);
+
+                    document.getElementById('dr-title').innerHTML = `${name} - Result <br><span style="font-size:0.9rem; color:#3b82f6;">Total Score: ${displayScore} / ${totalMarks}</span>`;
 
                     let html = '';
-                    data.questions.forEach((q, idx) => {
-                        const getOptionText = (letter) => {
-                            if(letter === 'A') return q.opt_a; if(letter === 'B') return q.opt_b;
-                            if(letter === 'C') return q.opt_c; if(letter === 'D') return q.opt_d; return '';
-                        };
+                    qData.questions.forEach((q, idx) => {
+                        // স্টুডেন্টের দেওয়া উত্তর (লোকাল স্টোরেজ থেকে)
+                        const studentAns = (localAnsData && localAnsData[idx]) ? localAnsData[idx] : undefined;
+                        let isAttempted = false;
+                        
+                        if(q.question_type === 'subjective' && backendSubjData && backendSubjData[q.id]) {
+                            isAttempted = true;
+                        } else if (studentAns !== undefined && studentAns !== "") {
+                            isAttempted = true;
+                        }
+                        
+                        const isCorrect = studentAns === q.correct;
+                        let cardClass = 'review-unattempted';
+                        if (isAttempted) {
+                            if (q.question_type === 'subjective') { cardClass = 'review-unattempted'; } 
+                            else { cardClass = isCorrect ? 'review-correct' : 'review-wrong'; }
+                        }
 
-                        if (studentAnswers) {
-                            const studentAns = studentAnswers[idx];
-                            const isCorrect = studentAns === q.correct;
-                            const isAttempted = studentAns !== undefined && studentAns !== null;
-                            
-                            let cardClass = isAttempted ? (isCorrect ? 'review-correct' : 'review-wrong') : 'review-unattempted';
+                        let maxMarks = q.max_marks || (q.question_type === 'mcq' ? 1.0 : 5.0);
 
-                            html += `<div class="review-card ${cardClass}">`;
-                            html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text}</div>`;
+                        html += `<div class="review-card ${cardClass}">`;
+                        html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text} <span style="font-size:0.8rem; color:#64748b;">(Marks: ${maxMarks})</span></div>`;
+
+                        if (q.question_type === 'subjective') {
+                            if (isAttempted) {
+                                html += `<div class="review-ans" style="color: #0369a1; font-weight:bold;">✅ Answer Uploaded</div>`;
+                                
+                                if(backendSubjData && backendSubjData[q.id]) {
+                                    const bData = backendSubjData[q.id];
+                                    if(bData.is_checked) {
+                                        html += `<div class="ans-real-correct" style="color:#10b981; font-size:1rem;">✅ <b>শিক্ষক নম্বর দিয়েছেন:</b> ${bData.marks} / ${maxMarks} Marks</div>`;
+                                    } else {
+                                        html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b> (Pending Review)</div>`;
+                                    }
+                                } else {
+                                    html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b> (Pending Review)</div>`;
+                                }
+                            } else {
+                                html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ No Image Uploaded</div>`;
+                            }
+                        } else {
+                            const getOptionText = (letter) => {
+                                if(letter === 'A') return q.opt_a; if(letter === 'B') return q.opt_b;
+                                if(letter === 'C') return q.opt_c; if(letter === 'D') return q.opt_d; return '';
+                            };
 
                             if (isAttempted) {
                                 if (isCorrect) {
@@ -483,21 +539,16 @@
                                 }
                             } else {
                                 html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div>`;
-                                html += `<div class="ans-real-correct" style="border-top: 1px dashed #cbd5e1; color: #0f172a;">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                                html += `<div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
                             }
-                            html += `</div>`;
-                        } else {
-                            html += `<div class="review-card review-unattempted">`;
-                            html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text}</div>`;
-                            html += `<div class="ans-real-correct" style="border-top: 1px dashed #cbd5e1; color: #0f172a;">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
-                            html += `</div>`;
                         }
+                        html += `</div>`;
                     });
 
                     container.innerHTML = html;
                     if (window.MathJax) { MathJax.typesetPromise([container]).catch(err => console.log(err)); }
                 } else { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load questions.</p>'; }
-            } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
+            } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; console.error(e); }
         }
 
         // --- Enhanced Recommendation & Search Ranking Algorithm ---
