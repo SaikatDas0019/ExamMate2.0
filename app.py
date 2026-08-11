@@ -315,13 +315,22 @@ def get_exam_questions():
             conn.close()
             return jsonify({"success": False, "error": "Exam not found!"}), 404
 
-        # Database fetch update
-        cursor.execute(f"SELECT id, question_text, option_a, option_b, option_c, option_d, correct_option, question_type FROM questions WHERE exam_code = {ph}", (exam_code,))
+        # এখানে max_marks ডেটাবেস থেকে ফেচ করা হলো
+        cursor.execute(f"SELECT id, question_text, option_a, option_b, option_c, option_d, correct_option, question_type, max_marks FROM questions WHERE exam_code = {ph}", (exam_code,))
         questions_rows = cursor.fetchall()
         conn.close()
 
-        # Questions list build update
-        questions_list = [{"id": q["id"], "q_text": q["question_text"], "opt_a": q["option_a"], "opt_b": q["option_b"], "opt_c": q["option_c"], "opt_d": q["option_d"], "correct": q["correct_option"], "question_type": q["question_type"] if "question_type" in q.keys() else "mcq"} for q in questions_rows]
+        questions_list = []
+        for q in questions_rows:
+            q_type = q["question_type"] if "question_type" in q.keys() else "mcq"
+            m_marks = q["max_marks"] if "max_marks" in q.keys() and q["max_marks"] is not None else (1.0 if q_type == 'mcq' else 5.0)
+            questions_list.append({
+                "id": q["id"], "q_text": q["question_text"], 
+                "opt_a": q["option_a"], "opt_b": q["option_b"], 
+                "opt_c": q["option_c"], "opt_d": q["option_d"], 
+                "correct": q["correct_option"], "question_type": q_type,
+                "max_marks": float(m_marks)
+            })
         
         if isinstance(exam_info, dict):
             e_name = exam_info['exam_name']
@@ -350,7 +359,7 @@ def get_exam_questions():
         })
     except Exception as e: return jsonify({"success": False, "error": "Database error occurred."}), 500
 
-# === UPDATE 2: Handle Guests Submitting Results ===
+
 @app.route('/api/submit-exam-result', methods=['POST'])
 def submit_exam_result():
     data = request.get_json()
@@ -363,15 +372,19 @@ def submit_exam_result():
     exam_name = data.get('exam_name')
     score = float(data.get('score', 0))
     total_q = data.get('total_questions')
-    subj_answers = data.get('subjective_answers', []) # স্টুডেন্টের আপলোড করা ছবিগুলো
+    subj_answers = data.get('subjective_answers', [])
 
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
+        
+        # রিএটেম্পট করলে পুরনো ডেটা ক্লিয়ার করে নতুন ডেটা বসানো হবে
+        cursor.execute(f"DELETE FROM results WHERE student_email = {ph} AND exam_code = {ph}", (email, exam_code))
+        cursor.execute(f"DELETE FROM subjective_answers WHERE student_email = {ph} AND exam_code = {ph}", (email, exam_code))
+        
         cursor.execute(f"INSERT INTO results (student_email, exam_code, exam_name, score, total_questions) VALUES ({ph}, {ph}, {ph}, {ph}, {ph})", (email, exam_code, exam_name, score, total_q))
         
-        # ডাটাবেসে ছবির লিংকগুলো সেভ করা হচ্ছে
         for sa in subj_answers:
             cursor.execute(f"INSERT INTO subjective_answers (exam_code, student_email, question_id, image_url) VALUES ({ph}, {ph}, {ph}, {ph})", (exam_code, email, sa['question_id'], sa['image_url']))
 
