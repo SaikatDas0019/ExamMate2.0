@@ -735,66 +735,522 @@
             clearInterval(timerInterval); 
             
             let score = 0;
+        const IMGBB_API_KEY = "ba43fc59f3848f599fa2b205647bf8cc"; 
+
+        let dbQuestions = [];
+        let examName = "";
+        let examCode = "";
+        let currentIndex = 0;
+        let studentAnswers = {}; 
+        let totalQuestions = 0;
+        let timerInterval;
+        let timeInSeconds = 0;
+        let examMinutesLimit = 0;
+        let isPaused = false;
+        let isExamActive = false;
+        let warningsCount = 0;
+        let negativeMarksPerWrong = 0;
+
+        let isUploadingImage = false; 
+        let currentUploadIndex = -1;
+        let cropperInstance = null;
+        let filePickerTimeout = null;
+
+        document.getElementById('agree-check').onchange = function(e) {
+            const btn = document.getElementById('start-btn');
+            if(e.target.checked) {
+                btn.disabled = false; btn.style.opacity = '1';
+            } else {
+                btn.disabled = true; btn.style.opacity = '0.5';
+            }
+        };
+
+        window.onload = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            examCode = urlParams.get('code');
+
+            const storedEmail = localStorage.getItem('userEmail');
+            const currentUserEmail = (storedEmail && storedEmail.trim() !== "") ? storedEmail : "Guest Account";
+
+            const dashBtn = document.getElementById('btn-return-dashboard');
+            const continueBtn = document.getElementById('btn-continue-app');
+            const headBackBtn = document.getElementById('header-back-btn');
+
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isAppWebView = /wv/.test(userAgent) || /Android.*Version\/[0-9].[0-9]/.test(userAgent);
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            if (isAppWebView || isStandalone || (storedEmail && storedEmail.trim() !== "")) {
+                if(dashBtn) dashBtn.style.display = 'block';     
+                if(continueBtn) continueBtn.style.display = 'none';      
+                if(headBackBtn) headBackBtn.style.display = 'block'; 
+            } else {
+                if(dashBtn) dashBtn.style.display = 'none';      
+                if(continueBtn) continueBtn.style.display = 'block';     
+                if(headBackBtn) headBackBtn.style.display = 'none'; 
+            }
+            
+            if(!examCode) {
+                document.getElementById('error-msg').innerText = "No Exam Code Selected!";
+                document.getElementById('error-section').style.display = 'block';
+                return;
+            }
+
+            try {
+                // ১. প্রথমে প্রশ্নগুলো লোড করা
+                const response = await fetch('/api/get-exam-questions', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: examCode })
+                });
+                const data = await response.json();
+
+                if (data.success && data.questions.length > 0) {
+                    dbQuestions = data.questions;
+                    examName = data.exam_name;
+                    totalQuestions = dbQuestions.length;
+                    examMinutesLimit = data.timer_minutes;
+                    negativeMarksPerWrong = parseFloat(data.negative_marks) || 0;
+                    
+                    document.getElementById('inst-q').innerText = totalQuestions;
+                    document.getElementById('inst-time').innerText = examMinutesLimit;
+                    document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
+
+                    // ২. এবার চেক করা স্টুডেন্ট আগেই পরীক্ষা দিয়েছে কি না (ব্যাকএন্ড থেকে)
+                    const reviewResp = await fetch('/api/get-student-exam-review', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
+                    });
+                    const reviewData = await reviewResp.json();
+
+                    if(reviewData.success && reviewData.taken) {
+                        // স্টুডেন্ট আগেই পরীক্ষা দিয়েছে, সরাসরি আপডেটেড রেজাল্ট দেখান
+                        document.getElementById('instruction-section').style.display = 'none';
+                        document.getElementById('exam-section').style.display = 'none';
+                        document.getElementById('result-section').style.display = 'block';
+                        
+                        let displayScore = Number.isInteger(reviewData.total_score) ? reviewData.total_score : parseFloat(reviewData.total_score).toFixed(2);
+                        document.getElementById('final-score').innerText = `${displayScore}/${totalQuestions}`;
+                        
+                        renderDetailedReview(reviewData.subjective_data); // শিক্ষকের দেওয়া নম্বর রেন্ডার হবে
+                        return;
+                    }
+
+                    // ৩. যদি পরীক্ষা না দিয়ে থাকে, তবে লোকাল স্টোরেজ চেক করা (Resuming)
+                    const savedState = localStorage.getItem(`exam_state_${examCode}`);
+                    if(savedState) { startActualExam(true); } 
+                    else {
+                        document.getElementById('error-section').style.display = 'none';
+                        document.getElementById('instruction-section').style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('error-msg').innerText = data.error || "No questions inside this exam!";
+                    document.getElementById('error-section').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('error-msg').innerText = "Server error fetching exam.";
+                document.getElementById('error-section').style.display = 'block';
+            }
+        };
+
+        function startActualExam(isResuming = false) {
+            document.getElementById('instruction-section').style.display = 'none';
+            document.getElementById('exam-section').style.display = 'block';
+            document.getElementById('display-exam-name').innerText = examName;
+            
+            enterFullScreen();
+
+            if(isResuming) {
+                const savedState = localStorage.getItem(`exam_state_${examCode}`);
+                if(savedState) {
+                    const stateData = JSON.parse(savedState);
+                    timeInSeconds = stateData.timeLeft;
+                    studentAnswers = stateData.answers || {};
+                    currentIndex = stateData.currentIndex || 0;
+                    warningsCount = stateData.warnings || 0;
+                }
+            } else {
+                timeInSeconds = examMinutesLimit * 60;
+            }
+
+            isExamActive = true;
+            updateTimerDisplay(timeInSeconds);
+            startTimer();
+            loadQuestion(currentIndex);
+            
+            setInterval(saveExamState, 5000);
+        }
+
+        // ================= ANTI CHEAT & TIMER =================
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('copy', event => {
+            event.preventDefault();
+            alert("⚠️ কপি করা সম্পূর্ণ নিষেধ!");
+        });
+
+        function enterFullScreen() {
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen(); } 
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+        }
+
+        function triggerWarning(reason) {
+            if (!isExamActive || isPaused || isUploadingImage) return;
+
+            warningsCount++;
+            saveExamState();
+            
+            if (warningsCount >= 5) {
+                alert(`🚨 FINAL WARNING (5/5): ${reason}\n\nআপনার পরীক্ষা স্বয়ংক্রিয়ভাবে বাতিল (Auto-Submit) করা হচ্ছে!`);
+                submitExam();
+            } else {
+                alert(`⚠️ WARNING ${warningsCount}/5: ${reason}\n\nআর ${5 - warningsCount} বার এমন হলে পরীক্ষা অটো-সাবমিট হয়ে যাবে!`);
+                enterFullScreen();
+            }
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) { triggerWarning("আপনি ট্যাব পরিবর্তন করেছেন বা ব্রাউজার মিনিমাইজ করার চেষ্টা করেছেন!"); }
+        });
+        window.addEventListener("blur", () => { triggerWarning("আপনি অন্য উইন্ডো বা অ্যাপে টাচ করার চেষ্টা করেছেন!"); });
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) { triggerWarning("আপনি ফুল-স্ক্রিন মোড থেকে বের হওয়ার বা নোটিফিকেশন বার টানার চেষ্টা করেছেন!"); }
+        });
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if(!isPaused) {
+                    timeInSeconds--;
+                    updateTimerDisplay(timeInSeconds);
+                    if(timeInSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        alert("⏳ Time is up! Auto-submitting your exam.");
+                        submitExam();
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            document.getElementById('time-left').innerText = `${m}:${s}`;
+        }
+
+        function saveExamState() {
+            if(isExamActive) {
+                const state = {
+                    timeLeft: timeInSeconds,
+                    answers: studentAnswers,
+                    currentIndex: currentIndex,
+                    warnings: warningsCount
+                };
+                localStorage.setItem(`exam_state_${examCode}`, JSON.stringify(state));
+            }
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const overlay = document.getElementById('pause-overlay');
+            const pauseBtn = document.getElementById('btn-pause');
+            
+            if(isPaused) {
+                overlay.style.display = 'flex';
+                pauseBtn.innerText = "▶️ Resume";
+                pauseBtn.style.background = "#10b981"; 
+                saveExamState();
+            } else {
+                overlay.style.display = 'none';
+                pauseBtn.innerText = "⏸️ Pause";
+                pauseBtn.style.background = "#f59e0b";
+                enterFullScreen();
+            }
+        }
+
+        // ================= SMART UPLOAD OVERLAY =================
+        function triggerCamera(index) {
+            isUploadingImage = true; 
+            currentUploadIndex = index;
+            
+            const title = document.getElementById('upload-overlay-title');
+            const desc = document.getElementById('upload-overlay-desc');
+            const btn = document.getElementById('upload-overlay-btn');
+            
+            title.innerHTML = '<i class="fas fa-camera"></i> Camera Open';
+            title.style.color = '#3b82f6';
+            desc.innerHTML = 'খাতার ছবি তুলুন।<br>যদি ছবি না তুলে ব্যাক করে থাকেন, তবে নিচের বাটনে ক্লিক করে পরীক্ষায় ফিরে যান।';
+            btn.innerHTML = '❌ Cancel & Return';
+            btn.style.background = '#ef4444';
+            btn.style.display = 'block';
+            btn.onclick = resumeFromUpload;
+            
+            document.getElementById('upload-overlay').style.display = 'flex';
+            document.getElementById(`file-upload-${index}`).click();
+        }
+
+        function resumeFromUpload() {
+            document.getElementById('upload-overlay').style.display = 'none';
+            isUploadingImage = false; 
+            enterFullScreen();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return; 
+
+            document.getElementById('upload-overlay').style.display = 'none';
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('crop-modal').style.display = 'flex';
+                const image = document.getElementById('crop-image');
+                image.src = e.target.result;
+                if(cropperInstance) cropperInstance.destroy();
+                cropperInstance = new Cropper(image, { viewMode: 1, autoCropArea: 1 });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function cancelCrop() {
+            document.getElementById('crop-modal').style.display = 'none';
+            if(cropperInstance) cropperInstance.destroy();
+            document.getElementById(`file-upload-${currentUploadIndex}`).value = "";
+            
+            const title = document.getElementById('upload-overlay-title');
+            const desc = document.getElementById('upload-overlay-desc');
+            title.innerHTML = '<i class="fas fa-times-circle"></i> Canceled';
+            title.style.color = '#ef4444';
+            desc.innerHTML = 'আপনি ছবি আপলোড ক্যান্সেল করেছেন।<br>নিচের বাটনে ক্লিক করে পরীক্ষায় ফিরে যান।';
+            document.getElementById('upload-overlay-btn').onclick = resumeFromUpload;
+            document.getElementById('upload-overlay').style.display = 'flex';
+        }
+
+        function confirmCropAndUpload() {
+            if (!cropperInstance) return;
+            document.getElementById('crop-modal').style.display = 'none';
+            const title = document.getElementById('upload-overlay-title');
+            const desc = document.getElementById('upload-overlay-desc');
+            const btn = document.getElementById('upload-overlay-btn');
+            
+            title.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            title.style.color = '#d97706';
+            desc.innerHTML = 'দয়া করে অপেক্ষা করুন, আপনার ছবি আপলোড হচ্ছে...';
+            btn.style.display = 'none'; 
+            document.getElementById('upload-overlay').style.display = 'flex';
+            
+            cropperInstance.getCroppedCanvas({ maxWidth: 1000, maxHeight: 1000 }).toBlob(async (blob) => {
+                let formData = new FormData();
+                formData.append("image", blob, "answer.jpg");
+                try {
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
+                    const data = await res.json();
+                    if (data.success) {
+                        studentAnswers[currentUploadIndex] = data.data.url; 
+                        document.getElementById(`thumb-${currentUploadIndex}`).src = data.data.url;
+                        document.getElementById(`thumb-${currentUploadIndex}`).style.display = 'block';
+                        saveExamState();
+                        title.innerHTML = '<i class="fas fa-check-circle"></i> Upload Successful!';
+                        title.style.color = '#10b981';
+                        desc.innerHTML = 'ছবি সফলভাবে সেভ হয়েছে।';
+                    } else { 
+                        title.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Upload Failed';
+                        title.style.color = '#ef4444';
+                        desc.innerHTML = 'আপলোডে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।';
+                    }
+                } catch(e) { 
+                    title.innerHTML = '<i class="fas fa-wifi"></i> Network Error';
+                    title.style.color = '#ef4444';
+                    desc.innerHTML = 'ইন্টারনেট কানেকশন চেক করুন।';
+                }
+                btn.innerHTML = '▶️ Continue Exam';
+                btn.style.background = '#10b981';
+                btn.style.display = 'block';
+                btn.onclick = resumeFromUpload; 
+            }, 'image/jpeg', 0.7);
+        }
+
+        // ================= QUESTIONS & UI =================
+        function loadQuestion(index) {
+            const q = dbQuestions[index];
+            const qTextElement = document.getElementById('question-text');
+            
+            let marksBadge = `<span style="color:#10b981; font-size:0.8rem; font-weight:bold; background:#dcfce7; padding:2px 8px; border-radius:12px;">[Marks: ${q.max_marks || (q.question_type==='mcq'?1.0:5.0)}]</span>`;
+            qTextElement.innerHTML = `Q: ${q.q_text} <br><div style="margin-top:8px;">${marksBadge}</div>`;
+            
+            const progress = ((index + 1) / totalQuestions) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').innerText = `Question No.: ${index + 1} / ${totalQuestions}`;
+
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = ""; 
+            
+            if (q.question_type === 'subjective') {
+                const savedUrl = (studentAnswers[index] && studentAnswers[index].startsWith('http')) ? studentAnswers[index] : '';
+                optsContainer.innerHTML = `
+                    <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; text-align: center; border-radius: 12px; margin-top: 15px;">
+                        <i class="fas fa-camera" style="font-size: 2rem; color: #94a3b8; margin-bottom: 10px;"></i>
+                        <p style="margin:0 0 15px 0; color:#475569; font-size:0.95rem;">খাতায় উত্তর লিখে ছবি আপলোড করুন</p>
+                        <input type="file" id="file-upload-${index}" accept="image/*" capture="environment" style="display:none;" onchange="handleFileSelect(event)">
+                        <button onclick="triggerCamera(${index})" style="background:#3b82f6; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">
+                            <i class="fas fa-camera-retro"></i> Take Photo / ছবি তুলুন
+                        </button>
+                        <img id="thumb-${index}" src="${savedUrl}" style="max-width: 100%; border-radius: 8px; margin-top: 15px; display: ${savedUrl ? 'block' : 'none'}; border: 1px solid #e2e8f0;">
+                    </div>
+                `;
+            } else {
+                const options = [ { letter: 'A', text: q.opt_a }, { letter: 'B', text: q.opt_b }, { letter: 'C', text: q.opt_c }, { letter: 'D', text: q.opt_d } ];
+                options.forEach(opt => {
+                    const isSelected = studentAnswers[index] === opt.letter;
+                    const label = document.createElement('label');
+                    label.className = `option-label ${isSelected ? 'selected' : ''}`;
+                    const input = document.createElement('input');
+                    input.type = 'radio'; input.name = `q${index}`; input.value = opt.letter;
+                    if(isSelected) input.checked = true;
+                    input.onclick = () => { studentAnswers[index] = opt.letter; saveExamState(); loadQuestion(index); };
+                    label.appendChild(input);
+                    const span = document.createElement('span'); span.innerHTML = ` ${opt.letter}. ${opt.text}`;
+                    label.appendChild(span);
+                    optsContainer.appendChild(label);
+                });
+            }
+
+            document.getElementById('btn-prev').disabled = (index === 0);
+            if (index === totalQuestions - 1) {
+                document.getElementById('btn-next').style.display = 'none';
+                document.getElementById('btn-submit').style.display = 'block';
+            } else {
+                document.getElementById('btn-next').style.display = 'block';
+                document.getElementById('btn-submit').style.display = 'none';
+            }
+            if (window.MathJax) { MathJax.typesetPromise([qTextElement, optsContainer]).catch(function (err) { console.log(err); }); }
+        }
+
+        function changeQuestion(step) { currentIndex += step; saveExamState(); loadQuestion(currentIndex); }
+
+        // ব্যাকএন্ড ডেটা গ্রহণ করার জন্য আপডেট করা হয়েছে
+        function renderDetailedReview(backendSubjData = null) {
+            const container = document.getElementById('detailed-review-container');
+            let html = '';
+
+            // লোকাল স্টোরেজ থেকে ডেটা নিলে আগের মতো দেখাবে, ব্যাকএন্ড থেকে নিলে স্যারের নম্বর দেখাবে
+            let localAnsData = {};
+            const savedState = localStorage.getItem('exam_result_' + examCode);
+            if(savedState) { localAnsData = JSON.parse(savedState).answers || {}; }
+
+            dbQuestions.forEach((q, idx) => {
+                const studentAns = studentAnswers[idx] || localAnsData[idx];
+                let isAttempted = false;
+                
+                // ব্যাকএন্ড ডেটা থাকলে খাতা আপলোড হয়েছিল কিনা চেক করা
+                if(q.question_type === 'subjective' && backendSubjData && backendSubjData[q.id]) {
+                    isAttempted = true;
+                } else if (studentAns !== undefined && studentAns !== "") {
+                    isAttempted = true;
+                }
+                
+                const isCorrect = studentAns === q.correct;
+                let cardClass = 'review-unattempted';
+                if (isAttempted) {
+                    if (q.question_type === 'subjective') { cardClass = 'review-unattempted'; } 
+                    else { cardClass = isCorrect ? 'review-correct' : 'review-wrong'; }
+                }
+
+                html += `<div class="review-card ${cardClass}">`;
+                html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text} <span style="font-size:0.8rem; color:#64748b;">(Marks: ${q.max_marks})</span></div>`;
+
+                if (q.question_type === 'subjective') {
+                    if (isAttempted) {
+                        html += `<div class="review-ans" style="color: #0369a1; font-weight:bold;">✅ Answer Uploaded</div>`;
+                        
+                        // যদি ব্যাকএন্ড ডেটা থাকে (অর্থাৎ স্যার খাতা দেখেছেন কিনা)
+                        if(backendSubjData && backendSubjData[q.id]) {
+                            const bData = backendSubjData[q.id];
+                            if(bData.is_checked) {
+                                html += `<div class="ans-real-correct" style="color:#10b981; font-size:1rem;">✅ <b>শিক্ষক নম্বর দিয়েছেন:</b> ${bData.marks} / ${q.max_marks} Marks</div>`;
+                            } else {
+                                html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b> (Pending Review)</div>`;
+                            }
+                        } else {
+                            html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b> (Pending Review)</div>`;
+                        }
+                    } else {
+                        html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ No Image Uploaded</div>`;
+                    }
+                } else {
+                    const getOptionText = (letter) => {
+                        if(letter === 'A') return q.opt_a; if(letter === 'B') return q.opt_b;
+                        if(letter === 'C') return q.opt_c; if(letter === 'D') return q.opt_d; return '';
+                    };
+
+                    if (isAttempted) {
+                        if (isCorrect) {
+                            html += `<div class="review-ans ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                        } else {
+                            html += `<div class="review-ans ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                            html += `<div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                        }
+                    } else {
+                        html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div>`;
+                        html += `<div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                    }
+                }
+
+                html += `</div>`;
+            });
+            container.innerHTML = html;
+            if (window.MathJax) { MathJax.typesetPromise([container]).catch(function (err) { console.log(err); }); }
+        }
+
+        async function submitExam() {
+            isExamActive = false;
+            clearInterval(timerInterval); 
+            
+            let score = 0;
             let subjArray = [];
 
             dbQuestions.forEach((q, idx) => {
                 if (q.question_type === 'mcq' && studentAnswers[idx]) { 
-                    if (studentAnswers[idx] === q.correct) {
-                        score += (q.max_marks || 1.0);
-                    } else {
-                        score -= negativeMarksPerWrong;
-                    }
+                    if (studentAnswers[idx] === q.correct) { score += (q.max_marks || 1.0); } 
+                    else { score -= negativeMarksPerWrong; }
                 }
-                
-                // Subjective image URLs collection
                 if (q.question_type === 'subjective' && studentAnswers[idx] && studentAnswers[idx].startsWith('http')) {
-                    subjArray.push({
-                        question_id: q.id,
-                        image_url: studentAnswers[idx]
-                    });
+                    subjArray.push({ question_id: q.id, image_url: studentAnswers[idx] });
                 }
             });
 
             let displayScore = Number.isInteger(score) ? score : parseFloat(score.toFixed(2));
-            
             const storedEmail = localStorage.getItem('userEmail');
             const userEmail = (storedEmail && storedEmail.trim() !== "") ? storedEmail : "Guest Account";
 
             try {
                 await fetch('/api/submit-exam-result', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email: userEmail, 
-                        exam_code: examCode, 
-                        exam_name: examName, 
-                        score: displayScore, 
-                        total_questions: totalQuestions,
-                        warnings: warningsCount,
-                        subjective_answers: subjArray // Sending images to backend
+                        email: userEmail, exam_code: examCode, exam_name: examName, 
+                        score: displayScore, total_questions: totalQuestions, warnings: warningsCount,
+                        subjective_answers: subjArray 
                     })
                 });
                 localStorage.setItem('exam_result_' + examCode, JSON.stringify({ answers: studentAnswers, score: displayScore, total: totalQuestions }));
                 localStorage.removeItem(`exam_state_${examCode}`);
-            } catch (e) { 
-                console.log("Failed to save score online:", e); 
-            }
+            } catch (e) { console.log("Failed to save score"); }
 
             document.getElementById('exam-section').style.display = 'none';
             document.getElementById('pause-overlay').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
-            
             if (document.fullscreenElement) { document.exitFullscreen(); }
-            
             document.getElementById('final-score').innerText = `${displayScore}/${totalQuestions}`;
             
             renderDetailedReview();
         }
 
         function openAppOrDownload() {
-            alert("আপনার ফোনে যদি ExamMate অ্যাপটি আগে থেকেই থাকে, তবে দয়া করে সেটি মেনু থেকে সরাসরি ওপেন করুন। আপনার রেজাল্ট সেখানে সিঙ্ক হয়ে যাবে।\n\nআর অ্যাপ না থাকলে 'OK' প্রেস করে অ্যাপটি ডাউনলোড করে নিন!");
+            alert("আপনার ফোনে যদি ExamMate অ্যাপটি আগে থেকেই থাকে, তবে দয়া করে সেটি মেনু থেকে সরাসরি ওপেন করুন।");
             window.location.href = "https://exammate-sscn.onrender.com/download";
         }
+    </script>
+</body>
+</html>
+
     </script>
 </body>
 </html>
