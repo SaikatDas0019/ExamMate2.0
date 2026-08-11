@@ -262,7 +262,7 @@
                 <div class="page-header"><h1 id="eval-exam-header-title">View Answers</h1><p>Check pending subjective papers</p></div>
             </div>
             <div id="eval-content" style="padding-bottom: 20px;">
-                <!-- Answer Cards will be injected here -->
+                <!-- Answer Cards / Student List will be injected here -->
             </div>
         </div>
 
@@ -333,6 +333,10 @@
     <script>
         let globalData = {};
         let editingExamCode = '';
+        
+        // খাতা দেখার জন্য নতুন গ্লোবাল ভেরিয়েবল
+        let currentPendingEvaluations = [];
+        let currentEvalExamCode = '';
 
         window.onload = async () => {
             loadProfileData();
@@ -378,12 +382,10 @@
         }
 
         function populateAnalyticsPanels(data) {
-            // Panel 1: Students
             document.getElementById('list-students-body').innerHTML = data.leaderboard.map((s, i) => 
                 `<tr><td><div class="student-name-box"><strong>${i+1}. ${s.name}</strong><span class="email">${s.email}</span></div></td><td>${s.taken} Exams</td><td><strong style="color:#1ea64d;">${s.avg}%</strong></td></tr>`
             ).join('') || '<tr><td colspan="3">No students found.</td></tr>';
 
-            // Panel 2: Attempts
             document.getElementById('list-attempts-box').innerHTML = data.examStats.map(e => 
                 `<div class="list-item-btn" onclick="fetchAttempts('${e.code}', '${e.name.replace(/'/g, "\\'")}')">
                     <div><strong>${e.name}</strong><br><span>Total Attempts: ${e.attempts}</span></div>
@@ -391,22 +393,18 @@
                 </div>`
             ).join('') || '<p style="text-align:center;">No exams available.</p>';
 
-            // Panel 3: Class Average
             document.getElementById('list-average-body').innerHTML = data.examStats.map(e => 
                 `<tr><td>${e.name}</td><td><strong style="color:#3b82f6;">${e.avg}%</strong></td><td>${e.high}%</td><td>${e.low}%</td></tr>`
             ).join('') || '<tr><td colspan="4">No data.</td></tr>';
         }
 
-        // Panel Navigation
         function openPanel(id) {
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
             document.getElementById('main-profile-view').style.display = 'none';
             document.getElementById(id).style.display = 'block';
             window.scrollTo(0, 0);
 
-            if(id === 'panel-active') {
-                loadActiveExamsFeed();
-            }
+            if(id === 'panel-active') { loadActiveExamsFeed(); }
         }
 
         function showMainProfile() {
@@ -415,7 +413,6 @@
             window.scrollTo(0, 0);
         }
 
-        // Fetch Individual Exam Attempts
         async function fetchAttempts(examCode, examName) {
             openPanel('panel-attempt-details');
             document.getElementById('sub-attempt-title').innerText = examName.length > 20 ? examName.substring(0, 20) + "..." : examName;
@@ -436,7 +433,6 @@
             } catch(e) { tbody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>'; }
         }
 
-        // Load Active Exams as Feed Cards
         async function loadActiveExamsFeed() {
             const userEmail = localStorage.getItem('userEmail');
             const container = document.getElementById('active-exams-feed');
@@ -495,8 +491,9 @@
             } catch(e) { container.innerHTML = `<p style="text-align:center; color:#ef4444;">Error loading exams.</p>`; }
         }
 
-        // ================= EVALUATION SYSTEM (খাতা দেখা) =================
+        // ================= EVALUATION SYSTEM (খাতা দেখা - নতুন স্টুডেন্ট লিস্ট যুক্ত করা হলো) =================
         async function openEvaluationPanel(code) {
+            currentEvalExamCode = code;
             openPanel('panel-evaluate');
             document.getElementById('eval-exam-header-title').innerText = "Evaluate: " + code;
             const container = document.getElementById('eval-content');
@@ -510,38 +507,75 @@
                 const data = await response.json();
                 
                 if(data.success) {
-                    if(data.evaluations.length === 0) {
-                        container.innerHTML = '<div style="text-align:center; padding:40px 20px;"><i class="fas fa-check-circle" style="font-size:3rem; color:#10b981; margin-bottom:15px;"></i><h3 style="color:#1e293b; margin:0;">কোনো খাতা বাকি নেই!</h3><p style="color:#64748b; font-size:0.9rem;">সব স্টুডেন্টের খাতা দেখা সম্পন্ন হয়েছে।</p></div>';
-                        return;
-                    }
-                    
-                    let html = '';
-                    data.evaluations.forEach(ans => {
-                        let maxMarks = ans.max_marks || 1.0; 
-                        
-                        html += `
-                            <div class="feed-card" id="eval-card-${ans.id}" style="border-left: 4px solid #3b82f6;">
-                                <div style="font-size:0.85rem; color:#64748b; margin-bottom:10px;">Student: <strong>${ans.student_email}</strong></div>
-                                <div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:1.1rem;"><span style="color:#3b82f6;">Q:</span> ${ans.question_text}</div>
-                                <div style="position:relative; margin-bottom:15px; border-radius:8px; overflow:hidden; border:1px solid #cbd5e1;">
-                                    <img src="${ans.image_url}" style="width:100%; display:block; cursor:pointer;" onclick="window.open('${ans.image_url}', '_blank')">
-                                    <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); color:white; padding:4px 8px; border-radius:6px; font-size:0.8rem; pointer-events:none;"><i class="fas fa-search-plus"></i> Tap to zoom</div>
-                                </div>
-                                <div class="input-group">
-                                    <label>Marks / প্রাপ্ত নম্বর দিন: <span style="color:#ef4444;">(সর্বোচ্চ মান: ${maxMarks})</span></label>
-                                    <input type="number" step="0.5" id="mark-${ans.id}" class="form-input" placeholder="Max: ${maxMarks}" style="border: 2px solid #3b82f6;">
-                                </div>
-                                <button class="btn-save" style="width:100%; box-shadow:0 4px 6px rgba(16,185,129,0.3);" onclick="submitEvaluation(${ans.id}, '${ans.student_email}', '${code}', ${maxMarks})"><i class="fas fa-paper-plane"></i> Submit Marks</button>
-                            </div>
-                        `;
-                    });
-                    container.innerHTML = html;
+                    currentPendingEvaluations = data.evaluations;
+                    renderStudentListForEvaluation();
                 } else {
                     container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading papers.</p>';
                 }
             } catch(e) {
                 container.innerHTML = '<p style="text-align:center; color:#ef4444;">Network Error. Please try again.</p>';
             }
+        }
+
+        function renderStudentListForEvaluation() {
+            const container = document.getElementById('eval-content');
+            if(currentPendingEvaluations.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px 20px;"><i class="fas fa-check-circle" style="font-size:3rem; color:#10b981; margin-bottom:15px;"></i><h3 style="color:#1e293b; margin:0;">কোনো খাতা বাকি নেই!</h3><p style="color:#64748b; font-size:0.9rem;">সব স্টুডেন্টের খাতা দেখা সম্পন্ন হয়েছে।</p></div>';
+                return;
+            }
+
+            // স্টুডেন্টের ইমেইল অনুযায়ী খাতাগুলো গ্রুপ করা হচ্ছে
+            const studentsMap = {};
+            currentPendingEvaluations.forEach(ans => {
+                if(!studentsMap[ans.student_email]) {
+                    studentsMap[ans.student_email] = 0;
+                }
+                studentsMap[ans.student_email]++;
+            });
+
+            let html = '<h3 style="color:#1e293b; margin-bottom:15px; font-size:1.05rem;">স্টুডেন্ট তালিকা (Pending):</h3>';
+            html += '<div class="table-container" style="background:transparent; border:none; padding:0;">';
+            
+            for(let email in studentsMap) {
+                html += `
+                <div class="list-item-btn" onclick="showStudentPapers('${email}')">
+                    <div><strong>${email}</strong><br><span style="font-size:0.8rem; color:#d97706;">বাকি থাকা উত্তর: ${studentsMap[email]} টি</span></div>
+                    <button class="btn-save" style="width:auto; padding:6px 12px; font-size:0.85rem;"><i class="fas fa-eye"></i> খাতা দেখুন</button>
+                </div>`;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // নির্দিষ্ট স্টুডেন্ট সিলেক্ট করার পর তার খাতা দেখানো
+        function showStudentPapers(email) {
+            const container = document.getElementById('eval-content');
+            const studentAnswers = currentPendingEvaluations.filter(ans => ans.student_email === email);
+            
+            let html = `<button class="btn-remove-q" style="margin-bottom:15px; color:#475569; background:#f1f5f9; border-color:#cbd5e1;" onclick="renderStudentListForEvaluation()">
+                            <i class="fas fa-arrow-left"></i> স্টুডেন্ট তালিকায় ফিরে যান
+                        </button>
+                        <h3 style="color:#1e293b; margin-top:0; font-size:1rem;">খাতা: ${email}</h3>`;
+
+            studentAnswers.forEach(ans => {
+                let maxMarks = ans.max_marks || 1.0; 
+                html += `
+                    <div class="feed-card" id="eval-card-${ans.id}" style="border-left: 4px solid #3b82f6;">
+                        <div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:1.1rem;"><span style="color:#3b82f6;">Q:</span> ${ans.question_text}</div>
+                        <div style="position:relative; margin-bottom:15px; border-radius:8px; overflow:hidden; border:1px solid #cbd5e1;">
+                            <img src="${ans.image_url}" style="width:100%; display:block; cursor:pointer;" onclick="window.open('${ans.image_url}', '_blank')">
+                            <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); color:white; padding:4px 8px; border-radius:6px; font-size:0.8rem; pointer-events:none;"><i class="fas fa-search-plus"></i> Tap to zoom</div>
+                        </div>
+                        <div class="input-group">
+                            <label>Marks / প্রাপ্ত নম্বর দিন: <span style="color:#ef4444;">(সর্বোচ্চ মান: ${maxMarks})</span></label>
+                            <input type="number" step="0.5" id="mark-${ans.id}" class="form-input" placeholder="Max: ${maxMarks}" style="border: 2px solid #3b82f6;">
+                        </div>
+                        <button class="btn-save" style="width:100%; box-shadow:0 4px 6px rgba(16,185,129,0.3);" onclick="submitEvaluation(${ans.id}, '${ans.student_email}', '${currentEvalExamCode}', ${maxMarks})"><i class="fas fa-paper-plane"></i> Submit Marks</button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
         }
 
         async function submitEvaluation(ansId, studentEmail, examCode, maxMarks) {
@@ -554,7 +588,7 @@
                 return;
             }
             if(parseFloat(markInput) < 0) {
-                alert(`⚠️ নম্বর 0 এর কম হতে পারে গঠন!`);
+                alert(`⚠️ নম্বর 0 এর কম হতে পারে না!`);
                 return;
             }
 
@@ -572,7 +606,19 @@
                     const card = document.getElementById(`eval-card-${ansId}`);
                     card.style.transition = "opacity 0.3s ease";
                     card.style.opacity = "0";
-                    setTimeout(() => { card.style.display = 'none'; }, 300);
+                    
+                    setTimeout(() => { 
+                        card.style.display = 'none'; 
+                        
+                        // নির্দিষ্ট স্টুডেন্টের খাতা দেখা হয়ে গেলে লিস্ট থেকে তা বাদ দেওয়া হচ্ছে
+                        currentPendingEvaluations = currentPendingEvaluations.filter(ans => ans.id !== ansId);
+                        
+                        // যদি ওই স্টুডেন্টের আর কোনো খাতা না থাকে, তবে অটোমেটিক লিস্টে ফিরে যাবে
+                        const remainingForStudent = currentPendingEvaluations.filter(ans => ans.student_email === studentEmail);
+                        if(remainingForStudent.length === 0) {
+                            renderStudentListForEvaluation(); 
+                        }
+                    }, 300);
                 } else {
                     alert("Error submitting marks.");
                     btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Marks';
@@ -701,7 +747,6 @@
                     </select>
                 </div>
                 
-                <!-- Added Marks Field -->
                 <div class="input-group" style="margin-bottom:10px;">
                     <label style="color:#10b981;">Marks (প্রশ্নের মান):</label>
                     <input type="number" step="0.5" class="form-input q-marks" value="${defaultMarks}" style="border: 2px solid #10b981; font-weight:bold;">
