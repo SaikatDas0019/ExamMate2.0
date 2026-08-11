@@ -152,7 +152,7 @@
             display: flex; justify-content: space-around; padding: 10px 0 20px 0;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
 
@@ -243,15 +243,15 @@
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active">
-            <div class="nav-icon"><i class="fas fa-home"></i></div><span>        </span>
-        </div>
-        <div class="nav-item" onclick="window.location.href='/student_analytics.html'">
-            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div><span>        </span>
-        </div>
-        <div class="nav-item" onclick="window.location.href='/student_profile.html'">
-            <div class="nav-icon"><i class="far fa-user"></i></div><span>        </span>
-        </div>
+        <a href="student_dashboard.html" class="nav-item active">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+        </a>
+        <a href="student_analytics.html" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+        </a>
+        <a href="student_profile.html" class="nav-item">
+            <div class="nav-icon"><i class="far fa-user"></i></div>
+        </a>
     </div>
 
     <script>
@@ -263,8 +263,6 @@
 
             await loadFilterDropdowns();
             loadRealFeed();
-            
-            // ডাটাবেস থেকে স্কোর ফেচ করে প্রোফাইল আইকনে ডায়নামিক কালার সেট করবে
             fetchAndSetAvatarColor(); 
         };
 
@@ -319,9 +317,7 @@
 
         function performSearch() {
             const query = document.getElementById('main-search').value.trim();
-            if (query) {
-                trackStudentPreference(query, "", "");
-            }
+            if (query) { trackStudentPreference(query, "", ""); }
             loadRealFeed(query);
         }
 
@@ -335,7 +331,6 @@
 
                 let actionHTML = '';
                 
-                // ১. চেক করা হচ্ছে পরীক্ষা আগে দেওয়া হয়েছে কিনা (প্রাইভেট ও পাবলিক দুটোর জন্যই)
                 if (ex.is_attempted) {
                     let displayScore = Number.isInteger(ex.score) ? ex.score : parseFloat(ex.score).toFixed(2);
                     let displayTotal = Number.isInteger(ex.total) ? ex.total : parseFloat(ex.total).toFixed(2);
@@ -345,7 +340,6 @@
                     if (ex.is_private) {
                         reattemptBtn = `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExamReattempt('${ex.code}')">🔒 Re-attempt</button>`;
                     } else {
-                        // reattempt=true যুক্ত করা হলো
                         reattemptBtn = `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
                     }
 
@@ -358,7 +352,6 @@
                         ${reattemptBtn}
                     </div>`;
                 } else {
-                    // ২. পরীক্ষা না দেওয়া থাকলে
                     if (ex.is_private) {
                         actionHTML = `<button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Exam Code to Unlock</button>`;
                     } else {
@@ -380,7 +373,6 @@
                     <div class="feed-body">
                         <h3 class="feed-title">${ex.name} ${ex.is_private ? '🔒' : ''}</h3>
                         <div class="feed-tags">
-                            <!-- Code tag has been removed -->
                             <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
                             <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
                             <span class="feed-tag" style="background:${ex.is_private ? '#fef3c7; color:#92400e;' : '#dcfce7; color:#166534;'}">${ex.is_private ? 'Private' : 'Public'}</span>
@@ -420,7 +412,6 @@
             }
         }
 
-        // রিএটেম্পট এর জন্য নতুন ফাংশন
         function accessPrivateExamReattempt(actualCode) {
             const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code provided by your teacher to unlock and re-attempt:");
             if (enteredCode) {
@@ -437,7 +428,6 @@
             if(!userEmail) return;
 
             let icon = btn.querySelector('i');
-            
             if (actionType === 'like') {
                 let span = btn.querySelector('span');
                 let count = parseInt(span.innerText);
@@ -474,14 +464,12 @@
             const userEmail = localStorage.getItem('userEmail') || "Guest Account";
 
             try {
-                // ১. এক্সামের প্রশ্নগুলো নিয়ে আসা
                 const qResponse = await fetch('/api/get-exam-questions', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ exam_code: code })
                 });
                 const qData = await qResponse.json();
 
-                // ২. ব্যাকএন্ড থেকে টিচারের দেওয়া নম্বর ও আপডেট স্কোর নিয়ে আসা
                 const reviewResp = await fetch('/api/get-student-exam-review', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: userEmail, exam_code: code })
@@ -507,7 +495,6 @@
 
                     let html = '';
                     qData.questions.forEach((q, idx) => {
-                        // স্টুডেন্টের দেওয়া উত্তর (লোকাল স্টোরেজ থেকে)
                         const studentAns = (localAnsData && localAnsData[idx]) ? localAnsData[idx] : undefined;
                         let isAttempted = false;
                         
@@ -573,12 +560,9 @@
             } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; console.error(e); }
         }
 
-        // --- Enhanced Recommendation & Search Ranking Algorithm ---
         function trackStudentPreference(query, className, subject) {
             let history = JSON.parse(localStorage.getItem('student_pref') || '{"searches": [], "classes": [], "subjects": []}');
-            if (query && !history.searches.includes(query.toLowerCase())) {
-                history.searches.unshift(query.toLowerCase());
-            }
+            if (query && !history.searches.includes(query.toLowerCase())) { history.searches.unshift(query.toLowerCase()); }
             if (className && !history.classes.includes(className)) history.classes.push(className);
             if (subject && !history.subjects.includes(subject)) history.subjects.push(subject);
             localStorage.setItem('student_pref', JSON.stringify(history));
@@ -586,22 +570,14 @@
 
         function sortExamsForStudent(feedList, currentQuery = "") {
             let pref = JSON.parse(localStorage.getItem('student_pref') || '{"searches": [], "classes": [], "subjects": []}');
-            
-            if (currentQuery && !pref.searches.includes(currentQuery.toLowerCase())) {
-                pref.searches.unshift(currentQuery.toLowerCase());
-            }
+            if (currentQuery && !pref.searches.includes(currentQuery.toLowerCase())) { pref.searches.unshift(currentQuery.toLowerCase()); }
 
             return feedList.sort((a, b) => {
-                let scoreA = 0;
-                let scoreB = 0;
+                let scoreA = 0; let scoreB = 0;
 
                 pref.searches.forEach(term => {
-                    if (a.name.toLowerCase().includes(term) || a.subject.toLowerCase().includes(term) || a.class_name.toLowerCase().includes(term)) {
-                        scoreA += 100;
-                    }
-                    if (b.name.toLowerCase().includes(term) || b.subject.toLowerCase().includes(term) || b.class_name.toLowerCase().includes(term)) {
-                        scoreB += 100;
-                    }
+                    if (a.name.toLowerCase().includes(term) || a.subject.toLowerCase().includes(term) || a.class_name.toLowerCase().includes(term)) scoreA += 100;
+                    if (b.name.toLowerCase().includes(term) || b.subject.toLowerCase().includes(term) || b.class_name.toLowerCase().includes(term)) scoreB += 100;
                 });
 
                 if (pref.classes.includes(a.class_name)) scoreA += 50;
@@ -614,16 +590,11 @@
                 if (daysA <= 7) scoreA += Math.max(0, 30 - (daysA * 3));
                 if (daysB <= 7) scoreB += Math.max(0, 30 - (daysB * 3));
 
-                scoreA += (a.likes * 2);
-                scoreB += (b.likes * 2);
-
+                scoreA += (a.likes * 2); scoreB += (b.likes * 2);
                 return scoreB - scoreA;
             });
         }
 
-        // ==========================================
-        // CUSTOM SHARE MODAL LOGIC
-        // ==========================================
         let currentShareData = {};
 
         function triggerCustomShare(examName, examCode) {
@@ -635,87 +606,51 @@
             document.getElementById('custom-share-modal').style.display = 'flex';
         }
 
-        function shareRealExam(examCode, examName) {
-            triggerCustomShare(examName, examCode);
-        }
-
-        function closeShareModal() {
-            document.getElementById('custom-share-modal').style.display = 'none';
-        }
+        function shareRealExam(examCode, examName) { triggerCustomShare(examName, examCode); }
+        function closeShareModal() { document.getElementById('custom-share-modal').style.display = 'none'; }
 
         function shareVia(platform) {
             const fullText = encodeURIComponent(currentShareData.text + currentShareData.url);
             const urlOnly = encodeURIComponent(currentShareData.url);
             let shareUrl = '';
 
-            if(platform === 'whatsapp') {
-                shareUrl = `https://api.whatsapp.com/send?text=${fullText}`;
-                window.open(shareUrl, '_blank');
-            } else if(platform === 'telegram') {
-                shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`;
-                window.open(shareUrl, '_blank');
-            }
+            if(platform === 'whatsapp') { shareUrl = `https://api.whatsapp.com/send?text=${fullText}`; window.open(shareUrl, '_blank'); } 
+            else if(platform === 'telegram') { shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`; window.open(shareUrl, '_blank'); }
             closeShareModal();
         }
 
         function copyShareLink() {
             navigator.clipboard.writeText(currentShareData.text + currentShareData.url).then(() => {
-                alert("✅ Exam link and details copied successfully!");
-                closeShareModal();
-            }).catch(() => {
-                alert("Failed to copy. Please try again.");
-            });
+                alert("✅ Exam link and details copied successfully!"); closeShareModal();
+            }).catch(() => { alert("Failed to copy. Please try again."); });
         }
+
         async function fetchAndSetAvatarColor() {
             const userEmail = localStorage.getItem('userEmail');
             if (!userEmail) return;
-
             const avatar = document.getElementById('nav-avatar');
             if (!avatar) return;
 
             try {
                 const response = await fetch('/api/get-student-progress', {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ email: userEmail })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail })
                 });
                 const data = await response.json();
                 
                 if (data.success) {
                     const score = parseFloat(data.score) || 0;
-                    
                     let avatarBg = "linear-gradient(135deg, #34d399, #10b981)"; 
                     let borderColor = "#10b981";
 
-                    if (score >= 50 && score < 100) { 
-                        avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)";
-                        borderColor = "#d97706";
-                    } 
-                    else if (score >= 100 && score < 300) { 
-                        avatarBg = "linear-gradient(135deg, #94a3b8, #475569)";
-                        borderColor = "#475569";
-                    } 
-                    else if (score >= 300 && score < 600) { 
-                        avatarBg = "linear-gradient(135deg, #fde047, #eab308)";
-                        borderColor = "#eab308";
-                    } 
-                    else if (score >= 600) { 
-                        avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
-                        borderColor = "transparent";
-                    }
+                    if (score >= 50 && score < 100) { avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)"; borderColor = "#d97706"; } 
+                    else if (score >= 100 && score < 300) { avatarBg = "linear-gradient(135deg, #94a3b8, #475569)"; borderColor = "#475569"; } 
+                    else if (score >= 300 && score < 600) { avatarBg = "linear-gradient(135deg, #fde047, #eab308)"; borderColor = "#eab308"; } 
+                    else if (score >= 600) { avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; borderColor = "transparent"; }
 
-                    avatar.style.background = avatarBg;
-                    avatar.style.color = "#ffffff";
-                    
-                    if (score >= 600) {
-                        avatar.style.border = "none";
-                    } else {
-                        avatar.style.border = `2px solid ${borderColor}`;
-                    }
+                    avatar.style.background = avatarBg; avatar.style.color = "#ffffff";
+                    if (score >= 600) { avatar.style.border = "none"; } else { avatar.style.border = `2px solid ${borderColor}`; }
                 }
-            } catch (error) {
-                console.log("Error fetching score for avatar color.");
-            }
+            } catch (error) { console.log("Error fetching score for avatar color."); }
         }
     </script>
 </body>
