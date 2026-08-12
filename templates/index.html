@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>ExamMate - Online Exam & Study Material Platform</title>
-    <meta name="description" content="Easily take the online exam at ExamMate, use the Student and Teacher Dashboard, and download necessary study materials." />
-    <meta name="google-site-verification" content="hn-qApsUCGJszMHEgHT2rT1eunNTsTSyaKdGcANEXFU" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Welcome</title>
+    <title>ExamMate | Welcome - Online Exam & Study Material Platform</title>
+    <meta name="description" content="Easily take the online exam at ExamMate, use the Student and Teacher Dashboard, and download necessary study materials." />
+    <meta name="google-site-verification" content="hn-qApsUCGJszMHEgHT2rT1eunNTsTSyaKdGcANEXFU" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -107,7 +106,7 @@
         </div>
     </div>
 
-        <!-- Firebase Authentication SDK -->
+    <!-- Firebase Authentication SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -163,14 +162,12 @@
             const mainContent = document.getElementById('main-content');
             const loadingText = document.querySelector('.loading-text');
             
-            // ১. চেক করা যে ইউজার নিজে থেকে লগআউট করেছে কি না
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('logout') === '1') {
                 clearSession();
                 window.history.replaceState({}, document.title, "/");
             }
 
-            // ২. সবার আগে চেক করা: গুগল লগইন থেকে রিডাইরেক্ট হয়ে ফিরেছে কি না?
             try {
                 const result = await getRedirectResult(auth);
                 if (result && result.user) {
@@ -193,7 +190,7 @@
                             saveSessionLocally(userData.email, data.name, data.role);
                             window.location.replace(data.redirect_url);
                         }
-                        return; // এখানেই এক্সিকিউশন থামিয়ে দেবে, আর নিচে যাবে না
+                        return; 
                     } else {
                         alert("Login failed: " + data.error);
                     }
@@ -202,7 +199,6 @@
                 console.error("Redirect Error:", error);
             }
 
-            // ৩. গুগল থেকে না ফিরলে, লোকাল সেশন (Cookie/LocalStorage) চেক করা
             const savedEmail = localStorage.getItem('userEmail') || getCookie('userEmail');
             
             if (savedEmail) {
@@ -222,16 +218,15 @@
                 } catch (e) { console.log("Status check error:", e); }
             }
 
-            // ৪. কোনো লগইন না থাকলে মূল পেজ দেখানো
             clearSession();
             loadingScreen.style.opacity = '0';
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
+                mainClient = document.getElementById('main-content');
                 mainContent.style.display = 'flex';
             }, 300);
         });
 
-        // লগইন বাটনে ক্লিক করলে
         document.getElementById('btn-google-login').addEventListener('click', async () => {
             const loadingScreen = document.getElementById('loading-screen');
             loadingScreen.style.display = 'flex';
