@@ -62,7 +62,7 @@ When deploying new updates to the Render live server, especially after modifying
 
 ### 👨‍💻 Developed By
 ***Saikat Das***
-* **GitHub:** [https://github.com/SaikatDas0019](@SaikatDas0019)
+* **GitHub:** [@SaikatDas0019](https://github.com/SaikatDas0019)
 * **App Package:** `com.saikat.exammate`
 
 *If you find this project helpful, don't forget to give it a ⭐ on GitHub!*
