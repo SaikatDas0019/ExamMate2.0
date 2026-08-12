@@ -1186,6 +1186,12 @@ def get_student_exam_review():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
         
+from flask import send_from_directory
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('.', 'sitemap.xml')
+    
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
