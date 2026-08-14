@@ -1276,6 +1276,70 @@ def get_special_exams():
         
         conn.close()
         return jsonify({"success": True, "live_exams": live_exams, "categories": categories, "playlists": playlists})
+# ==========================================
+# 🔥 NEW API FOR SPECIAL EXAMS (STUDENT DASHBOARD)
+# ==========================================
+@app.route('/api/get-special-exams', methods=['POST'])
+def get_special_exams():
+    data = request.get_json() or {}
+    email = data.get('email', '')
+    
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        cursor.execute("SELECT exam_code, exam_name, class_name, subject, expiry_time FROM exams WHERE teacher_email = 'exammate.official@gmail.com' AND folder_id = 0")
+        live_exams_rows = cursor.fetchall()
+        
+        # স্টুডেন্টের স্কোরের ডেটা ফেচ করা
+        cursor.execute(f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph}", (email,))
+        history_rows = cursor.fetchall()
+        history_map = {r["exam_code"] if isinstance(r, dict) else r[0]: {"score": r["score"] if isinstance(r, dict) else r[1], "total": r["total_questions"] if isinstance(r, dict) else r[2]} for r in history_rows}
+        
+        live_exams = []
+        for r in live_exams_rows:
+            code = r["exam_code"] if isinstance(r, dict) else r[0]
+            name = r["exam_name"] if isinstance(r, dict) else r[1]
+            cls_name = r["class_name"] if isinstance(r, dict) else r[2]
+            subj = r["subject"] if isinstance(r, dict) else r[3]
+            exp_time = str(r["expiry_time"]) if (isinstance(r, dict) and r.get("expiry_time")) or (not isinstance(r, dict) and len(r)>4 and r[4]) else None
+            if exp_time == "None": exp_time = None
+            
+            is_attempted = code in history_map
+            live_exams.append({
+                "code": code, "name": name, "class_name": cls_name, "subject": subj, "expiry_time": exp_time,
+                "is_attempted": is_attempted,
+                "score": history_map[code]["score"] if is_attempted else 0,
+                "total": history_map[code]["total"] if is_attempted else 0
+            })
+        
+        cursor.execute("SELECT id, folder_name, folder_type FROM drive_folders WHERE parent_id = 0 AND folder_type IN ('category', 'playlist')")
+        all_folders = cursor.fetchall()
+        
+        cursor.execute("SELECT folder_id, MAX(created_at) as last_updated FROM exams WHERE teacher_email = 'exammate.official@gmail.com' GROUP BY folder_id")
+        latest_exams = {}
+        for r in cursor.fetchall():
+            fid = r["folder_id"] if isinstance(r, dict) else r[0]
+            l_upd = str(r["last_updated"]) if isinstance(r, dict) else str(r[1])
+            latest_exams[fid] = l_upd
+        
+        folders_list = []
+        for f in all_folders:
+            fid = f["id"] if isinstance(f, dict) else f[0]
+            fname = f["folder_name"] if isinstance(f, dict) else f[1]
+            ftype = f["folder_type"] if isinstance(f, dict) else f[2]
+            folders_list.append({
+                "id": fid, "name": fname, "type": ftype,
+                "last_updated": latest_exams.get(fid, "")
+            })
+        
+        folders_list.sort(key=lambda x: x["last_updated"], reverse=True)
+        categories = [{"id": f["id"], "name": f["name"]} for f in folders_list if f["type"] == 'category']
+        playlists = [{"id": f["id"], "name": f["name"]} for f in folders_list if f["type"] == 'playlist']
+        
+        conn.close()
+        return jsonify({"success": True, "live_exams": live_exams, "categories": categories, "playlists": playlists})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
@@ -1283,13 +1347,19 @@ def get_special_exams():
 def get_special_playlist_exams():
     data = request.get_json()
     folder_id = data.get('folder_id')
+    email = data.get('email', '')
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        # ক্যাটাগরি বা প্লেলিস্টের এক্সামের জন্য টাইমার বাদে কোন এক্সপায়ারি ডেট লাগবে না
+        
         cursor.execute(f"SELECT exam_code, exam_name, timer_minutes, class_name, subject FROM exams WHERE folder_id = {ph} AND teacher_email = 'exammate.official@gmail.com' ORDER BY position ASC, exam_code DESC", (folder_id,))
         rows = cursor.fetchall()
+        
+        cursor.execute(f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph}", (email,))
+        history_rows = cursor.fetchall()
+        history_map = {r["exam_code"] if isinstance(r, dict) else r[0]: {"score": r["score"] if isinstance(r, dict) else r[1], "total": r["total_questions"] if isinstance(r, dict) else r[2]} for r in history_rows}
+        
         exams = []
         for r in rows:
             code = r["exam_code"] if isinstance(r, dict) else r[0]
@@ -1297,7 +1367,14 @@ def get_special_playlist_exams():
             timer = r["timer_minutes"] if isinstance(r, dict) else r[2]
             cls_name = r["class_name"] if isinstance(r, dict) else r[3]
             subj = r["subject"] if isinstance(r, dict) else r[4]
-            exams.append({"code": code, "name": name, "timer": timer, "class_name": cls_name, "subject": subj})
+            
+            is_attempted = code in history_map
+            exams.append({
+                "code": code, "name": name, "timer": timer, "class_name": cls_name, "subject": subj,
+                "is_attempted": is_attempted,
+                "score": history_map[code]["score"] if is_attempted else 0,
+                "total": history_map[code]["total"] if is_attempted else 0
+            })
         
         conn.close()
         return jsonify({"success": True, "exams": exams})
