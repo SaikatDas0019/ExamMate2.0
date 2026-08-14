@@ -623,16 +623,14 @@
             }
         }
 
-        // 7. Logout Logic
         function logoutAccount() {
             if(confirm("Are you sure you want to log out?")) {
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('userRole');
-                window.location.href = '/index.html'; // শুধু এই লাইনটা পালটে দিন
+                window.location.href = '/logout'; // এটি ফ্লাস্কের লগআউট রাউটকে কল করবে
             }
         }
-
 
         // Hardware Back Button
         window.addEventListener('popstate', function (event) {
