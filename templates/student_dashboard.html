@@ -143,7 +143,7 @@
         .special-header-top h2 { margin: 0; font-size: 1.25rem; color: #0f172a; font-weight: 800; }
 
         .live-h-scroll {
-            display: flex; overflow-x: auto; gap: 15px; padding: 20px 20px 10px 20px;
+            display: flex; overflow-x: auto; gap: 15px; padding: 10px 20px 20px 20px;
             scroll-snap-type: x mandatory; scrollbar-width: none;
         }
         .live-h-scroll::-webkit-scrollbar { display: none; }
@@ -152,7 +152,7 @@
             background: linear-gradient(135deg, #1e1b4b, #4338ca);
             border-radius: 20px; padding: 22px; color: white;
             box-shadow: 0 10px 25px rgba(67, 56, 202, 0.3); position: relative; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; justify-content:space-between;
         }
         .live-banner-card::after {
             content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px;
@@ -196,13 +196,12 @@
         .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         
         .score-modal-box { 
-            position: relative; /* For Absolute Close Button */
+            position: relative;
             background: white; padding: 25px; border-radius: 20px; 
             width: 90%; max-width: 450px; text-align: left; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; 
         }
 
-        /* Top Right Fixed Close Button */
         .modal-close-top {
             position: absolute; top: 15px; right: 15px;
             background: #f1f5f9; color: #64748b; border: none;
@@ -212,15 +211,13 @@
         }
         .modal-close-top:hover { background: #fee2e2; color: #ef4444; }
 
-        /* Review Card Styling */
         .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; transition: 0.2s; }
-        .review-correct { background-color: #f0fdf4; border-color: #bbf7d0; box-shadow: 0 2px 4px rgba(34,197,94,0.05); } /* Green Theme */
-        .review-wrong { background-color: #fef2f2; border-color: #fecaca; box-shadow: 0 2px 4px rgba(239,68,68,0.05); } /* Red Theme */
-        .review-unattempted { background-color: #f8fafc; border-color: #cbd5e1; } /* Gray Theme */
+        .review-correct { background-color: #f0fdf4; border-color: #bbf7d0; box-shadow: 0 2px 4px rgba(34,197,94,0.05); } 
+        .review-wrong { background-color: #fef2f2; border-color: #fecaca; box-shadow: 0 2px 4px rgba(239,68,68,0.05); } 
+        .review-unattempted { background-color: #f8fafc; border-color: #cbd5e1; } 
         
         .review-q-text { font-weight: 700; margin-bottom: 12px; color: #1e293b; font-size: 0.95rem; }
         
-        /* Answer Texts Styling */
         .ans-correct-text { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block; margin-top: 5px;}
         .ans-wrong-text { color: #b91c1c; font-size: 0.9rem; font-weight: 700; background: #fee2e2; padding: 6px 12px; border-radius: 8px; display: inline-block; margin-top: 5px; margin-bottom: 8px;}
         .ans-real-correct { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block;}
@@ -301,22 +298,23 @@
         </div>
 
         <!-- 1. LIVE BANNERS (Horizontal) -->
-        <h3 style="padding: 0 20px; margin: 15px 0 0 0; font-size:1.1rem; color:#1e293b; font-weight:800;">🔥 Live Challenges</h3>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 0 20px; margin-top: 15px;">
+            <h3 style="margin: 0; font-size:1.1rem; color:#1e293b; font-weight:800;">🔥 Live Challenges</h3>
+        </div>
         <div class="live-h-scroll" id="live-special-scroll"></div>
 
         <!-- 2. FOLDERS / CATEGORIES (Horizontal) -->
-        <h3 style="padding: 0 20px; margin: 15px 0 5px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📁 Special Categories</h3>
+        <h3 style="padding: 0 20px; margin: 5px 0 5px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📁 Categories</h3>
         <div class="special-folders-scroll" id="special-folders"></div>
 
         <!-- 3. PAST PLAYLISTS (Vertical) -->
-        <h3 style="padding: 0 20px; margin: 10px 0 15px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📚 Past Collections</h3>
+        <h3 style="padding: 0 20px; margin: 10px 0 15px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📚 Playlists</h3>
         <div class="playlist-container" id="past-special-playlists"></div>
     </div>
 
     <!-- 🔥 MODAL FOR VIEWING PLAYLIST EXAMS -->
     <div class="score-modal-overlay" id="playlist-exams-modal" style="z-index: 4000;">
         <div class="score-modal-box" style="background:#f8fafc; max-width: 400px; width: 90%;">
-            <!-- New Close Button at Top Right -->
             <button class="modal-close-top" onclick="document.getElementById('playlist-exams-modal').style.display='none'"><i class="fas fa-times"></i></button>
             <div class="score-modal-title" id="playlist-modal-title" style="text-align: center; font-size:1.2rem; font-weight:800; color:#0f172a; margin-bottom:15px; margin-top:5px;">Playlist Exams</div>
             <div id="playlist-exams-list" style="display:flex; flex-direction:column; gap:10px; max-height: 60vh; overflow-y: auto; padding-right:5px;"></div>
@@ -326,12 +324,9 @@
     <!-- Main Results Modal -->
     <div class="score-modal-overlay" id="detailed-result-modal">
         <div class="score-modal-box" style="text-align: left;">
-            <!-- 🔥 NEW Close Button at Top Right -->
             <button class="modal-close-top" onclick="document.getElementById('detailed-result-modal').style.display='none'"><i class="fas fa-times"></i></button>
-            
             <div class="score-modal-title" id="dr-title" style="text-align: center; margin-top: 10px; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; color: #0f172a;">Exam Result</div>
             <div id="detailed-review-container"></div>
-            <!-- Removed the old bottom cancel button -->
         </div>
     </div>
 
@@ -348,7 +343,6 @@
     </div>
 
     <script>
-        // SMART HEADER LOGIC
         let lastScrollTop = 0;
         const header = document.getElementById('smart-header');
         
@@ -366,21 +360,12 @@
         // 🔥 SPECIAL EXAMS PAGE LOGIC WITH REAL DATA
         // ==========================================
         const specialGradients = [
-            "linear-gradient(135deg, #f59e0b, #ea580c)", // Orange
-            "linear-gradient(135deg, #831843, #be123c)", // Rose/Pink
-            "linear-gradient(135deg, #1e1b4b, #4338ca)", // Indigo
-            "linear-gradient(135deg, #0f766e, #10b981)", // Teal/Emerald
-            "linear-gradient(135deg, #86198f, #f43f5e)", // Fuchsia/Rose
-            "linear-gradient(135deg, #1d4ed8, #3b82f6)", // Blue
-            "linear-gradient(135deg, #b45309, #d97706)", // Amber
-            "linear-gradient(135deg, #4c1d95, #7c3aed)", // Violet
-            "linear-gradient(135deg, #115e59, #14b8a6)", // Cyan
-            "linear-gradient(135deg, #9f1239, #e11d48)", // Ruby Red
-            "linear-gradient(135deg, #3730a3, #6366f1)", // Indigo Light
-            "linear-gradient(135deg, #065f46, #34d399)", // Emerald
-            "linear-gradient(135deg, #701a75, #c026d3)", // Purple
-            "linear-gradient(135deg, #1e3a8a, #60a5fa)", // Blue Light
-            "linear-gradient(135deg, #7f1d1d, #ef4444)"  // Crimson
+            "linear-gradient(135deg, #f59e0b, #ea580c)", "linear-gradient(135deg, #831843, #be123c)", 
+            "linear-gradient(135deg, #1e1b4b, #4338ca)", "linear-gradient(135deg, #0f766e, #10b981)", 
+            "linear-gradient(135deg, #86198f, #f43f5e)", "linear-gradient(135deg, #1d4ed8, #3b82f6)", 
+            "linear-gradient(135deg, #b45309, #d97706)", "linear-gradient(135deg, #4c1d95, #7c3aed)", 
+            "linear-gradient(135deg, #115e59, #14b8a6)", "linear-gradient(135deg, #9f1239, #e11d48)", 
+            "linear-gradient(135deg, #3730a3, #6366f1)", "linear-gradient(135deg, #065f46, #34d399)"
         ];
 
         function getRandomGradient() {
@@ -396,53 +381,130 @@
             document.getElementById('special-folders').innerHTML = '<p style="padding:20px; color:#64748b;">Loading categories...</p>';
             document.getElementById('past-special-playlists').innerHTML = '<p style="padding:20px; color:#64748b;">Loading playlists...</p>';
             
+            const userEmail = localStorage.getItem('userEmail');
+
             try {
-                const res = await fetch('/api/get-special-exams', { method: 'POST' });
+                const res = await fetch('/api/get-special-exams', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
                 const data = await res.json();
                 
                 if(data.success) {
                     renderSpecialData(data);
+                } else {
+                    alert("Error loading special data.");
                 }
             } catch(e) {
-                console.error("Error fetching special exams:", e);
+                console.error(e);
             }
         }
 
+        function formatTimeRemaining(ms) {
+            if (ms <= 0) return "Expired";
+            const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+            const mins = Math.floor((ms / 1000 / 60) % 60);
+            if (days > 0) return `${days}d ${hours}h left`;
+            if (hours > 0) return `${hours}h ${mins}m left`;
+            return `${mins}m left`;
+        }
+
         function renderSpecialData(data) {
+            // ১. লাইভ এক্সামের সর্টিং অ্যালগরিদম (Advanced Sorting)
+            const now = new Date();
+            data.live_exams.sort((a, b) => {
+                // রুল ১: যেগুলো দেওয়া হয়ে গেছে সেগুলো সবার শেষে
+                if (a.is_attempted && !b.is_attempted) return 1;
+                if (!a.is_attempted && b.is_attempted) return -1;
+                
+                // রুল ২: যেগুলো দেওয়া হয়নি, তাদের মধ্যে এক্সপায়ারি টাইম ক্যালকুলেট করা
+                let aDiff = Infinity, bDiff = Infinity;
+                let aExpired = false, bExpired = false;
+
+                if (a.expiry_time && a.expiry_time !== "None") {
+                    aDiff = new Date(a.expiry_time) - now;
+                    if (aDiff < 0) aExpired = true;
+                }
+                if (b.expiry_time && b.expiry_time !== "None") {
+                    bDiff = new Date(b.expiry_time) - now;
+                    if (bDiff < 0) bExpired = true;
+                }
+
+                // এক্সপায়ার হওয়া এক্সামগুলো নরমাল এক্সামের পরে থাকবে
+                if (aExpired && !bExpired) return 1;
+                if (!aExpired && bExpired) return -1;
+
+                // যার এক্সপায়ার হতে সবচেয়ে কম সময় বাকি, সে সবার আগে থাকবে
+                return aDiff - bDiff;
+            });
+
             let liveHtml = '';
             if(data.live_exams.length === 0) {
                 liveHtml = '<p style="padding: 20px; color:#64748b;">No live exams currently.</p>';
             } else {
                 data.live_exams.forEach(exam => {
                     const bg = getRandomGradient();
+                    
+                    let expiryHtml = '';
+                    let actionBtnHtml = '';
+                    let isExpired = false;
+
+                    if (exam.expiry_time && exam.expiry_time !== "None") {
+                        const diffMs = new Date(exam.expiry_time) - now;
+                        if (diffMs > 0) {
+                            expiryHtml = `<div style="background:rgba(0,0,0,0.3); padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block;">⏳ ${formatTimeRemaining(diffMs)}</div>`;
+                        } else {
+                            isExpired = true;
+                            expiryHtml = `<div style="background:rgba(239,68,68,0.8); padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block;">❌ Expired</div>`;
+                        }
+                    }
+
+                    if (exam.is_attempted) {
+                        actionBtnHtml = `<button onclick="showDetailedResult('${exam.code}', '${exam.name.replace(/'/g, "\\'")}')" style="width:100%; background:rgba(16, 185, 129, 0.9); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer;">View Result ✅</button>`;
+                    } else if (isExpired) {
+                        actionBtnHtml = `<button disabled style="width:100%; background:rgba(0,0,0,0.4); color:#cbd5e1; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:not-allowed;">Time Out ❌</button>`;
+                    } else {
+                        actionBtnHtml = `<button onclick="window.location.href='student_exam.html?code=${exam.code}'" style="width:100%; background:rgba(0,0,0,0.2); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Now 🚀</button>`;
+                    }
+
                     liveHtml += `
                     <div class="live-banner-card" style="background: ${bg};">
-                        <div class="live-badge"><i class="fas fa-circle"></i> Live Now</div>
-                        <h3 style="margin:0 0 5px 0; font-size:1.3rem;">${exam.name}</h3>
-                        <p style="margin:0 0 15px 0; font-size:0.85rem; color:rgba(255,255,255,0.9);">${exam.class_name} • ${exam.subject}</p>
-                        <div class="admin-verified-tag" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.3); margin-bottom:15px; font-size:0.75rem;"><i class="fas fa-check-circle"></i> Official ExamMate</div>
-                        <button onclick="window.location.href='student_exam.html?code=${exam.code}'" style="width:100%; background:rgba(0,0,0,0.2); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Now 🚀</button>
+                        <div>
+                            <div class="live-badge"><i class="fas fa-circle"></i> Live Now</div><br>
+                            ${expiryHtml}
+                            <h3 style="margin:0 0 5px 0; font-size:1.3rem;">${exam.name}</h3>
+                            <p style="margin:0 0 15px 0; font-size:0.85rem; color:rgba(255,255,255,0.9);">${exam.class_name} • ${exam.subject}</p>
+                        </div>
+                        <div>
+                            ${actionBtnHtml}
+                        </div>
                     </div>`;
                 });
             }
             document.getElementById('live-special-scroll').innerHTML = liveHtml;
 
+            // ২. ক্যাটাগরি এবং প্লেলিস্ট রেন্ডার (ব্যাকএন্ড থেকেই New Updated লজিকে সর্ট হয়ে এসেছে)
             let folderHtml = '';
             let playlistHtml = '';
             
-            if(data.playlists.length === 0) {
-                folderHtml = '<p style="padding: 20px; color:#64748b;">No categories found.</p>';
-                playlistHtml = '<p style="padding: 20px; color:#64748b;">No playlists found.</p>';
-            } else {
-                data.playlists.forEach((pl, index) => {
+            if(data.categories.length === 0) folderHtml = '<p style="padding: 20px; color:#64748b;">No categories found.</p>';
+            else {
+                data.categories.forEach((cat) => {
                     const bg = getRandomGradient();
-                    if(index < 4) {
-                        folderHtml += `
-                        <div class="special-folder" style="background: ${bg};" onclick="openPlaylistModal(${pl.id}, '${pl.name.replace(/'/g, "\\'")}')">
-                            <i class="fas fa-folder-open"></i>
-                            ${pl.name}
-                        </div>`;
-                    }
+                    folderHtml += `
+                    <div class="special-folder" style="background: ${bg};" onclick="openPlaylistModal(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-folder-open"></i>
+                        ${cat.name}
+                    </div>`;
+                });
+            }
+
+            if(data.playlists.length === 0) playlistHtml = '<p style="padding: 20px; color:#64748b;">No playlists found.</p>';
+            else {
+                data.playlists.forEach((pl) => {
+                    const bg = getRandomGradient();
                     playlistHtml += `
                     <div class="playlist-item" onclick="openPlaylistModal(${pl.id}, '${pl.name.replace(/'/g, "\\'")}')">
                         <div class="playlist-icon" style="background: ${bg}; color: white;"><i class="fas fa-layer-group"></i></div>
@@ -455,14 +517,14 @@
                 });
             }
             
-            document.getElementById('special-folders').innerHTML = folderHtml || '<p style="padding: 20px; color:#64748b;">No categories available.</p>';
-            document.getElementById('past-special-playlists').innerHTML = playlistHtml || '<p style="padding: 20px; color:#64748b;">No playlists available.</p>';
+            document.getElementById('special-folders').innerHTML = folderHtml;
+            document.getElementById('past-special-playlists').innerHTML = playlistHtml;
         }
 
         async function openPlaylistModal(folderId, folderName) {
             document.getElementById('playlist-modal-title').innerText = folderName;
             const container = document.getElementById('playlist-exams-list');
-            container.innerHTML = '<p style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Fetching Exams...</p>';
+            container.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
             document.getElementById('playlist-exams-modal').style.display = 'flex';
             
             try {
@@ -471,16 +533,17 @@
                     body: JSON.stringify({folder_id: folderId})
                 });
                 const data = await res.json();
+                
                 if(data.success) {
                     if(data.exams.length === 0) {
-                        container.innerHTML = '<p style="text-align:center; color:#64748b; font-weight:bold;">No exams inside this playlist.</p>';
+                        container.innerHTML = '<p style="text-align:center; color:#ef4444; font-weight:bold; margin-top:20px;">No exams found here.</p>';
                         return;
                     }
                     let html = '';
                     data.exams.forEach(ex => {
                         html += `
                         <div style="background:white; border:1px solid #e2e8f0; padding:12px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
-                            <div>
+                            <div style="flex:1; padding-right:10px;">
                                 <strong style="color:#1e293b; display:block; font-size:0.95rem;">${ex.name}</strong>
                                 <span style="font-size:0.75rem; color:#64748b;">${ex.class_name} • ${ex.subject} • ⏱ ${ex.timer} Mins</span>
                             </div>
