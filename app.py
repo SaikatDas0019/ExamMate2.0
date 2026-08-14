@@ -178,7 +178,12 @@ def init_db():
             cursor.execute('''CREATE TABLE IF NOT EXISTS subjective_answers (id INTEGER PRIMARY KEY AUTOINCREMENT, exam_code TEXT, student_email TEXT, question_id INTEGER, image_url TEXT, marks REAL DEFAULT 0.0, is_checked BOOLEAN DEFAULT FALSE);''')
         conn.commit()
         # ==============================================================
-        
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN expiry_time TIMESTAMP DEFAULT NULL;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
@@ -1221,19 +1226,25 @@ def get_special_exams():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
         
-@app.route('/api/get-special-playlist-exams', methods=['POST'])
-def get_special_playlist_exams():
+@app.route('/api/admin/get-special-dashboard', methods=['POST'])
+def admin_get_special_dashboard():
     data = request.get_json()
-    folder_id = data.get('folder_id')
+    parent_id = data.get('parent_id', 0)
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT exam_code, exam_name, timer_minutes, class_name, subject FROM exams WHERE folder_id = {ph} AND teacher_email = 'exammate.official@gmail.com' ORDER BY position ASC, exam_code DESC", (folder_id,))
-        rows = cursor.fetchall()
-        exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"], "class_name": r["class_name"], "subject": r["subject"]} for r in rows]
+        
+        # ক্যাটাগরি এবং প্লেলিস্ট ফোল্ডার ফেচ করা
+        cursor.execute(f"SELECT id, folder_name, folder_type FROM drive_folders WHERE parent_id = {ph} ORDER BY id DESC", (parent_id,))
+        folders = [{"id": r["id"], "name": r["folder_name"], "type": r["folder_type"]} for r in cursor.fetchall()]
+        
+        # ওই ফোল্ডারের (বা রুট এর) লাইভ এক্সাম ফেচ করা
+        cursor.execute(f"SELECT exam_code, exam_name, timer_minutes, expiry_time FROM exams WHERE folder_id = {ph} AND teacher_email = 'exammate.official@gmail.com' ORDER BY created_at DESC", (parent_id,))
+        exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"], "expiry_time": str(r["expiry_time"]) if r.get("expiry_time") else ""} for r in cursor.fetchall()]
+        
         conn.close()
-        return jsonify({"success": True, "exams": exams})
+        return jsonify({"success": True, "folders": folders, "exams": exams})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
