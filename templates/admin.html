@@ -168,20 +168,27 @@
                 <i class="fas fa-info-circle"></i> Location: <span id="exam-folder-name"></span>
             </div>
 
+            <!-- ⚠️ EXAM CODE AND NAME (ALWAYS VISIBLE) -->
             <div class="form-group">
                 <label>Exam Name</label>
                 <input type="text" id="exam-name" placeholder="e.g. Chapter 1 Test">
             </div>
             
             <div class="grid-2x2">
-                <div class="form-group"><label>Exam Code</label><input type="text" id="exam-code" placeholder="CH1-TEST" style="text-transform: uppercase;"></div>
-                <div class="form-group"><label>Timer (Mins)</label><input type="number" id="exam-timer" value="30"></div>
+                <div class="form-group">
+                    <label>Exam Code</label>
+                    <input type="text" id="exam-code" placeholder="CH1-TEST" style="text-transform: uppercase; background:#fff; border:1px solid #94a3b8;">
+                </div>
+                <div class="form-group">
+                    <label>Timer (Mins)</label>
+                    <input type="number" id="exam-timer" value="30">
+                </div>
             </div>
 
             <!-- Group for Expiry Date (Only for Live Exams) -->
-            <div class="form-group" id="group-expiry" style="display:none;">
-                <label>Expiry Date & Time (End Time)</label>
-                <input type="datetime-local" id="exam-expiry">
+            <div class="form-group" id="group-expiry" style="display:none; background:#fee2e2; padding:10px; border-radius:8px; border:1px solid #fecaca;">
+                <label style="color:#b91c1c;"><i class="fas fa-clock"></i> Expiry Date & Time (End Time)</label>
+                <input type="datetime-local" id="exam-expiry" style="border-color:#fca5a5;">
             </div>
 
             <!-- Group for Class and Subject (Hidden for Live Exams) -->
@@ -592,6 +599,8 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             document.getElementById('back-btn').onclick = openSpecialPanel; // Return to Special Manager
             
             tempExamQuestions = []; 
+            document.getElementById('exam-code').value = ''; // Reset code
+            document.getElementById('exam-name').value = ''; // Reset name
             document.getElementById('exam-expiry').value = ''; // Reset Expiry
             updateAdminUI();
         }
@@ -695,15 +704,13 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             let expiryTime = "";
             let folderIdToSave = specialFolderId;
 
-            // Live exam logic
             if (currentExamCreationType === 'live') {
-                expiryTime = document.getElementById('exam-expiry').value; // Datetime-local format
-                folderIdToSave = 0; // Live exams are root level
+                expiryTime = document.getElementById('exam-expiry').value; 
+                folderIdToSave = 0; 
                 if (!expiryTime) {
                     if(!confirm("You did not set an Expiry Time. Exam will be available forever. Continue?")) return;
                 }
             } else {
-                // Folder exam logic
                 className = document.getElementById('exam-class').value.trim() || 'General';
                 subject = document.getElementById('exam-subject').value.trim() || 'General';
             }
@@ -714,6 +721,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             submitBtn.disabled = true;
             submitBtn.innerText = "Publishing... ⏳";
 
+            // ⚠️ This endpoint triggers the NEW API logic created in app.py for Special Exams
             const teacherEmail = "exammate.official@gmail.com"; 
             
             const payload = { 
@@ -724,7 +732,13 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             };
 
             try {
-                const res = await fetch('/api/admin/create-special-exam', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                // Now perfectly tied to the Admin-specific API route
+                const res = await fetch('/api/admin/create-special-exam', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload) 
+                });
+                
                 const data = await res.json();
                 if(data.success) {
                     alert(`🎉 Special Exam created successfully!`); 
