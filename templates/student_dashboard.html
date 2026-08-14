@@ -109,9 +109,7 @@
         .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s; }
         .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
 
-        /* ==============================================
-           🔥 SPECIAL EXAMS FLOATING BUTTON & PAGE 
-           ============================================== */
+        /* 🔥 SPECIAL EXAMS FLOATING BUTTON */
         .fab-special {
             position: fixed; bottom: 85px; right: 20px;
             width: 58px; height: 58px;
@@ -127,94 +125,20 @@
             50% { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(234, 88, 12, 0.6); }
         }
 
-        .special-overlay-page {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffffff; z-index: 3000; overflow-y: auto; overflow-x: hidden;
-            animation: slideUpPage 0.3s ease-out forwards;
-        }
-        @keyframes slideUpPage { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .special-header-top {
-            position: sticky; top: 0; background: rgba(255, 255, 255, 0.95); z-index: 10;
-            display: flex; align-items: center; padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); backdrop-filter: blur(5px);
-        }
-        .special-header-top i { font-size: 1.5rem; color: #1e293b; cursor: pointer; margin-right: 15px; }
-        .special-header-top h2 { margin: 0; font-size: 1.25rem; color: #0f172a; font-weight: 800; }
-
-        .live-h-scroll {
-            display: flex; overflow-x: auto; gap: 15px; padding: 10px 20px 20px 20px;
-            scroll-snap-type: x mandatory; scrollbar-width: none;
-        }
-        .live-h-scroll::-webkit-scrollbar { display: none; }
-        .live-banner-card {
-            min-width: 85%; flex-shrink: 0; scroll-snap-align: center;
-            background: linear-gradient(135deg, #1e1b4b, #4338ca);
-            border-radius: 20px; padding: 22px; color: white;
-            box-shadow: 0 10px 25px rgba(67, 56, 202, 0.3); position: relative; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; justify-content:space-between;
-        }
-        .live-banner-card::after {
-            content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px;
-            background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(20px);
-        }
-        .live-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid #f87171; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; animation: pulseRed 1.5s infinite;}
-        @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-
-        .special-folders-scroll {
-            display: flex; overflow-x: auto; gap: 15px; padding: 10px 20px 20px 20px;
-            scrollbar-width: none;
-        }
-        .special-folders-scroll::-webkit-scrollbar { display: none; }
-        .special-folder {
-            min-width: 110px; height: 110px; border-radius: 20px; flex-shrink: 0;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: white; font-weight: 800; font-size: 0.95rem; text-align: center; padding: 10px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15); cursor: pointer; transition: 0.2s;
-        }
-        .special-folder:hover { transform: translateY(-3px); }
-        .special-folder i { font-size: 2rem; margin-bottom: 8px; opacity: 0.9;}
-
-        .playlist-container { padding: 0 20px 30px 20px; display: flex; flex-direction: column; gap: 12px; }
-        .playlist-item {
-            display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0;
-            border-radius: 16px; padding: 12px; gap: 15px; cursor: pointer; transition: 0.2s;
-        }
-        .playlist-item:hover { background: #eff6ff; border-color: #bfdbfe; }
-        .playlist-icon {
-            width: 55px; height: 55px; border-radius: 12px; background: #e0e7ff;
-            color: #4338ca; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; flex-shrink:0;
-        }
-        .playlist-info { flex: 1; }
-        .playlist-info h4 { margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 800;}
-        .playlist-info p { margin: 0; color: #64748b; font-size: 0.8rem; font-weight: 600;}
-        .admin-verified-tag { font-size: 0.65rem; background: #fef9c3; color: #a16207; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; font-weight:bold; margin-top:5px;}
-
-        /* ==============================================
-           🔥 FIXED MODAL CSS (HEADER FIXED, BODY SCROLLS)
-           ============================================== */
+        /* RESULT MODAL CSS */
         .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        
         .score-modal-box { 
-            position: relative;
-            background: white; border-radius: 20px; 
+            position: relative; background: white; border-radius: 20px; 
             width: 90%; max-width: 450px; text-align: left; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
-            display: flex; flex-direction: column;
-            max-height: 85vh; overflow: hidden; /* Prevents whole box from scrolling */
+            display: flex; flex-direction: column; max-height: 85vh; overflow: hidden; 
         }
-
         .modal-header-fixed {
             display: flex; justify-content: space-between; align-items: flex-start;
             padding: 20px 25px 15px 25px; background: #ffffff;
             border-bottom: 1px solid #e2e8f0; z-index: 10;
         }
-
-        .modal-body-scroll {
-            padding: 15px 25px 25px 25px; overflow-y: auto; flex: 1;
-            background: #f8fafc;
-        }
-
+        .modal-body-scroll { padding: 15px 25px 25px 25px; overflow-y: auto; flex: 1; background: #f8fafc; }
         .modal-close-btn-fixed {
             background: #f1f5f9; color: #64748b; border: none;
             width: 34px; height: 34px; border-radius: 50%;
@@ -223,14 +147,11 @@
         }
         .modal-close-btn-fixed:hover { background: #fee2e2; color: #ef4444; }
 
-        /* Review Card Styling */
         .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; transition: 0.2s; background: #ffffff; }
         .review-correct { background-color: #f0fdf4; border-color: #bbf7d0; box-shadow: 0 2px 4px rgba(34,197,94,0.05); } 
         .review-wrong { background-color: #fef2f2; border-color: #fecaca; box-shadow: 0 2px 4px rgba(239,68,68,0.05); } 
         .review-unattempted { background-color: #ffffff; border-color: #cbd5e1; } 
-        
         .review-q-text { font-weight: 700; margin-bottom: 12px; color: #1e293b; font-size: 0.95rem; }
-        
         .ans-correct-text { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block; margin-top: 5px;}
         .ans-wrong-text { color: #b91c1c; font-size: 0.9rem; font-weight: 700; background: #fee2e2; padding: 6px 12px; border-radius: 8px; display: inline-block; margin-top: 5px; margin-bottom: 8px;}
         .ans-real-correct { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block;}
@@ -298,46 +219,9 @@
         </div>
     </div>
 
-    <!-- 🔥 FLOATING BUTTON FOR SPECIAL EXAMS -->
-    <div class="fab-special" onclick="openSpecialExams()">
+    <!-- 🔥 FLOATING BUTTON FOR SPECIAL EXAMS (Now links to new page) -->
+    <div class="fab-special" onclick="window.location.href='/special_exams.html'">
         <i class="fas fa-trophy"></i>
-    </div>
-
-    <!-- 🔥 SPECIAL EXAMS FULL-SCREEN PAGE -->
-    <div id="special-exams-view" class="special-overlay-page">
-        <div class="special-header-top">
-            <i class="fas fa-arrow-left" onclick="history.back()"></i>
-            <h2>Special Exams & Quizzes</h2>
-        </div>
-
-        <!-- 1. LIVE BANNERS (Horizontal) -->
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 0 20px; margin-top: 15px;">
-            <h3 style="margin: 0; font-size:1.1rem; color:#1e293b; font-weight:800;">🔥 Live Challenges</h3>
-        </div>
-        <div class="live-h-scroll" id="live-special-scroll"></div>
-
-        <!-- 2. FOLDERS / CATEGORIES (Horizontal) -->
-        <h3 style="padding: 0 20px; margin: 5px 0 5px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📁 Categories</h3>
-        <div class="special-folders-scroll" id="special-folders"></div>
-
-        <!-- 3. PAST PLAYLISTS (Vertical) -->
-        <h3 style="padding: 0 20px; margin: 10px 0 15px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📚 Playlists</h3>
-        <div class="playlist-container" id="past-special-playlists"></div>
-    </div>
-
-    <!-- 🔥 MODAL FOR VIEWING PLAYLIST EXAMS -->
-    <div class="score-modal-overlay" id="playlist-exams-modal" style="z-index: 4000;">
-        <div class="score-modal-box">
-            <!-- Fixed Header -->
-            <div class="modal-header-fixed">
-                <div class="score-modal-title" id="playlist-modal-title" style="font-size:1.2rem; font-weight:800; color:#0f172a; margin:0; line-height:1.4;">Playlist Exams</div>
-                <button class="modal-close-btn-fixed" onclick="document.getElementById('playlist-exams-modal').style.display='none'"><i class="fas fa-times"></i></button>
-            </div>
-            <!-- Scrollable Content -->
-            <div class="modal-body-scroll" id="playlist-exams-list">
-                <!-- Cards will be injected here via JS -->
-            </div>
-        </div>
     </div>
 
     <!-- Main Results Modal -->
@@ -349,9 +233,7 @@
                 <button class="modal-close-btn-fixed" onclick="document.getElementById('detailed-result-modal').style.display='none'"><i class="fas fa-times"></i></button>
             </div>
             <!-- Scrollable Content -->
-            <div class="modal-body-scroll" id="detailed-review-container">
-                <!-- Cards will be injected here via JS -->
-            </div>
+            <div class="modal-body-scroll" id="detailed-review-container"></div>
         </div>
     </div>
 
@@ -382,260 +264,7 @@
         });
 
         // ==========================================
-        // 🔥 GLOBAL LIVE TIMER LOGIC
-        // ==========================================
-        setInterval(() => {
-            const timers = document.querySelectorAll('.live-timer-text');
-            if(timers.length === 0) return;
-            
-            const now = new Date();
-            timers.forEach(timer => {
-                const expiryStr = timer.getAttribute('data-expiry');
-                if(!expiryStr || expiryStr === "None") return;
-                
-                const expiry = new Date(expiryStr);
-                const diff = expiry - now;
-                
-                if(diff <= 0) {
-                    timer.innerHTML = "Expired ❌";
-                    timer.parentElement.style.background = "rgba(239,68,68,0.8)";
-                    timer.parentElement.style.borderColor = "#f87171";
-                    
-                    // Button disabled logic for live exams
-                    const card = timer.closest('.live-banner-card');
-                    if(card) {
-                        const btn = card.querySelector('button');
-                        if(btn && !btn.innerText.includes('Result')) {
-                            btn.disabled = true;
-                            btn.style.background = "rgba(0,0,0,0.4)";
-                            btn.style.color = "#cbd5e1";
-                            btn.style.cursor = "not-allowed";
-                            btn.innerText = "Time Out ❌";
-                        }
-                    }
-                } else {
-                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-                    const m = Math.floor((diff / 1000 / 60) % 60);
-                    const s = Math.floor((diff / 1000) % 60);
-                    timer.innerHTML = `${d}d ${h}h ${m}m ${s}s`;
-                }
-            });
-        }, 1000);
-
-        // ==========================================
-        // 🔥 SPECIAL EXAMS PAGE LOGIC WITH REAL DATA
-        // ==========================================
-        const specialGradients = [
-            "linear-gradient(135deg, #f59e0b, #ea580c)", "linear-gradient(135deg, #831843, #be123c)", 
-            "linear-gradient(135deg, #1e1b4b, #4338ca)", "linear-gradient(135deg, #0f766e, #10b981)", 
-            "linear-gradient(135deg, #86198f, #f43f5e)", "linear-gradient(135deg, #1d4ed8, #3b82f6)", 
-            "linear-gradient(135deg, #b45309, #d97706)", "linear-gradient(135deg, #4c1d95, #7c3aed)", 
-            "linear-gradient(135deg, #115e59, #14b8a6)", "linear-gradient(135deg, #9f1239, #e11d48)", 
-            "linear-gradient(135deg, #3730a3, #6366f1)", "linear-gradient(135deg, #065f46, #34d399)"
-        ];
-
-        function getRandomGradient() {
-            return specialGradients[Math.floor(Math.random() * specialGradients.length)];
-        }
-
-        async function openSpecialExams() {
-            document.getElementById('special-exams-view').style.display = 'block';
-            document.body.style.overflow = 'hidden'; 
-            window.history.pushState({view: 'special_exams'}, "", "");
-            
-            document.getElementById('live-special-scroll').innerHTML = '<p style="padding:20px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading live exams...</p>';
-            document.getElementById('special-folders').innerHTML = '<p style="padding:20px; color:#64748b;">Loading categories...</p>';
-            document.getElementById('past-special-playlists').innerHTML = '<p style="padding:20px; color:#64748b;">Loading playlists...</p>';
-            
-            const userEmail = localStorage.getItem('userEmail');
-
-            try {
-                const res = await fetch('/api/get-special-exams', { 
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail })
-                });
-                const data = await res.json();
-                
-                if(data.success) {
-                    renderSpecialData(data);
-                } else {
-                    alert("Error loading special data.");
-                }
-            } catch(e) {
-                console.error(e);
-            }
-        }
-
-        function renderSpecialData(data) {
-            const now = new Date();
-            data.live_exams.sort((a, b) => {
-                if (a.is_attempted && !b.is_attempted) return 1;
-                if (!a.is_attempted && b.is_attempted) return -1;
-                
-                let aDiff = Infinity, bDiff = Infinity;
-                let aExpired = false, bExpired = false;
-
-                if (a.expiry_time && a.expiry_time !== "None") {
-                    aDiff = new Date(a.expiry_time) - now;
-                    if (aDiff < 0) aExpired = true;
-                }
-                if (b.expiry_time && b.expiry_time !== "None") {
-                    bDiff = new Date(b.expiry_time) - now;
-                    if (bDiff < 0) bExpired = true;
-                }
-
-                if (aExpired && !bExpired) return 1;
-                if (!aExpired && bExpired) return -1;
-
-                return aDiff - bDiff;
-            });
-
-            let liveHtml = '';
-            if(data.live_exams.length === 0) {
-                liveHtml = '<p style="padding: 20px; color:#64748b;">No live exams currently.</p>';
-            } else {
-                data.live_exams.forEach(exam => {
-                    const bg = getRandomGradient();
-                    
-                    let expiryHtml = '';
-                    let actionBtnHtml = '';
-                    let isExpired = false;
-
-                    if (exam.expiry_time && exam.expiry_time !== "None") {
-                        const diffMs = new Date(exam.expiry_time) - now;
-                        if (diffMs > 0) {
-                            expiryHtml = `<div style="background:rgba(0,0,0,0.5); padding:6px 12px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block; border:1px solid rgba(255,255,255,0.2);">
-                                ⏳ <span class="live-timer-text" data-expiry="${exam.expiry_time}">Calculating...</span>
-                            </div>`;
-                        } else {
-                            isExpired = true;
-                            expiryHtml = `<div style="background:rgba(239,68,68,0.8); padding:6px 12px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block; border:1px solid #f87171;">❌ Expired</div>`;
-                        }
-                    }
-
-                    if (exam.is_attempted) {
-                        actionBtnHtml = `<button onclick="showDetailedResult('${exam.code}', '${exam.name.replace(/'/g, "\\'")}')" style="width:100%; background:rgba(16, 185, 129, 0.9); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer;">View Result ✅</button>`;
-                    } else if (isExpired) {
-                        actionBtnHtml = `<button disabled style="width:100%; background:rgba(0,0,0,0.4); color:#cbd5e1; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:not-allowed;">Time Out ❌</button>`;
-                    } else {
-                        actionBtnHtml = `<button onclick="window.location.href='student_exam.html?code=${exam.code}'" style="width:100%; background:rgba(0,0,0,0.2); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Now 🚀</button>`;
-                    }
-
-                    liveHtml += `
-                    <div class="live-banner-card" style="background: ${bg};">
-                        <div>
-                            <div class="live-badge"><i class="fas fa-circle"></i> Live Now</div><br>
-                            ${expiryHtml}
-                            <h3 style="margin:0 0 5px 0; font-size:1.3rem;">${exam.name}</h3>
-                            <p style="margin:0 0 15px 0; font-size:0.85rem; color:rgba(255,255,255,0.9);">${exam.class_name} • ${exam.subject}</p>
-                        </div>
-                        <div>
-                            ${actionBtnHtml}
-                        </div>
-                    </div>`;
-                });
-            }
-            document.getElementById('live-special-scroll').innerHTML = liveHtml;
-
-            let folderHtml = '';
-            let playlistHtml = '';
-            
-            if(data.categories.length === 0) folderHtml = '<p style="padding: 20px; color:#64748b;">No categories found.</p>';
-            else {
-                data.categories.forEach((cat) => {
-                    const bg = getRandomGradient();
-                    folderHtml += `
-                    <div class="special-folder" style="background: ${bg};" onclick="openPlaylistModal(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')">
-                        <i class="fas fa-folder-open"></i>
-                        ${cat.name}
-                    </div>`;
-                });
-            }
-
-            if(data.playlists.length === 0) playlistHtml = '<p style="padding: 20px; color:#64748b;">No playlists found.</p>';
-            else {
-                data.playlists.forEach((pl) => {
-                    const bg = getRandomGradient();
-                    playlistHtml += `
-                    <div class="playlist-item" onclick="openPlaylistModal(${pl.id}, '${pl.name.replace(/'/g, "\\'")}')">
-                        <div class="playlist-icon" style="background: ${bg}; color: white;"><i class="fas fa-layer-group"></i></div>
-                        <div class="playlist-info">
-                            <h4>${pl.name}</h4>
-                            <div class="admin-verified-tag"><i class="fas fa-check-circle"></i> Official</div>
-                        </div>
-                        <i class="fas fa-chevron-right" style="color:#94a3b8;"></i>
-                    </div>`;
-                });
-            }
-            
-            document.getElementById('special-folders').innerHTML = folderHtml;
-            document.getElementById('past-special-playlists').innerHTML = playlistHtml;
-        }
-
-        async function openPlaylistModal(folderId, folderName) {
-            document.getElementById('playlist-modal-title').innerText = folderName;
-            const container = document.getElementById('playlist-exams-list');
-            container.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
-            document.getElementById('playlist-exams-modal').style.display = 'flex';
-            
-            try {
-                const res = await fetch('/api/get-special-playlist-exams', {
-                    method: 'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({folder_id: folderId})
-                });
-                const data = await res.json();
-                
-                if(data.success) {
-                    if(data.exams.length === 0) {
-                        container.innerHTML = '<p style="text-align:center; color:#ef4444; font-weight:bold; margin-top:20px;">No exams found here.</p>';
-                        return;
-                    }
-                    let html = '<div style="padding-top:5px;">';
-                    data.exams.forEach(ex => {
-                        // Main Dashboard Feed Card Style
-                        html += `
-                        <div class="feed-card" style="box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px; background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:15px;">
-                            <div class="feed-header" style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                                <div class="feed-avatar" style="width:38px; height:38px; background:#eff6ff; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1.1rem;"><i class="fas fa-file-alt"></i></div>
-                                <div class="feed-teacher-info" style="flex:1;">
-                                    <strong style="display:block; font-size:0.95rem; color:#0f172a;">Official ExamMate</strong>
-                                    <span style="display:block; font-size:0.7rem; color:#64748b;">Special Folder Exam</span>
-                                </div>
-                            </div>
-                            <div class="feed-body" style="margin-bottom:15px;">
-                                <h3 class="feed-title" style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:0 0 8px 0; line-height:1.3;">${ex.name}</h3>
-                                <div class="feed-tags" style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
-                                    <span class="feed-tag" style="background:#f1f5f9; color:#475569; font-size:0.7rem; font-weight:bold; padding:3px 8px; border-radius:6px;"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
-                                    <span class="feed-tag" style="background:#f1f5f9; color:#475569; font-size:0.7rem; font-weight:bold; padding:3px 8px; border-radius:6px;"><i class="fas fa-book"></i> ${ex.subject}</span>
-                                </div>
-                                <div class="feed-meta" style="display:flex; gap:15px; background:#f8fafc; padding:10px; border-radius:10px; border:1px dashed #cbd5e1;">
-                                    <span style="font-size:0.8rem; color:#334155; font-weight:600; display:flex; align-items:center; gap:5px;"><i class="fas fa-clock" style="color:#3b82f6;"></i> ${ex.timer} Mins</span>
-                                </div>
-                            </div>
-                            <div style="border-top:1px solid #f1f5f9; padding-top:12px; margin-top:5px;">
-                                <button class="btn-attempt" style="width:100%; background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(59, 130, 246, 0.3); transition:0.2s;" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>
-                            </div>
-                        </div>`;
-                    });
-                    html += '</div>';
-                    container.innerHTML = html;
-                } else {
-                    container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load.</p>';
-                }
-            } catch(e) {
-                container.innerHTML = '<p style="text-align:center; color:#ef4444;">Server error.</p>';
-            }
-        }
-
-        function closeSpecialExams() {
-            document.getElementById('special-exams-view').style.display = 'none';
-            document.body.style.overflow = 'auto'; 
-        }
-
-        // ==========================================
-        // EXISTING DASHBOARD LOGIC
+        // MAIN DASHBOARD LOGIC
         // ==========================================
         window.onload = async () => {
             const userName = localStorage.getItem('userName') || "Student";
@@ -905,15 +534,8 @@
         // Hardware Back Button Handler
         window.addEventListener('popstate', function (event) {
             const drModal = document.getElementById('detailed-result-modal');
-            const spModal = document.getElementById('special-exams-view');
-            const plModal = document.getElementById('playlist-exams-modal');
-            
-            if(plModal.style.display === 'flex') {
-                plModal.style.display = 'none';
-            } else if(drModal.style.display === 'flex') {
+            if(drModal.style.display === 'flex') {
                 drModal.style.display = 'none';
-            } else if (spModal.style.display === 'block') {
-                closeSpecialExams();
             } else {
                 if (document.referrer) { window.history.back(); } 
             }
