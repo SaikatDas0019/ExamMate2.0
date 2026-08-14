@@ -8,6 +8,11 @@
     
     <!-- Chart.js for Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <style>
         :root { color-scheme: light; }
@@ -30,7 +35,8 @@
             border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between;
         }
         .header-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0; }
-        .settings-btn { background: transparent; border: none; font-size: 1.4rem; color: #475569; cursor: pointer; }
+        .settings-btn { background: transparent; border: none; font-size: 1.4rem; color: #475569; cursor: pointer; transition: 0.2s;}
+        .settings-btn:hover { color: #0f172a; transform: rotate(45deg); }
         .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0;}
 
         /* Profile Box */
@@ -75,7 +81,7 @@
         .list-item-btn { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; background: #f8fafc; cursor: pointer; transition: 0.2s;}
         .list-item-btn:hover { border-color: #3b82f6; background: #eff6ff; }
 
-        /* Feed Cards (Active Exams) */
+        /* Feed Cards (Active Exams & Social) */
         .feed-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
         .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
@@ -90,8 +96,14 @@
         .feed-meta i { color: #3b82f6; }
         .feed-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px; }
         .action-left { display: flex; gap: 15px; }
-        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 0; }
+        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 0; transition: 0.2s;}
         .action-btn span { font-size: 0.8rem; font-weight: 600; }
+        .action-btn:hover { color: #3b82f6; transform: scale(1.1); }
+        .like-active { color: #ef4444 !important; }
+        .save-active { color: #f59e0b !important; }
+        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s; }
+        .btn-attempt:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4); }
+        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
 
         /* Edit Form Elements */
         .input-group { margin-bottom: 15px; }
@@ -106,26 +118,55 @@
         .btn-add-q { background: #eff6ff; color: #3b82f6; border: 2px dashed #bfdbfe; padding: 12px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 20px;}
 
         /* Settings Bottom Sheet */
-        .settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: flex-end; }
-        .settings-sheet { background: #ffffff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 15px 40px 15px; box-sizing: border-box; }
-        .sheet-drag-handle { width: 40px; height: 5px; background: #cbd5e1; border-radius: 5px; margin: 0 auto 20px auto; }
-        .settings-option { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 600; color: #1e293b; cursor: pointer; margin-bottom: 8px; }
-        .settings-option:hover { background: #f1f5f9; }
-        .opt-logout { color: #ef4444 !important; }
-
-        /* Custom Share Modal CSS */
-        .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
-        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
+        .settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px);}
+        .settings-sheet { background: #ffffff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 15px 40px 15px; box-sizing: border-box; animation: slideUp 0.3s ease-out;}
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .sheet-drag-handle { width: 40px; height: 5px; background: #cbd5e1; border-radius: 5px; margin: 0 auto 20px auto; }
+        .settings-option { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 600; color: #1e293b; cursor: pointer; margin-bottom: 8px; transition: 0.2s;}
+        .settings-option:hover { background: #f1f5f9; }
+        .settings-option i { font-size: 1.2rem; width: 25px; text-align: center; color: #64748b;}
+        .opt-logout { color: #ef4444 !important; }
+        .opt-logout i { color: #ef4444 !important; }
+
+        /* Collection Modal */
+        .collection-filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
+        .collection-filters::-webkit-scrollbar { display: none; }
+        .collection-pill { background: #ffffff; border: 1px solid #cbd5e1; color: #475569; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.2s;}
+        .collection-pill.active { background: #eff6ff; color: #1e3a8a; border-color: #3b82f6; }
+        
+        .collection-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px);}
+        .collection-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; max-height: 85vh; overflow-y: auto;}
+        .collection-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; cursor: pointer; font-weight: bold; color: #1e293b; transition: 0.2s;}
+        .collection-item:hover { background: #eff6ff; border-color: #3b82f6; color: #3b82f6;}
+        .collection-item i { font-size: 1.2rem; color: #3b82f6;}
+        .new-collection-box { display: flex; gap: 10px; margin-top: 15px; margin-bottom: 10px;}
+        .new-collection-input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; outline: none; font-size: 0.95rem; background: #f8fafc;}
+        .new-collection-btn { background: #10b981; color: white; border: none; padding: 0 20px; border-radius: 10px; font-weight: bold; cursor: pointer;}
+        .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 15px; font-size: 1rem;}
+
+        /* Custom Share Modal & Score Modal Fix */
+        .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px);}
+        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
         .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
         .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
         .share-buttons i { font-size: 2.2rem; }
         .share-buttons .fa-whatsapp { color: #25D366; }
-        .share-buttons .fa-facebook-messenger { color: #0084FF; }
-        .share-buttons .fa-instagram { color: #E1306C; }
         .share-buttons .fa-telegram { color: #0088cc; }
         .share-buttons .fa-copy { color: #64748b; }
-        .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; font-size: 1rem;}
+
+        .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; max-height: 85vh; overflow-y: auto; }
+        .score-modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
+        .score-modal-close { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); margin-top: 15px;}
+        
+        .review-card-dr { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; }
+        .review-correct { background: #f0fdf4; border-color: #bbf7d0; }
+        .review-wrong { background: #fef2f2; border-color: #fecaca; }
+        .review-unattempted { background: #f8fafc; border-color: #e2e8f0; }
+        .review-q-text { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 10px;}
+        .ans-correct-text { color: #166534; font-weight: bold; }
+        .ans-wrong-text { color: #991b1b; font-weight: bold; }
+        .ans-real-correct { color: #065f46; font-weight: bold; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fca5a5;}
 
         /* Bottom Nav */
         .bottom-nav {
@@ -173,7 +214,6 @@
                         <span>🟢 Active Exams</span><strong id="stat-exams">0</strong>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -266,25 +306,43 @@
             </div>
         </div>
 
-        <!-- Edit Profile (Old Panel) -->
+        <!-- Edit Profile -->
         <div id="edit-profile-view" class="panel-view" style="background:#ffffff;">
             <div class="sticky-header" style="justify-content: flex-start;">
                 <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
                 <h1 class="header-title">Edit Profile</h1>
             </div>
             <div class="content-area">
-                <div class="input-group">
-                    <label>Full Name</label>
-                    <input type="text" id="edit-name-input" class="form-input">
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px;">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="edit-name-input" class="form-input">
+                    </div>
+                    <div class="input-group">
+                        <label>Account Role</label>
+                        <select id="edit-role-input" class="form-input">
+                            <option value="Teacher">Teacher</option>
+                            <option value="Student">Student</option>
+                        </select>
+                    </div>
+                    <button class="btn-save" onclick="saveProfileData()">Save Changes</button>
                 </div>
-                <div class="input-group">
-                    <label>Account Role</label>
-                    <select id="edit-role-input" class="form-input">
-                        <option value="Teacher">Teacher</option>
-                        <option value="Student">Student</option>
-                    </select>
+            </div>
+        </div>
+
+        <!-- SAVED/LIKED EXAMS PANEL (NEW) -->
+        <div id="social-exams-view" class="panel-view">
+            <div class="sticky-header" style="justify-content: flex-start; gap: 15px;">
+                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
+                <h1 class="header-title" id="social-panel-title">Saved Exams</h1>
+            </div>
+            <div class="panel-content">
+                <!-- Collection Filters -->
+                <div id="collection-filter-container" class="collection-filters" style="display:none;"></div>
+                
+                <div id="social-list-container">
+                    <p style="text-align:center; color:#64748b;">Loading...</p>
                 </div>
-                <button class="btn-save" onclick="saveProfileData()">Save Changes</button>
             </div>
         </div>
 
@@ -295,6 +353,12 @@
                 <div class="settings-option" onclick="openEditProfile()">
                     <i class="fas fa-user-edit"></i> Edit Profile
                 </div>
+                <div class="settings-option" onclick="openSocialPanel('saved')">
+                    <i class="fas fa-bookmark" style="color:#f59e0b;"></i> Saved Collections
+                </div>
+                <div class="settings-option" onclick="openSocialPanel('liked')">
+                    <i class="fas fa-heart" style="color:#ef4444;"></i> Liked Exams
+                </div>
                 <hr style="border:0; border-top:1px solid #e2e8f0; margin:10px 0;">
                 <div class="settings-option opt-logout" onclick="logoutAccount()">
                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -302,16 +366,42 @@
             </div>
         </div>
 
+        <!-- Collection Modal (Save Folder Selector) -->
+        <div class="collection-modal-overlay" id="collection-modal" onclick="if(event.target.id==='collection-modal') closeCollectionModal()">
+            <div class="collection-sheet">
+                <h3 style="margin-top:0; color:#0f172a; text-align:center; font-size:1.2rem;">Save to Collection</h3>
+                <p style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:-5px; margin-bottom:20px;">Choose a folder to save this exam</p>
+                
+                <div id="collection-list"></div>
+                
+                <div class="new-collection-box">
+                    <input type="text" id="new-collection-input" class="new-collection-input" placeholder="Create new folder...">
+                    <button class="new-collection-btn" onclick="createNewCollection()">+ Add</button>
+                </div>
+
+                <button class="btn-cancel" onclick="closeCollectionModal()">Cancel</button>
+            </div>
+        </div>
+
         <!-- Custom Share Modal -->
         <div class="modal-overlay-share" id="custom-share-modal">
             <div class="share-sheet">
                 <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
-            <div class="share-buttons">
-                <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-                <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
-                <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
-            </div>
+                <div class="share-buttons">
+                    <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                    <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
+                    <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
+                </div>
                 <button class="btn-cancel" onclick="closeShareModal()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Detailed Result Modal (For Attempt Preview) -->
+        <div class="score-modal-overlay" id="detailed-result-modal">
+            <div class="score-modal-box" style="text-align: left;">
+                <div class="score-modal-title" id="dr-title" style="text-align: center;">Exam Result</div>
+                <div id="detailed-review-container"></div>
+                <button class="score-modal-close" onclick="document.getElementById('detailed-result-modal').style.display='none'">Close ✖</button>
             </div>
         </div>
 
@@ -333,16 +423,29 @@
     <script>
         let globalData = {};
         let editingExamCode = '';
-        
-        // খাতা দেখার জন্য নতুন গ্লোবাল ভেরিয়েবল
         let currentPendingEvaluations = [];
         let currentEvalExamCode = '';
+        
+        let allSocialExams = []; 
+        let pendingSaveExamCode = null;
 
         window.onload = async () => {
             loadProfileData();
+            initCollections();
             await fetchTeacherMetrics();
+            await fetchAllSocialExams();
         };
 
+        // ================= COLLECTIONS LOGIC =================
+        function initCollections() {
+            if(!localStorage.getItem('teacher_collections')) {
+                localStorage.setItem('teacher_collections', JSON.stringify(["All Saved"]));
+            }
+        }
+        function getCollections() { return JSON.parse(localStorage.getItem('teacher_collections')); }
+        function saveCollectionsArr(arr) { localStorage.setItem('teacher_collections', JSON.stringify(arr)); }
+
+        // ================= PROFILE & METRICS =================
         function loadProfileData() {
             const userName = localStorage.getItem('userName') || "Teacher";
             const userEmail = localStorage.getItem('userEmail') || "teacher@email.com";
@@ -370,15 +473,25 @@
                 
                 if (data.success) {
                     globalData = data;
-                    
                     document.getElementById('stat-attempts').innerText = data.overall.attempts;
                     document.getElementById('stat-students').innerText = data.overall.students;
                     document.getElementById('stat-avg').innerText = data.overall.avg + '%';
                     document.getElementById('stat-exams').innerText = data.overall.exams;
-
                     populateAnalyticsPanels(data);
                 }
             } catch(e) { console.log("Error loading teacher profile stats"); }
+        }
+
+        async function fetchAllSocialExams() {
+            const userEmail = localStorage.getItem('userEmail');
+            try {
+                const feedRes = await fetch('/api/search-feed', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ email: userEmail, query: "", class_name: "All", subject: "All", status: "All" })
+                });
+                const feedData = await feedRes.json();
+                if(feedData.success) { allSocialExams = feedData.feed; }
+            } catch(e) { console.log("Error fetching feed."); }
         }
 
         function populateAnalyticsPanels(data) {
@@ -398,11 +511,17 @@
             ).join('') || '<tr><td colspan="4">No data.</td></tr>';
         }
 
+        // ================= PANELS & NAVIGATION =================
+        function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
+        function closeSettingsOverlay(e) { if(e.target.id === 'settings-modal') { document.getElementById('settings-modal').style.display = 'none'; } }
+        function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
         function openPanel(id) {
+            closeSettings();
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
             document.getElementById('main-profile-view').style.display = 'none';
             document.getElementById(id).style.display = 'block';
-            window.scrollTo(0, 0);
+            window.scrollTo(0, 0); window.history.pushState({view: id}, "", window.location.href);
 
             if(id === 'panel-active') { loadActiveExamsFeed(); }
         }
@@ -410,9 +529,251 @@
         function showMainProfile() {
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
             document.getElementById('main-profile-view').style.display = 'block';
-            window.scrollTo(0, 0);
+            window.scrollTo(0, 0); window.history.pushState({view: 'profile'}, "", window.location.href);
         }
 
+        function openEditProfile() {
+            closeSettings();
+            openPanel('edit-profile-view');
+        }
+
+        // ================= SOCIAL PANELS (SAVED / LIKED) =================
+        function openSocialPanel(type) {
+            closeSettings();
+            document.getElementById('main-profile-view').style.display = 'none';
+            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+            const panel = document.getElementById('social-exams-view');
+            panel.style.display = 'block';
+            
+            document.getElementById('social-panel-title').innerText = type === 'saved' ? '🔖 Saved Collections' : '❤️ Liked Exams';
+            
+            const filterContainer = document.getElementById('collection-filter-container');
+            if(type === 'saved') {
+                filterContainer.style.display = 'flex';
+                renderCollectionFilters('All Saved');
+                renderSocialCards('saved', 'All Saved');
+            } else {
+                filterContainer.style.display = 'none';
+                renderSocialCards('liked');
+            }
+            window.history.pushState({view: 'social'}, "", window.location.href);
+        }
+
+        function renderCollectionFilters(activeFolder) {
+            const cols = getCollections();
+            const container = document.getElementById('collection-filter-container');
+            container.innerHTML = '';
+            cols.forEach(col => {
+                let activeCls = col === activeFolder ? 'active' : '';
+                let iconHTML = col === 'All Saved' ? '⭐' : '📁';
+                container.innerHTML += `<button class="collection-pill ${activeCls}" onclick="handleFilterClick('${col}')">${iconHTML} ${col}</button>`;
+            });
+        }
+
+        function handleFilterClick(folderName) {
+            renderCollectionFilters(folderName);
+            renderSocialCards('saved', folderName);
+        }
+
+        function checkStatus(code, prefix, dbStatus) {
+            const localVal = localStorage.getItem(prefix + code);
+            if (localVal === 'true') return true;
+            if (localVal === 'false') return false;
+            return dbStatus;
+        }
+
+        function renderSocialCards(type, folderName = 'All Saved') {
+            const container = document.getElementById('social-list-container');
+            container.innerHTML = '';
+
+            const filteredExams = allSocialExams.filter(ex => {
+                if (type === 'saved') {
+                    const isSaved = checkStatus(ex.code, 'save_', ex.is_saved);
+                    if(!isSaved) return false;
+                    if (folderName !== 'All Saved') {
+                        const exFolder = localStorage.getItem('exam_folder_' + ex.code) || 'All Saved';
+                        return exFolder === folderName;
+                    }
+                    return true;
+                } else {
+                    return checkStatus(ex.code, 'like_', ex.is_liked);
+                }
+            });
+
+            if(filteredExams.length === 0) {
+                container.innerHTML = `<div style="text-align:center; margin-top:40px; color:#64748b;">
+                    <i class="far fa-folder-open fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><br>
+                    No exams found here.
+                </div>`;
+            } else {
+                filteredExams.forEach(ex => {
+                    const isLiked = checkStatus(ex.code, 'like_', ex.is_liked);
+                    const isSaved = checkStatus(ex.code, 'save_', ex.is_saved);
+                    const heartClass = isLiked ? 'fas fa-heart like-active' : 'far fa-heart';
+                    const saveClass = isSaved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
+
+                    let actionHTML = '';
+                    if (ex.is_attempted) {
+                        let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
+                        let reattemptBtn = ex.is_private ? `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExamReattempt('${ex.code}')">🔒 Re-attempt</button>` : `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
+                        
+                        actionHTML = `
+                        <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">✅ Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)</div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-result" style="flex:1;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
+                            ${reattemptBtn}
+                        </div>`;
+                    } else {
+                        actionHTML = ex.is_private 
+                            ? `<button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Code to Unlock</button>`
+                            : `<button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
+                    }
+
+                    container.innerHTML += `
+                    <div class="feed-card">
+                        <div class="feed-header">
+                            <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
+                            <div class="feed-teacher-info">
+                                <strong>${ex.teacher_name}</strong>
+                                <span>Posted ${ex.date}</span>
+                            </div>
+                        </div>
+                        <div class="feed-body">
+                            <h3 class="feed-title">${ex.name} ${ex.is_private ? '🔒' : ''}</h3>
+                            <div class="feed-tags">
+                                <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
+                                <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
+                            </div>
+                            <div class="feed-meta" style="margin-top:10px;">
+                                <span><i class="fas fa-clock"></i> ${ex.timer} Mins</span>
+                            </div>
+                        </div>
+                        <div class="feed-actions">
+                            <div class="action-left">
+                                <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
+                                    <i class="${heartClass}"></i> <span>${ex.likes}</span>
+                                </button>
+                                <button class="action-btn" onclick="triggerCustomShare('${ex.name.replace(/'/g, "\\'")}', '${ex.code}')">
+                                    <i class="far fa-share-square"></i>
+                                </button>
+                            </div>
+                            <button class="action-btn" id="save-btn-${ex.code}" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
+                                <i class="${saveClass}"></i>
+                            </button>
+                        </div>
+                        ${actionHTML}
+                    </div>`;
+                });
+            }
+        }
+
+        // ================= COLLECTION MODAL ACTIONS =================
+        function showCollectionModal() {
+            const collections = getCollections();
+            const listContainer = document.getElementById('collection-list');
+            listContainer.innerHTML = '';
+            
+            collections.forEach(col => {
+                let iconClass = col === 'All Saved' ? 'fas fa-star' : 'far fa-folder';
+                let iconColor = col === 'All Saved' ? '#f59e0b' : '#3b82f6';
+                listContainer.innerHTML += `
+                <div class="collection-item" onclick="confirmSaveToCollection('${col}')">
+                    <i class="${iconClass}" style="color:${iconColor};"></i> <span>${col}</span>
+                </div>`;
+            });
+            document.getElementById('collection-modal').style.display = 'flex';
+        }
+
+        function closeCollectionModal() {
+            document.getElementById('collection-modal').style.display = 'none';
+            pendingSaveExamCode = null;
+            document.getElementById('new-collection-input').value = '';
+        }
+
+        function createNewCollection() {
+            const input = document.getElementById('new-collection-input');
+            const val = input.value.trim();
+            if(val) {
+                let cols = getCollections();
+                if(!cols.includes(val)) {
+                    cols.push(val); saveCollectionsArr(cols);
+                    showCollectionModal(); input.value = '';
+                } else { alert("Folder already exists!"); }
+            }
+        }
+
+        async function confirmSaveToCollection(folderName) {
+            if(!pendingSaveExamCode) return;
+            
+            localStorage.setItem('save_' + pendingSaveExamCode, 'true');
+            localStorage.setItem('exam_folder_' + pendingSaveExamCode, folderName);
+
+            const btn = document.getElementById('save-btn-' + pendingSaveExamCode);
+            if(btn) { let icon = btn.querySelector('i'); icon.className = 'fas fa-bookmark save-active'; }
+            closeCollectionModal();
+            
+            try {
+                const userEmail = localStorage.getItem('userEmail');
+                await fetch('/api/toggle-social', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, exam_code: pendingSaveExamCode, type: 'save' })
+                });
+            } catch(e) {}
+
+            if(document.getElementById('social-exams-view').style.display === 'block') {
+                const activeFilter = document.querySelector('.collection-pill.active');
+                renderSocialCards('saved', activeFilter ? activeFilter.innerText : 'All Saved');
+            }
+        }
+
+        // ================= TOGGLE SOCIAL ACTIONS (FIXED) =================
+        async function toggleSocialAction(btn, examCode, actionType) {
+            const userEmail = localStorage.getItem('userEmail');
+            if(!userEmail) return;
+
+            let icon = btn.querySelector('i');
+            
+            if (actionType === 'like') {
+                let span = btn.querySelector('span');
+                let count = parseInt(span.innerText);
+                const isActive = icon.classList.contains('like-active');
+                
+                localStorage.setItem('like_' + examCode, !isActive);
+                if (isActive) { icon.className = 'far fa-heart'; span.innerText = count - 1; } 
+                else { icon.className = 'fas fa-heart like-active'; span.innerText = count + 1; }
+                
+                if(document.getElementById('social-exams-view').style.display === 'block' && document.getElementById('social-panel-title').innerText.includes('Liked')) {
+                    renderSocialCards('liked');
+                }
+            } else if (actionType === 'save') {
+                const isActive = icon.classList.contains('save-active');
+                if (isActive) {
+                    // UNSAVE LOGIC (FIXED)
+                    localStorage.setItem('save_' + examCode, 'false');
+                    localStorage.removeItem('exam_folder_' + examCode);
+                    icon.className = 'far fa-bookmark';
+                    
+                    if(document.getElementById('social-exams-view').style.display === 'block' && document.getElementById('social-panel-title').innerText.includes('Saved')) {
+                        const activeFilter = document.querySelector('.collection-pill.active');
+                        renderSocialCards('saved', activeFilter ? activeFilter.innerText : 'All Saved');
+                    }
+                } else {
+                    pendingSaveExamCode = examCode;
+                    showCollectionModal();
+                    return; 
+                }
+            }
+
+            try {
+                await fetch('/api/toggle-social', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, exam_code: examCode, type: actionType })
+                });
+            } catch(e) {}
+        }
+
+
+        // ================= TEACHER ANALYTICS & ACTIVE FEED =================
         async function fetchAttempts(examCode, examName) {
             openPanel('panel-attempt-details');
             document.getElementById('sub-attempt-title').innerText = examName.length > 20 ? examName.substring(0, 20) + "..." : examName;
@@ -452,6 +813,11 @@
                     if (myExams.length > 0) {
                         container.innerHTML = '';
                         myExams.forEach(ex => {
+                            const isLiked = checkStatus(ex.code, 'like_', ex.is_liked);
+                            const isSaved = checkStatus(ex.code, 'save_', ex.is_saved);
+                            const heartClass = isLiked ? 'fas fa-heart like-active' : 'far fa-heart';
+                            const saveClass = isSaved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
+
                             container.innerHTML += `
                             <div class="feed-card">
                                 <div class="feed-header">
@@ -475,9 +841,14 @@
                                 </div>
                                 <div class="feed-actions">
                                     <div class="action-left">
-                                        <button class="action-btn"><i class="fas fa-heart" style="color:#ef4444;"></i> <span>${ex.likes}</span></button>
+                                        <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
+                                            <i class="${heartClass}"></i> <span>${ex.likes}</span>
+                                        </button>
                                         <button class="action-btn" onclick="triggerCustomShare('${ex.name.replace(/'/g, "\\'")}', '${ex.code}')"><i class="fas fa-share-alt"></i></button>
                                     </div>
+                                    <button class="action-btn" id="save-btn-${ex.code}" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
+                                        <i class="${saveClass}"></i>
+                                    </button>
                                 </div>
                                 <div style="display:flex; gap:10px; margin-top:10px;">
                                     <button class="btn-save" style="flex:1; background:#fef3c7; color:#d97706; border:1px solid #fde68a; font-size:0.9rem;" onclick="openEvaluationPanel('${ex.code}')"><i class="fas fa-check-double"></i> খাতা দেখুন</button>
@@ -491,7 +862,7 @@
             } catch(e) { container.innerHTML = `<p style="text-align:center; color:#ef4444;">Error loading exams.</p>`; }
         }
 
-        // ================= EVALUATION SYSTEM (খাতা দেখা - নতুন স্টুডেন্ট লিস্ট যুক্ত করা হলো) =================
+        // ================= EVALUATION SYSTEM =================
         async function openEvaluationPanel(code) {
             currentEvalExamCode = code;
             openPanel('panel-evaluate');
@@ -524,12 +895,9 @@
                 return;
             }
 
-            // স্টুডেন্টের ইমেইল অনুযায়ী খাতাগুলো গ্রুপ করা হচ্ছে
             const studentsMap = {};
             currentPendingEvaluations.forEach(ans => {
-                if(!studentsMap[ans.student_email]) {
-                    studentsMap[ans.student_email] = 0;
-                }
+                if(!studentsMap[ans.student_email]) { studentsMap[ans.student_email] = 0; }
                 studentsMap[ans.student_email]++;
             });
 
@@ -547,7 +915,6 @@
             container.innerHTML = html;
         }
 
-        // নির্দিষ্ট স্টুডেন্ট সিলেক্ট করার পর তার খাতা দেখানো
         function showStudentPapers(email) {
             const container = document.getElementById('eval-content');
             const studentAnswers = currentPendingEvaluations.filter(ans => ans.student_email === email);
@@ -574,23 +941,14 @@
                     </div>
                 `;
             });
-            
             container.innerHTML = html;
         }
 
         async function submitEvaluation(ansId, studentEmail, examCode, maxMarks) {
             const markInput = document.getElementById(`mark-${ansId}`).value;
-            
             if(markInput === "") { alert("দয়া করে নম্বর দিন!"); return; }
-            
-            if(parseFloat(markInput) > parseFloat(maxMarks)) {
-                alert(`⚠️ আপনি সর্বোচ্চ ${maxMarks} এর বেশি নম্বর দিতে পারবেন না!`);
-                return;
-            }
-            if(parseFloat(markInput) < 0) {
-                alert(`⚠️ নম্বর 0 এর কম হতে পারে না!`);
-                return;
-            }
+            if(parseFloat(markInput) > parseFloat(maxMarks)) { alert(`⚠️ আপনি সর্বোচ্চ ${maxMarks} এর বেশি নম্বর দিতে পারবেন না!`); return; }
+            if(parseFloat(markInput) < 0) { alert(`⚠️ নম্বর 0 এর কম হতে পারে না!`); return; }
 
             const btn = event.currentTarget;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
@@ -606,29 +964,16 @@
                     const card = document.getElementById(`eval-card-${ansId}`);
                     card.style.transition = "opacity 0.3s ease";
                     card.style.opacity = "0";
-                    
                     setTimeout(() => { 
                         card.style.display = 'none'; 
-                        
-                        // নির্দিষ্ট স্টুডেন্টের খাতা দেখা হয়ে গেলে লিস্ট থেকে তা বাদ দেওয়া হচ্ছে
                         currentPendingEvaluations = currentPendingEvaluations.filter(ans => ans.id !== ansId);
-                        
-                        // যদি ওই স্টুডেন্টের আর কোনো খাতা না থাকে, তবে অটোমেটিক লিস্টে ফিরে যাবে
                         const remainingForStudent = currentPendingEvaluations.filter(ans => ans.student_email === studentEmail);
-                        if(remainingForStudent.length === 0) {
-                            renderStudentListForEvaluation(); 
-                        }
+                        if(remainingForStudent.length === 0) { renderStudentListForEvaluation(); }
                     }, 300);
                 } else {
-                    alert("Error submitting marks.");
-                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Marks';
-                    btn.disabled = false;
+                    alert("Error submitting marks."); btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Marks'; btn.disabled = false;
                 }
-            } catch(e) { 
-                alert("Network Error."); 
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Marks';
-                btn.disabled = false;
-            }
+            } catch(e) { alert("Network Error."); btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Marks'; btn.disabled = false; }
         }
 
         // ================= DELETE EXAM =================
@@ -640,17 +985,13 @@
                         body: JSON.stringify({ exam_code: examCode })
                     });
                     const data = await response.json();
-                    if(data.success) {
-                        alert("পরীক্ষাটি সফলভাবে মুছে ফেলা হয়েছে!");
-                        window.location.reload();
-                    } else { alert("Failed to delete exam."); }
+                    if(data.success) { alert("পরীক্ষাটি সফলভাবে মুছে ফেলা হয়েছে!"); window.location.reload(); } 
+                    else { alert("Failed to delete exam."); }
                 } catch(e) { alert("Server error."); }
             }
         }
 
         // ================= EDIT EXAM SYSTEM =================
-        let editQuestionCounter = 0;
-
         async function openEditExamPanel(code) {
             editingExamCode = code;
             document.getElementById('edit-exam-header-title').innerText = "Edit: " + code;
@@ -705,9 +1046,7 @@
                     `;
                     document.getElementById('edit-exam-content').innerHTML = html;
                     
-                    data.questions.forEach((q) => {
-                        addEditQuestionBox(q);
-                    });
+                    data.questions.forEach((q) => { addEditQuestionBox(q); });
                 }
             } catch(e) { document.getElementById('edit-exam-content').innerHTML = '<p style="color:red; text-align:center;">Error loading data.</p>'; }
         }
@@ -715,18 +1054,13 @@
         function toggleEditOptions(selectElem) {
             const box = selectElem.closest('.q-edit-box');
             const mcqArea = box.querySelector('.mcq-options-area');
-            if(selectElem.value === 'subjective') {
-                mcqArea.style.display = 'none';
-            } else {
-                mcqArea.style.display = 'block';
-            }
+            if(selectElem.value === 'subjective') { mcqArea.style.display = 'none'; } 
+            else { mcqArea.style.display = 'block'; }
         }
 
         function addEditQuestionBox(qData = null) {
-            editQuestionCounter++;
             let q = qData || { q_text: '', opt_a: '', opt_b: '', opt_c: '', opt_d: '', correct: 'A', question_type: 'mcq' };
             const qList = document.getElementById('edit-questions-list');
-            
             const div = document.createElement('div');
             div.className = "q-edit-box";
             
@@ -793,19 +1127,12 @@
 
                 if(qt) {
                     if (qType === 'subjective') {
-                        questions.push({
-                            question_text: qt, option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'A', question_type: 'subjective', max_marks: qMarks
-                        });
+                        questions.push({ question_text: qt, option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'A', question_type: 'subjective', max_marks: qMarks });
                     } else {
                         questions.push({
-                            question_text: qt,
-                            option_a: box.querySelector('.opt-a').value.trim(),
-                            option_b: box.querySelector('.opt-b').value.trim(),
-                            option_c: box.querySelector('.opt-c').value.trim(),
-                            option_d: box.querySelector('.opt-d').value.trim(),
-                            correct_option: box.querySelector('.opt-ans').value,
-                            question_type: 'mcq',
-                            max_marks: qMarks
+                            question_text: qt, option_a: box.querySelector('.opt-a').value.trim(), option_b: box.querySelector('.opt-b').value.trim(),
+                            option_c: box.querySelector('.opt-c').value.trim(), option_d: box.querySelector('.opt-d').value.trim(),
+                            correct_option: box.querySelector('.opt-ans').value, question_type: 'mcq', max_marks: qMarks
                         });
                     }
                 }
@@ -817,27 +1144,14 @@
                 const response = await fetch('/api/teacher-update-exam', {
                     method: 'POST', headers:{'Content-Type':'application/json'},
                     body: JSON.stringify({
-                        exam_code: editingExamCode,
-                        exam_name: name, timer: timer, negative_marks: neg,
-                        class_name: cls, subject: sub, is_private: isPriv,
-                        questions: questions
+                        exam_code: editingExamCode, exam_name: name, timer: timer, negative_marks: neg,
+                        class_name: cls, subject: sub, is_private: isPriv, questions: questions
                     })
                 });
                 const data = await response.json();
-                if(data.success) {
-                    alert("✅ Exam updated successfully!");
-                    openPanel('panel-active'); 
-                } else { alert("Error: " + data.error); }
+                if(data.success) { alert("✅ Exam updated successfully!"); openPanel('panel-active'); } 
+                else { alert("Error: " + data.error); }
             } catch(e) { alert("Server error."); }
-        }
-
-        // ================= SETTINGS & PROFILE =================
-        function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
-        function closeSettingsOverlay(e) { if(e.target.id === 'settings-modal') { document.getElementById('settings-modal').style.display = 'none'; } }
-        
-        function openEditProfile() {
-            document.getElementById('settings-modal').style.display = 'none';
-            openPanel('edit-profile-view');
         }
 
         async function saveProfileData() {
@@ -856,8 +1170,7 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    localStorage.setItem('userName', newName);
-                    localStorage.setItem('userRole', newRole);
+                    localStorage.setItem('userName', newName); localStorage.setItem('userRole', newRole);
                     alert("Profile updated successfully!");
                     if (newRole !== oldRole && newRole === 'Student') { window.location.href = '/student_dashboard.html'; } 
                     else { window.location.reload(); }
@@ -867,9 +1180,7 @@
 
         function logoutAccount() {
             if(confirm("Are you sure you want to log out?")) {
-                localStorage.removeItem('userEmail');
-                localStorage.removeItem('userName');
-                localStorage.removeItem('userRole');
+                localStorage.removeItem('userEmail'); localStorage.removeItem('userName'); localStorage.removeItem('userRole');
                 window.location.href = '/logout';
             }
         }
@@ -886,6 +1197,7 @@
             document.getElementById('custom-share-modal').style.display = 'flex';
         }
 
+        function shareRealExam(examCode, examName) { triggerCustomShare(examName, examCode); }
         function closeShareModal() { document.getElementById('custom-share-modal').style.display = 'none'; }
 
         function shareVia(platform) {
@@ -893,22 +1205,106 @@
             const urlOnly = encodeURIComponent(currentShareData.url);
             let shareUrl = '';
 
-            if(platform === 'whatsapp') {
-                shareUrl = `https://api.whatsapp.com/send?text=${fullText}`;
-                window.open(shareUrl, '_blank');
-            } else if(platform === 'telegram') {
-                shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`;
-                window.open(shareUrl, '_blank');
-            }
+            if(platform === 'whatsapp') { shareUrl = `https://api.whatsapp.com/send?text=${fullText}`; window.open(shareUrl, '_blank'); } 
+            else if(platform === 'telegram') { shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`; window.open(shareUrl, '_blank'); }
             closeShareModal();
         }
 
         function copyShareLink() {
             navigator.clipboard.writeText(currentShareData.text + currentShareData.url).then(() => {
-                alert("✅ Exam link and details copied successfully!");
-                closeShareModal();
+                alert("✅ Exam link and details copied successfully!"); closeShareModal();
             }).catch(() => { alert("Failed to copy."); });
         }
+
+        function accessPrivateExam(actualCode) {
+            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code provided by your teacher to unlock:");
+            if (enteredCode) {
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `student_exam.html?code=${actualCode}`; } 
+                else { alert("❌ Incorrect Exam Code! Access denied."); }
+            }
+        }
+        function accessPrivateExamReattempt(actualCode) {
+            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code provided by your teacher to unlock and re-attempt:");
+            if (enteredCode) {
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `student_exam.html?code=${actualCode}&reattempt=true`; } 
+                else { alert("❌ Incorrect Exam Code! Access denied."); }
+            }
+        }
+
+        async function showDetailedResult(code, name) {
+            const container = document.getElementById('detailed-review-container');
+            container.innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Fetching your answers...</p>';
+            document.getElementById('dr-title').innerText = name + " - Result";
+            document.getElementById('detailed-result-modal').style.display = 'flex';
+            const userEmail = localStorage.getItem('userEmail') || "Guest Account";
+
+            try {
+                const qResponse = await fetch('/api/get-exam-questions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exam_code: code }) });
+                const qData = await qResponse.json();
+                const reviewResp = await fetch('/api/get-student-exam-review', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail, exam_code: code }) });
+                const reviewData = await reviewResp.json();
+
+                if (qData.success) {
+                    const savedState = localStorage.getItem('exam_result_' + code);
+                    const localAnsData = savedState ? JSON.parse(savedState).answers : null;
+                    const backendSubjData = (reviewData.success && reviewData.taken) ? reviewData.subjective_data : null;
+                    let totalMarks = qData.questions.reduce((sum, q) => { let m = parseFloat(q.max_marks); if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0); return sum + m; }, 0);
+                    let displayScore = (reviewData.success && reviewData.taken) ? reviewData.total_score : 0;
+                    displayScore = Number.isInteger(displayScore) ? displayScore : parseFloat(displayScore).toFixed(2);
+                    totalMarks = Number.isInteger(totalMarks) ? totalMarks : parseFloat(totalMarks).toFixed(2);
+                    document.getElementById('dr-title').innerHTML = `${name} - Result <br><span style="font-size:0.9rem; color:#3b82f6;">Total Score: ${displayScore} / ${totalMarks}</span>`;
+
+                    let html = '';
+                    qData.questions.forEach((q, idx) => {
+                        const studentAns = (localAnsData && localAnsData[idx]) ? localAnsData[idx] : undefined;
+                        let isAttempted = false;
+                        if(q.question_type === 'subjective' && backendSubjData && backendSubjData[q.id]) { isAttempted = true; } 
+                        else if (studentAns !== undefined && studentAns !== "") { isAttempted = true; }
+                        const isCorrect = studentAns === q.correct;
+                        let cardClass = 'review-unattempted';
+                        if (isAttempted) { if (q.question_type === 'subjective') { cardClass = 'review-unattempted'; } else { cardClass = isCorrect ? 'review-correct' : 'review-wrong'; } }
+                        let maxMarks = q.max_marks || (q.question_type === 'mcq' ? 1.0 : 5.0);
+
+                        html += `<div class="review-card-dr ${cardClass}">`;
+                        html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text} <span style="font-size:0.8rem; color:#64748b;">(Marks: ${maxMarks})</span></div>`;
+
+                        if (q.question_type === 'subjective') {
+                            if (isAttempted) {
+                                html += `<div style="color: #0369a1; font-weight:bold;">✅ Answer Uploaded</div>`;
+                                if(backendSubjData && backendSubjData[q.id] && backendSubjData[q.id].is_checked) { html += `<div class="ans-real-correct" style="color:#10b981;">✅ <b>শিক্ষক নম্বর দিয়েছেন:</b> ${backendSubjData[q.id].marks} / ${maxMarks} Marks</div>`; } 
+                                else { html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b></div>`; }
+                            } else { html += `<div style="color: #64748b; font-style: italic;">⚠️ No Image Uploaded</div>`; }
+                        } else {
+                            const getOptionText = (letter) => { if(letter==='A') return q.opt_a; if(letter==='B') return q.opt_b; if(letter==='C') return q.opt_c; if(letter==='D') return q.opt_d; return ''; };
+                            if (isAttempted) {
+                                if (isCorrect) { html += `<div class="ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`; } 
+                                else { html += `<div class="ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`; }
+                            } else {
+                                html += `<div style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                            }
+                        }
+                        html += `</div>`;
+                    });
+                    container.innerHTML = html;
+                    if (window.MathJax) { MathJax.typesetPromise([container]).catch(err => console.log(err)); }
+                } else { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load questions.</p>'; }
+            } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
+        }
+
+        window.addEventListener('popstate', function (event) {
+            let isPanelOpen = false;
+            document.querySelectorAll('.panel-view').forEach(p => { if(p.style.display === 'block') isPanelOpen = true; });
+            const colModal = document.getElementById('collection-modal');
+            const shareModal = document.getElementById('custom-share-modal');
+            const drModal = document.getElementById('detailed-result-modal');
+            
+            if(shareModal.style.display === 'flex') { closeShareModal(); }
+            else if(colModal.style.display === 'flex') { closeCollectionModal(); }
+            else if(drModal.style.display === 'flex') { drModal.style.display = 'none'; }
+            else if(document.getElementById('settings-modal').style.display === 'flex') { closeSettings(); } 
+            else if(isPanelOpen) { showMainProfile(); } 
+            else { if(document.referrer) { window.history.back(); } }
+        });
     </script>
 </body>
 </html>
