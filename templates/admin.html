@@ -191,6 +191,12 @@
                 <input type="datetime-local" id="exam-expiry" style="border-color:#fca5a5;">
             </div>
 
+            <!-- Group for Season (Only for Live Exams) -->
+            <div class="form-group" id="group-season" style="display:none; background:#eff6ff; padding:10px; border-radius:8px; border:1px solid #bfdbfe;">
+                <label style="color:#1d4ed8;"><i class="fas fa-calendar-alt"></i> Season Name</label>
+                <input type="text" id="exam-season" placeholder="e.g. Season 1" style="border-color:#93c5fd; background:#fff;">
+            </div>
+
             <!-- Group for Class and Subject (Hidden for Live Exams) -->
             <div class="grid-2x2" id="group-class-subject">
                 <div class="form-group"><label>Class</label><input type="text" id="exam-class" placeholder="e.g. Class 10" value="General"></div>
@@ -455,11 +461,12 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             if(exams.length === 0) ehtml = '<p style="color:#64748b; font-size:0.9rem;">No live exams created yet.</p>';
             exams.forEach(ex => {
                 let expiryText = ex.expiry_time && ex.expiry_time !== "None" ? `<br><span style="font-size:0.75rem; color:#ef4444;">⏳ Ends: ${ex.expiry_time}</span>` : '';
+                let seasonText = ex.season && ex.season !== "None" ? ` | <span style="font-size:0.8rem; color:#3b82f6; font-weight:bold;">Season: ${ex.season}</span>` : '';
                 ehtml += `
                 <div class="file-card">
                     <div>
                         <strong style="color:#1e293b; font-size:1rem;">${ex.name}</strong><br>
-                        <span style="font-size:0.8rem; color:#10b981; font-weight:bold;">Code: ${ex.code}</span>
+                        <span style="font-size:0.8rem; color:#10b981; font-weight:bold;">Code: ${ex.code}</span>${seasonText}
                         ${expiryText}
                     </div>
                     <div>
@@ -587,11 +594,13 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                 titleText = '<i class="fas fa-fire" style="color:#ef4444;"></i> Create Live Exam';
                 document.getElementById('group-class-subject').style.display = 'none'; // ক্লাস, সাবজেক্ট লাগবে না
                 document.getElementById('group-expiry').style.display = 'block'; // টাইমার লাগবে
+                document.getElementById('group-season').style.display = 'block'; // সিজন ফিল্ড দেখাবে
                 document.getElementById('exam-folder-name').innerText = "Live Exams (Root)";
             } else {
                 titleText = '<i class="fas fa-file-signature" style="color:#22c55e;"></i> Create Folder Exam';
                 document.getElementById('group-class-subject').style.display = 'grid'; // ক্লাস, সাবজেক্ট লাগবে
                 document.getElementById('group-expiry').style.display = 'none'; // টাইমার লাগবে না
+                document.getElementById('group-season').style.display = 'none'; // সিজন লাগবে না
                 document.getElementById('exam-folder-name').innerText = specialFolderName;
             }
             
@@ -602,6 +611,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             document.getElementById('exam-code').value = ''; // Reset code
             document.getElementById('exam-name').value = ''; // Reset name
             document.getElementById('exam-expiry').value = ''; // Reset Expiry
+            document.getElementById('exam-season').value = ''; // Reset Season
             updateAdminUI();
         }
 
@@ -701,11 +711,13 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             
             let className = "General";
             let subject = "General";
+            let season = "";
             let expiryTime = "";
             let folderIdToSave = specialFolderId;
 
             if (currentExamCreationType === 'live') {
                 expiryTime = document.getElementById('exam-expiry').value; 
+                season = document.getElementById('exam-season').value.trim() || 'General';
                 folderIdToSave = 0; 
                 if (!expiryTime) {
                     if(!confirm("You did not set an Expiry Time. Exam will be available forever. Continue?")) return;
@@ -721,18 +733,18 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             submitBtn.disabled = true;
             submitBtn.innerText = "Publishing... ⏳";
 
-            // ⚠️ This endpoint triggers the NEW API logic created in app.py for Special Exams
-            const teacherEmail = "exammate.official@gmail.com"; 
+            // Saved with admin name/email so it gets blocked in student dashboard filters
+            const teacherEmail = "admin"; 
+            const teacherName = "Admin";
             
             const payload = { 
                 exam_code: code, exam_name: name, timer: timer, 
-                negative_marks: negative, teacher_email: teacherEmail, 
-                folder_id: folderIdToSave, expiry_time: expiryTime,
+                negative_marks: negative, teacher_email: teacherEmail, teacher_name: teacherName,
+                folder_id: folderIdToSave, expiry_time: expiryTime, season: season,
                 questions: tempExamQuestions, class_name: className, subject: subject
             };
 
             try {
-                // Now perfectly tied to the Admin-specific API route
                 const res = await fetch('/api/admin/create-special-exam', { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
