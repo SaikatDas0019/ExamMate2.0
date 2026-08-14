@@ -147,18 +147,18 @@
     <script>
         // 12 Premium, Vibrant, and Attractive Gradients
         const specialGradients = [
-            "linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)", // Sunset Orange Red
-            "linear-gradient(135deg, #4776E6 0%, #8E54E9 100%)", // Purple Blue
-            "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)", // Fresh Green
-            "linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%)", // Pink to Blue
-            "linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)", // Cyan to Yellow
-            "linear-gradient(135deg, #f857a6 0%, #ff5858 100%)", // Bright Pink
-            "linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)", // Instagram Vibe
-            "linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)", // Ocean Blue
-            "linear-gradient(135deg, #ec008c 0%, #fc6767 100%)", // Magenta Red
-            "linear-gradient(135deg, #141E30 0%, #243B55 100%)", // Midnight Blue (Dark)
-            "linear-gradient(135deg, #FF8008 0%, #FFC837 100%)", // Amber Glow
-            "linear-gradient(135deg, #C02425 0%, #F0CB35 100%)"  // Crimson Sun
+            "linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)",
+            "linear-gradient(135deg, #4776E6 0%, #8E54E9 100%)",
+            "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+            "linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%)",
+            "linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)",
+            "linear-gradient(135deg, #f857a6 0%, #ff5858 100%)",
+            "linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)",
+            "linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)",
+            "linear-gradient(135deg, #ec008c 0%, #fc6767 100%)",
+            "linear-gradient(135deg, #141E30 0%, #243B55 100%)",
+            "linear-gradient(135deg, #FF8008 0%, #FFC837 100%)",
+            "linear-gradient(135deg, #C02425 0%, #F0CB35 100%)"
         ];
 
         function getRandomGradient() { return specialGradients[Math.floor(Math.random() * specialGradients.length)]; }
@@ -207,7 +207,6 @@
                     const card = timer.closest('.live-banner-card');
                     if(card) {
                         const btn = card.querySelector('button');
-                        // Prevent targeting the Result button which shouldn't be disabled
                         if(btn && !btn.innerText.includes('Result') && !btn.innerText.includes('Analytics')) {
                             btn.disabled = true;
                             btn.style.background = "rgba(0,0,0,0.4)";
@@ -279,7 +278,7 @@
                             <div style="background:rgba(255,255,255,0.2); padding:8px; border-radius:8px; text-align:center; border:1px solid rgba(255,255,255,0.4); margin-bottom:10px; font-weight:bold; font-size:0.85rem;">
                                 ✅ Score: ${exam.score}/${exam.total} (${acc}%)
                             </div>
-                            <button onclick="window.location.href='/season_analytics.html?season=' + encodeURIComponent('${exam.subject}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Season Analytics 📊</button>
+                            <button onclick="window.location.href='/season_analytics.html?season=' + encodeURIComponent('${exam.season && exam.season !== "None" ? exam.season : exam.subject}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Season Analytics 📊</button>
                         `;
                     } else if (isExpired) {
                         actionBtnHtml = `<button disabled style="width:100%; background:rgba(0,0,0,0.4); color:#cbd5e1; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:not-allowed;">Time Out ❌</button>`;
@@ -287,7 +286,7 @@
                         actionBtnHtml = `<button onclick="window.location.href='student_exam.html?code=${exam.code}'" style="width:100%; background:rgba(0,0,0,0.2); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Now 🚀</button>`;
                     }
 
-                    // Season as large heading and exam name as slightly smaller subheading below it
+                    // Season name as large heading and exam name as slightly smaller subheading below it
                     let seasonHeadingHtml = exam.season && exam.season !== "None" ? `<h3 style="margin:0 0 4px 0; font-size:1.5rem; font-weight:800;">${exam.season}</h3>` : '';
                     let examNameSubHtml = `<h4 style="margin:0 0 15px 0; font-size:1.05rem; font-weight:600; color:rgba(255,255,255,0.95);">${exam.name}</h4>`;
 
@@ -363,7 +362,6 @@
                     }
                     let html = '<div style="padding-top:5px;">';
                     data.exams.forEach(ex => {
-                        
                         let actionBtnHtml = '';
                         if (ex.is_attempted) {
                             let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
