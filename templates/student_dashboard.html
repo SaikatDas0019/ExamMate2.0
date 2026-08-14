@@ -191,30 +191,43 @@
         .admin-verified-tag { font-size: 0.65rem; background: #fef9c3; color: #a16207; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; font-weight:bold; margin-top:5px;}
 
         /* ==============================================
-           🔥 RESULT MODAL CSS UPDATES (CARDS & COLORS)
+           🔥 FIXED MODAL CSS (HEADER FIXED, BODY SCROLLS)
            ============================================== */
         .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         
         .score-modal-box { 
             position: relative;
-            background: white; padding: 25px; border-radius: 20px; 
+            background: white; border-radius: 20px; 
             width: 90%; max-width: 450px; text-align: left; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            display: flex; flex-direction: column;
+            max-height: 85vh; overflow: hidden; /* Prevents whole box from scrolling */
         }
 
-        .modal-close-top {
-            position: absolute; top: 15px; right: 15px;
+        .modal-header-fixed {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 20px 25px 15px 25px; background: #ffffff;
+            border-bottom: 1px solid #e2e8f0; z-index: 10;
+        }
+
+        .modal-body-scroll {
+            padding: 15px 25px 25px 25px; overflow-y: auto; flex: 1;
+            background: #f8fafc;
+        }
+
+        .modal-close-btn-fixed {
             background: #f1f5f9; color: #64748b; border: none;
-            width: 32px; height: 32px; border-radius: 50%;
-            font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; z-index: 10;
+            width: 34px; height: 34px; border-radius: 50%;
+            font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; flex-shrink: 0; margin-left: 15px;
         }
-        .modal-close-top:hover { background: #fee2e2; color: #ef4444; }
+        .modal-close-btn-fixed:hover { background: #fee2e2; color: #ef4444; }
 
-        .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; transition: 0.2s; }
+        /* Review Card Styling */
+        .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; transition: 0.2s; background: #ffffff; }
         .review-correct { background-color: #f0fdf4; border-color: #bbf7d0; box-shadow: 0 2px 4px rgba(34,197,94,0.05); } 
         .review-wrong { background-color: #fef2f2; border-color: #fecaca; box-shadow: 0 2px 4px rgba(239,68,68,0.05); } 
-        .review-unattempted { background-color: #f8fafc; border-color: #cbd5e1; } 
+        .review-unattempted { background-color: #ffffff; border-color: #cbd5e1; } 
         
         .review-q-text { font-weight: 700; margin-bottom: 12px; color: #1e293b; font-size: 0.95rem; }
         
@@ -314,19 +327,31 @@
 
     <!-- 🔥 MODAL FOR VIEWING PLAYLIST EXAMS -->
     <div class="score-modal-overlay" id="playlist-exams-modal" style="z-index: 4000;">
-        <div class="score-modal-box" style="background:#f8fafc; max-width: 400px; width: 90%;">
-            <button class="modal-close-top" onclick="document.getElementById('playlist-exams-modal').style.display='none'"><i class="fas fa-times"></i></button>
-            <div class="score-modal-title" id="playlist-modal-title" style="text-align: center; font-size:1.2rem; font-weight:800; color:#0f172a; margin-bottom:15px; margin-top:5px;">Playlist Exams</div>
-            <div id="playlist-exams-list" style="display:flex; flex-direction:column; gap:10px; max-height: 60vh; overflow-y: auto; padding-right:5px;"></div>
+        <div class="score-modal-box">
+            <!-- Fixed Header -->
+            <div class="modal-header-fixed">
+                <div class="score-modal-title" id="playlist-modal-title" style="font-size:1.2rem; font-weight:800; color:#0f172a; margin:0; line-height:1.4;">Playlist Exams</div>
+                <button class="modal-close-btn-fixed" onclick="document.getElementById('playlist-exams-modal').style.display='none'"><i class="fas fa-times"></i></button>
+            </div>
+            <!-- Scrollable Content -->
+            <div class="modal-body-scroll" id="playlist-exams-list">
+                <!-- Cards will be injected here via JS -->
+            </div>
         </div>
     </div>
 
     <!-- Main Results Modal -->
     <div class="score-modal-overlay" id="detailed-result-modal">
-        <div class="score-modal-box" style="text-align: left;">
-            <button class="modal-close-top" onclick="document.getElementById('detailed-result-modal').style.display='none'"><i class="fas fa-times"></i></button>
-            <div class="score-modal-title" id="dr-title" style="text-align: center; margin-top: 10px; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; color: #0f172a;">Exam Result</div>
-            <div id="detailed-review-container"></div>
+        <div class="score-modal-box">
+            <!-- Fixed Header -->
+            <div class="modal-header-fixed">
+                <div class="score-modal-title" id="dr-title" style="font-weight:800; font-size:1.1rem; color:#0f172a; margin:0; line-height:1.4; flex:1; padding-right:10px;">Exam Result</div>
+                <button class="modal-close-btn-fixed" onclick="document.getElementById('detailed-result-modal').style.display='none'"><i class="fas fa-times"></i></button>
+            </div>
+            <!-- Scrollable Content -->
+            <div class="modal-body-scroll" id="detailed-review-container">
+                <!-- Cards will be injected here via JS -->
+            </div>
         </div>
     </div>
 
@@ -355,6 +380,48 @@
            }
            lastScrollTop = scrollTop;
         });
+
+        // ==========================================
+        // 🔥 GLOBAL LIVE TIMER LOGIC
+        // ==========================================
+        setInterval(() => {
+            const timers = document.querySelectorAll('.live-timer-text');
+            if(timers.length === 0) return;
+            
+            const now = new Date();
+            timers.forEach(timer => {
+                const expiryStr = timer.getAttribute('data-expiry');
+                if(!expiryStr || expiryStr === "None") return;
+                
+                const expiry = new Date(expiryStr);
+                const diff = expiry - now;
+                
+                if(diff <= 0) {
+                    timer.innerHTML = "Expired ❌";
+                    timer.parentElement.style.background = "rgba(239,68,68,0.8)";
+                    timer.parentElement.style.borderColor = "#f87171";
+                    
+                    // Button disabled logic for live exams
+                    const card = timer.closest('.live-banner-card');
+                    if(card) {
+                        const btn = card.querySelector('button');
+                        if(btn && !btn.innerText.includes('Result')) {
+                            btn.disabled = true;
+                            btn.style.background = "rgba(0,0,0,0.4)";
+                            btn.style.color = "#cbd5e1";
+                            btn.style.cursor = "not-allowed";
+                            btn.innerText = "Time Out ❌";
+                        }
+                    }
+                } else {
+                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                    const m = Math.floor((diff / 1000 / 60) % 60);
+                    const s = Math.floor((diff / 1000) % 60);
+                    timer.innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+                }
+            });
+        }, 1000);
 
         // ==========================================
         // 🔥 SPECIAL EXAMS PAGE LOGIC WITH REAL DATA
@@ -401,25 +468,12 @@
             }
         }
 
-        function formatTimeRemaining(ms) {
-            if (ms <= 0) return "Expired";
-            const days = Math.floor(ms / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
-            const mins = Math.floor((ms / 1000 / 60) % 60);
-            if (days > 0) return `${days}d ${hours}h left`;
-            if (hours > 0) return `${hours}h ${mins}m left`;
-            return `${mins}m left`;
-        }
-
         function renderSpecialData(data) {
-            // ১. লাইভ এক্সামের সর্টিং অ্যালগরিদম (Advanced Sorting)
             const now = new Date();
             data.live_exams.sort((a, b) => {
-                // রুল ১: যেগুলো দেওয়া হয়ে গেছে সেগুলো সবার শেষে
                 if (a.is_attempted && !b.is_attempted) return 1;
                 if (!a.is_attempted && b.is_attempted) return -1;
                 
-                // রুল ২: যেগুলো দেওয়া হয়নি, তাদের মধ্যে এক্সপায়ারি টাইম ক্যালকুলেট করা
                 let aDiff = Infinity, bDiff = Infinity;
                 let aExpired = false, bExpired = false;
 
@@ -432,11 +486,9 @@
                     if (bDiff < 0) bExpired = true;
                 }
 
-                // এক্সপায়ার হওয়া এক্সামগুলো নরমাল এক্সামের পরে থাকবে
                 if (aExpired && !bExpired) return 1;
                 if (!aExpired && bExpired) return -1;
 
-                // যার এক্সপায়ার হতে সবচেয়ে কম সময় বাকি, সে সবার আগে থাকবে
                 return aDiff - bDiff;
             });
 
@@ -454,10 +506,12 @@
                     if (exam.expiry_time && exam.expiry_time !== "None") {
                         const diffMs = new Date(exam.expiry_time) - now;
                         if (diffMs > 0) {
-                            expiryHtml = `<div style="background:rgba(0,0,0,0.3); padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block;">⏳ ${formatTimeRemaining(diffMs)}</div>`;
+                            expiryHtml = `<div style="background:rgba(0,0,0,0.5); padding:6px 12px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block; border:1px solid rgba(255,255,255,0.2);">
+                                ⏳ <span class="live-timer-text" data-expiry="${exam.expiry_time}">Calculating...</span>
+                            </div>`;
                         } else {
                             isExpired = true;
-                            expiryHtml = `<div style="background:rgba(239,68,68,0.8); padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block;">❌ Expired</div>`;
+                            expiryHtml = `<div style="background:rgba(239,68,68,0.8); padding:6px 12px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block; border:1px solid #f87171;">❌ Expired</div>`;
                         }
                     }
 
@@ -485,7 +539,6 @@
             }
             document.getElementById('live-special-scroll').innerHTML = liveHtml;
 
-            // ২. ক্যাটাগরি এবং প্লেলিস্ট রেন্ডার (ব্যাকএন্ড থেকেই New Updated লজিকে সর্ট হয়ে এসেছে)
             let folderHtml = '';
             let playlistHtml = '';
             
@@ -539,17 +592,34 @@
                         container.innerHTML = '<p style="text-align:center; color:#ef4444; font-weight:bold; margin-top:20px;">No exams found here.</p>';
                         return;
                     }
-                    let html = '';
+                    let html = '<div style="padding-top:5px;">';
                     data.exams.forEach(ex => {
+                        // Main Dashboard Feed Card Style
                         html += `
-                        <div style="background:white; border:1px solid #e2e8f0; padding:12px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
-                            <div style="flex:1; padding-right:10px;">
-                                <strong style="color:#1e293b; display:block; font-size:0.95rem;">${ex.name}</strong>
-                                <span style="font-size:0.75rem; color:#64748b;">${ex.class_name} • ${ex.subject} • ⏱ ${ex.timer} Mins</span>
+                        <div class="feed-card" style="box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px; background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:15px;">
+                            <div class="feed-header" style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                                <div class="feed-avatar" style="width:38px; height:38px; background:#eff6ff; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1.1rem;"><i class="fas fa-file-alt"></i></div>
+                                <div class="feed-teacher-info" style="flex:1;">
+                                    <strong style="display:block; font-size:0.95rem; color:#0f172a;">Official ExamMate</strong>
+                                    <span style="display:block; font-size:0.7rem; color:#64748b;">Special Folder Exam</span>
+                                </div>
                             </div>
-                            <button onclick="window.location.href='student_exam.html?code=${ex.code}'" style="background:#3b82f6; color:white; border:none; padding:8px 14px; border-radius:8px; font-weight:bold; cursor:pointer; box-shadow:0 4px 6px rgba(59,130,246,0.3);">Start</button>
+                            <div class="feed-body" style="margin-bottom:15px;">
+                                <h3 class="feed-title" style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:0 0 8px 0; line-height:1.3;">${ex.name}</h3>
+                                <div class="feed-tags" style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
+                                    <span class="feed-tag" style="background:#f1f5f9; color:#475569; font-size:0.7rem; font-weight:bold; padding:3px 8px; border-radius:6px;"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
+                                    <span class="feed-tag" style="background:#f1f5f9; color:#475569; font-size:0.7rem; font-weight:bold; padding:3px 8px; border-radius:6px;"><i class="fas fa-book"></i> ${ex.subject}</span>
+                                </div>
+                                <div class="feed-meta" style="display:flex; gap:15px; background:#f8fafc; padding:10px; border-radius:10px; border:1px dashed #cbd5e1;">
+                                    <span style="font-size:0.8rem; color:#334155; font-weight:600; display:flex; align-items:center; gap:5px;"><i class="fas fa-clock" style="color:#3b82f6;"></i> ${ex.timer} Mins</span>
+                                </div>
+                            </div>
+                            <div style="border-top:1px solid #f1f5f9; padding-top:12px; margin-top:5px;">
+                                <button class="btn-attempt" style="width:100%; background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(59, 130, 246, 0.3); transition:0.2s;" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>
+                            </div>
                         </div>`;
                     });
+                    html += '</div>';
                     container.innerHTML = html;
                 } else {
                     container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load.</p>';
