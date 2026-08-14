@@ -227,7 +227,9 @@ def admin_page(): return render_template('admin.html')
 def student_analytics(): return render_template('student_analytics.html') if session.get('user', {}).get('role', '').lower() == 'student' else redirect('/')
 @app.route('/student_resources.html')
 def student_resources(): return render_template('student_resources.html') if session.get('user', {}).get('role', '').lower() == 'student' else redirect('/')
-
+@app.route('/special_exams.html')
+def special_exams(): return render_template('special_exams.html') if session.get('user', {}).get('role', '').lower() == 'student' else redirect('/')
+    
 @app.errorhandler(500)
 def internal_error(e): session.pop('user', None); return redirect('/')
 @app.errorhandler(Exception)
