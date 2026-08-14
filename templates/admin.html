@@ -724,7 +724,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             };
 
             try {
-                const res = await fetch('/api/create-exam', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const res = await fetch('/api/admin/create-special-exam', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const data = await res.json();
                 if(data.success) {
                     alert(`🎉 Special Exam created successfully!`); 
