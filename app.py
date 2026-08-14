@@ -184,6 +184,12 @@ def init_db():
         except Exception:
             if db_type == 'postgres': conn.rollback()
 
+        try:
+            cursor.execute("ALTER TABLE exams ADD COLUMN season VARCHAR(100) DEFAULT 'General';")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+                
         conn.close()
     except Exception as e:
         print("DB Init Exception:", e)
@@ -1217,10 +1223,10 @@ def get_special_exams():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        cursor.execute("SELECT exam_code, exam_name, class_name, subject, expiry_time FROM exams WHERE teacher_email = 'exammate.official@gmail.com' AND folder_id = 0")
+        # 👈 season কলাম সিলেক্ট করা হলো
+        cursor.execute("SELECT exam_code, exam_name, class_name, subject, season, expiry_time FROM exams WHERE teacher_email = 'exammate.official@gmail.com' AND folder_id = 0")
         live_exams_rows = cursor.fetchall()
         
-        # স্টুডেন্টের স্কোরের ডেটা ফেচ করা
         cursor.execute(f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph}", (email,))
         history_rows = cursor.fetchall()
         history_map = {r["exam_code"] if isinstance(r, dict) else r[0]: {"score": r["score"] if isinstance(r, dict) else r[1], "total": r["total_questions"] if isinstance(r, dict) else r[2]} for r in history_rows}
@@ -1231,12 +1237,19 @@ def get_special_exams():
             name = r["exam_name"] if isinstance(r, dict) else r[1]
             cls_name = r["class_name"] if isinstance(r, dict) else r[2]
             subj = r["subject"] if isinstance(r, dict) else r[3]
-            exp_time = str(r["expiry_time"]) if (isinstance(r, dict) and r.get("expiry_time")) or (not isinstance(r, dict) and len(r)>4 and r[4]) else None
+            season_name = r["season"] if isinstance(r, dict) else (r[4] if len(r) > 4 else "General") # 👈 সিজন নাম ফেচ
+            
+            # ইনডেক্স এডজাস্টমেন্ট যদি ডিকশনারি বা টাপল হয়
+            if isinstance(r, dict):
+                exp_time = str(r.get("expiry_time")) if r.get("expiry_time") else None
+            else:
+                exp_time = str(r[5]) if len(r) > 5 and r[5] else None
+
             if exp_time == "None": exp_time = None
             
             is_attempted = code in history_map
             live_exams.append({
-                "code": code, "name": name, "class_name": cls_name, "subject": subj, "expiry_time": exp_time,
+                "code": code, "name": name, "class_name": cls_name, "subject": subj, "season": season_name, "expiry_time": exp_time,
                 "is_attempted": is_attempted,
                 "score": history_map[code]["score"] if is_attempted else 0,
                 "total": history_map[code]["total"] if is_attempted else 0
@@ -1342,11 +1355,11 @@ def create_special_exam_api():
     timer = data.get('timer')
     negative_marks = float(data.get('negative_marks', 0.0))
     
-    # অ্যাডমিন প্যানেলের এক্সাম সবসময় এই অফিশিয়াল ইমেইল দিয়ে সেভ হবে
     teacher_email = 'exammate.official@gmail.com' 
     
     class_name = data.get('class_name', 'General')
     subject = data.get('subject', 'General')
+    season = data.get('season', 'General') # 👈 সেশন রিসিভ করা হচ্ছে
     is_private = False
     
     folder_id = data.get('folder_id', 0)
@@ -1361,8 +1374,9 @@ def create_special_exam_api():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        cursor.execute(f"INSERT INTO exams (exam_code, exam_name, timer_minutes, negative_marks, teacher_email, class_name, subject, is_private, folder_id, expiry_time) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
-                       (exam_code, exam_name, timer, negative_marks, teacher_email, class_name, subject, is_private, folder_id, expiry_time))
+        # 👈 কুয়েরিতে season কলাম ও ভ্যালু যুক্ত করা হলো
+        cursor.execute(f"INSERT INTO exams (exam_code, exam_name, timer_minutes, negative_marks, teacher_email, class_name, subject, season, is_private, folder_id, expiry_time) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
+                       (exam_code, exam_name, timer, negative_marks, teacher_email, class_name, subject, season, is_private, folder_id, expiry_time))
         
         for q in questions:
             q_type = q.get('question_type', 'mcq')
