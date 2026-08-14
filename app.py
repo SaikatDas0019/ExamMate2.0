@@ -834,9 +834,8 @@ def update_profile():
         
 @app.route('/logout')
 def logout():
-    session.pop('user', None)
-    return redirect('/index.html') 
-
+    session.pop('user', None) # Flask সেশন ক্লিয়ার করবে
+    return redirect('/?logout=1') # হোমপেজে পাঠাবে এবং ফ্রন্টএন্ড সেশন ক্লিয়ার ট্রিগার করবে
 
 @app.route('/api/check-login-status', methods=['POST'])
 def check_login_status():
