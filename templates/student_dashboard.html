@@ -306,8 +306,19 @@
                 const data = await response.json();
 
                 if (data.success && data.feed.length > 0) {
-                    let sortedFeed = sortExamsForStudent(data.feed, query);
-                    renderFeedCards(sortedFeed);
+                    // Block/Filter out exams from exammate.official@gmail.com
+                    const filteredFeed = data.feed.filter(ex => 
+                        ex.email !== 'exammate.official@gmail.com' && 
+                        ex.teacher_email !== 'exammate.official@gmail.com' && 
+                        ex.creator_email !== 'exammate.official@gmail.com'
+                    );
+
+                    if (filteredFeed.length > 0) {
+                        let sortedFeed = sortExamsForStudent(filteredFeed, query);
+                        renderFeedCards(sortedFeed);
+                    } else {
+                        feedContainer.innerHTML = `<div style="text-align:center; padding: 40px; color: #64748b;"><i class="fas fa-search fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams match your filters.</p></div>`;
+                    }
                 } else {
                     feedContainer.innerHTML = `<div style="text-align:center; padding: 40px; color: #64748b;"><i class="fas fa-search fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams match your filters.</p></div>`;
                 }
