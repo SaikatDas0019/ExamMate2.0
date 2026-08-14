@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, make_response
 import os
 import sqlite3
 from datetime import timedelta
@@ -186,7 +186,13 @@ def init_db():
 init_db()
 
 @app.route('/')
-def home(): return render_template('index.html')
+def home(): 
+    resp = make_response(render_template('index.html'))
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
+    
 @app.route('/setup_profile.html')
 def setup_profile_page(): return render_template('setup_profile.html')
 
