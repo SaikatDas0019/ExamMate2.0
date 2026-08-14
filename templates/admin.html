@@ -27,9 +27,8 @@
         .admin-card:hover { transform: translateY(-4px); border-color: #3b82f6; }
         .card-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; color: white; flex-shrink: 0;}
         
-        .card-notif .card-icon { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-        .card-content .card-icon { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
-        .card-exam .card-icon { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
+        .card-notif .card-icon { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .card-special .card-icon { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); }
         
         .card-info h3 { margin: 0 0 4px 0; font-size: 1.1rem; color: #1e293b; }
         .card-info p { margin: 0; font-size: 0.85rem; color: #64748b; }
@@ -37,22 +36,25 @@
         .panel-view { display: none; flex: 1; flex-direction: column; }
         .panel-view.active { display: flex; }
 
-        .drive-breadcrumb { font-size: 0.9rem; color: #3b82f6; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; padding: 10px; background: #eff6ff; border-radius: 10px;}
+        .drive-breadcrumb { font-size: 0.9rem; color: #f59e0b; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; padding: 10px; background: #fffbeb; border-radius: 10px;}
         .drive-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-        .folder-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; }
-        .folder-card span { font-size: 0.9rem; font-weight: bold; color: #1e293b; }
+        .folder-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; cursor: pointer;}
+        .folder-card:hover { background: #fffbeb; border-color: #fde68a; }
+        .folder-card span { font-size: 0.95rem; font-weight: bold; color: #1e293b; }
 
         .file-list { display: flex; flex-direction: column; gap: 10px; }
         .file-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
 
-        .fab-plus { position: absolute; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #3b82f6; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); cursor: pointer; transition: 0.2s; z-index: 50;}
-        
+        .fab-plus { position: absolute; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #f59e0b; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4); cursor: pointer; transition: 0.2s; z-index: 50;}
+        .fab-plus:hover { transform: scale(1.05); }
+
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px);}
         .modal-box { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); box-sizing: border-box; }
         .modal-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #0f172a; text-align: center;}
         
         .modal-btn { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: bold; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; color: #334155; transition: 0.2s; box-sizing: border-box;}
-        
+        .modal-btn:hover { background: #f1f5f9; }
+
         .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 6px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; outline: none; box-sizing: border-box; background: #f8fafc;}
@@ -78,8 +80,7 @@
         .prompt-code { background: #ffffff; border: 1px dashed #93c5fd; padding: 12px; margin-top: 10px; border-radius: 6px; position: relative; }
         .prompt-code code { display: block; color: #334155; font-size: 0.8rem; white-space: pre-wrap; margin-top: 25px; font-family: inherit;}
         .copy-btn { position: absolute; top: 8px; right: 8px; background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; transition: 0.2s;}
-        .copy-btn:hover { background: #2563eb; }
-
+        
         .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .hidden { display: none !important; }
     </style>
@@ -94,32 +95,28 @@
 
         <div id="dashboard-menu">
             <div class="admin-grid">
-                <div class="admin-card card-notif" onclick="openPanel('notif-panel', '📢 Send Notification')">
+                <!-- 1. NOTIFICATIONS -->
+                <div class="admin-card card-notif" onclick="openPanel('notif-panel', '📢 Notifications')">
                     <div class="card-icon"><i class="fas fa-bell"></i></div>
                     <div class="card-info"><h3>Notifications</h3><p>Send, Edit or Delete alerts</p></div>
                 </div>
-                <div class="admin-card card-content" onclick="openDrivePanel('content', '📑 Content Upload')">
-                    <div class="card-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                    <div class="card-info"><h3>Content Upload</h3><p>Manage Notes & PDFs in Drive</p></div>
-                </div>
-                <div class="admin-card card-exam" onclick="openDrivePanel('exam', '📝 Create Exam Folders')">
-                    <div class="card-icon"><i class="fas fa-clipboard-check"></i></div>
-                    <div class="card-info"><h3>Create Exam</h3><p>Upload exams inside folders</p></div>
+                <!-- 2. SPECIAL (NEW) -->
+                <div class="admin-card card-special" onclick="openSpecialPanel()">
+                    <div class="card-icon"><i class="fas fa-trophy"></i></div>
+                    <div class="card-info"><h3>Special Section</h3><p>Manage Live Exams & Playlists</p></div>
                 </div>
             </div>
         </div>
 
+        <!-- NOTIFICATION PANEL -->
         <div id="notif-panel" class="panel-view">
             <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: bold; color: #334155;">
                 <label>Target Audience:</label>
                 <select id="target-role" style="padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none;"><option value="All">All Users</option><option value="Student">Students Only</option><option value="Teacher">Teachers Only</option></select>
             </div>
-            
-            <!-- 🆕 নোটিফিকেশন লিংক ইনপুট দেওয়ার ফিল্ড -->
             <div class="form-group" style="margin-bottom: 10px;">
                 <input type="url" id="notif-link" style="width: 100%; padding: 10px 15px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 0.9rem; outline: none; box-sizing: border-box;" placeholder="Optional Link (Drive, YouTube, etc.)">
             </div>
-
             <div class="chat-feed" id="chat-feed"></div>
             <div style="display: flex; gap: 10px;">
                 <input type="text" id="notif-message" style="flex:1; padding:12px 15px; border-radius:12px; border:1px solid #cbd5e1; font-size: 0.95rem; outline: none;" placeholder="Type new message...">
@@ -127,18 +124,37 @@
             </div>
         </div>
 
+        <!-- SPECIAL MANAGER PANEL -->
+        <div id="special-panel" class="panel-view">
+            <div class="drive-breadcrumb" id="special-breadcrumb">
+                <i class="fas fa-star"></i> <span id="special-path">Special Root</span>
+            </div>
+            
+            <button id="special-up-btn" style="display:none; margin-bottom:15px; background:#e2e8f0; color:#334155; border:none; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="navigateUpSpecial()">
+                <i class="fas fa-level-up-alt"></i> Back to Root
+            </button>
 
-        <div id="drive-panel" class="panel-view">
-            <div class="drive-breadcrumb" id="drive-breadcrumb"><i class="fas fa-folder-open"></i> <span id="current-path">Root Folder</span></div>
-            <button id="up-folder-btn" style="display:none; margin-bottom:15px; background:#e2e8f0; color:#334155; border:none; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="navigateUp()"><i class="fas fa-level-up-alt"></i> Go Parent Folder</button>
-            <div class="drive-grid" id="drive-folder-container"></div>
-            <div class="file-list" id="drive-file-container"></div>
-            <div class="fab-plus" onclick="openPlusModal()"><i class="fas fa-plus"></i></div>
+            <!-- ROOT VIEW -->
+            <div id="special-root-view">
+                <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 10px;">📁 Playlists & Categories</h3>
+                <div class="drive-grid" id="special-folders-list"></div>
+
+                <h3 style="font-size: 1rem; color: #1e293b; margin-top: 20px; margin-bottom: 10px;">🔥 Live Exams</h3>
+                <div class="file-list" id="special-live-exams-list"></div>
+            </div>
+
+            <!-- FOLDER VIEW -->
+            <div id="special-folder-view" style="display:none;">
+                <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 10px;">📝 Exams in Playlist</h3>
+                <div class="file-list" id="special-playlist-exams-list"></div>
+            </div>
+
+            <div class="fab-plus" onclick="openSpecialPlusModal()"><i class="fas fa-plus"></i></div>
         </div>
 
-        <!-- 🚀 CREATE EXAM PANEL -->
+        <!-- EXAM CREATOR PANEL -->
         <div id="exam-create-panel" class="panel-view">
-            <div style="background: #eff6ff; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #1e3a8a; font-weight: bold;">
+            <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #d97706; font-weight: bold;">
                 <i class="fas fa-info-circle"></i> Creating exam inside: <span id="exam-folder-name"></span>
             </div>
 
@@ -150,6 +166,11 @@
             <div class="grid-2x2">
                 <div class="form-group"><label>Exam Code</label><input type="text" id="exam-code" placeholder="CH1-TEST" style="text-transform: uppercase;"></div>
                 <div class="form-group"><label>Timer (Mins)</label><input type="number" id="exam-timer" value="30"></div>
+            </div>
+
+            <div class="grid-2x2">
+                <div class="form-group"><label>Class</label><input type="text" id="exam-class" placeholder="e.g. Class 10" value="General"></div>
+                <div class="form-group"><label>Subject</label><input type="text" id="exam-subject" placeholder="e.g. Mathematics" value="General"></div>
             </div>
 
             <div class="form-group">
@@ -194,31 +215,25 @@
                 <div class="prompt-box">
                     <strong>কীভাবে প্রশ্ন তৈরি করবেন?</strong><br>
                     ১. নিচের <strong>Copy Prompt</strong> বাটনে ক্লিক করে লেখাটি কপি করুন。<br>
-                    ২. <b>ChatGPT</b> বা <b>Gemini</b> তে গিয়ে প্রম্পটটি পেস্ট করুন এবং সাথে আপনার প্রশ্নপত্রের ছবি বা টেক্সট দিয়ে দিন।<br>
+                    ২. <b>ChatGPT</b> বা <b>Gemini</b> তে গিয়ে প্রম্পটটি পেস্ট করুন।<br>
                     ৩. AI যে উত্তর দেবে, সেটি কপি করে নিচের বক্সে পেস্ট করে <b>'অ্যাড করুন'</b> বাটনে ক্লিক করুন।
                     
                     <div class="prompt-code">
-                        <button onclick="copyPrompt('ai-prompt-2', 'copy-btn-2')" id="copy-btn-2" class="copy-btn"><i class="fas fa-copy"></i> Copy Prompt</button>
-                        <code id="ai-prompt-2">You are an expert Math text formatter and AI assistant. Please read the provided text/images and extract the multiple-choice questions with absolute accuracy.
-You MUST format the extracted output EXACTLY like this:
-[Question Text with all numbers, variables, and math symbols enclosed in single dollar signs]
+                        <button onclick="copyPrompt('ai-prompt-2', 'copy-btn-2')" id="copy-btn-2" class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+                        <code id="ai-prompt-2">Extract multiple-choice questions from the provided text/images. Format exactly like this:
+[Question Text]
 A) [Option A]
 B) [Option B]
 C) [Option C]
 D) [Option D]
 Ans: [Correct Option A/B/C/D]
-CRITICAL RULES FOR MATH & FORMATTING:
-1. You MUST enclose ALL numbers, formulas, fractions, variables, and math symbols strictly inside single dollar signs (...). Example: \frac{1}{2}, x^2, 5.
-2. ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped! You must write \frac{a}{b},\sin,\cos,\tan,\sqrt{x}.
-3. Keep the regular text (Bengali/English) completely outside the dollar signs. Do not use markdown code blocks.
-4. Once the formatting is complete, generate and provide the final output inside a downloadable or copyable .txt file format.</code>
+Note: Enclose all numbers, math formulas and variables strictly inside single dollar signs (...).</code>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <textarea id="scanned-text-result" rows="5" placeholder="ChatGPT বা Gemini থেকে কপি করা প্রশ্ন এখানে পেস্ট করুন..."></textarea>
                 </div>
-                
                 <button class="btn-submit" onclick="processScannedText()" style="background: #8b5cf6; margin-top: 5px;">অ্যাড করুন ➕</button>
             </div>
 
@@ -227,7 +242,7 @@ CRITICAL RULES FOR MATH & FORMATTING:
                 <div id="admin-preview-list" style="margin-bottom: 15px;"></div>
             </div>
 
-            <button class="btn-submit" onclick="publishExam()" style="margin-top: 10px;">Publish Exam to Folder 🚀</button>
+            <button class="btn-submit" onclick="publishExam()" style="margin-top: 10px;">Publish Special Exam 🚀</button>
         </div>
 
     </div>
@@ -235,103 +250,49 @@ CRITICAL RULES FOR MATH & FORMATTING:
     <!-- Modals -->
     <div class="modal-overlay" id="plus-modal">
         <div class="modal-box">
-            <div class="modal-title">Create or Upload</div>
-            <button class="modal-btn" onclick="openFolderModal()"><i class="fas fa-folder-plus" style="color:#f59e0b; font-size: 1.2rem;"></i> Create New Folder</button>
-            <button class="modal-btn" id="btn-upload-file" onclick="openUploadModal()"><i class="fas fa-link" style="color:#3b82f6; font-size: 1.2rem;"></i> Add Resource Link</button>
-            <button class="modal-btn" id="btn-create-exam" onclick="openExamCreator()"><i class="fas fa-file-signature" style="color:#22c55e; font-size: 1.2rem;"></i> Create New Exam</button>
+            <div class="modal-title">Create Item</div>
+            <button class="modal-btn" id="btn-create-playlist" onclick="createPlaylistFolder()"><i class="fas fa-folder-plus" style="color:#f59e0b; font-size: 1.2rem;"></i> New Playlist/Category</button>
+            <button class="modal-btn" id="btn-create-exam" onclick="openExamCreator()"><i class="fas fa-file-signature" style="color:#22c55e; font-size: 1.2rem;"></i> New Live Exam</button>
             <button class="modal-btn" style="color:#ef4444; justify-content: center; margin-top: 15px; border-color: #fca5a5; background: #fef2f2;" onclick="closeAllModals()">Cancel</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="upload-file-modal">
-        <div class="modal-box">
-            <div class="modal-title">Add Resource Link 🔗</div>
-            <form id="file-upload-form" onsubmit="submitDriveFileUpload(event)">
-                <div class="form-group">
-                    <label>Resource Title</label>
-                    <input type="text" id="upload-file-title" placeholder="e.g. Chapter 1 PDF" required>
-                </div>
-                <div class="form-group">
-                    <label>Content Type</label>
-                    <select id="upload-file-type" required>
-                        <option value="Notes">Notes 📑</option>
-                        <option value="Short Notes">Short Notes 📝</option>
-                        <option value="Mind Map">Mind Map 🧠</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Google Drive Link</label>
-                    <input type="url" id="upload-file-url" placeholder="Paste link here..." required style="background: #fff;">
-                </div>
-                <button type="submit" class="btn-submit" id="upload-file-submit-btn">Save Link 🚀</button>
-                <button type="button" class="modal-btn" style="margin-top:10px; justify-content: center;" onclick="closeAllModals()">Cancel</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Move Item Modal -->
-    <div class="modal-overlay" id="move-modal">
-        <div class="modal-box">
-            <div class="modal-title">Move Item To 📁</div>
-            <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px; text-align:center;">Select destination folder:</p>
-            <div class="form-group">
-                <select id="move-target-folder" class="form-control" style="width:100%; padding:12px; border-radius:10px; border:1px solid #cbd5e1;">
-                    <option value="0">📁 Root Folder (Main)</option>
-                </select>
-            </div>
-            <button class="btn-submit" onclick="confirmMoveItem()" style="background:#3b82f6;">Move Here 🚀</button>
-            <button type="button" class="modal-btn" style="margin-top:10px; justify-content: center;" onclick="closeAllModals()">Cancel</button>
-        </div>
-    </div>
-
     <script>
-        let currentFolderId = 0, folderHistory = [], tempExamQuestions = [], currentDriveType = 'content';
-        let itemToMove = { type: null, id: null };
-        let currentFoldersData = [], currentFilesData = [], currentExamsData = [];
+        // Global variables for Special Panel
+        let specialFolderId = 0;
+        let specialFolderName = 'Special Root';
+        let tempExamQuestions = [];
 
+        // Utilities
         function copyPrompt(textId, btnId) {
             const promptText = document.getElementById(textId).innerText;
             navigator.clipboard.writeText(promptText).then(() => {
                 const btn = document.getElementById(btnId);
                 btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
                 btn.style.background = '#10b981';
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-copy"></i> Copy Prompt';
-                    btn.style.background = '#3b82f6';
-                }, 2500);
+                setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i> Copy'; btn.style.background = '#3b82f6'; }, 2000);
             });
         }
-
-        function openPanel(panelId, titleText) {
-            document.getElementById('dashboard-menu').style.display = 'none';
-            document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
-            document.getElementById(panelId).classList.add('active');
-            document.getElementById('admin-title').innerHTML = titleText;
-            document.getElementById('back-btn').style.display = 'block';
-            if (panelId === 'drive-panel') loadDriveContents();
-            if (panelId === 'notif-panel') loadNotifications();
-        }
-
-        function openDrivePanel(type, titleText) {
-            currentDriveType = type; currentFolderId = 0; folderHistory = [];
-            document.getElementById('current-path').innerText = 'Root Folder';
-            document.getElementById('up-folder-btn').style.display = 'none';
-            openPanel('drive-panel', titleText);
-        }
-
+        function closeAllModals() { document.getElementById('plus-modal').style.display = 'none'; }
         function showDashboardMenu() {
             document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
             document.getElementById('dashboard-menu').style.display = 'block';
             document.getElementById('admin-title').innerHTML = '<i class="fas fa-user-shield"></i> Admin Panel';
             document.getElementById('back-btn').style.display = 'none';
         }
-
-        function closeAllModals() { 
-            document.getElementById('plus-modal').style.display = 'none'; 
-            document.getElementById('upload-file-modal').style.display = 'none'; 
-            document.getElementById('move-modal').style.display = 'none';
+        function openPanel(panelId, titleText) {
+            document.getElementById('dashboard-menu').style.display = 'none';
+            document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
+            document.getElementById(panelId).classList.add('active');
+            document.getElementById('admin-title').innerHTML = titleText;
+            document.getElementById('back-btn').style.display = 'block';
+            document.getElementById('back-btn').onclick = showDashboardMenu;
+            if (panelId === 'notif-panel') loadNotifications();
         }
-        
+
+        // ==========================================
+        // NOTIFICATION LOGIC
+        // ==========================================
         async function loadNotifications() {
             const feed = document.getElementById('chat-feed');
             feed.innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading...</p>';
@@ -359,245 +320,175 @@ CRITICAL RULES FOR MATH & FORMATTING:
                         `;
                     });
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) {}
         }
-
         async function submitNotification() {
             const msg = document.getElementById('notif-message').value.trim();
             const role = document.getElementById('target-role').value;
             const link = document.getElementById('notif-link').value.trim();
             if(!msg) return;
-            
-            await fetch('/api/admin/send-notification', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ message: msg, target_role: role, link_url: link }) 
-            });
-            
-            document.getElementById('notif-message').value = ''; 
-            document.getElementById('notif-link').value = ''; 
+            await fetch('/api/admin/send-notification', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ message: msg, target_role: role, link_url: link }) });
+            document.getElementById('notif-message').value = ''; document.getElementById('notif-link').value = ''; 
             loadNotifications();
         }
-
         async function editNotification(id, oldMessage, oldLink) {
             const newMsg = prompt("Edit your notification message:", oldMessage);
             if(newMsg !== null) {
                 const newLink = prompt("Edit notification link (Leave blank if none):", oldLink || "");
-                const res = await fetch('/api/admin/edit-notification', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ id: id, message: newMsg.trim(), link_url: newLink.trim() }) 
-                });
-                const data = await res.json();
-                if(data.success) { loadNotifications(); } else { alert("Failed to edit notification."); }
+                await fetch('/api/admin/edit-notification', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: id, message: newMsg.trim(), link_url: newLink.trim() }) });
+                loadNotifications();
             }
         }
-
         function toggleNotifMenu(id) { const menu = document.getElementById(`notif-action-${id}`); menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex'; }
-        async function deleteNotification(id) { if(confirm("Are you sure you want to delete this notification?")) { const res = await fetch('/api/admin/delete-notification', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: id }) }); const data = await res.json(); if(data.success) { loadNotifications(); } else { alert("Failed to delete notification."); } } }
+        async function deleteNotification(id) { if(confirm("Delete this notification?")) { await fetch('/api/admin/delete-notification', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: id }) }); loadNotifications(); } }
 
-        async function loadDriveContents() {
-            const folderBox = document.getElementById('drive-folder-container');
-            const fileBox = document.getElementById('drive-file-container');
-            folderBox.innerHTML = 'Loading...'; fileBox.innerHTML = '';
+        // ==========================================
+        // SPECIAL PANEL LOGIC (Replaces Drive Panel)
+        // ==========================================
+        function openSpecialPanel() {
+            document.getElementById('dashboard-menu').style.display = 'none';
+            document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
+            document.getElementById('special-panel').classList.add('active');
+            
+            document.getElementById('admin-title').innerHTML = '<i class="fas fa-trophy"></i> Special Section';
+            document.getElementById('back-btn').style.display = 'block';
+            document.getElementById('back-btn').onclick = showDashboardMenu;
+            
+            specialFolderId = 0;
+            specialFolderName = 'Special Root';
+            updateSpecialBreadcrumb();
+            loadSpecialContents();
+        }
+
+        async function loadSpecialContents() {
+            const rootView = document.getElementById('special-root-view');
+            const folderView = document.getElementById('special-folder-view');
+            
+            if (specialFolderId === 0) {
+                rootView.style.display = 'block'; folderView.style.display = 'none';
+                document.getElementById('special-up-btn').style.display = 'none';
+                document.getElementById('special-folders-list').innerHTML = 'Loading...';
+                document.getElementById('special-live-exams-list').innerHTML = 'Loading...';
+            } else {
+                rootView.style.display = 'none'; folderView.style.display = 'block';
+                document.getElementById('special-up-btn').style.display = 'inline-block';
+                document.getElementById('special-playlist-exams-list').innerHTML = 'Loading...';
+            }
+            
             try {
+                // Using existing get-drive-contents API but filtering for our needs
                 const res = await fetch('/api/admin/get-drive-contents', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ parent_id: currentFolderId, folder_type: currentDriveType })
+                    body: JSON.stringify({ parent_id: specialFolderId, folder_type: 'exam' })
                 });
                 const data = await res.json();
-                if (data.success) {
-                    currentFoldersData = data.folders || [];
-                    currentFilesData = data.files || [];
-                    currentExamsData = data.exams || [];
-                    renderDriveUI();
+                
+                if(data.success) {
+                    if (specialFolderId === 0) {
+                        renderSpecialRoot(data.folders, data.exams);
+                    } else {
+                        renderSpecialFolder(data.exams);
+                    }
                 }
             } catch(e) { console.error(e); }
         }
 
-        function renderDriveUI() {
-            const folderBox = document.getElementById('drive-folder-container');
-            const fileBox = document.getElementById('drive-file-container');
-            folderBox.innerHTML = ''; fileBox.innerHTML = '';
-
-            // 1. Render Folders with Reorder (Up/Down) buttons
-            currentFoldersData.forEach((f, idx) => {
-                folderBox.innerHTML += `
-                    <div class="folder-card">
-                        <div onclick="openDriveFolder(${f.id}, '${f.name.replace(/'/g, "\\'")}')" style="display:flex; align-items:center; cursor:pointer; flex:1;">
-                            <i class="fas fa-folder" style="color:#f59e0b; margin-right:8px;"></i> <span>${f.name}</span>
-                        </div>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            ${idx > 0 ? `<button onclick="reorderItem('folder', ${idx}, 'up')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Up">⬆️</button>` : ''}
-                            ${idx < currentFoldersData.length - 1 ? `<button onclick="reorderItem('folder', ${idx}, 'down')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Down">⬇️</button>` : ''}
-                            <i class="fas fa-arrows-alt" style="color:#3b82f6; cursor:pointer;" onclick="openMoveModal('folder', ${f.id})" title="Move to folder"></i>
-                            <i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'folder', ${f.id})" title="Delete"></i>
-                        </div>
-                    </div>`;
+        function renderSpecialRoot(folders, exams) {
+            let phtml = '';
+            if(folders.length === 0) phtml = '<p style="color:#64748b; font-size:0.9rem;">No playlists created yet.</p>';
+            folders.forEach(pl => {
+                phtml += `
+                <div class="folder-card" onclick="openSpecialFolder(${pl.id}, '${pl.name.replace(/'/g, "\\'")}')">
+                    <div style="display:flex; align-items:center; flex:1;">
+                        <i class="fas fa-folder" style="color:#f59e0b; margin-right:8px; font-size:1.2rem;"></i> 
+                        <span>${pl.name}</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-trash-alt" style="color:#ef4444; padding:5px; cursor:pointer;" onclick="deleteDriveItem(event, 'folder', ${pl.id})" title="Delete"></i>
+                    </div>
+                </div>`;
             });
+            document.getElementById('special-folders-list').innerHTML = phtml;
 
-            // 2. Render Files or Exams with Reorder buttons
-            if (currentDriveType === 'content') {
-                currentFilesData.forEach((file, idx) => {
-                    fileBox.innerHTML += `
-                        <div class="file-card">
-                            <div><strong>${file.title}</strong><br><span style="font-size:0.75rem;">${file.type}</span></div>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                ${idx > 0 ? `<button onclick="reorderItem('file', ${idx}, 'up')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Up">⬆️</button>` : ''}
-                                ${idx < currentFilesData.length - 1 ? `<button onclick="reorderItem('file', ${idx}, 'down')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Down">⬇️</button>` : ''}
-                                <a href="${file.file_url}" target="_blank" title="View"><i class="fas fa-eye"></i></a>
-                                <i class="fas fa-arrows-alt" style="color:#3b82f6; cursor:pointer;" onclick="openMoveModal('file', ${file.id})" title="Move"></i>
-                                <i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'file', ${file.id})" title="Delete"></i>
-                            </div>
-                        </div>`;
-                });
-            } else if (currentDriveType === 'exam') {
-                currentExamsData.forEach((exam, idx) => {
-                    fileBox.innerHTML += `
-                        <div class="file-card">
-                            <div><strong>${exam.name}</strong><br><span style="font-size:0.75rem; color:#16a34a;">Code: ${exam.code}</span></div>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                ${idx > 0 ? `<button onclick="reorderItem('exam', ${idx}, 'up')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Up">⬆️</button>` : ''}
-                                ${idx < currentExamsData.length - 1 ? `<button onclick="reorderItem('exam', ${idx}, 'down')" style="background:#e2e8f0; border:none; border-radius:4px; padding:4px 7px; cursor:pointer;" title="Move Down">⬇️</button>` : ''}
-                                <i class="fas fa-arrows-alt" style="color:#3b82f6; cursor:pointer;" onclick="openMoveModal('exam', '${exam.code}')" title="Move"></i>
-                                <i class="fas fa-trash-alt" style="color:#ef4444; cursor:pointer;" onclick="deleteDriveItem(event, 'exam', '${exam.code}')" title="Delete"></i>
-                            </div>
-                        </div>`;
-                });
-            }
+            let ehtml = '';
+            if(exams.length === 0) ehtml = '<p style="color:#64748b; font-size:0.9rem;">No live exams created yet.</p>';
+            exams.forEach(ex => {
+                ehtml += `
+                <div class="file-card">
+                    <div>
+                        <strong style="color:#1e293b; font-size:1rem;">${ex.name}</strong><br>
+                        <span style="font-size:0.8rem; color:#10b981; font-weight:bold;">Code: ${ex.code}</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-trash-alt" style="color:#ef4444; padding:5px; cursor:pointer;" onclick="deleteDriveItem(event, 'exam', '${ex.code}')" title="Delete"></i>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('special-live-exams-list').innerHTML = ehtml;
         }
 
-        // 🆕 পজিশন বা সিরিয়াল বদলানোর ফাংশন (উপরে বা নিচে নেওয়া)
-        async function reorderItem(type, index, direction) {
-            let list = type === 'folder' ? currentFoldersData : (currentDriveType === 'content' ? currentFilesData : currentExamsData);
-            let targetIndex = direction === 'up' ? index - 1 : index + 1;
-            
-            if (targetIndex < 0 || targetIndex >= list.length) return;
-
-            // অ্যারের ভেতর পজিশন সওয়াপ করা
-            let temp = list[index];
-            list[index] = list[targetIndex];
-            list[targetIndex] = temp;
-
-            renderDriveUI();
-
-            // সার্ভারে নতুন পজিশন সেভ করা
-            let payloadItems = list.map((item, idx) => ({
-                type: type,
-                id: item.id || item.code,
-                position: idx
-            }));
-
-            try {
-                await fetch('/api/admin/update-position', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ items: payloadItems })
-                });
-            } catch(e) {
-                console.error("Failed to save order");
-            }
+        function renderSpecialFolder(exams) {
+            let ehtml = '';
+            if(exams.length === 0) ehtml = '<p style="color:#64748b; font-size:0.9rem;">No exams in this playlist yet.</p>';
+            exams.forEach(ex => {
+                ehtml += `
+                <div class="file-card">
+                    <div>
+                        <strong style="color:#1e293b; font-size:1rem;">${ex.name}</strong><br>
+                        <span style="font-size:0.8rem; color:#10b981; font-weight:bold;">Code: ${ex.code}</span> | <span style="font-size:0.8rem; color:#64748b;">⏱ ${ex.timer} Mins</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-trash-alt" style="color:#ef4444; padding:5px; cursor:pointer;" onclick="deleteDriveItem(event, 'exam', '${ex.code}')" title="Delete"></i>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('special-playlist-exams-list').innerHTML = ehtml;
         }
 
-        async function openMoveModal(type, id) {
-            itemToMove = { type: type, id: id };
-            const selectBox = document.getElementById('move-target-folder');
-            selectBox.innerHTML = '<option value="0">📁 Root Folder (Main)</option>';
-            
-            try {
-                const res = await fetch('/api/admin/get-drive-contents', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ parent_id: 0, folder_type: currentDriveType })
-                });
-                const data = await res.json();
-                if(data.success && data.folders) {
-                    data.folders.forEach(f => {
-                        if (type !== 'folder' || f.id !== id) {
-                            selectBox.innerHTML += `<option value="${f.id}">📂 ${f.name}</option>`;
-                        }
-                    });
-                }
-            } catch(e) {}
-
-            document.getElementById('move-modal').style.display = 'flex';
-        }
-
-        async function confirmMoveItem() {
-            const targetFolderId = document.getElementById('move-target-folder').value;
-            try {
-                const res = await fetch('/api/admin/move-item', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: itemToMove.type, id: itemToMove.id, new_folder_id: targetFolderId })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    closeAllModals();
-                    loadDriveContents();
-                    alert("Moved successfully!");
-                } else {
-                    alert("Failed to move item.");
-                }
-            } catch(e) {
-                alert("Server error.");
-            }
-        }
-
-        function openDriveFolder(folderId, folderName) { folderHistory.push({ id: currentFolderId, name: document.getElementById('current-path').innerText }); currentFolderId = folderId; document.getElementById('current-path').innerText = folderName; document.getElementById('up-folder-btn').style.display = 'inline-block'; loadDriveContents(); }
-        function navigateUp() { if (folderHistory.length > 0) { const prev = folderHistory.pop(); currentFolderId = prev.id; document.getElementById('current-path').innerText = prev.name; if(folderHistory.length === 0) document.getElementById('up-folder-btn').style.display = 'none'; loadDriveContents(); } }
-        function openPlusModal() { document.getElementById('plus-modal').style.display = 'flex'; if (currentDriveType === 'content') { document.getElementById('btn-upload-file').style.display = 'flex'; document.getElementById('btn-create-exam').style.display = 'none'; } else { document.getElementById('btn-upload-file').style.display = 'none'; document.getElementById('btn-create-exam').style.display = 'flex'; } }
-        function openUploadModal() { closeAllModals(); document.getElementById('upload-file-modal').style.display = 'flex'; }
+        function openSpecialFolder(id, name) { specialFolderId = id; specialFolderName = name; updateSpecialBreadcrumb(); loadSpecialContents(); }
+        function navigateUpSpecial() { specialFolderId = 0; specialFolderName = 'Special Root'; updateSpecialBreadcrumb(); loadSpecialContents(); }
+        function updateSpecialBreadcrumb() { document.getElementById('special-path').innerText = specialFolderName; }
         
-        async function openFolderModal() {
+        function openSpecialPlusModal() {
+            document.getElementById('plus-modal').style.display = 'flex';
+            if (specialFolderId === 0) {
+                document.getElementById('btn-create-playlist').style.display = 'flex';
+                document.getElementById('btn-create-exam').innerHTML = '<i class="fas fa-fire" style="color:#ef4444; font-size: 1.2rem;"></i> New Live Exam';
+            } else {
+                document.getElementById('btn-create-playlist').style.display = 'none';
+                document.getElementById('btn-create-exam').innerHTML = '<i class="fas fa-file-signature" style="color:#22c55e; font-size: 1.2rem;"></i> New Exam in Playlist';
+            }
+        }
+
+        async function createPlaylistFolder() {
             closeAllModals();
             setTimeout(async () => {
-                const name = prompt("Enter New Folder Name:");
+                const name = prompt("Enter Playlist/Category Name:");
                 if (name && name.trim() !== "") {
-                    await fetch('/api/admin/create-drive-folder', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ folder_name: name.trim(), parent_id: currentFolderId, folder_type: currentDriveType }) });
-                    loadDriveContents();
+                    await fetch('/api/admin/create-drive-folder', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ folder_name: name.trim(), parent_id: 0, folder_type: 'exam' }) });
+                    loadSpecialContents();
                 }
             }, 100);
         }
 
-        async function submitDriveFileUpload(e) {
-            e.preventDefault();
-            const submitBtn = document.getElementById('upload-file-submit-btn');
-            submitBtn.disabled = true; submitBtn.innerText = "Saving... ⏳";
-            
-            const payload = {
-                title: document.getElementById('upload-file-title').value,
-                resource_type: document.getElementById('upload-file-type').value,
-                folder_id: currentFolderId,
-                file_url: document.getElementById('upload-file-url').value
-            };
-
-            try {
-                const res = await fetch('/api/admin/upload-drive-file', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload) 
-                });
-                const data = await res.json();
-                if (data.success) { 
-                    document.getElementById('file-upload-form').reset();
-                    closeAllModals(); 
-                    loadDriveContents(); 
-                } else { alert("Failed to save link!"); }
-            } catch (err) { alert("Server error."); }
-            finally { submitBtn.disabled = false; submitBtn.innerText = "Save Link 🚀"; }
-        }
-
         async function deleteDriveItem(e, type, id) {
             e.stopPropagation();
-            if (confirm("Are you sure?")) { await fetch('/api/admin/delete-drive-item', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ type: type, id: id }) }); loadDriveContents(); }
+            if (confirm("Are you sure you want to delete this?")) { 
+                await fetch('/api/admin/delete-drive-item', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ type: type, id: id }) }); 
+                loadSpecialContents(); 
+            }
         }
 
+        // ==========================================
+        // EXAM CREATION LOGIC
+        // ==========================================
         function openExamCreator() {
             closeAllModals(); document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
             document.getElementById('exam-create-panel').classList.add('active');
             document.getElementById('admin-title').innerHTML = '<i class="fas fa-file-signature"></i> Create Exam';
-            document.getElementById('exam-folder-name').innerText = document.getElementById('current-path').innerText;
-            document.getElementById('back-btn').onclick = () => openDrivePanel('exam', '📝 Create Exam Folders');
+            document.getElementById('exam-folder-name').innerText = specialFolderName;
+            
+            document.getElementById('back-btn').onclick = openSpecialPanel; // Return to Special Manager
             tempExamQuestions = []; updateAdminUI();
         }
 
@@ -620,12 +511,7 @@ CRITICAL RULES FOR MATH & FORMATTING:
                         <span style="font-weight:bold; font-size:0.85rem; color:#3b82f6;">Q${i+1}</span>
                         <button onclick="removeQuestion(${i})" style="border:none; background:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button>
                     </div>
-                    
-                    <div class="math-preview">
-                        <strong>Q:</strong> ${q.question_text} <br><br>
-                        A) ${q.option_a} &nbsp;&nbsp; B) ${q.option_b} &nbsp;&nbsp; C) ${q.option_c} &nbsp;&nbsp; D) ${q.option_d}
-                    </div>
-
+                    <div class="math-preview"><strong>Q:</strong> ${q.question_text} <br><br>A) ${q.option_a} &nbsp;&nbsp; B) ${q.option_b} &nbsp;&nbsp; C) ${q.option_c} &nbsp;&nbsp; D) ${q.option_d}</div>
                     <textarea onchange="updateQData(${i}, 'question_text', this.value)">${q.question_text}</textarea>
                     <div class="grid-2x2">
                         <div style="display:flex; gap:3px;"><span style="font-size:0.75rem; font-weight:bold;">A</span><input type="text" value="${q.option_a}" onchange="updateQData(${i}, 'option_a', this.value)"></div>
@@ -645,10 +531,7 @@ CRITICAL RULES FOR MATH & FORMATTING:
                 </div>`;
             });
             list.innerHTML = html;
-
-            if (window.MathJax) {
-                MathJax.typesetPromise([list]).catch(function (err) { console.log(err.message); });
-            }
+            if (window.MathJax) { MathJax.typesetPromise([list]).catch(function (err) {}); }
         }
 
         function updateQData(index, field, value) { tempExamQuestions[index][field] = value; updateAdminUI(); }
@@ -658,18 +541,15 @@ CRITICAL RULES FOR MATH & FORMATTING:
             const file = e.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
-                try {
-                    const parsed = JSON.parse(evt.target.result);
-                    if (Array.isArray(parsed) && parsed.length > 0) { tempExamQuestions = tempExamQuestions.concat(parsed); updateAdminUI(); alert("Loaded!"); }
-                } catch(err) { alert("Error reading JSON file."); }
+                try { const parsed = JSON.parse(evt.target.result); if (Array.isArray(parsed) && parsed.length > 0) { tempExamQuestions = tempExamQuestions.concat(parsed); updateAdminUI(); alert("Loaded!"); } } 
+                catch(err) { alert("Error reading JSON file."); }
             };
             reader.readAsText(file);
         }
 
         function addManualQuestion() {
             const q = document.getElementById('q-text').value;
-            const a = document.getElementById('opt-a').value, b = document.getElementById('opt-b').value;
-            const c = document.getElementById('opt-c').value, d = document.getElementById('opt-d').value;
+            const a = document.getElementById('opt-a').value, b = document.getElementById('opt-b').value, c = document.getElementById('opt-c').value, d = document.getElementById('opt-d').value;
             if (!q || !a || !b) { alert("Fill all fields!"); return; }
             tempExamQuestions.push({ question_text: q, option_a: a, option_b: b, option_c: c, option_d: d, correct_option: "A" });
             document.getElementById('q-text').value = ''; document.getElementById('opt-a').value = ''; document.getElementById('opt-b').value = ''; document.getElementById('opt-c').value = ''; document.getElementById('opt-d').value = '';
@@ -679,36 +559,24 @@ CRITICAL RULES FOR MATH & FORMATTING:
         function processScannedText() {
             const text = document.getElementById('scanned-text-result').value;
             if (!text.trim()) { alert("বক্সে প্রশ্ন পেস্ট করুন!"); return; }
-
             let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             let currentQ = null; let addedCount = 0;
-
             for(let i=0; i<lines.length; i++) {
                 let line = lines[i];
                 let optMatch = line.match(/^[\(]?([A-D])[a-z]?[\)\.]?\s+(.*)/i); 
                 let ansMatch = line.match(/^(Ans|Answer|উত্তর)[\s\:\.\-]*([A-D])/i);
-
-                if (ansMatch && currentQ) {
-                    currentQ.correct_option = ansMatch[2].toUpperCase();
-                } else if (optMatch && currentQ) {
+                if (ansMatch && currentQ) { currentQ.correct_option = ansMatch[2].toUpperCase(); } 
+                else if (optMatch && currentQ) {
                     let optChar = optMatch[1].toUpperCase();
-                    if (optChar === 'A') currentQ.option_a = optMatch[2];
-                    if (optChar === 'B') currentQ.option_b = optMatch[2];
-                    if (optChar === 'C') currentQ.option_c = optMatch[2];
-                    if (optChar === 'D') currentQ.option_d = optMatch[2];
+                    if (optChar === 'A') currentQ.option_a = optMatch[2]; if (optChar === 'B') currentQ.option_b = optMatch[2];
+                    if (optChar === 'C') currentQ.option_c = optMatch[2]; if (optChar === 'D') currentQ.option_d = optMatch[2];
                 } else {
-                    if (currentQ && (!currentQ.option_a || !currentQ.option_b)) {
-                        currentQ.question_text += " \n" + line; 
-                    } else {
-                        if (currentQ) { tempExamQuestions.push(currentQ); addedCount++; }
-                        currentQ = { question_text: line, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A" };
-                    }
+                    if (currentQ && (!currentQ.option_a || !currentQ.option_b)) { currentQ.question_text += " \n" + line; } 
+                    else { if (currentQ) { tempExamQuestions.push(currentQ); addedCount++; } currentQ = { question_text: line, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A" }; }
                 }
             }
             if (currentQ) { tempExamQuestions.push(currentQ); addedCount++; }
-
-            document.getElementById('scanned-text-result').value = "";
-            updateAdminUI();
+            document.getElementById('scanned-text-result').value = ""; updateAdminUI();
             alert(`✅ ${addedCount} টি প্রশ্ন সফলভাবে যুক্ত হয়েছে!`);
         }
 
@@ -717,17 +585,27 @@ CRITICAL RULES FOR MATH & FORMATTING:
             const code = document.getElementById('exam-code').value.trim().toUpperCase();
             const timer = document.getElementById('exam-timer').value;
             const negative = document.getElementById('exam-negative').value;
+            const className = document.getElementById('exam-class').value.trim() || 'General';
+            const subject = document.getElementById('exam-subject').value.trim() || 'General';
             
-            if(!name || !code || tempExamQuestions.length === 0) return;
+            if(!name || !code || tempExamQuestions.length === 0) { alert("Please fill all details and add questions."); return; }
 
-            const teacherEmail = "dasbabu938207@gmail.com";
-            const payload = { exam_code: code, exam_name: name, timer: timer, negative_marks: negative, teacher_email: teacherEmail, folder_id: currentFolderId, questions: tempExamQuestions };
+            // ⚠️ CRITICAL: Must be this exact email for Student Dashboard Special Page to detect it!
+            const teacherEmail = "exammate.official@gmail.com"; 
+            
+            const payload = { 
+                exam_code: code, exam_name: name, timer: timer, 
+                negative_marks: negative, teacher_email: teacherEmail, 
+                folder_id: specialFolderId, questions: tempExamQuestions,
+                class_name: className, subject: subject
+            };
 
             try {
                 const res = await fetch('/api/create-exam', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                const data = var_data = await res.json();
+                const data = await res.json();
                 if(data.success) {
-                    alert(`🎉 Exam created successfully!`); document.getElementById('back-btn').onclick = showDashboardMenu; openDrivePanel('exam', '📝 Create Exam Folders');
+                    alert(`🎉 Special Exam created successfully!`); 
+                    openSpecialPanel(); 
                 } else { alert("Failed to publish exam."); }
             } catch(e) { alert("Server error."); }
         }
