@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Season Analytics | ExamMate</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { color-scheme: light; }
+        body { background-color: #f8fafc; color: #1e293b; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh; box-sizing: border-box; margin: 0 auto; padding-bottom: 50px; position: relative; overflow-x: hidden; }
+
+        .header {
+            padding: 20px; background: linear-gradient(135deg, #1e1b4b, #4338ca); color: white;
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 10px 20px rgba(67, 56, 202, 0.2); position: relative;
+        }
+        .header-top { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .header-top i { font-size: 1.4rem; cursor: pointer; }
+        .header-title { font-size: 1.4rem; font-weight: 800; margin: 0; line-height: 1.2; }
+        .season-badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-top: 5px; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; margin-top: -10px; }
+        .stat-card {
+            background: white; padding: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center; border: 1px solid #f1f5f9; position: relative; overflow: hidden;
+        }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; }
+        .stat-card.rank::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .stat-card.score::before { background: linear-gradient(90deg, #10b981, #34d399); }
+        .stat-value { font-size: 1.8rem; font-weight: 900; color: #0f172a; margin: 5px 0; }
+        .stat-label { font-size: 0.8rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
+
+        .section-title { padding: 0 20px; margin: 25px 0 15px 0; font-size: 1.1rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+
+        .chart-container { padding: 0 20px; margin-bottom: 30px; }
+        .chart-box { background: white; padding: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
+
+        /* Journey Timeline */
+        .timeline { padding: 0 20px; position: relative; margin-bottom: 30px; }
+        .timeline::before { content: ''; position: absolute; left: 35px; top: 0; height: 100%; width: 2px; background: #e2e8f0; }
+        .timeline-item { display: flex; gap: 15px; margin-bottom: 20px; position: relative; }
+        .timeline-marker {
+            width: 32px; height: 32px; border-radius: 50%; background: #ffffff; border: 2px solid #cbd5e1;
+            display: flex; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: bold; color: #64748b; z-index: 2;
+        }
+        .timeline-item.active .timeline-marker { border-color: #3b82f6; background: #eff6ff; color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .timeline-content {
+            background: white; flex: 1; padding: 15px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+        }
+        .timeline-content h4 { margin: 0 0 5px 0; font-size: 0.95rem; color: #0f172a; }
+        .timeline-content p { margin: 0 0 10px 0; font-size: 0.75rem; color: #64748b; }
+        .score-pill { display: inline-block; background: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; border: 1px solid #bbf7d0; }
+        .missed-pill { display: inline-block; background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; border: 1px solid #fecaca; }
+        .daily-lb-btn { background: #f1f5f9; border: none; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; color: #3b82f6; font-weight: bold; cursor: pointer; float: right; margin-top: -25px;}
+
+        /* Overall Leaderboard */
+        .leaderboard { padding: 0 20px; }
+        .lb-card { display: flex; align-items: center; gap: 15px; background: white; padding: 12px 15px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 10px; border: 1px solid #e2e8f0; }
+        .lb-rank { font-size: 1.2rem; font-weight: 900; color: #94a3b8; width: 25px; text-align: center; }
+        .lb-card.gold { background: linear-gradient(90deg, #fffbeb, #ffffff); border-color: #fde68a; }
+        .lb-card.gold .lb-rank { color: #d97706; }
+        .lb-card.silver { background: linear-gradient(90deg, #f8fafc, #ffffff); border-color: #cbd5e1; }
+        .lb-card.silver .lb-rank { color: #64748b; }
+        .lb-card.bronze { background: linear-gradient(90deg, #fff7ed, #ffffff); border-color: #fed7aa; }
+        .lb-card.bronze .lb-rank { color: #b45309; }
+        .lb-info { flex: 1; }
+        .lb-info h4 { margin: 0; font-size: 0.95rem; color: #0f172a; }
+        .lb-score { font-size: 1.1rem; font-weight: 800; color: #3b82f6; }
+
+        /* Modal for Daily Leaderboard */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal-box { position: relative; background: white; border-radius: 20px; width: 90%; max-width: 400px; display: flex; flex-direction: column; max-height: 80vh; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+        .modal-header h3 { margin: 0; font-size: 1.1rem; color: #0f172a; }
+        .modal-close { background: #f1f5f9; color: #ef4444; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; display: flex; justify-content: center; align-items: center;}
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; background: #f8fafc; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app-container">
+        <div style="text-align:center; padding: 50px; color: #64748b;">
+            <i class="fas fa-spinner fa-spin fa-3x"></i>
+            <p style="margin-top: 15px; font-weight: bold;">Loading Season Data...</p>
+        </div>
+    </div>
+
+    <!-- Daily Leaderboard Modal -->
+    <div class="modal-overlay" id="daily-lb-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="daily-lb-title">Daily Top 10</h3>
+                <button class="modal-close" onclick="document.getElementById('daily-lb-modal').style.display='none'"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="daily-lb-content"></div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const seasonName = urlParams.get('season');
+            const userEmail = localStorage.getItem('userEmail');
+
+            if (!seasonName) {
+                document.getElementById('app-container').innerHTML = `<div style="text-align:center; padding:50px; color:#ef4444;"><h2>Error</h2><p>Season not specified.</p><button onclick="history.back()" style="padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:8px;">Go Back</button></div>`;
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/get-season-analytics', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, season: seasonName })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    renderPage(data);
+                } else {
+                    document.getElementById('app-container').innerHTML = `<div style="text-align:center; padding:50px; color:#ef4444;"><h2>Error</h2><p>${data.error}</p><button onclick="history.back()" style="padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:8px;">Go Back</button></div>`;
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        };
+
+        function renderPage(data) {
+            const stat = data.student_stat;
+            const progress = data.daily_progress;
+            const lb = data.leaderboard;
+
+            let rankText = stat.rank > 0 ? `#${stat.rank}` : "N/A";
+            
+            let html = `
+            <div class="header">
+                <div class="header-top">
+                    <i class="fas fa-arrow-left" onclick="history.back()"></i>
+                    <h2 class="header-title">${data.season_name}</h2>
+                </div>
+                <div class="season-badge"><i class="fas fa-chart-line"></i> Performance Overview</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card rank">
+                    <div class="stat-label">Global Rank</div>
+                    <div class="stat-value"><i class="fas fa-trophy" style="color:#f59e0b; font-size:1.2rem;"></i> ${rankText}</div>
+                </div>
+                <div class="stat-card score">
+                    <div class="stat-label">Total Score</div>
+                    <div class="stat-value">${stat.total_score} <span style="font-size:1rem; color:#94a3b8;">/ ${stat.total_q}</span></div>
+                </div>
+            </div>
+
+            <div class="section-title"><i class="fas fa-chart-area" style="color:#8b5cf6;"></i> Score Progression</div>
+            <div class="chart-container">
+                <div class="chart-box">
+                    <canvas id="progressChart"></canvas>
+                </div>
+            </div>
+
+            <div class="section-title"><i class="fas fa-route" style="color:#ec4899;"></i> Your Journey</div>
+            <div class="timeline">
+            `;
+
+            let labels = [];
+            let scores = [];
+
+            progress.forEach(day => {
+                labels.push(`Day ${day.day}`);
+                scores.push(day.score);
+
+                let statusHtml = '';
+                if(day.attempted) {
+                    let acc = day.total > 0 ? ((day.score / day.total) * 100).toFixed(0) : 0;
+                    statusHtml = `<div class="score-pill">Score: ${day.score}/${day.total} (${acc}%)</div>
+                                  <button class="daily-lb-btn" onclick="openDailyLB('${day.code}', '${day.name}')"><i class="fas fa-list-ol"></i> Rank</button>`;
+                } else {
+                    statusHtml = `<div class="missed-pill">Not Attempted / Missed</div>`;
+                }
+
+                html += `
+                <div class="timeline-item ${day.attempted ? 'active' : ''}">
+                    <div class="timeline-marker">${day.day}</div>
+                    <div class="timeline-content">
+                        <h4>${day.name}</h4>
+                        <p><i class="fas fa-calendar-day"></i> ${day.date}</p>
+                        ${statusHtml}
+                    </div>
+                </div>`;
+            });
+
+            html += `</div>`; // Close timeline
+
+            html += `
+            <div class="section-title"><i class="fas fa-crown" style="color:#f59e0b;"></i> Overall Hall of Fame</div>
+            <div class="leaderboard">
+            `;
+
+            if(lb.length === 0) {
+                html += `<p style="text-align:center; color:#64748b; font-size:0.9rem;">No one has attempted this season yet.</p>`;
+            } else {
+                lb.forEach(st => {
+                    let cardClass = "";
+                    let medal = "";
+                    if(st.rank === 1) { cardClass = "gold"; medal = "🥇"; }
+                    else if(st.rank === 2) { cardClass = "silver"; medal = "🥈"; }
+                    else if(st.rank === 3) { cardClass = "bronze"; medal = "🥉"; }
+
+                    html += `
+                    <div class="lb-card ${cardClass}">
+                        <div class="lb-rank">${medal || st.rank}</div>
+                        <div class="lb-info">
+                            <h4>${st.name} ${st.name === localStorage.getItem('userName') ? '(You)' : ''}</h4>
+                        </div>
+                        <div class="lb-score">${st.score} <span style="font-size:0.7rem; color:#94a3b8;">Pts</span></div>
+                    </div>`;
+                });
+            }
+
+            html += `</div>`; // Close leaderboard
+            
+            document.getElementById('app-container').innerHTML = html;
+
+            // Render Chart
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Score',
+                        data: scores,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#3b82f6',
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        async function openDailyLB(examCode, examName) {
+            document.getElementById('daily-lb-title').innerText = `Rank: ${examName}`;
+            const box = document.getElementById('daily-lb-content');
+            box.innerHTML = '<p style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Fetching...</p>';
+            document.getElementById('daily-lb-modal').style.display = 'flex';
+
+            try {
+                const res = await fetch('/api/get-daily-leaderboard', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: examCode })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    if (data.leaderboard.length === 0) {
+                        box.innerHTML = '<p style="text-align:center; color:#64748b;">No results yet.</p>';
+                        return;
+                    }
+                    let html = '';
+                    data.leaderboard.forEach((st, idx) => {
+                        let icon = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx+1}`));
+                        html += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:10px 15px; border-radius:12px; margin-bottom:8px; border:1px solid #e2e8f0;">
+                            <div style="font-weight:bold; color:#1e293b; font-size:0.95rem;">
+                                <span style="display:inline-block; width:25px; color:#94a3b8;">${icon}</span> ${st.name}
+                            </div>
+                            <div style="font-weight:900; color:#10b981;">${st.score} <span style="font-size:0.7rem; color:#94a3b8;">/ ${st.total}</span></div>
+                        </div>`;
+                    });
+                    box.innerHTML = html;
+                }
+            } catch(e) {
+                box.innerHTML = '<p style="text-align:center; color:#ef4444;">Error fetching leaderboard.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
