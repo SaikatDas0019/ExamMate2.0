@@ -207,7 +207,8 @@
                     const card = timer.closest('.live-banner-card');
                     if(card) {
                         const btn = card.querySelector('button');
-                        if(btn && !btn.innerText.includes('Result')) {
+                        // Prevent targeting the Result button which shouldn't be disabled
+                        if(btn && !btn.innerText.includes('Result') && !btn.innerText.includes('Analytics')) {
                             btn.disabled = true;
                             btn.style.background = "rgba(0,0,0,0.4)";
                             btn.style.color = "#cbd5e1";
@@ -278,7 +279,7 @@
                             <div style="background:rgba(255,255,255,0.2); padding:8px; border-radius:8px; text-align:center; border:1px solid rgba(255,255,255,0.4); margin-bottom:10px; font-weight:bold; font-size:0.85rem;">
                                 ✅ Score: ${exam.score}/${exam.total} (${acc}%)
                             </div>
-                            <button onclick="showDetailedResult('${exam.code}', '${exam.name.replace(/'/g, "\\'")}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Result 📊</button>
+                            <button onclick="window.location.href='/season_analytics.html?season=' + encodeURIComponent('${exam.subject}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Season Analytics 📊</button>
                         `;
                     } else if (isExpired) {
                         actionBtnHtml = `<button disabled style="width:100%; background:rgba(0,0,0,0.4); color:#cbd5e1; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:not-allowed;">Time Out ❌</button>`;
