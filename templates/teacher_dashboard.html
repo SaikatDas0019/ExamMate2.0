@@ -312,56 +312,67 @@
                 const data = await response.json();
 
                 if (data.success && data.feed.length > 0) {
-                    let sortedFeed = sortExamsForTeacher(data.feed);
+                    // Block/Filter out exams from exammate.official@gmail.com
+                    const filteredFeed = data.feed.filter(ex => 
+                        ex.email !== 'exammate.official@gmail.com' && 
+                        ex.teacher_email !== 'exammate.official@gmail.com' && 
+                        ex.creator_email !== 'exammate.official@gmail.com'
+                    );
 
-                    container.innerHTML = '';
-                    sortedFeed.forEach(ex => {
-                        // LOCAL STORAGE CHECK: সেভ বা লাইক করা আছে কিনা চেক করা হচ্ছে
-                        const isLiked = localStorage.getItem('like_' + ex.code) === 'true' || ex.is_liked;
-                        const isSaved = localStorage.getItem('save_' + ex.code) === 'true' || ex.is_saved;
+                    if (filteredFeed.length > 0) {
+                        let sortedFeed = sortExamsForTeacher(filteredFeed);
 
-                        const heartClass = isLiked ? 'fas fa-heart like-active' : 'far fa-heart';
-                        const saveClass = isSaved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
+                        container.innerHTML = '';
+                        sortedFeed.forEach(ex => {
+                            // LOCAL STORAGE CHECK: সেভ বা লাইক করা আছে কিনা চেক করা হচ্ছে
+                            const isLiked = localStorage.getItem('like_' + ex.code) === 'true' || ex.is_liked;
+                            const isSaved = localStorage.getItem('save_' + ex.code) === 'true' || ex.is_saved;
 
-                        container.innerHTML += `
-                        <div class="feed-card">
-                            <div class="feed-header">
-                                <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
-                                <div class="feed-teacher-info">
-                                    <strong>${ex.teacher_name}</strong>
-                                    <span>Posted ${ex.date}</span>
+                            const heartClass = isLiked ? 'fas fa-heart like-active' : 'far fa-heart';
+                            const saveClass = isSaved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
+
+                            container.innerHTML += `
+                            <div class="feed-card">
+                                <div class="feed-header">
+                                    <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
+                                    <div class="feed-teacher-info">
+                                        <strong>${ex.teacher_name}</strong>
+                                        <span>Posted ${ex.date}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="feed-body">
-                                <h3 class="feed-title">${ex.name} ${ex.is_private ? '🔒' : ''}</h3>
-                                <div class="feed-tags">
-                                    <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
-                                    <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
-                                    <span class="feed-tag" style="background:${ex.is_private ? '#fef3c7; color:#92400e;' : '#dcfce7; color:#166534;'}">${ex.is_private ? 'Private' : 'Public'}</span>
+                                
+                                <div class="feed-body">
+                                    <h3 class="feed-title">${ex.name} ${ex.is_private ? '🔒' : ''}</h3>
+                                    <div class="feed-tags">
+                                        <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
+                                        <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
+                                        <span class="feed-tag" style="background:${ex.is_private ? '#fef3c7; color:#92400e;' : '#dcfce7; color:#166534;'}">${ex.is_private ? 'Private' : 'Public'}</span>
+                                    </div>
+                                    <div class="feed-meta">
+                                        <span><i class="fas fa-clock"></i> ${ex.timer} Mins</span>
+                                    </div>
                                 </div>
-                                <div class="feed-meta">
-                                    <span><i class="fas fa-clock"></i> ${ex.timer} Mins</span>
-                                </div>
-                            </div>
 
-                            <div class="feed-actions">
-                                <div class="action-left">
-                                    <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
-                                        <i class="${heartClass}"></i> <span>${ex.likes}</span>
+                                <div class="feed-actions">
+                                    <div class="action-left">
+                                        <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
+                                            <i class="${heartClass}"></i> <span>${ex.likes}</span>
+                                        </button>
+                                        <button class="action-btn" onclick="shareExam('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                    </div>
+                                    <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
+                                        <i class="${saveClass}"></i>
                                     </button>
-                                    <button class="action-btn" onclick="shareExam('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">
-                                        <i class="fas fa-share-alt"></i>
-                                    </button>
                                 </div>
-                                <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
-                                    <i class="${saveClass}"></i>
-                                </button>
-                            </div>
 
-                            <button class="btn-view-questions" onclick="viewExamQuestions('${ex.code}', '${ex.subject}', '${ex.name.replace(/'/g, "\\'")}', ${ex.is_private})">👁️ View Questions & Answers</button>
-                        </div>`;
-                    });
+                                <button class="btn-view-questions" onclick="viewExamQuestions('${ex.code}', '${ex.subject}', '${ex.name.replace(/'/g, "\\'")}', ${ex.is_private})">👁️ View Questions & Answers</button>
+                            </div>`;
+                        });
+                    } else {
+                        container.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">No exams found.</p>`;
+                    }
                 } else {
                     container.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">No exams found.</p>`;
                 }
