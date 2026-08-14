@@ -1196,8 +1196,47 @@ from flask import send_from_directory
 @app.route('/sitemap.xml')
 def sitemap():
     return send_from_directory('.', 'sitemap.xml')
-    
+
+# ==========================================
+# 🔥 NEW API FOR SPECIAL EXAMS (STUDENT DASHBOARD)
+# ==========================================
+@app.route('/api/get-special-exams', methods=['POST'])
+def get_special_exams():
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        
+        # ১. লাইভ এক্সাম ফেচ করা (যেগুলোর folder_id = 0 এবং অফিশিয়াল ইমেইল থেকে তৈরি)
+        cursor.execute("SELECT exam_code, exam_name, class_name, subject FROM exams WHERE teacher_email = 'exammate.official@gmail.com' AND folder_id = 0 ORDER BY created_at DESC")
+        live_exams_rows = cursor.fetchall()
+        live_exams = [{"code": r["exam_code"], "name": r["exam_name"], "class_name": r["class_name"], "subject": r["subject"]} for r in live_exams_rows]
+        
+        # ২. ফোল্ডার এবং প্লেলিস্ট ফেচ করা (অফিশিয়াল ইমেইলের এক্সাম যেসব ফোল্ডারে আছে)
+        cursor.execute("SELECT DISTINCT f.id, f.folder_name FROM drive_folders f JOIN exams e ON f.id = e.folder_id WHERE e.teacher_email = 'exammate.official@gmail.com'")
+        folders_rows = cursor.fetchall()
+        playlists = [{"id": r["id"], "name": r["folder_name"]} for r in folders_rows]
+        
+        conn.close()
+        return jsonify({"success": True, "live_exams": live_exams, "playlists": playlists})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+        
+@app.route('/api/get-special-playlist-exams', methods=['POST'])
+def get_special_playlist_exams():
+    data = request.get_json()
+    folder_id = data.get('folder_id')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT exam_code, exam_name, timer_minutes, class_name, subject FROM exams WHERE folder_id = {ph} AND teacher_email = 'exammate.official@gmail.com' ORDER BY position ASC, exam_code DESC", (folder_id,))
+        rows = cursor.fetchall()
+        exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"], "class_name": r["class_name"], "subject": r["subject"]} for r in rows]
+        conn.close()
+        return jsonify({"success": True, "exams": exams})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
