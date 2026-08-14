@@ -110,7 +110,7 @@
         .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
 
         /* ==============================================
-           🔥 NEW: SPECIAL EXAMS FLOATING BUTTON & PAGE 
+           🔥 SPECIAL EXAMS FLOATING BUTTON & PAGE 
            ============================================== */
         .fab-special {
             position: fixed; bottom: 85px; right: 20px;
@@ -142,7 +142,6 @@
         .special-header-top i { font-size: 1.5rem; color: #1e293b; cursor: pointer; margin-right: 15px; }
         .special-header-top h2 { margin: 0; font-size: 1.25rem; color: #0f172a; font-weight: 800; }
 
-        /* Live Banner (Horizontal Scroll) */
         .live-h-scroll {
             display: flex; overflow-x: auto; gap: 15px; padding: 20px 20px 10px 20px;
             scroll-snap-type: x mandatory; scrollbar-width: none;
@@ -162,7 +161,6 @@
         .live-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid #f87171; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; animation: pulseRed 1.5s infinite;}
         @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
-        /* Folders (Horizontal Scroll) */
         .special-folders-scroll {
             display: flex; overflow-x: auto; gap: 15px; padding: 10px 20px 20px 20px;
             scrollbar-width: none;
@@ -177,7 +175,6 @@
         .special-folder:hover { transform: translateY(-3px); }
         .special-folder i { font-size: 2rem; margin-bottom: 8px; opacity: 0.9;}
 
-        /* Past Playlists (Vertical Scroll) */
         .playlist-container { padding: 0 20px 30px 20px; display: flex; flex-direction: column; gap: 12px; }
         .playlist-item {
             display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0;
@@ -193,11 +190,43 @@
         .playlist-info p { margin: 0; color: #64748b; font-size: 0.8rem; font-weight: 600;}
         .admin-verified-tag { font-size: 0.65rem; background: #fef9c3; color: #a16207; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; font-weight:bold; margin-top:5px;}
 
-        /* Modals & Bottom Nav */
-        .score-modal-overlay, .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 450px; text-align: left; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
-        .score-modal-close { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 15px;}
+        /* ==============================================
+           🔥 RESULT MODAL CSS UPDATES (CARDS & COLORS)
+           ============================================== */
+        .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         
+        .score-modal-box { 
+            position: relative; /* For Absolute Close Button */
+            background: white; padding: 25px; border-radius: 20px; 
+            width: 90%; max-width: 450px; text-align: left; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; 
+        }
+
+        /* Top Right Fixed Close Button */
+        .modal-close-top {
+            position: absolute; top: 15px; right: 15px;
+            background: #f1f5f9; color: #64748b; border: none;
+            width: 32px; height: 32px; border-radius: 50%;
+            font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; z-index: 10;
+        }
+        .modal-close-top:hover { background: #fee2e2; color: #ef4444; }
+
+        /* Review Card Styling */
+        .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; transition: 0.2s; }
+        .review-correct { background-color: #f0fdf4; border-color: #bbf7d0; box-shadow: 0 2px 4px rgba(34,197,94,0.05); } /* Green Theme */
+        .review-wrong { background-color: #fef2f2; border-color: #fecaca; box-shadow: 0 2px 4px rgba(239,68,68,0.05); } /* Red Theme */
+        .review-unattempted { background-color: #f8fafc; border-color: #cbd5e1; } /* Gray Theme */
+        
+        .review-q-text { font-weight: 700; margin-bottom: 12px; color: #1e293b; font-size: 0.95rem; }
+        
+        /* Answer Texts Styling */
+        .ans-correct-text { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block; margin-top: 5px;}
+        .ans-wrong-text { color: #b91c1c; font-size: 0.9rem; font-weight: 700; background: #fee2e2; padding: 6px 12px; border-radius: 8px; display: inline-block; margin-top: 5px; margin-bottom: 8px;}
+        .ans-real-correct { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block;}
+        .unattempted-border { border: 1px dashed #bbf7d0; background: transparent; color: #16a34a; margin-top: 8px;}
+
+        /* Bottom Nav */
         .bottom-nav {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
@@ -273,38 +302,36 @@
 
         <!-- 1. LIVE BANNERS (Horizontal) -->
         <h3 style="padding: 0 20px; margin: 15px 0 0 0; font-size:1.1rem; color:#1e293b; font-weight:800;">🔥 Live Challenges</h3>
-        <div class="live-h-scroll" id="live-special-scroll">
-            <!-- JS দিয়ে রিয়েল ডেটা আসবে -->
-        </div>
+        <div class="live-h-scroll" id="live-special-scroll"></div>
 
         <!-- 2. FOLDERS / CATEGORIES (Horizontal) -->
         <h3 style="padding: 0 20px; margin: 15px 0 5px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📁 Special Categories</h3>
-        <div class="special-folders-scroll" id="special-folders">
-             <!-- JS দিয়ে রিয়েল ডেটা আসবে -->
-        </div>
+        <div class="special-folders-scroll" id="special-folders"></div>
 
         <!-- 3. PAST PLAYLISTS (Vertical) -->
         <h3 style="padding: 0 20px; margin: 10px 0 15px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📚 Past Collections</h3>
-        <div class="playlist-container" id="past-special-playlists">
-             <!-- JS দিয়ে রিয়েল ডেটা আসবে -->
-        </div>
+        <div class="playlist-container" id="past-special-playlists"></div>
     </div>
 
     <!-- 🔥 MODAL FOR VIEWING PLAYLIST EXAMS -->
     <div class="score-modal-overlay" id="playlist-exams-modal" style="z-index: 4000;">
         <div class="score-modal-box" style="background:#f8fafc; max-width: 400px; width: 90%;">
-            <div class="score-modal-title" id="playlist-modal-title" style="text-align: center; font-size:1.2rem; font-weight:800; color:#0f172a; margin-bottom:15px;">Playlist Exams</div>
+            <!-- New Close Button at Top Right -->
+            <button class="modal-close-top" onclick="document.getElementById('playlist-exams-modal').style.display='none'"><i class="fas fa-times"></i></button>
+            <div class="score-modal-title" id="playlist-modal-title" style="text-align: center; font-size:1.2rem; font-weight:800; color:#0f172a; margin-bottom:15px; margin-top:5px;">Playlist Exams</div>
             <div id="playlist-exams-list" style="display:flex; flex-direction:column; gap:10px; max-height: 60vh; overflow-y: auto; padding-right:5px;"></div>
-            <button class="score-modal-close" onclick="document.getElementById('playlist-exams-modal').style.display='none'">Close ✖</button>
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Main Results Modal -->
     <div class="score-modal-overlay" id="detailed-result-modal">
         <div class="score-modal-box" style="text-align: left;">
-            <div class="score-modal-title" id="dr-title" style="text-align: center;">Exam Result</div>
+            <!-- 🔥 NEW Close Button at Top Right -->
+            <button class="modal-close-top" onclick="document.getElementById('detailed-result-modal').style.display='none'"><i class="fas fa-times"></i></button>
+            
+            <div class="score-modal-title" id="dr-title" style="text-align: center; margin-top: 10px; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; color: #0f172a;">Exam Result</div>
             <div id="detailed-review-container"></div>
-            <button class="score-modal-close" onclick="document.getElementById('detailed-result-modal').style.display='none'">Close ✖</button>
+            <!-- Removed the old bottom cancel button -->
         </div>
     </div>
 
@@ -336,7 +363,7 @@
         });
 
         // ==========================================
-        // 🔥 NEW: SPECIAL EXAMS PAGE LOGIC WITH REAL DATA
+        // 🔥 SPECIAL EXAMS PAGE LOGIC WITH REAL DATA
         // ==========================================
         const specialGradients = [
             "linear-gradient(135deg, #f59e0b, #ea580c)", // Orange
@@ -382,7 +409,6 @@
         }
 
         function renderSpecialData(data) {
-            // ১. লাইভ এক্সাম রেন্ডার (রেন্ডম কালার সহ)
             let liveHtml = '';
             if(data.live_exams.length === 0) {
                 liveHtml = '<p style="padding: 20px; color:#64748b;">No live exams currently.</p>';
@@ -401,7 +427,6 @@
             }
             document.getElementById('live-special-scroll').innerHTML = liveHtml;
 
-            // ২. ফোল্ডার এবং প্লেলিস্ট রেন্ডার (রেন্ডম কালার সহ)
             let folderHtml = '';
             let playlistHtml = '';
             
@@ -411,8 +436,6 @@
             } else {
                 data.playlists.forEach((pl, index) => {
                     const bg = getRandomGradient();
-                    
-                    // প্রথম ৪টি ফোল্ডারকে উপরের হরাইজন্টাল স্ক্রলে দেখাবো (Categories হিসেবে)
                     if(index < 4) {
                         folderHtml += `
                         <div class="special-folder" style="background: ${bg};" onclick="openPlaylistModal(${pl.id}, '${pl.name.replace(/'/g, "\\'")}')">
@@ -420,8 +443,6 @@
                             ${pl.name}
                         </div>`;
                     }
-                    
-                    // সব ফোল্ডারকে ভার্টিকাল প্লেলিস্টে দেখাবো
                     playlistHtml += `
                     <div class="playlist-item" onclick="openPlaylistModal(${pl.id}, '${pl.name.replace(/'/g, "\\'")}')">
                         <div class="playlist-icon" style="background: ${bg}; color: white;"><i class="fas fa-layer-group"></i></div>
@@ -661,7 +682,7 @@
 
                     let totalMarks = qData.questions.reduce((sum, q) => { let m = parseFloat(q.max_marks); if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0); return sum + m; }, 0);
                     let displayScore = (reviewData.success && reviewData.taken) ? reviewData.total_score : 0;
-                    document.getElementById('dr-title').innerHTML = `${name} - Result <br><span style="font-size:0.9rem; color:#3b82f6;">Total Score: ${displayScore} / ${totalMarks}</span>`;
+                    document.getElementById('dr-title').innerHTML = `${name} <br><span style="font-size:0.9rem; color:#3b82f6;">Total Score: ${displayScore} / ${totalMarks}</span>`;
 
                     let html = '';
                     qData.questions.forEach((q, idx) => {
@@ -689,9 +710,9 @@
                             const getOptionText = (letter) => { if(letter==='A') return q.opt_a; if(letter==='B') return q.opt_b; if(letter==='C') return q.opt_c; if(letter==='D') return q.opt_d; return ''; };
                             if (isAttempted) {
                                 if (isCorrect) { html += `<div class="ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`; } 
-                                else { html += `<div class="ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`; }
+                                else { html += `<div class="ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div><br><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`; }
                             } else {
-                                html += `<div style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div><div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                                html += `<div style="color: #64748b; font-style: italic; margin-bottom: 5px;">⚠️ Not Attempted</div><div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
                             }
                         }
                         html += `</div>`;
