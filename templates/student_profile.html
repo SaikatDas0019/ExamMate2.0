@@ -46,6 +46,7 @@
             text-align: center; border-bottom: 1px solid #e2e8f0; transition: background 0.4s ease;
         }
         
+        /* Floating Level Badge in Top Left */
         .top-left-badge {
             position: absolute; top: 15px; left: 15px;
             background: rgba(255,255,255,0.9); padding: 6px 12px;
@@ -66,9 +67,11 @@
         .profile-email { font-size: 0.85rem; color: #64748b; margin: 0 0 10px 0; }
         .profile-role { display: inline-block; background: #ffffff; color: #1e3a8a; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid #bfdbfe; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
 
+        /* Content Area */
         .content-area { padding: 15px; }
         .section-title { font-size: 1.05rem; font-weight: 700; color: #1f2937; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 6px; }
 
+        /* Progress Grid */
         .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
         .progress-card { 
             background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; 
@@ -81,6 +84,7 @@
         .progress-info i { font-size: 1.2rem; color: #3b82f6; }
         .progress-card b { font-size: 1.4rem; color: #0f172a; line-height: 1; }
 
+        /* Panel Views */
         .panel-view { display: none; background: #f1f5f9; min-height: 100vh; padding-top: 60px; }
         .panel-content { padding: 15px; }
         .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; background:#fff;}
@@ -90,6 +94,7 @@
         td { color: #4b5563; }
         .student-select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px; box-sizing: border-box; outline: none;}
 
+        /* Gamification Styles */
         .level-box { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 16px; padding: 20px; color: white; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);}
         .level-icon { font-size: 3.5rem; margin-bottom: 10px; color: #fbbf24; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
         .level-title { font-size: 1.4rem; font-weight: 900; margin: 0 0 5px 0; letter-spacing: 1px;}
@@ -104,6 +109,7 @@
         .stat-box-small span { font-size: 0.75rem; color: #64748b; font-weight: bold; text-transform: uppercase; }
         .stat-box-small strong { display: block; font-size: 1.3rem; color: #0f172a; margin-top: 5px; }
 
+        /* Settings Bottom Sheet Modal */
         .settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px); }
         .settings-sheet { background: #ffffff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 15px 90px 15px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -114,6 +120,7 @@
         .opt-logout { color: #ef4444 !important; }
         .opt-logout i { color: #ef4444 !important; }
 
+        /* Edit Profile Forms */
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 0.85rem; font-weight: bold; color: #475569; margin-bottom: 5px; }
         .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box; background: #fff;}
@@ -145,7 +152,7 @@
         .btn-attempt:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4); }
         .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
 
-        /* COLLECTION MODAL (NEW) */
+        /* COLLECTION MODAL */
         .collection-filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
         .collection-filters::-webkit-scrollbar { display: none; }
         .collection-pill { background: #ffffff; border: 1px solid #cbd5e1; color: #475569; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.2s;}
@@ -161,16 +168,23 @@
         .new-collection-btn { background: #10b981; color: white; border: none; padding: 0 20px; border-radius: 10px; font-weight: bold; cursor: pointer;}
         .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 15px; font-size: 1rem;}
 
-        /* MODALS (Share, Score, Review) */
+        /* SHARE MODAL & SCORE MODAL FIX */
+        .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
+        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
+        .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
+        .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
+        .share-buttons i { font-size: 2.2rem; }
+        .share-buttons .fa-whatsapp { color: #25D366; }
+        .share-buttons .fa-telegram { color: #0088cc; }
+        .share-buttons .fa-copy { color: #64748b; }
+
         .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; max-height: 85vh; overflow-y: auto; }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .score-modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
         .score-modal-close { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); margin-top: 15px;}
         .tier-card { display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; text-align: left;}
         .tier-icon { font-size: 2.2rem; width: 50px; text-align: center;}
         
-        /* Detailed Review internal styles */
         .review-card-dr { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; }
         .review-correct { background: #f0fdf4; border-color: #bbf7d0; }
         .review-wrong { background: #fef2f2; border-color: #fecaca; }
@@ -185,16 +199,6 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
-
-        /* Share Sheet */
-        .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
-        .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
-        .share-buttons i { font-size: 2.2rem; }
-        .share-buttons .fa-whatsapp { color: #25D366; }
-        .share-buttons .fa-facebook-messenger { color: #0084FF; }
-        .share-buttons .fa-instagram { color: #E1306C; }
-        .share-buttons .fa-telegram { color: #0088cc; }
-        .share-buttons .fa-copy { color: #64748b; }
     </style>
 </head>
 <body>
@@ -295,13 +299,11 @@
                 <h1 class="header-title" id="social-panel-title">Saved Exams</h1>
             </div>
             <div class="panel-content">
-                <!-- Collection Filters (Only visible in Saved view) -->
                 <div id="collection-filter-container" class="collection-filters" style="display:none;">
                     <!-- Filter Pills will load here -->
                 </div>
                 
                 <div id="social-list-container">
-                    <!-- Feed Cards will load here -->
                     <p style="text-align:center; color:#64748b;">Loading...</p>
                 </div>
             </div>
@@ -380,7 +382,7 @@
 
     </div>
 
-    <!-- NEW: Collection Modal (Save Folder Selector) -->
+    <!-- Collection Modal (Save Folder Selector) -->
     <div class="collection-modal-overlay" id="collection-modal" onclick="if(event.target.id==='collection-modal') closeCollectionModal()">
         <div class="collection-sheet">
             <h3 style="margin-top:0; color:#0f172a; text-align:center; font-size:1.2rem;">Save to Collection</h3>
@@ -399,15 +401,7 @@
         </div>
     </div>
 
-    <!-- Modals (Result, Share, Level Tiers) -->
-    <div class="score-modal-overlay" id="detailed-result-modal">
-        <div class="score-modal-box" style="text-align: left;">
-            <div class="score-modal-title" id="dr-title" style="text-align: center;">Exam Result</div>
-            <div id="detailed-review-container"></div>
-            <button class="score-modal-close" onclick="document.getElementById('detailed-result-modal').style.display='none'">Close ✖</button>
-        </div>
-    </div>
-
+    <!-- Share Modal -->
     <div class="modal-overlay-share" id="custom-share-modal">
         <div class="share-sheet">
             <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
@@ -420,11 +414,19 @@
         </div>
     </div>
 
+    <!-- Modals (Result, Level Tiers) -->
+    <div class="score-modal-overlay" id="detailed-result-modal">
+        <div class="score-modal-box" style="text-align: left;">
+            <div class="score-modal-title" id="dr-title" style="text-align: center;">Exam Result</div>
+            <div id="detailed-review-container"></div>
+            <button class="score-modal-close" onclick="document.getElementById('detailed-result-modal').style.display='none'">Close ✖</button>
+        </div>
+    </div>
+
     <div class="score-modal-overlay" id="all-levels-modal">
         <div class="score-modal-box">
             <div class="score-modal-title" style="color: #1e3a8a;">🏆 All Levels & Tiers</div>
             <div style="margin-bottom: 20px;">
-                <!-- Tiers -->
                 <div class="tier-card" style="background: #ecfdf5; border-color: #6ee7b7;"><div class="tier-icon" style="color:#10b981;"><i class="fas fa-seedling"></i></div><div><strong style="color:#064e3b; font-size:1.1rem;">Novice</strong><br><span style="color:#047857; font-size:0.8rem;">0 - 49 Points</span></div></div>
                 <div class="tier-card" style="background: #ffedd5; border-color: #fdba74;"><div class="tier-icon" style="color:#d97706;"><i class="fas fa-medal"></i></div><div><strong style="color:#7c2d12; font-size:1.1rem;">Bronze Scholar</strong><br><span style="color:#9a3412; font-size:0.8rem;">50 - 99 Points</span></div></div>
                 <div class="tier-card" style="background: #f1f5f9; border-color: #cbd5e1;"><div class="tier-icon" style="color:#64748b;"><i class="fas fa-medal"></i></div><div><strong style="color:#1e293b; font-size:1.1rem;">Silver Achiever</strong><br><span style="color:#475569; font-size:0.8rem;">100 - 299 Points</span></div></div>
@@ -451,15 +453,14 @@
     <script>
         let globalHistory = [];
         let allSocialExams = []; 
-        let pendingSaveExamCode = null; // For collection modal
+        let pendingSaveExamCode = null;
 
         window.onload = async () => {
             loadProfileData();
-            initCollections(); // Initialize empty collections if none
+            initCollections(); 
             await fetchAnalyticsData();
         };
 
-        // Initialize Collection Array
         function initCollections() {
             if(!localStorage.getItem('student_collections')) {
                 localStorage.setItem('student_collections', JSON.stringify(["All Saved"]));
@@ -468,7 +469,6 @@
         function getCollections() { return JSON.parse(localStorage.getItem('student_collections')); }
         function saveCollectionsArr(arr) { localStorage.setItem('student_collections', JSON.stringify(arr)); }
 
-        // 1. Profile Data Management
         function loadProfileData() {
             const userName = localStorage.getItem('userName') || "Student Name";
             const userEmail = localStorage.getItem('userEmail') || "student@email.com";
@@ -499,7 +499,6 @@
             } catch(e) { alert("Server error while saving profile."); }
         }
 
-        // 2. Fetch Analytics & Data
         async function fetchAnalyticsData() {
             const userEmail = localStorage.getItem('userEmail');
             if(!userEmail) return;
@@ -538,7 +537,6 @@
                     document.getElementById('profile-info-box').style.background = profileBg; document.getElementById('main-avatar').style.background = avatarBg; document.getElementById('top-left-badge').innerHTML = badgeTopLeftHtml;
                 }
 
-                // History
                 const histRes = await fetch('/api/get-student-history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail }) });
                 const histData = await histRes.json();
                 if(histData.success) {
@@ -550,7 +548,6 @@
                     uniqueExams.forEach(eName => { const opt = document.createElement('option'); opt.value = eName; opt.innerText = eName; ldFilter.appendChild(opt); });
                 }
 
-                // FIX: API কল আপডেট করা হয়েছে (/api/search-feed)
                 const feedRes = await fetch('/api/search-feed', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ email: userEmail, query: "", class_name: "All", subject: "All", status: "All" })
@@ -561,12 +558,10 @@
             } catch (error) { console.log("Analytics fetch error", error); }
         }
 
-        // 3. Modals & Settings
         function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
         function closeSettingsOverlay(e) { if(e.target.id === 'settings-modal') { document.getElementById('settings-modal').style.display = 'none'; } }
         function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
 
-        // 4. Panel Navigation
         function openPanel(id) {
             closeSettings();
             document.getElementById('main-profile-view').style.display = 'none';
@@ -581,7 +576,6 @@
             window.scrollTo(0, 0); window.history.pushState({view: 'profile'}, "", window.location.href);
         }
 
-        // 5. Collection / Folder Logic
         function showCollectionModal() {
             const collections = getCollections();
             const listContainer = document.getElementById('collection-list');
@@ -610,10 +604,8 @@
             if(val) {
                 let cols = getCollections();
                 if(!cols.includes(val)) {
-                    cols.push(val);
-                    saveCollectionsArr(cols);
-                    showCollectionModal(); // Refresh list
-                    input.value = '';
+                    cols.push(val); saveCollectionsArr(cols);
+                    showCollectionModal(); input.value = '';
                 } else { alert("Folder already exists!"); }
             }
         }
@@ -624,16 +616,10 @@
             localStorage.setItem('save_' + pendingSaveExamCode, 'true');
             localStorage.setItem('exam_folder_' + pendingSaveExamCode, folderName);
 
-            // Update icon in UI
             const btn = document.getElementById('save-btn-' + pendingSaveExamCode);
-            if(btn) {
-                let icon = btn.querySelector('i');
-                icon.className = 'fas fa-bookmark save-active';
-            }
-
+            if(btn) { let icon = btn.querySelector('i'); icon.className = 'fas fa-bookmark save-active'; }
             closeCollectionModal();
             
-            // Backend Sync
             try {
                 const userEmail = localStorage.getItem('userEmail');
                 await fetch('/api/toggle-social', {
@@ -642,14 +628,12 @@
                 });
             } catch(e) {}
 
-            // Re-render if currently in saved view
             if(document.getElementById('social-exams-view').style.display === 'block') {
                 const activeFilter = document.querySelector('.collection-pill.active');
                 renderSocialCards('saved', activeFilter ? activeFilter.innerText : 'All Saved');
             }
         }
 
-        // 6. Social Panels (Saved / Liked) - Card Render
         function openSocialPanel(type) {
             closeSettings();
             document.getElementById('main-profile-view').style.display = 'none';
@@ -695,7 +679,6 @@
                 if (type === 'saved') {
                     const isSaved = localStorage.getItem('save_' + ex.code) === 'true' || ex.is_saved;
                     if(!isSaved) return false;
-                    // Check folder match if not viewing 'All Saved'
                     if (folderName !== 'All Saved') {
                         const exFolder = localStorage.getItem('exam_folder_' + ex.code) || 'All Saved';
                         return exFolder === folderName;
@@ -789,21 +772,18 @@
             } else if (actionType === 'save') {
                 const isActive = icon.classList.contains('save-active');
                 if (isActive) {
-                    // Unsave it
                     localStorage.setItem('save_' + examCode, 'false');
-                    localStorage.removeItem('exam_folder_' + examCode); // Remove folder mapping
+                    localStorage.removeItem('exam_folder_' + examCode);
                     icon.className = 'far fa-bookmark';
                     
-                    // If viewing Saved tab, re-render to hide removed card
                     if(document.getElementById('social-exams-view').style.display === 'block') {
                         const activeFilter = document.querySelector('.collection-pill.active');
                         renderSocialCards('saved', activeFilter ? activeFilter.innerText : 'All Saved');
                     }
                 } else {
-                    // Open Save Collection Modal
                     pendingSaveExamCode = examCode;
                     showCollectionModal();
-                    return; // Backend sync will happen inside confirmSaveToCollection
+                    return; 
                 }
             }
 
@@ -815,7 +795,6 @@
             } catch(e) {}
         }
 
-        // Shared Functions
         async function loadStudentLeaderboard() {
             const filter = document.getElementById('leaderboard-filter').value;
             const tbody = document.getElementById('list-leaderboard-body');
@@ -837,7 +816,6 @@
             }
         }
 
-        // EXAM ACTIONS & SHARE (Copied from Dashboard)
         let currentShareData = {};
         function triggerCustomShare(examName, examCode) {
             const baseUrl = window.location.origin; 
@@ -936,13 +914,15 @@
             } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
         }
 
-        // Hardware Back Button
         window.addEventListener('popstate', function (event) {
             let isPanelOpen = false;
             document.querySelectorAll('.panel-view').forEach(p => { if(p.style.display === 'block') isPanelOpen = true; });
             const lModal = document.getElementById('all-levels-modal');
             const colModal = document.getElementById('collection-modal');
-            if(colModal.style.display === 'flex') { colModal.style.display = 'none'; pendingSaveExamCode = null; }
+            const shareModal = document.getElementById('custom-share-modal');
+            
+            if(shareModal.style.display === 'flex') { closeShareModal(); }
+            else if(colModal.style.display === 'flex') { closeCollectionModal(); }
             else if (lModal.style.display === 'flex') { lModal.style.display = 'none'; } 
             else if (document.getElementById('settings-modal').style.display === 'flex') { closeSettings(); } 
             else if (isPanelOpen) { showMainProfile(); } 
