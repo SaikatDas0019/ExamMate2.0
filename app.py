@@ -1375,6 +1375,107 @@ def create_special_exam_api():
     except Exception as e: 
         return jsonify({"success": False, "error": str(e)}), 500
 
+# ==========================================
+# 🔥 API FOR SEASON ANALYTICS PAGE
+# ==========================================
+@app.route('/season_analytics.html')
+def season_analytics_page():
+    return render_template('season_analytics.html') if session.get('user', {}).get('role', '').lower() == 'student' else redirect('/')
+
+@app.route('/api/get-season-analytics', methods=['POST'])
+def get_season_analytics():
+    data = request.get_json()
+    email = data.get('email')
+    season_name = data.get('season')
+
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # ১. ওই সিজনের (Subject-এর) সমস্ত এক্সাম ফেচ করা
+        cursor.execute(f"SELECT exam_code, exam_name, created_at FROM exams WHERE subject = {ph} AND teacher_email = 'exammate.official@gmail.com' ORDER BY created_at ASC", (season_name,))
+        season_exams = cursor.fetchall()
+        
+        if not season_exams:
+            conn.close()
+            return jsonify({"success": False, "error": "No exams found for this season."})
+            
+        exam_codes = [e['exam_code'] if isinstance(e, dict) else e[0] for e in season_exams]
+        placeholders = ','.join([ph] * len(exam_codes))
+        
+        # ২. স্টুডেন্টের ওই সিজনের প্রতিদিনের রেজাল্ট
+        query = f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph} AND exam_code IN ({placeholders})"
+        # SQLite এবং Postgres এর প্যারামিটার লিস্ট হ্যান্ডেল
+        params = [email]
+        params.extend(exam_codes)
+        cursor.execute(query, params)
+        
+        student_results = {r['exam_code'] if isinstance(r, dict) else r[0]: r for r in cursor.fetchall()}
+        
+        daily_progress = []
+        total_student_score = 0
+        total_student_q = 0
+        
+        for idx, ex in enumerate(season_exams):
+            code = ex['exam_code'] if isinstance(ex, dict) else ex[0]
+            name = ex['exam_name'] if isinstance(ex, dict) else ex[1]
+            date_str = str(ex['created_at']).split()[0] if (isinstance(ex, dict) and ex.get('created_at')) else f"Day {idx+1}"
+            
+            if code in student_results:
+                res = student_results[code]
+                sc = res['score'] if isinstance(res, dict) else res[1]
+                tq = res['total_questions'] if isinstance(res, dict) else res[2]
+                daily_progress.append({"day": idx+1, "code": code, "name": name, "date": date_str, "score": sc, "total": tq, "attempted": True})
+                total_student_score += sc
+                total_student_q += tq
+            else:
+                daily_progress.append({"day": idx+1, "code": code, "name": name, "date": date_str, "score": 0, "total": 0, "attempted": False})
+                
+        # ৩. টোটাল সিজন লিডারবোর্ড (সর্বোচ্চ স্কোর অনুযায়ী)
+        query_lb = f"SELECT r.student_email, u.name, SUM(r.score) as total_score, SUM(r.total_questions) as total_q FROM results r JOIN users u ON r.student_email = u.email WHERE r.exam_code IN ({placeholders}) GROUP BY r.student_email, u.name ORDER BY total_score DESC"
+        cursor.execute(query_lb, exam_codes)
+        lb_rows = cursor.fetchall()
+        
+        leaderboard = []
+        student_rank = 0
+        for idx, r in enumerate(lb_rows):
+            s_email = r['student_email'] if isinstance(r, dict) else r[0]
+            s_name = r['name'] if isinstance(r, dict) else r[1]
+            tot_sc = r['total_score'] if isinstance(r, dict) else r[2]
+            tot_q = r['total_q'] if isinstance(r, dict) else r[3]
+            
+            leaderboard.append({"rank": idx+1, "name": s_name, "score": tot_sc, "total": tot_q})
+            if s_email == email:
+                student_rank = idx + 1
+                
+        conn.close()
+        return jsonify({
+            "success": True, 
+            "season_name": season_name,
+            "student_stat": {"total_score": total_student_score, "total_q": total_student_q, "rank": student_rank},
+            "daily_progress": daily_progress,
+            "leaderboard": leaderboard
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/get-daily-leaderboard', methods=['POST'])
+def get_daily_leaderboard():
+    data = request.get_json()
+    exam_code = data.get('exam_code')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT u.name, r.score, r.total_questions FROM results r JOIN users u ON r.student_email = u.email WHERE r.exam_code = {ph} ORDER BY r.score DESC LIMIT 10", (exam_code,))
+        rows = cursor.fetchall()
+        lb = [{"name": r["name"] if isinstance(r, dict) else r[0], "score": r["score"] if isinstance(r, dict) else r[1], "total": r["total_questions"] if isinstance(r, dict) else r[2]} for r in rows]
+        conn.close()
+        return jsonify({"success": True, "leaderboard": lb})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
