@@ -306,12 +306,19 @@
                 const data = await response.json();
 
                 if (data.success && data.feed.length > 0) {
-                    // Block/Filter out exams from exammate.official@gmail.com
-                    const filteredFeed = data.feed.filter(ex => 
-                        ex.email !== 'exammate.official@gmail.com' && 
-                        ex.teacher_email !== 'exammate.official@gmail.com' && 
-                        ex.creator_email !== 'exammate.official@gmail.com'
-                    );
+                    // Block/Filter out exams from exammate.official@gmail.com, admin, or ExamMate
+                    const filteredFeed = data.feed.filter(ex => {
+                        const emailField = (ex.email || ex.teacher_email || ex.creator_email || ex.user_email || "").toLowerCase();
+                        const teacherName = (ex.teacher_name || "").toLowerCase();
+                        const examString = JSON.stringify(ex).toLowerCase();
+                        
+                        return emailField !== 'exammate.official@gmail.com' && 
+                               !teacherName.includes('exammate') && 
+                               !teacherName.includes('admin') &&
+                               !emailField.includes('admin') &&
+                               !examString.includes('exammate.official@gmail.com') &&
+                               !examString.includes('admin');
+                    });
 
                     if (filteredFeed.length > 0) {
                         let sortedFeed = sortExamsForStudent(filteredFeed, query);
