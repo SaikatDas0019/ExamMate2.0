@@ -287,13 +287,17 @@
                         actionBtnHtml = `<button onclick="window.location.href='student_exam.html?code=${exam.code}'" style="width:100%; background:rgba(0,0,0,0.2); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Now 🚀</button>`;
                     }
 
+                    // Season as large heading and exam name as slightly smaller subheading below it
+                    let seasonHeadingHtml = exam.season && exam.season !== "None" ? `<h3 style="margin:0 0 4px 0; font-size:1.5rem; font-weight:800;">${exam.season}</h3>` : '';
+                    let examNameSubHtml = `<h4 style="margin:0 0 15px 0; font-size:1.05rem; font-weight:600; color:rgba(255,255,255,0.95);">${exam.name}</h4>`;
+
                     liveHtml += `
                     <div class="live-banner-card" style="background: ${bg};">
                         <div>
                             <div class="live-badge"><i class="fas fa-circle"></i> Live Now</div><br>
                             ${expiryHtml}
-                            <h3 style="margin:0 0 5px 0; font-size:1.3rem;">${exam.name}</h3>
-                            <p style="margin:0 0 15px 0; font-size:0.85rem; color:rgba(255,255,255,0.9);">${exam.class_name} • ${exam.subject}</p>
+                            ${seasonHeadingHtml}
+                            ${examNameSubHtml}
                         </div>
                         <div>
                             ${actionBtnHtml}
