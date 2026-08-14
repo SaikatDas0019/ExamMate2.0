@@ -46,7 +46,6 @@
             text-align: center; border-bottom: 1px solid #e2e8f0; transition: background 0.4s ease;
         }
         
-        /* Floating Level Badge in Top Left */
         .top-left-badge {
             position: absolute; top: 15px; left: 15px;
             background: rgba(255,255,255,0.9); padding: 6px 12px;
@@ -67,11 +66,9 @@
         .profile-email { font-size: 0.85rem; color: #64748b; margin: 0 0 10px 0; }
         .profile-role { display: inline-block; background: #ffffff; color: #1e3a8a; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid #bfdbfe; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
 
-        /* Content Area */
         .content-area { padding: 15px; }
         .section-title { font-size: 1.05rem; font-weight: 700; color: #1f2937; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 6px; }
 
-        /* Progress Grid */
         .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
         .progress-card { 
             background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; 
@@ -84,7 +81,6 @@
         .progress-info i { font-size: 1.2rem; color: #3b82f6; }
         .progress-card b { font-size: 1.4rem; color: #0f172a; line-height: 1; }
 
-        /* Panel Views */
         .panel-view { display: none; background: #f1f5f9; min-height: 100vh; padding-top: 60px; }
         .panel-content { padding: 15px; }
         .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; background:#fff;}
@@ -94,7 +90,6 @@
         td { color: #4b5563; }
         .student-select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px; box-sizing: border-box; outline: none;}
 
-        /* Gamification Styles */
         .level-box { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 16px; padding: 20px; color: white; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);}
         .level-icon { font-size: 3.5rem; margin-bottom: 10px; color: #fbbf24; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
         .level-title { font-size: 1.4rem; font-weight: 900; margin: 0 0 5px 0; letter-spacing: 1px;}
@@ -671,13 +666,21 @@
             renderSocialCards('saved', folderName);
         }
 
+        // Helper function for checking exact status from LocalStorage vs Database
+        function checkStatus(code, prefix, dbStatus) {
+            const localVal = localStorage.getItem(prefix + code);
+            if (localVal === 'true') return true;
+            if (localVal === 'false') return false;
+            return dbStatus;
+        }
+
         function renderSocialCards(type, folderName = 'All Saved') {
             const container = document.getElementById('social-list-container');
             container.innerHTML = '';
 
             const filteredExams = allSocialExams.filter(ex => {
                 if (type === 'saved') {
-                    const isSaved = localStorage.getItem('save_' + ex.code) === 'true' || ex.is_saved;
+                    const isSaved = checkStatus(ex.code, 'save_', ex.is_saved);
                     if(!isSaved) return false;
                     if (folderName !== 'All Saved') {
                         const exFolder = localStorage.getItem('exam_folder_' + ex.code) || 'All Saved';
@@ -685,7 +688,7 @@
                     }
                     return true;
                 } else {
-                    return localStorage.getItem('like_' + ex.code) === 'true' || ex.is_liked;
+                    return checkStatus(ex.code, 'like_', ex.is_liked);
                 }
             });
 
@@ -696,8 +699,8 @@
                 </div>`;
             } else {
                 filteredExams.forEach(ex => {
-                    const isLiked = localStorage.getItem('like_' + ex.code) === 'true' || ex.is_liked;
-                    const isSaved = localStorage.getItem('save_' + ex.code) === 'true' || ex.is_saved;
+                    const isLiked = checkStatus(ex.code, 'like_', ex.is_liked);
+                    const isSaved = checkStatus(ex.code, 'save_', ex.is_saved);
                     const heartClass = isLiked ? 'fas fa-heart like-active' : 'far fa-heart';
                     const saveClass = isSaved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
 
@@ -769,18 +772,26 @@
                 localStorage.setItem('like_' + examCode, !isActive);
                 if (isActive) { icon.className = 'far fa-heart'; span.innerText = count - 1; } 
                 else { icon.className = 'fas fa-heart like-active'; span.innerText = count + 1; }
+                
+                // If viewing Liked tab, re-render to hide removed card
+                if(document.getElementById('social-exams-view').style.display === 'block' && document.getElementById('social-panel-title').innerText.includes('Liked')) {
+                    renderSocialCards('liked');
+                }
             } else if (actionType === 'save') {
                 const isActive = icon.classList.contains('save-active');
                 if (isActive) {
+                    // Unsave it
                     localStorage.setItem('save_' + examCode, 'false');
                     localStorage.removeItem('exam_folder_' + examCode);
                     icon.className = 'far fa-bookmark';
                     
-                    if(document.getElementById('social-exams-view').style.display === 'block') {
+                    // If viewing Saved tab, re-render to hide removed card
+                    if(document.getElementById('social-exams-view').style.display === 'block' && document.getElementById('social-panel-title').innerText.includes('Saved')) {
                         const activeFilter = document.querySelector('.collection-pill.active');
                         renderSocialCards('saved', activeFilter ? activeFilter.innerText : 'All Saved');
                     }
                 } else {
+                    // Open Save Collection Modal
                     pendingSaveExamCode = examCode;
                     showCollectionModal();
                     return; 
