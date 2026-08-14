@@ -26,11 +26,12 @@
             box-sizing: border-box; margin: 0 auto; position: relative; overflow-x: hidden;
         }
 
+        /* SMART HEADER CSS */
         .fixed-top-section {
             position: fixed; top: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; z-index: 999;
             background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-            transition: top 0.3s ease-in-out; /* স্ক্রল অ্যানিমেশনের জন্য */
+            transition: top 0.3s ease-in-out; 
         }
 
         .sticky-header {
@@ -49,10 +50,6 @@
             font-size: 1.1rem; color: #4b5563; background: #f8fafc; 
             padding: 8px; border-radius: 50%; border: 1px solid #e2e8f0; cursor: pointer; position: relative;
         }
-        .bell-icon.has-unread::after {
-            content: ''; position: absolute; top: 2px; right: 2px;
-            width: 9px; height: 9px; background-color: #ef4444; border-radius: 50%; border: 2px solid #ffffff;
-        }
 
         .search-container { padding: 15px 15px 5px 15px; display: flex; gap: 10px; background: #ffffff; }
         .search-input-wrapper { flex: 1; position: relative; }
@@ -70,7 +67,6 @@
             box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s;
             display: flex; justify-content: center; align-items: center;
         }
-        .search-btn-circle:hover { background: #2563eb; transform: scale(1.05); }
 
         .filter-container {
             padding: 10px 15px 15px 15px; background: #ffffff;
@@ -85,68 +81,123 @@
         }
         .filter-pill.active { background: #eff6ff; color: #1e3a8a; border-color: #3b82f6; }
 
-        .feed-container { padding: 0 15px; margin-top: 185px; }
+        /* MAIN FEED */
+        .feed-container { padding: 0 15px; margin-top: 185px; } 
         .feed-card {
             background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
             padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         }
-        
         .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
         .feed-teacher-info { flex: 1; }
         .feed-teacher-info strong { display: block; font-size: 0.95rem; color: #0f172a; }
         .feed-teacher-info span { display: block; font-size: 0.7rem; color: #64748b; }
-
         .feed-body { margin-bottom: 15px; }
         .feed-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; line-height: 1.3;}
         .feed-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;}
         .feed-tag { background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; }
-        
         .feed-meta { display: flex; gap: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px dashed #cbd5e1;}
         .feed-meta span { font-size: 0.8rem; color: #334155; font-weight: 600; display: flex; align-items: center; gap: 5px;}
         .feed-meta i { color: #3b82f6; }
-
-        .feed-actions {
-            display: flex; justify-content: space-between; align-items: center;
-            border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px;
-        }
+        .feed-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px; }
         .action-left { display: flex; gap: 15px; }
-        .action-btn {
-            background: transparent; border: none; color: #64748b; font-size: 1.1rem;
-            cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; padding: 0;
-        }
+        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; padding: 0; }
         .action-btn span { font-size: 0.8rem; font-weight: 600; }
-        .action-btn:hover { color: #3b82f6; transform: scale(1.1); }
         .like-active { color: #ef4444 !important; }
         .save-active { color: #f59e0b !important; }
 
-        .btn-attempt {
-            width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white; border: none; padding: 12px; border-radius: 10px;
-            font-size: 1rem; font-weight: bold; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s;
+        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s; }
+        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+
+        /* ==============================================
+           🔥 NEW: SPECIAL EXAMS FLOATING BUTTON & PAGE 
+           ============================================== */
+        .fab-special {
+            position: fixed; bottom: 85px; right: 20px;
+            width: 58px; height: 58px;
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+            cursor: pointer; z-index: 998; transition: 0.3s;
+            animation: bounce-subtle 2s infinite; border: 2px solid #fff;
         }
-        .btn-attempt:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4); }
-        .btn-result {
-            width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981;
-            padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(234, 88, 12, 0.6); }
         }
 
-        .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; max-height: 85vh; overflow-y: auto; }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .score-modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
+        .special-overlay-page {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff; z-index: 3000; overflow-y: auto; overflow-x: hidden;
+            animation: slideUpPage 0.3s ease-out forwards;
+        }
+        @keyframes slideUpPage { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .special-header-top {
+            position: sticky; top: 0; background: rgba(255, 255, 255, 0.95); z-index: 10;
+            display: flex; align-items: center; padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); backdrop-filter: blur(5px);
+        }
+        .special-header-top i { font-size: 1.5rem; color: #1e293b; cursor: pointer; margin-right: 15px; }
+        .special-header-top h2 { margin: 0; font-size: 1.25rem; color: #0f172a; font-weight: 800; }
+
+        /* Live Banner (Horizontal Scroll) */
+        .live-h-scroll {
+            display: flex; overflow-x: auto; gap: 15px; padding: 20px 20px 10px 20px;
+            scroll-snap-type: x mandatory; scrollbar-width: none;
+        }
+        .live-h-scroll::-webkit-scrollbar { display: none; }
+        .live-banner-card {
+            min-width: 85%; flex-shrink: 0; scroll-snap-align: center;
+            background: linear-gradient(135deg, #1e1b4b, #4338ca);
+            border-radius: 20px; padding: 22px; color: white;
+            box-shadow: 0 10px 25px rgba(67, 56, 202, 0.3); position: relative; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .live-banner-card::after {
+            content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px;
+            background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(20px);
+        }
+        .live-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid #f87171; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; animation: pulseRed 1.5s infinite;}
+        @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* Folders (Horizontal Scroll) */
+        .special-folders-scroll {
+            display: flex; overflow-x: auto; gap: 15px; padding: 10px 20px 20px 20px;
+            scrollbar-width: none;
+        }
+        .special-folders-scroll::-webkit-scrollbar { display: none; }
+        .special-folder {
+            min-width: 110px; height: 110px; border-radius: 20px; flex-shrink: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; font-weight: 800; font-size: 0.95rem; text-align: center; padding: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15); cursor: pointer; transition: 0.2s;
+        }
+        .special-folder:hover { transform: translateY(-3px); }
+        .special-folder i { font-size: 2rem; margin-bottom: 8px; opacity: 0.9;}
+
+        /* Past Playlists (Vertical Scroll) */
+        .playlist-container { padding: 0 20px 30px 20px; display: flex; flex-direction: column; gap: 12px; }
+        .playlist-item {
+            display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 16px; padding: 12px; gap: 15px; cursor: pointer; transition: 0.2s;
+        }
+        .playlist-item:hover { background: #eff6ff; border-color: #bfdbfe; }
+        .playlist-icon {
+            width: 55px; height: 55px; border-radius: 12px; background: #e0e7ff;
+            color: #4338ca; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; flex-shrink:0;
+        }
+        .playlist-info { flex: 1; }
+        .playlist-info h4 { margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 800;}
+        .playlist-info p { margin: 0; color: #64748b; font-size: 0.8rem; font-weight: 600;}
+        .admin-verified-tag { font-size: 0.65rem; background: #fef9c3; color: #a16207; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; font-weight:bold; margin-top:5px;}
+
+        /* Modals & Bottom Nav */
+        .score-modal-overlay, .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 450px; text-align: left; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
         .score-modal-close { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 15px;}
         
-        .review-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; }
-        .review-correct { background: #f0fdf4; border-color: #bbf7d0; }
-        .review-wrong { background: #fef2f2; border-color: #fecaca; }
-        .review-unattempted { background: #f8fafc; border-color: #e2e8f0; }
-        .review-q-text { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 10px;}
-        .ans-correct-text { color: #166534; font-weight: bold; }
-        .ans-wrong-text { color: #991b1b; font-weight: bold; }
-        .ans-real-correct { color: #065f46; font-weight: bold; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fca5a5;}
-
         .bottom-nav {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
@@ -156,26 +207,12 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
-
-        /* Custom Share Modal CSS */
-        .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
-        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
-        .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
-        .share-buttons i { font-size: 2.2rem; }
-        .share-buttons .fa-whatsapp { color: #25D366; }
-        .share-buttons .fa-facebook-messenger { color: #0084FF; }
-        .share-buttons .fa-instagram { color: #E1306C; }
-        .share-buttons .fa-telegram { color: #0088cc; }
-        .share-buttons .fa-copy { color: #64748b; }
-        .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; font-size: 1rem;}
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Smart Header ID যুক্ত করা হয়েছে -->
+        <!-- SMART HEADER -->
         <div class="fixed-top-section" id="smart-header">
             <div class="sticky-header">
                 <div class="profile-left" onclick="window.location.href='/student_profile.html'">
@@ -209,11 +246,11 @@
                     <option value="All">⚡ All Status</option>
                     <option value="Unattempted">⏳ Unattempted</option>
                     <option value="Attempted">✅ Attempted</option>
-                    <option value="Private">🔒 Private Exams</option>
                 </select>
             </div>
         </div>
 
+        <!-- FEED CONTAINER -->
         <div class="feed-container" id="exam-feed">
             <div style="text-align:center; padding: 40px; color: #64748b;">
                 <i class="fas fa-spinner fa-spin fa-2x"></i>
@@ -222,24 +259,93 @@
         </div>
     </div>
 
+    <!-- 🔥 FLOATING BUTTON FOR SPECIAL EXAMS -->
+    <div class="fab-special" onclick="openSpecialExams()">
+        <i class="fas fa-trophy"></i>
+    </div>
+
+    <!-- 🔥 SPECIAL EXAMS FULL-SCREEN PAGE -->
+    <div id="special-exams-view" class="special-overlay-page">
+        <div class="special-header-top">
+            <!-- Back Button handles hardware back logically -->
+            <i class="fas fa-arrow-left" onclick="history.back()"></i>
+            <h2>Special Exams & Quizzes</h2>
+        </div>
+
+        <!-- 1. LIVE BANNERS (Horizontal) -->
+        <h3 style="padding: 0 20px; margin: 15px 0 0 0; font-size:1.1rem; color:#1e293b; font-weight:800;">🔥 Live Challenges</h3>
+        <div class="live-h-scroll" id="live-special-scroll">
+            <!-- Demo Live Banner -->
+            <div class="live-banner-card">
+                <div class="live-badge"><i class="fas fa-circle"></i> Live Now</div>
+                <h3 style="margin:0 0 5px 0; font-size:1.3rem;">30-Day Math Marathon 🏆</h3>
+                <p style="margin:0 0 15px 0; font-size:0.85rem; color:#e0e7ff;">Day 5: Algebra & Logic Series.</p>
+                <div class="admin-verified-tag" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.3); margin-bottom:15px; font-size:0.75rem;"><i class="fas fa-check-circle"></i> Official ExamMate</div>
+                <button style="width:100%; background:#f59e0b; color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 10px rgba(245,158,11,0.4);">Join Challenge 🚀</button>
+            </div>
+
+            <div class="live-banner-card" style="background: linear-gradient(135deg, #831843, #be123c);">
+                <div class="live-badge"><i class="fas fa-circle"></i> Live Now</div>
+                <h3 style="margin:0 0 5px 0; font-size:1.3rem;">Weekly Mega Mock ⚡</h3>
+                <p style="margin:0 0 15px 0; font-size:0.85rem; color:#ffe4e6;">Full Syllabus Test for Class 10.</p>
+                <div class="admin-verified-tag" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.3); margin-bottom:15px; font-size:0.75rem;"><i class="fas fa-check-circle"></i> Official ExamMate</div>
+                <button style="width:100%; background:#10b981; color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 10px rgba(16,185,129,0.4);">Attempt Now 🚀</button>
+            </div>
+        </div>
+
+        <!-- 2. FOLDERS / CATEGORIES (Horizontal) -->
+        <h3 style="padding: 0 20px; margin: 15px 0 5px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📁 Special Categories</h3>
+        <div class="special-folders-scroll" id="special-folders">
+            <div class="special-folder" style="background: linear-gradient(135deg, #0f766e, #10b981);">
+                <i class="fas fa-brain"></i>
+                IQ Tests
+            </div>
+            <div class="special-folder" style="background: linear-gradient(135deg, #86198f, #f43f5e);">
+                <i class="fas fa-vial"></i>
+                Science Fest
+            </div>
+            <div class="special-folder" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6);">
+                <i class="fas fa-book-open"></i>
+                Daily English
+            </div>
+            <div class="special-folder" style="background: linear-gradient(135deg, #b45309, #f59e0b);">
+                <i class="fas fa-history"></i>
+                History Quiz
+            </div>
+        </div>
+
+        <!-- 3. PAST PLAYLISTS (Vertical) -->
+        <h3 style="padding: 0 20px; margin: 10px 0 15px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📚 Past Collections</h3>
+        <div class="playlist-container" id="past-special-playlists">
+            <!-- Playlist Items -->
+            <div class="playlist-item">
+                <div class="playlist-icon"><i class="fas fa-layer-group"></i></div>
+                <div class="playlist-info">
+                    <h4>July Monthly Challenge</h4>
+                    <p>15 Exams • Mathematics</p>
+                    <div class="admin-verified-tag"><i class="fas fa-check-circle"></i> Official</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:#94a3b8;"></i>
+            </div>
+
+            <div class="playlist-item">
+                <div class="playlist-icon" style="background:#fce7f3; color:#e11d48;"><i class="fas fa-layer-group"></i></div>
+                <div class="playlist-info">
+                    <h4>Grammar Bootcamp 2025</h4>
+                    <p>10 Exams • English</p>
+                    <div class="admin-verified-tag"><i class="fas fa-check-circle"></i> Official</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:#94a3b8;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
     <div class="score-modal-overlay" id="detailed-result-modal">
         <div class="score-modal-box" style="text-align: left;">
             <div class="score-modal-title" id="dr-title" style="text-align: center;">Exam Result</div>
             <div id="detailed-review-container"></div>
             <button class="score-modal-close" onclick="document.getElementById('detailed-result-modal').style.display='none'">Close ✖</button>
-        </div>
-    </div>
-
-    <!-- Custom Share Modal -->
-    <div class="modal-overlay-share" id="custom-share-modal">
-        <div class="share-sheet">
-            <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
-            <div class="share-buttons">
-                <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-                <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
-                <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
-            </div>
-            <button class="btn-cancel" onclick="closeShareModal()">Cancel</button>
         </div>
     </div>
 
@@ -256,25 +362,43 @@
     </div>
 
     <script>
-        // SMART HEADER LOGIC: স্ক্রল করলে হেডার ওঠা-নামা করবে
+        // SMART HEADER LOGIC
         let lastScrollTop = 0;
         const header = document.getElementById('smart-header');
         
         window.addEventListener("scroll", function(){
            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-           // স্ক্রল নিচে নামলে এবং ১০০ পিক্সেলের বেশি নামলে হেডার লুকাবে
            if (scrollTop > lastScrollTop && scrollTop > 100){
                header.style.top = "-185px"; 
            } else {
-               // স্ক্রল উপরে উঠলে হেডার ফিরে আসবে
                header.style.top = "0"; 
            }
            lastScrollTop = scrollTop;
         });
 
+        // ==========================================
+        // 🔥 NEW: SPECIAL EXAMS PAGE LOGIC
+        // ==========================================
+        function openSpecialExams() {
+            document.getElementById('special-exams-view').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // ড্যাশবোর্ডের স্ক্রল বন্ধ করা হলো
+            // History State যোগ করা হলো যাতে ফোনের ব্যাক বাটন কাজ করে
+            window.history.pushState({view: 'special_exams'}, "", "");
+            
+            // ভবিষ্যতে: এখানে fetch('/api/search-feed') কল করে 
+            // "dasbabu938207@gmail.com" ইমেইল দিয়ে ফিল্টার করে ডেটা লোড করতে পারবেন।
+        }
+
+        function closeSpecialExams() {
+            document.getElementById('special-exams-view').style.display = 'none';
+            document.body.style.overflow = 'auto'; // ড্যাশবোর্ডের স্ক্রল আবার চালু
+        }
+
+        // ==========================================
+        // EXISTING DASHBOARD LOGIC
+        // ==========================================
         window.onload = async () => {
             const userName = localStorage.getItem('userName') || "Student";
-            const userEmail = localStorage.getItem('userEmail');
             document.getElementById('student-name').innerText = "Hi, " + userName.split(' ')[0];
             document.getElementById('nav-avatar').innerText = userName.charAt(0).toUpperCase();
 
@@ -289,15 +413,11 @@
                 const data = await res.json();
                 if(data.success) {
                     const classSelect = document.getElementById('filter-class');
-                    data.classes.forEach(c => {
-                        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
-                    });
+                    data.classes.forEach(c => { classSelect.innerHTML += `<option value="${c}">${c}</option>`; });
                     const subSelect = document.getElementById('filter-subject');
-                    data.subjects.forEach(s => {
-                        subSelect.innerHTML += `<option value="${s}">${s}</option>`;
-                    });
+                    data.subjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
                 }
-            } catch(e) { console.log("Failed to load filters"); }
+            } catch(e) {}
         }
 
         async function loadRealFeed(query = "") {
@@ -311,8 +431,7 @@
             
             try {
                 const response = await fetch('/api/search-feed', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: userEmail, query: query, class_name: selectedClass, subject: selectedSubject, status: selectedStatus })
                 });
                 const data = await response.json();
@@ -321,15 +440,9 @@
                     let sortedFeed = sortExamsForStudent(data.feed, query);
                     renderFeedCards(sortedFeed);
                 } else {
-                    feedContainer.innerHTML = `
-                        <div style="text-align:center; padding: 40px; color: #64748b;">
-                            <i class="fas fa-search fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i>
-                            <p>No exams match your filters.</p>
-                        </div>`;
+                    feedContainer.innerHTML = `<div style="text-align:center; padding: 40px; color: #64748b;"><i class="fas fa-search fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams match your filters.</p></div>`;
                 }
-            } catch (error) {
-                feedContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444;">Failed to load feed.</div>`;
-            }
+            } catch (error) { feedContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444;">Failed to load feed.</div>`; }
         }
 
         function performSearch() {
@@ -343,41 +456,26 @@
             container.innerHTML = '';
             
             exams.forEach(ex => {
-                // LOCAL STORAGE CHECK: সেভ বা লাইক করা আছে কিনা চেক করা হচ্ছে
                 const isLiked = localStorage.getItem('like_' + ex.code) === 'true' || ex.is_liked;
                 const isSaved = localStorage.getItem('save_' + ex.code) === 'true' || ex.is_saved;
-                
                 const heartClass = isLiked ? 'fas fa-heart like-active' : 'far fa-heart';
                 const saveClass = isSaved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
 
                 let actionHTML = '';
-                
                 if (ex.is_attempted) {
-                    let displayScore = Number.isInteger(ex.score) ? ex.score : parseFloat(ex.score).toFixed(2);
-                    let displayTotal = Number.isInteger(ex.total) ? ex.total : parseFloat(ex.total).toFixed(2);
                     let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
+                    let reattemptBtn = ex.is_private ? `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExamReattempt('${ex.code}')">🔒 Re-attempt</button>` : `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
                     
-                    let reattemptBtn = '';
-                    if (ex.is_private) {
-                        reattemptBtn = `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExamReattempt('${ex.code}')">🔒 Re-attempt</button>`;
-                    } else {
-                        reattemptBtn = `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
-                    }
-
                     actionHTML = `
-                    <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">
-                        ✅ Already Attempted (Score: ${displayScore}/${displayTotal} - ${acc}%)
-                    </div>
+                    <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">✅ Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)</div>
                     <div style="display:flex; gap:10px;">
                         <button class="btn-result" style="flex:1;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
                         ${reattemptBtn}
                     </div>`;
                 } else {
-                    if (ex.is_private) {
-                        actionHTML = `<button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Exam Code to Unlock</button>`;
-                    } else {
-                        actionHTML = `<button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
-                    }
+                    actionHTML = ex.is_private 
+                        ? `<button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Code to Unlock</button>`
+                        : `<button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
                 }
 
                 container.innerHTML += `
@@ -388,59 +486,44 @@
                             <strong>${ex.teacher_name}</strong>
                             <span>Posted ${ex.date}</span>
                         </div>
-                        <div class="feed-options"><i class="fas fa-ellipsis-h"></i></div>
                     </div>
-                    
                     <div class="feed-body">
                         <h3 class="feed-title">${ex.name} ${ex.is_private ? '🔒' : ''}</h3>
                         <div class="feed-tags">
                             <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
                             <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
-                            <span class="feed-tag" style="background:${ex.is_private ? '#fef3c7; color:#92400e;' : '#dcfce7; color:#166534;'}">${ex.is_private ? 'Private' : 'Public'}</span>
                         </div>
-                        <div class="feed-meta">
+                        <div class="feed-meta" style="margin-top:10px;">
                             <span><i class="fas fa-clock"></i> ${ex.timer} Mins</span>
                         </div>
                     </div>
-
                     <div class="feed-actions">
                         <div class="action-left">
                             <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
                                 <i class="${heartClass}"></i> <span>${ex.likes}</span>
                             </button>
-                            <button class="action-btn" onclick="shareRealExam('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">
-                                <i class="far fa-share-square"></i>
-                            </button>
                         </div>
-                        <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
+                        <button class="action-btn" id="save-btn-${ex.code}" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
                             <i class="${saveClass}"></i>
                         </button>
                     </div>
-
                     ${actionHTML}
                 </div>`;
             });
         }
 
         function accessPrivateExam(actualCode) {
-            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code provided by your teacher to unlock:");
+            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code to unlock:");
             if (enteredCode) {
-                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) {
-                    window.location.href = `student_exam.html?code=${actualCode}`;
-                } else {
-                    alert("❌ Incorrect Exam Code! Access denied.");
-                }
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `student_exam.html?code=${actualCode}`; } 
+                else { alert("❌ Incorrect Code!"); }
             }
         }
-
         function accessPrivateExamReattempt(actualCode) {
-            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code provided by your teacher to unlock and re-attempt:");
+            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code to re-attempt:");
             if (enteredCode) {
-                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) {
-                    window.location.href = `student_exam.html?code=${actualCode}&reattempt=true`;
-                } else {
-                    alert("❌ Incorrect Exam Code! Access denied.");
-                }
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `student_exam.html?code=${actualCode}&reattempt=true`; } 
+                else { alert("❌ Incorrect Code!"); }
             }
         }
 
@@ -454,36 +537,22 @@
                 let span = btn.querySelector('span');
                 let count = parseInt(span.innerText);
                 const isActive = icon.classList.contains('like-active');
-                
-                // LocalStorage Update
                 localStorage.setItem('like_' + examCode, !isActive);
-                
-                if (isActive) {
-                    icon.className = 'far fa-heart'; span.innerText = count - 1;
-                } else {
-                    icon.className = 'fas fa-heart like-active'; span.innerText = count + 1;
-                }
+                if (isActive) { icon.className = 'far fa-heart'; span.innerText = count - 1; } 
+                else { icon.className = 'fas fa-heart like-active'; span.innerText = count + 1; }
             } else if (actionType === 'save') {
                 const isActive = icon.classList.contains('save-active');
-                
-                // LocalStorage Update
                 localStorage.setItem('save_' + examCode, !isActive);
-                
-                if (isActive) { 
-                    icon.className = 'far fa-bookmark'; 
-                } else { 
-                    icon.className = 'fas fa-bookmark save-active'; 
-                }
+                if (isActive) { icon.className = 'far fa-bookmark'; } 
+                else { icon.className = 'fas fa-bookmark save-active'; }
             }
 
-            // Sync with Server
             try {
                 await fetch('/api/toggle-social', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: userEmail, exam_code: examCode, type: actionType })
                 });
-            } catch (error) { console.log("Server sync failed, but saved in localStorage"); }
+            } catch (error) {}
         }
 
         async function showDetailedResult(code, name) {
@@ -491,20 +560,12 @@
             container.innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Fetching your answers...</p>';
             document.getElementById('dr-title').innerText = name + " - Result";
             document.getElementById('detailed-result-modal').style.display = 'flex';
-
             const userEmail = localStorage.getItem('userEmail') || "Guest Account";
 
             try {
-                const qResponse = await fetch('/api/get-exam-questions', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ exam_code: code })
-                });
+                const qResponse = await fetch('/api/get-exam-questions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exam_code: code }) });
                 const qData = await qResponse.json();
-
-                const reviewResp = await fetch('/api/get-student-exam-review', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, exam_code: code })
-                });
+                const reviewResp = await fetch('/api/get-student-exam-review', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail, exam_code: code }) });
                 const reviewData = await reviewResp.json();
 
                 if (qData.success) {
@@ -512,35 +573,20 @@
                     const localAnsData = savedState ? JSON.parse(savedState).answers : null;
                     const backendSubjData = (reviewData.success && reviewData.taken) ? reviewData.subjective_data : null;
 
-                    let totalMarks = qData.questions.reduce((sum, q) => {
-                        let m = parseFloat(q.max_marks);
-                        if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0);
-                        return sum + m;
-                    }, 0);
-
+                    let totalMarks = qData.questions.reduce((sum, q) => { let m = parseFloat(q.max_marks); if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0); return sum + m; }, 0);
                     let displayScore = (reviewData.success && reviewData.taken) ? reviewData.total_score : 0;
-                    displayScore = Number.isInteger(displayScore) ? displayScore : parseFloat(displayScore).toFixed(2);
-                    totalMarks = Number.isInteger(totalMarks) ? totalMarks : parseFloat(totalMarks).toFixed(2);
-
                     document.getElementById('dr-title').innerHTML = `${name} - Result <br><span style="font-size:0.9rem; color:#3b82f6;">Total Score: ${displayScore} / ${totalMarks}</span>`;
 
                     let html = '';
                     qData.questions.forEach((q, idx) => {
                         const studentAns = (localAnsData && localAnsData[idx]) ? localAnsData[idx] : undefined;
                         let isAttempted = false;
-                        
-                        if(q.question_type === 'subjective' && backendSubjData && backendSubjData[q.id]) {
-                            isAttempted = true;
-                        } else if (studentAns !== undefined && studentAns !== "") {
-                            isAttempted = true;
-                        }
+                        if(q.question_type === 'subjective' && backendSubjData && backendSubjData[q.id]) { isAttempted = true; } 
+                        else if (studentAns !== undefined && studentAns !== "") { isAttempted = true; }
                         
                         const isCorrect = studentAns === q.correct;
                         let cardClass = 'review-unattempted';
-                        if (isAttempted) {
-                            if (q.question_type === 'subjective') { cardClass = 'review-unattempted'; } 
-                            else { cardClass = isCorrect ? 'review-correct' : 'review-wrong'; }
-                        }
+                        if (isAttempted) { if (q.question_type === 'subjective') { cardClass = 'review-unattempted'; } else { cardClass = isCorrect ? 'review-correct' : 'review-wrong'; } }
 
                         let maxMarks = q.max_marks || (q.question_type === 'mcq' ? 1.0 : 5.0);
 
@@ -549,37 +595,17 @@
 
                         if (q.question_type === 'subjective') {
                             if (isAttempted) {
-                                html += `<div class="review-ans" style="color: #0369a1; font-weight:bold;">✅ Answer Uploaded</div>`;
-                                
-                                if(backendSubjData && backendSubjData[q.id]) {
-                                    const bData = backendSubjData[q.id];
-                                    if(bData.is_checked) {
-                                        html += `<div class="ans-real-correct" style="color:#10b981; font-size:1rem;">✅ <b>শিক্ষক নম্বর দিয়েছেন:</b> ${bData.marks} / ${maxMarks} Marks</div>`;
-                                    } else {
-                                        html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b> (Pending Review)</div>`;
-                                    }
-                                } else {
-                                    html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b> (Pending Review)</div>`;
-                                }
-                            } else {
-                                html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ No Image Uploaded</div>`;
-                            }
+                                html += `<div style="color: #0369a1; font-weight:bold;">✅ Answer Uploaded</div>`;
+                                if(backendSubjData && backendSubjData[q.id] && backendSubjData[q.id].is_checked) { html += `<div class="ans-real-correct" style="color:#10b981;">✅ <b>শিক্ষক নম্বর দিয়েছেন:</b> ${backendSubjData[q.id].marks} / ${maxMarks} Marks</div>`; } 
+                                else { html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b></div>`; }
+                            } else { html += `<div style="color: #64748b; font-style: italic;">⚠️ No Image Uploaded</div>`; }
                         } else {
-                            const getOptionText = (letter) => {
-                                if(letter === 'A') return q.opt_a; if(letter === 'B') return q.opt_b;
-                                if(letter === 'C') return q.opt_c; if(letter === 'D') return q.opt_d; return '';
-                            };
-
+                            const getOptionText = (letter) => { if(letter==='A') return q.opt_a; if(letter==='B') return q.opt_b; if(letter==='C') return q.opt_c; if(letter==='D') return q.opt_d; return ''; };
                             if (isAttempted) {
-                                if (isCorrect) {
-                                    html += `<div class="review-ans ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
-                                } else {
-                                    html += `<div class="review-ans ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
-                                    html += `<div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
-                                }
+                                if (isCorrect) { html += `<div class="ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`; } 
+                                else { html += `<div class="ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`; }
                             } else {
-                                html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div>`;
-                                html += `<div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                                html += `<div style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div><div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
                             }
                         }
                         html += `</div>`;
@@ -588,7 +614,7 @@
                     container.innerHTML = html;
                     if (window.MathJax) { MathJax.typesetPromise([container]).catch(err => console.log(err)); }
                 } else { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load questions.</p>'; }
-            } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; console.error(e); }
+            } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
         }
 
         function trackStudentPreference(query, className, subject) {
@@ -605,84 +631,50 @@
 
             return feedList.sort((a, b) => {
                 let scoreA = 0; let scoreB = 0;
-
                 pref.searches.forEach(term => {
                     if (a.name.toLowerCase().includes(term) || a.subject.toLowerCase().includes(term) || a.class_name.toLowerCase().includes(term)) scoreA += 100;
                     if (b.name.toLowerCase().includes(term) || b.subject.toLowerCase().includes(term) || b.class_name.toLowerCase().includes(term)) scoreB += 100;
                 });
-
-                if (pref.classes.includes(a.class_name)) scoreA += 50;
-                if (pref.classes.includes(b.class_name)) scoreB += 50;
-                if (pref.subjects.includes(a.subject)) scoreA += 40;
-                if (pref.subjects.includes(b.subject)) scoreB += 40;
-
-                let daysA = (new Date() - new Date(a.date)) / (1000 * 60 * 60 * 24);
-                let daysB = (new Date() - new Date(b.date)) / (1000 * 60 * 60 * 24);
-                if (daysA <= 7) scoreA += Math.max(0, 30 - (daysA * 3));
-                if (daysB <= 7) scoreB += Math.max(0, 30 - (daysB * 3));
-
+                if (pref.classes.includes(a.class_name)) scoreA += 50; if (pref.classes.includes(b.class_name)) scoreB += 50;
+                if (pref.subjects.includes(a.subject)) scoreA += 40; if (pref.subjects.includes(b.subject)) scoreB += 40;
                 scoreA += (a.likes * 2); scoreB += (b.likes * 2);
                 return scoreB - scoreA;
             });
-        }
-
-        let currentShareData = {};
-
-        function triggerCustomShare(examName, examCode) {
-            const baseUrl = window.location.origin; 
-            const examLink = `${baseUrl}/student_exam.html?code=${examCode}`;
-            const shareText = `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n`;
-
-            currentShareData = { title: `ExamMate - ${examName}`, text: shareText, url: examLink };
-            document.getElementById('custom-share-modal').style.display = 'flex';
-        }
-
-        function shareRealExam(examCode, examName) { triggerCustomShare(examName, examCode); }
-        function closeShareModal() { document.getElementById('custom-share-modal').style.display = 'none'; }
-
-        function shareVia(platform) {
-            const fullText = encodeURIComponent(currentShareData.text + currentShareData.url);
-            const urlOnly = encodeURIComponent(currentShareData.url);
-            let shareUrl = '';
-
-            if(platform === 'whatsapp') { shareUrl = `https://api.whatsapp.com/send?text=${fullText}`; window.open(shareUrl, '_blank'); } 
-            else if(platform === 'telegram') { shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`; window.open(shareUrl, '_blank'); }
-            closeShareModal();
-        }
-
-        function copyShareLink() {
-            navigator.clipboard.writeText(currentShareData.text + currentShareData.url).then(() => {
-                alert("✅ Exam link and details copied successfully!"); closeShareModal();
-            }).catch(() => { alert("Failed to copy. Please try again."); });
         }
 
         async function fetchAndSetAvatarColor() {
             const userEmail = localStorage.getItem('userEmail');
             if (!userEmail) return;
             const avatar = document.getElementById('nav-avatar');
-            if (!avatar) return;
-
             try {
-                const response = await fetch('/api/get-student-progress', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail })
-                });
+                const response = await fetch('/api/get-student-progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail }) });
                 const data = await response.json();
-                
                 if (data.success) {
                     const score = parseFloat(data.score) || 0;
-                    let avatarBg = "linear-gradient(135deg, #34d399, #10b981)"; 
-                    let borderColor = "#10b981";
-
+                    let avatarBg = "linear-gradient(135deg, #34d399, #10b981)"; let borderColor = "#10b981";
                     if (score >= 50 && score < 100) { avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)"; borderColor = "#d97706"; } 
                     else if (score >= 100 && score < 300) { avatarBg = "linear-gradient(135deg, #94a3b8, #475569)"; borderColor = "#475569"; } 
                     else if (score >= 300 && score < 600) { avatarBg = "linear-gradient(135deg, #fde047, #eab308)"; borderColor = "#eab308"; } 
                     else if (score >= 600) { avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; borderColor = "transparent"; }
-
                     avatar.style.background = avatarBg; avatar.style.color = "#ffffff";
                     if (score >= 600) { avatar.style.border = "none"; } else { avatar.style.border = `2px solid ${borderColor}`; }
                 }
-            } catch (error) { console.log("Error fetching score for avatar color."); }
+            } catch (error) {}
         }
+
+        // Hardware Back Button Handler
+        window.addEventListener('popstate', function (event) {
+            const drModal = document.getElementById('detailed-result-modal');
+            const spModal = document.getElementById('special-exams-view');
+            
+            if(drModal.style.display === 'flex') {
+                drModal.style.display = 'none';
+            } else if (spModal.style.display === 'block') {
+                closeSpecialExams();
+            } else {
+                if (document.referrer) { window.history.back(); } 
+            }
+        });
     </script>
 </body>
 </html>
