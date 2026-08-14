@@ -432,16 +432,20 @@
         });
 
         document.getElementById('btn-google-login').addEventListener('click', async () => {
-            const loadingScreen = document.getElementById('loading-screen');
-            loadingScreen.style.display = 'flex';
-            loadingScreen.style.opacity = '1';
-            document.querySelector('.loading-text').innerText = "Connecting to Google...";
-            
+            // ফুল-স্ক্রিন লোডিং স্পিনার রিমুভ করে বাটনের ভেতরেই লোডিং স্ট্যাটাস সেট করা হচ্ছে
+            const btn = document.getElementById('btn-google-login');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Please wait...';
+            btn.style.opacity = '0.8';
+            btn.style.pointerEvents = 'none'; // যাতে ইউজার ডাবল ক্লিক না করতে পারে
+    
             try {
                 await signInWithRedirect(auth, provider);
             } catch (error) {
                 alert("Sign-In failed.");
-                loadingScreen.style.display = 'none';
+                // এরর হলে বাটন আগের অবস্থায় ফিরিয়ে আনা হবে
+                btn.innerHTML = '<img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo"> Continue with Google';
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
             }
         });
     </script>
