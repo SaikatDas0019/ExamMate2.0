@@ -415,7 +415,6 @@
             if(!newName) { alert("Name cannot be empty!"); return; }
 
             try {
-                // আপনার অ্যাপের অরিজিনাল এপিআই রুট '/api/update-profile' ব্যবহার করা হলো
                 const response = await fetch('/api/update-profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -424,13 +423,9 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // লোকাল স্টোরেজ আপডেট করা
                     localStorage.setItem('userName', newName);
                     localStorage.setItem('userRole', newRole);
-                    
                     alert("Profile updated successfully!");
-                    
-                    // সার্ভার থেকে আসা সঠিক রিডাইরেক্ট লিংকে চলে যাবে (রোল অনুযায়ী একাউন্ট সুইচ হবে)
                     window.location.href = data.redirect_url;
                 } else {
                     alert("Failed to update profile: " + data.error);
@@ -536,9 +531,10 @@
                     uniqueExams.forEach(eName => { const opt = document.createElement('option'); opt.value = eName; opt.innerText = eName; ldFilter.appendChild(opt); });
                 }
 
-                // Fetch All Feed for Saved/Liked matching
-                const feedRes = await fetch('/api/get-social-feed', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail })
+                // FIX: API কল আপডেট করা হয়েছে (/api/search-feed)
+                const feedRes = await fetch('/api/search-feed', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ email: userEmail, query: "", class_name: "All", subject: "All", status: "All" })
                 });
                 const feedData = await feedRes.json();
                 if(feedData.success) { allSocialExams = feedData.feed; }
@@ -572,7 +568,7 @@
             window.scrollTo(0, 0); window.history.pushState({view: 'profile'}, "", window.location.href);
         }
 
-        // 5. Social Panels (Saved / Liked)
+        // 5. Social Panels (Saved / Liked) - FIX: লোকাল স্টোরেজ এবং ডেটাবেস লজিক আপডেট
         function openSocialPanel(type) {
             closeSettings();
             document.getElementById('main-profile-view').style.display = 'none';
@@ -586,8 +582,14 @@
 
             const prefix = type === 'saved' ? 'save_' : 'like_';
             
-            // লোকাল স্টোরেজ থেকে সেভ করা এক্সাম কোডগুলো ফিল্টার করা হচ্ছে
-            const filteredExams = allSocialExams.filter(ex => localStorage.getItem(prefix + ex.code) === 'true');
+            const filteredExams = allSocialExams.filter(ex => {
+                const localVal = localStorage.getItem(prefix + ex.code);
+                // লোকাল স্টোরেজে থাকলে সেটা আগে প্রায়োরিটি পাবে
+                if (localVal === 'true') return true;
+                if (localVal === 'false') return false;
+                // লোকাল স্টোরেজে না থাকলে ডেটাবেস থেকে চেক করবে
+                return type === 'saved' ? ex.is_saved : ex.is_liked;
+            });
 
             if(filteredExams.length === 0) {
                 container.innerHTML = `<div style="text-align:center; margin-top:30px; color:#64748b;">You haven't ${type} any exams yet.</div>`;
@@ -623,12 +625,13 @@
             }
         }
 
+        // 7. Logout Logic
         function logoutAccount() {
             if(confirm("Are you sure you want to log out?")) {
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('userRole');
-                window.location.href = '/logout'; // এটি ফ্লাস্কের লগআউট রাউটকে কল করবে
+                window.location.href = '/logout';
             }
         }
 
