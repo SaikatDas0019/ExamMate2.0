@@ -267,7 +267,6 @@
     <!-- 🔥 SPECIAL EXAMS FULL-SCREEN PAGE -->
     <div id="special-exams-view" class="special-overlay-page">
         <div class="special-header-top">
-            <!-- Back Button handles hardware back logically -->
             <i class="fas fa-arrow-left" onclick="history.back()"></i>
             <h2>Special Exams & Quizzes</h2>
         </div>
@@ -275,68 +274,28 @@
         <!-- 1. LIVE BANNERS (Horizontal) -->
         <h3 style="padding: 0 20px; margin: 15px 0 0 0; font-size:1.1rem; color:#1e293b; font-weight:800;">🔥 Live Challenges</h3>
         <div class="live-h-scroll" id="live-special-scroll">
-            <!-- Demo Live Banner -->
-            <div class="live-banner-card">
-                <div class="live-badge"><i class="fas fa-circle"></i> Live Now</div>
-                <h3 style="margin:0 0 5px 0; font-size:1.3rem;">30-Day Math Marathon 🏆</h3>
-                <p style="margin:0 0 15px 0; font-size:0.85rem; color:#e0e7ff;">Day 5: Algebra & Logic Series.</p>
-                <div class="admin-verified-tag" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.3); margin-bottom:15px; font-size:0.75rem;"><i class="fas fa-check-circle"></i> Official ExamMate</div>
-                <button style="width:100%; background:#f59e0b; color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 10px rgba(245,158,11,0.4);">Join Challenge 🚀</button>
-            </div>
-
-            <div class="live-banner-card" style="background: linear-gradient(135deg, #831843, #be123c);">
-                <div class="live-badge"><i class="fas fa-circle"></i> Live Now</div>
-                <h3 style="margin:0 0 5px 0; font-size:1.3rem;">Weekly Mega Mock ⚡</h3>
-                <p style="margin:0 0 15px 0; font-size:0.85rem; color:#ffe4e6;">Full Syllabus Test for Class 10.</p>
-                <div class="admin-verified-tag" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.3); margin-bottom:15px; font-size:0.75rem;"><i class="fas fa-check-circle"></i> Official ExamMate</div>
-                <button style="width:100%; background:#10b981; color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 10px rgba(16,185,129,0.4);">Attempt Now 🚀</button>
-            </div>
+            <!-- JS দিয়ে রিয়েল ডেটা আসবে -->
         </div>
 
         <!-- 2. FOLDERS / CATEGORIES (Horizontal) -->
         <h3 style="padding: 0 20px; margin: 15px 0 5px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📁 Special Categories</h3>
         <div class="special-folders-scroll" id="special-folders">
-            <div class="special-folder" style="background: linear-gradient(135deg, #0f766e, #10b981);">
-                <i class="fas fa-brain"></i>
-                IQ Tests
-            </div>
-            <div class="special-folder" style="background: linear-gradient(135deg, #86198f, #f43f5e);">
-                <i class="fas fa-vial"></i>
-                Science Fest
-            </div>
-            <div class="special-folder" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6);">
-                <i class="fas fa-book-open"></i>
-                Daily English
-            </div>
-            <div class="special-folder" style="background: linear-gradient(135deg, #b45309, #f59e0b);">
-                <i class="fas fa-history"></i>
-                History Quiz
-            </div>
+             <!-- JS দিয়ে রিয়েল ডেটা আসবে -->
         </div>
 
         <!-- 3. PAST PLAYLISTS (Vertical) -->
         <h3 style="padding: 0 20px; margin: 10px 0 15px 0; font-size:1.1rem; color:#1e293b; font-weight:800;">📚 Past Collections</h3>
         <div class="playlist-container" id="past-special-playlists">
-            <!-- Playlist Items -->
-            <div class="playlist-item">
-                <div class="playlist-icon"><i class="fas fa-layer-group"></i></div>
-                <div class="playlist-info">
-                    <h4>July Monthly Challenge</h4>
-                    <p>15 Exams • Mathematics</p>
-                    <div class="admin-verified-tag"><i class="fas fa-check-circle"></i> Official</div>
-                </div>
-                <i class="fas fa-chevron-right" style="color:#94a3b8;"></i>
-            </div>
+             <!-- JS দিয়ে রিয়েল ডেটা আসবে -->
+        </div>
+    </div>
 
-            <div class="playlist-item">
-                <div class="playlist-icon" style="background:#fce7f3; color:#e11d48;"><i class="fas fa-layer-group"></i></div>
-                <div class="playlist-info">
-                    <h4>Grammar Bootcamp 2025</h4>
-                    <p>10 Exams • English</p>
-                    <div class="admin-verified-tag"><i class="fas fa-check-circle"></i> Official</div>
-                </div>
-                <i class="fas fa-chevron-right" style="color:#94a3b8;"></i>
-            </div>
+    <!-- 🔥 MODAL FOR VIEWING PLAYLIST EXAMS -->
+    <div class="score-modal-overlay" id="playlist-exams-modal" style="z-index: 4000;">
+        <div class="score-modal-box" style="background:#f8fafc; max-width: 400px; width: 90%;">
+            <div class="score-modal-title" id="playlist-modal-title" style="text-align: center; font-size:1.2rem; font-weight:800; color:#0f172a; margin-bottom:15px;">Playlist Exams</div>
+            <div id="playlist-exams-list" style="display:flex; flex-direction:column; gap:10px; max-height: 60vh; overflow-y: auto; padding-right:5px;"></div>
+            <button class="score-modal-close" onclick="document.getElementById('playlist-exams-modal').style.display='none'">Close ✖</button>
         </div>
     </div>
 
@@ -377,21 +336,148 @@
         });
 
         // ==========================================
-        // 🔥 NEW: SPECIAL EXAMS PAGE LOGIC
+        // 🔥 NEW: SPECIAL EXAMS PAGE LOGIC WITH REAL DATA
         // ==========================================
-        function openSpecialExams() {
+        const specialGradients = [
+            "linear-gradient(135deg, #f59e0b, #ea580c)", // Orange
+            "linear-gradient(135deg, #831843, #be123c)", // Rose/Pink
+            "linear-gradient(135deg, #1e1b4b, #4338ca)", // Indigo
+            "linear-gradient(135deg, #0f766e, #10b981)", // Teal/Emerald
+            "linear-gradient(135deg, #86198f, #f43f5e)", // Fuchsia/Rose
+            "linear-gradient(135deg, #1d4ed8, #3b82f6)", // Blue
+            "linear-gradient(135deg, #b45309, #d97706)", // Amber
+            "linear-gradient(135deg, #4c1d95, #7c3aed)", // Violet
+            "linear-gradient(135deg, #115e59, #14b8a6)", // Cyan
+            "linear-gradient(135deg, #9f1239, #e11d48)", // Ruby Red
+            "linear-gradient(135deg, #3730a3, #6366f1)", // Indigo Light
+            "linear-gradient(135deg, #065f46, #34d399)", // Emerald
+            "linear-gradient(135deg, #701a75, #c026d3)", // Purple
+            "linear-gradient(135deg, #1e3a8a, #60a5fa)", // Blue Light
+            "linear-gradient(135deg, #7f1d1d, #ef4444)"  // Crimson
+        ];
+
+        function getRandomGradient() {
+            return specialGradients[Math.floor(Math.random() * specialGradients.length)];
+        }
+
+        async function openSpecialExams() {
             document.getElementById('special-exams-view').style.display = 'block';
-            document.body.style.overflow = 'hidden'; // ড্যাশবোর্ডের স্ক্রল বন্ধ করা হলো
-            // History State যোগ করা হলো যাতে ফোনের ব্যাক বাটন কাজ করে
+            document.body.style.overflow = 'hidden'; 
             window.history.pushState({view: 'special_exams'}, "", "");
             
-            // ভবিষ্যতে: এখানে fetch('/api/search-feed') কল করে 
-            // "dasbabu938207@gmail.com" ইমেইল দিয়ে ফিল্টার করে ডেটা লোড করতে পারবেন।
+            document.getElementById('live-special-scroll').innerHTML = '<p style="padding:20px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading live exams...</p>';
+            document.getElementById('special-folders').innerHTML = '<p style="padding:20px; color:#64748b;">Loading categories...</p>';
+            document.getElementById('past-special-playlists').innerHTML = '<p style="padding:20px; color:#64748b;">Loading playlists...</p>';
+            
+            try {
+                const res = await fetch('/api/get-special-exams', { method: 'POST' });
+                const data = await res.json();
+                
+                if(data.success) {
+                    renderSpecialData(data);
+                }
+            } catch(e) {
+                console.error("Error fetching special exams:", e);
+            }
+        }
+
+        function renderSpecialData(data) {
+            // ১. লাইভ এক্সাম রেন্ডার (রেন্ডম কালার সহ)
+            let liveHtml = '';
+            if(data.live_exams.length === 0) {
+                liveHtml = '<p style="padding: 20px; color:#64748b;">No live exams currently.</p>';
+            } else {
+                data.live_exams.forEach(exam => {
+                    const bg = getRandomGradient();
+                    liveHtml += `
+                    <div class="live-banner-card" style="background: ${bg};">
+                        <div class="live-badge"><i class="fas fa-circle"></i> Live Now</div>
+                        <h3 style="margin:0 0 5px 0; font-size:1.3rem;">${exam.name}</h3>
+                        <p style="margin:0 0 15px 0; font-size:0.85rem; color:rgba(255,255,255,0.9);">${exam.class_name} • ${exam.subject}</p>
+                        <div class="admin-verified-tag" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.3); margin-bottom:15px; font-size:0.75rem;"><i class="fas fa-check-circle"></i> Official ExamMate</div>
+                        <button onclick="window.location.href='student_exam.html?code=${exam.code}'" style="width:100%; background:rgba(0,0,0,0.2); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Now 🚀</button>
+                    </div>`;
+                });
+            }
+            document.getElementById('live-special-scroll').innerHTML = liveHtml;
+
+            // ২. ফোল্ডার এবং প্লেলিস্ট রেন্ডার (রেন্ডম কালার সহ)
+            let folderHtml = '';
+            let playlistHtml = '';
+            
+            if(data.playlists.length === 0) {
+                folderHtml = '<p style="padding: 20px; color:#64748b;">No categories found.</p>';
+                playlistHtml = '<p style="padding: 20px; color:#64748b;">No playlists found.</p>';
+            } else {
+                data.playlists.forEach((pl, index) => {
+                    const bg = getRandomGradient();
+                    
+                    // প্রথম ৪টি ফোল্ডারকে উপরের হরাইজন্টাল স্ক্রলে দেখাবো (Categories হিসেবে)
+                    if(index < 4) {
+                        folderHtml += `
+                        <div class="special-folder" style="background: ${bg};" onclick="openPlaylistModal(${pl.id}, '${pl.name.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-folder-open"></i>
+                            ${pl.name}
+                        </div>`;
+                    }
+                    
+                    // সব ফোল্ডারকে ভার্টিকাল প্লেলিস্টে দেখাবো
+                    playlistHtml += `
+                    <div class="playlist-item" onclick="openPlaylistModal(${pl.id}, '${pl.name.replace(/'/g, "\\'")}')">
+                        <div class="playlist-icon" style="background: ${bg}; color: white;"><i class="fas fa-layer-group"></i></div>
+                        <div class="playlist-info">
+                            <h4>${pl.name}</h4>
+                            <div class="admin-verified-tag"><i class="fas fa-check-circle"></i> Official</div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color:#94a3b8;"></i>
+                    </div>`;
+                });
+            }
+            
+            document.getElementById('special-folders').innerHTML = folderHtml || '<p style="padding: 20px; color:#64748b;">No categories available.</p>';
+            document.getElementById('past-special-playlists').innerHTML = playlistHtml || '<p style="padding: 20px; color:#64748b;">No playlists available.</p>';
+        }
+
+        async function openPlaylistModal(folderId, folderName) {
+            document.getElementById('playlist-modal-title').innerText = folderName;
+            const container = document.getElementById('playlist-exams-list');
+            container.innerHTML = '<p style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Fetching Exams...</p>';
+            document.getElementById('playlist-exams-modal').style.display = 'flex';
+            
+            try {
+                const res = await fetch('/api/get-special-playlist-exams', {
+                    method: 'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({folder_id: folderId})
+                });
+                const data = await res.json();
+                if(data.success) {
+                    if(data.exams.length === 0) {
+                        container.innerHTML = '<p style="text-align:center; color:#64748b; font-weight:bold;">No exams inside this playlist.</p>';
+                        return;
+                    }
+                    let html = '';
+                    data.exams.forEach(ex => {
+                        html += `
+                        <div style="background:white; border:1px solid #e2e8f0; padding:12px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
+                            <div>
+                                <strong style="color:#1e293b; display:block; font-size:0.95rem;">${ex.name}</strong>
+                                <span style="font-size:0.75rem; color:#64748b;">${ex.class_name} • ${ex.subject} • ⏱ ${ex.timer} Mins</span>
+                            </div>
+                            <button onclick="window.location.href='student_exam.html?code=${ex.code}'" style="background:#3b82f6; color:white; border:none; padding:8px 14px; border-radius:8px; font-weight:bold; cursor:pointer; box-shadow:0 4px 6px rgba(59,130,246,0.3);">Start</button>
+                        </div>`;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load.</p>';
+                }
+            } catch(e) {
+                container.innerHTML = '<p style="text-align:center; color:#ef4444;">Server error.</p>';
+            }
         }
 
         function closeSpecialExams() {
             document.getElementById('special-exams-view').style.display = 'none';
-            document.body.style.overflow = 'auto'; // ড্যাশবোর্ডের স্ক্রল আবার চালু
+            document.body.style.overflow = 'auto'; 
         }
 
         // ==========================================
@@ -666,8 +752,11 @@
         window.addEventListener('popstate', function (event) {
             const drModal = document.getElementById('detailed-result-modal');
             const spModal = document.getElementById('special-exams-view');
+            const plModal = document.getElementById('playlist-exams-modal');
             
-            if(drModal.style.display === 'flex') {
+            if(plModal.style.display === 'flex') {
+                plModal.style.display = 'none';
+            } else if(drModal.style.display === 'flex') {
                 drModal.style.display = 'none';
             } else if (spModal.style.display === 'block') {
                 closeSpecialExams();
