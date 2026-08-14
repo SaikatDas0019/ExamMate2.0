@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Welcome - Online Exam & Study Material Platform</title>
-    <meta name="keywords" content="ExamMate, Exam App, Best Exam App, Final Exam Preparation, Android Exam App">
-    <meta name="description" content="Easily take the online exam at ExamMate, use the Student and Teacher Dashboard, and download necessary study materials." />
+    <title>ExamMate | Online Exam & Smart Evaluation Platform</title>
+    <meta name="keywords" content="ExamMate, Exam App, Best Exam App, Final Exam Preparation, ExamMate App Download, Android Exam App">
+    <meta name="description" content="Easily take online exams at ExamMate, access Teacher & Student Dashboards, and prepare effectively with MCQ & Subjective practice tools." />
     <meta name="google-site-verification" content="hn-qApsUCGJszMHEgHT2rT1eunNTsTSyaKdGcANEXFU" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
         :root { color-scheme: dark; }
         body {
-            background-color: #05070f; background: linear-gradient(180deg, #08101f 0%, #04060d 100%);
-            color: #e8eef8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background-color: #05070f; 
+            background: linear-gradient(180deg, #08101f 0%, #04060d 100%);
+            color: #e8eef8; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 0; min-height: 100vh; 
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
         }
 
         #loading-screen {
@@ -31,19 +34,21 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { font-size: 1.1rem; color: #c8d3ea; font-weight: 600; letter-spacing: 0.5px; }
 
-        #main-content { display: none; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #main-content { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; }
 
-        .container { padding: 2rem; max-width: 600px; width: 100%; box-sizing: border-box; }
+        .container { padding: 2rem 1rem; max-width: 850px; width: 100%; box-sizing: border-box; }
+        
         .header-section { text-align: center; margin-bottom: 2rem; }
-        .header-section h1 { margin: 0 0 0.35rem 0; color: #f5f9ff; font-size: 2.6rem; letter-spacing: -0.03em; }
-        .header-section p { margin: 0; color: #c8d3ea; font-size: 1.05rem; }
+        .header-section h1 { margin: 0 0 0.35rem 0; color: #22c05d; font-size: 3rem; letter-spacing: -0.03em; font-weight: 900; }
+        .header-section p { margin: 0; color: #c8d3ea; font-size: 1.15rem; font-weight: 500; }
 
+        /* Auth Card */
         .auth-card {
-            background: rgba(17, 29, 52, 0.4); border-radius: 26px; padding: 40px 30px;
-            margin-bottom: 1.8rem; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
-            border: 2px solid rgba(34, 192, 93, 0.5); text-align: center;
+            background: rgba(17, 29, 52, 0.5); border-radius: 26px; padding: 35px 25px;
+            margin-bottom: 2.5rem; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(34, 192, 93, 0.4); text-align: center;
         }
-        .auth-card h2 { margin: 0 0 1.5rem 0; color: #f2f7ff; font-size: 1.4rem; }
+        .auth-card h2 { margin: 0 0 1.5rem 0; color: #f2f7ff; font-size: 1.5rem; }
         
         .btn-google { 
             width: 100%; max-width: 320px; margin: 0 auto;
@@ -55,18 +60,46 @@
         .btn-google:hover { background: #f9fafb; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,255,255,0.2); }
         .btn-google img { width: 22px; height: 22px; }
 
-        .divider { height: 1px; background: rgba(255,255,255,0.2); margin: 2.5rem 0 1.5rem 0; }
-        .features-header { font-size: 1.3rem; color: #f2f7ff; margin-bottom: 1.5rem; text-align: left; }
-        
-        .feature-card {
-            background: rgba(30, 166, 77, 0.1); border: 1px solid rgba(34, 192, 93, 0.3);
-            border-radius: 12px; padding: 1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; color: #e8eef8; text-align: left;
+        /* Features Section */
+        .features-section { margin-top: 1rem; text-align: left; }
+        .section-title { 
+            font-size: 1.6rem; color: #ffffff; margin-bottom: 1.5rem; text-align: center;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-        .feature-icon { font-size: 1.2rem; color: #81c784; background: rgba(255, 255, 255, 0.05); border-radius: 50%; padding: 10px; width: 24px; text-align: center; }
-        .feature-text strong { color: #f4fbff; font-size: 1rem; }
-        .feature-text p { margin: 5px 0 0 0; color: #c8d3ea; font-size: 0.85rem; }
+
+        .features-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;
+        }
+        .feature-card {
+            background: rgba(30, 166, 77, 0.08); border: 1px solid rgba(34, 192, 93, 0.3);
+            border-radius: 16px; padding: 1.2rem; display: flex; flex-direction: column; gap: 10px; transition: transform 0.3s ease;
+        }
+        .feature-card:hover { transform: translateY(-3px); background: rgba(30, 166, 77, 0.15); }
+        .feature-header { display: flex; align-items: center; gap: 12px; }
+        .feature-icon { 
+            font-size: 1.2rem; color: #22c05d; background: rgba(255, 255, 255, 0.05); 
+            border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+        }
+        .feature-card strong { color: #f4fbff; font-size: 1.05rem; }
+        .feature-card p { margin: 0; color: #b0c4de; font-size: 0.9rem; line-height: 1.5; }
+
+        /* App Download Banner */
+        .app-banner {
+            background: linear-gradient(135deg, rgba(34, 192, 93, 0.15), rgba(59, 130, 246, 0.15));
+            border: 1px solid rgba(34, 192, 93, 0.4); border-radius: 20px; padding: 20px;
+            text-align: center; margin-top: 2rem;
+        }
+        .app-banner h3 { margin: 0 0 10px 0; color: #fff; font-size: 1.3rem; }
+        .app-banner p { color: #c8d3ea; font-size: 0.95rem; margin-bottom: 15px; }
+        .btn-download-link {
+            display: inline-flex; align-items: center; gap: 8px; background: #22c05d; color: #fff;
+            padding: 10px 22px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.95rem;
+            transition: 0.3s;
+        }
+        .btn-download-link:hover { background: #16a34a; transform: translateY(-2px); }
 
         #error-msg { color: #ef4444; font-size: 0.95rem; margin-top: 15px; display: none; font-weight: bold; }
+        footer { margin-top: 3rem; text-align: center; color: #64748b; font-size: 0.85rem; padding-bottom: 2rem; }
     </style>
 </head>
 <body>
@@ -78,9 +111,10 @@
 
     <div id="main-content">
         <div class="container">
+            
             <div class="header-section">
                 <h1>ExamMate</h1>
-                <p>Best app for MCQ practice of any exam.</p>
+                <p>The Ultimate Smart Evaluation & Online Examination Platform</p>
             </div>
 
             <div class="auth-card">
@@ -91,19 +125,58 @@
                     Continue with Google
                 </button>
                 <div id="error-msg"></div>
+            </div>
 
-                <div class="divider"></div>
-                <h2 class="features-header"><i class="fas fa-star" style="color: #f59e0b;"></i> Core Features</h2>
+            <!-- Features Highlights Grid -->
+            <div class="features-section">
+                <h2 class="section-title"><i class="fas fa-star" style="color: #f59e0b;"></i> Key Platform Features</h2>
 
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-clock"></i></div>
-                    <div class="feature-text"><strong>Time Management:</strong> Testing with timers like the real thing.</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-pen"></i></div>
-                    <div class="feature-text"><strong>Customize Exam:</strong> Teachers have the freedom to set questions.</div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fas fa-clock"></i></div>
+                            <strong>Smart Timers</strong>
+                        </div>
+                        <p>Real-time countdown exam environment with customizable limits.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                            <strong>AI Smart Paste</strong>
+                        </div>
+                        <p>Teachers can auto-import questions easily using AI integrations.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fas fa-camera"></i></div>
+                            <strong>Handwritten Uploads</strong>
+                        </div>
+                        <p>Built-in camera scanner for uploading subjective exam papers easily.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                            <strong>Anti-Cheat Shield</strong>
+                        </div>
+                        <p>Advanced tab-switch tracking and auto-submit cheat prevention.</p>
+                    </div>
                 </div>
             </div>
+
+            <!-- Download App Redirect Banner -->
+            <div class="app-banner">
+                <h3><i class="fab fa-android" style="color: #22c05d;"></i> Prefer the Android App?</h3>
+                <p>Download our official Ad-Free Android App for full features & reviews.</p>
+                <a href="/download" class="btn-download-link"><i class="fas fa-download"></i> Go to Download Page</a>
+            </div>
+
+            <footer>
+                <p>© 2026 ExamMate Educational Platform. All rights reserved.</p>
+            </footer>
+
         </div>
     </div>
 
@@ -223,7 +296,6 @@
             loadingScreen.style.opacity = '0';
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
-                mainClient = document.getElementById('main-content');
                 mainContent.style.display = 'flex';
             }, 300);
         });
