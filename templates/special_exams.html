@@ -38,8 +38,8 @@
             content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px;
             background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(20px);
         }
-        .live-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid #f87171; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; animation: pulseRed 1.5s infinite;}
-        @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .live-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.2); color: #ffffff; border: 1px solid rgba(255,255,255,0.5); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; animation: pulseRed 1.5s infinite;}
+        @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
         .special-folders-scroll { display: flex; overflow-x: auto; gap: 15px; padding: 10px 20px 20px 20px; scrollbar-width: none; }
         .special-folders-scroll::-webkit-scrollbar { display: none; }
@@ -60,7 +60,7 @@
         .playlist-item:hover { background: #eff6ff; border-color: #bfdbfe; }
         .playlist-icon {
             width: 55px; height: 55px; border-radius: 12px; background: #e0e7ff;
-            color: #4338ca; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; flex-shrink:0;
+            color: #ffffff; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; flex-shrink:0;
         }
         .playlist-info { flex: 1; }
         .playlist-info h4 { margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 800;}
@@ -145,13 +145,20 @@
     </div>
 
     <script>
+        // 12 Premium, Vibrant, and Attractive Gradients
         const specialGradients = [
-            "linear-gradient(135deg, #f59e0b, #ea580c)", "linear-gradient(135deg, #831843, #be123c)", 
-            "linear-gradient(135deg, #1e1b4b, #4338ca)", "linear-gradient(135deg, #0f766e, #10b981)", 
-            "linear-gradient(135deg, #86198f, #f43f5e)", "linear-gradient(135deg, #1d4ed8, #3b82f6)", 
-            "linear-gradient(135deg, #b45309, #d97706)", "linear-gradient(135deg, #4c1d95, #7c3aed)", 
-            "linear-gradient(135deg, #115e59, #14b8a6)", "linear-gradient(135deg, #9f1239, #e11d48)", 
-            "linear-gradient(135deg, #3730a3, #6366f1)", "linear-gradient(135deg, #065f46, #34d399)"
+            "linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)", // Sunset Orange Red
+            "linear-gradient(135deg, #4776E6 0%, #8E54E9 100%)", // Purple Blue
+            "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)", // Fresh Green
+            "linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%)", // Pink to Blue
+            "linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%)", // Cyan to Yellow
+            "linear-gradient(135deg, #f857a6 0%, #ff5858 100%)", // Bright Pink
+            "linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)", // Instagram Vibe
+            "linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)", // Ocean Blue
+            "linear-gradient(135deg, #ec008c 0%, #fc6767 100%)", // Magenta Red
+            "linear-gradient(135deg, #141E30 0%, #243B55 100%)", // Midnight Blue (Dark)
+            "linear-gradient(135deg, #FF8008 0%, #FFC837 100%)", // Amber Glow
+            "linear-gradient(135deg, #C02425 0%, #F0CB35 100%)"  // Crimson Sun
         ];
 
         function getRandomGradient() { return specialGradients[Math.floor(Math.random() * specialGradients.length)]; }
@@ -266,7 +273,13 @@
                     }
 
                     if (exam.is_attempted) {
-                        actionBtnHtml = `<button onclick="showDetailedResult('${exam.code}', '${exam.name.replace(/'/g, "\\'")}')" style="width:100%; background:rgba(16, 185, 129, 0.9); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer;">View Result ✅</button>`;
+                        let acc = exam.total > 0 ? ((exam.score / exam.total) * 100).toFixed(1) : 0;
+                        actionBtnHtml = `
+                            <div style="background:rgba(255,255,255,0.2); padding:8px; border-radius:8px; text-align:center; border:1px solid rgba(255,255,255,0.4); margin-bottom:10px; font-weight:bold; font-size:0.85rem;">
+                                ✅ Score: ${exam.score}/${exam.total} (${acc}%)
+                            </div>
+                            <button onclick="showDetailedResult('${exam.code}', '${exam.name.replace(/'/g, "\\'")}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Result 📊</button>
+                        `;
                     } else if (isExpired) {
                         actionBtnHtml = `<button disabled style="width:100%; background:rgba(0,0,0,0.4); color:#cbd5e1; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:not-allowed;">Time Out ❌</button>`;
                     } else {
@@ -330,10 +343,11 @@
             container.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
             document.getElementById('playlist-exams-modal').style.display = 'flex';
             
+            const userEmail = localStorage.getItem('userEmail');
             try {
                 const res = await fetch('/api/get-special-playlist-exams', {
                     method: 'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({folder_id: folderId})
+                    body: JSON.stringify({folder_id: folderId, email: userEmail})
                 });
                 const data = await res.json();
                 
@@ -344,6 +358,18 @@
                     }
                     let html = '<div style="padding-top:5px;">';
                     data.exams.forEach(ex => {
+                        
+                        let actionBtnHtml = '';
+                        if (ex.is_attempted) {
+                            let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
+                            actionBtnHtml = `
+                                <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">✅ Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)</div>
+                                <button style="width:100%; background:#f8fafc; color:#10b981; border:2px solid #10b981; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
+                            `;
+                        } else {
+                            actionBtnHtml = `<button style="width:100%; background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(59, 130, 246, 0.3);" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
+                        }
+
                         html += `
                         <div style="box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px; background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:15px;">
                             <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
@@ -364,7 +390,7 @@
                                 </div>
                             </div>
                             <div style="border-top:1px solid #f1f5f9; padding-top:12px; margin-top:5px;">
-                                <button style="width:100%; background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(59, 130, 246, 0.3); transition:0.2s;" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>
+                                ${actionBtnHtml}
                             </div>
                         </div>`;
                     });
