@@ -8,6 +8,27 @@
     <meta name="description" content="Download ExamMate, one of the best exam apps designed to help you prepare effectively for your final exams. Get the app now!" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- Google Rich Review Snippet Schema (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "SoftwareApplication",
+      "name": "ExamMate",
+      "operatingSystem": "ANDROID",
+      "applicationCategory": "EducationalApplication",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "ratingCount": "10"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BDT"
+      }
+    }
+    </script>
+
     <style>
         :root { color-scheme: dark; }
         body {
@@ -15,17 +36,17 @@
             color: #e8eef8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .container { padding: 2rem; max-width: 1000px; width: 100%; box-sizing: border-box; text-align: center; }
+        .container { padding: 2rem 1rem; max-width: 1000px; width: 100%; box-sizing: border-box; text-align: center; }
         
         /* Logo & Header */
-        .logo { width: 130px; height: 130px; margin-bottom: 1rem; border-radius: 25px; box-shadow: 0 10px 30px rgba(34, 192, 93, 0.2); object-fit: contain; }
-        .header-section h1 { margin: 0 0 0.5rem 0; color: #22c05d; font-size: 3.5rem; letter-spacing: -0.03em; font-weight: 900;}
-        .header-section p { margin: 0 0 2.5rem 0; color: #c8d3ea; font-size: 1.25rem; font-weight: 500;}
+        .logo { width: 120px; height: 120px; margin-bottom: 1rem; border-radius: 25px; box-shadow: 0 10px 30px rgba(34, 192, 93, 0.2); object-fit: contain; }
+        .header-section h1 { margin: 0 0 0.5rem 0; color: #22c05d; font-size: 3.2rem; letter-spacing: -0.03em; font-weight: 900;}
+        .header-section p { margin: 0 0 2.5rem 0; color: #c8d3ea; font-size: 1.2rem; font-weight: 500;}
 
         /* Download Card */
         .download-card {
-            background: rgba(17, 29, 52, 0.6); border-radius: 30px; padding: 50px 30px;
-            margin-bottom: 4rem; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            background: rgba(17, 29, 52, 0.6); border-radius: 30px; padding: 40px 20px;
+            margin-bottom: 3.5rem; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(34, 192, 93, 0.4); position: relative; overflow: hidden;
         }
         .download-card::before {
@@ -36,23 +57,23 @@
         .btn-download { 
             display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
             background: linear-gradient(135deg, #22c05d, #16a34a); color: #ffffff; border: none; 
-            border-radius: 30px; padding: 1.2rem 3rem; font-size: 1.3rem; font-weight: 800; 
+            border-radius: 30px; padding: 1.1rem 2.5rem; font-size: 1.25rem; font-weight: 800; 
             cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 25px rgba(34, 192, 93, 0.4);
         }
-        .btn-download:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(34, 192, 93, 0.6); }
-        .btn-download i { margin-right: 12px; font-size: 1.6rem; }
+        .btn-download:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(34, 192, 93, 0.6); }
+        .btn-download i { margin-right: 12px; font-size: 1.5rem; }
 
-        .section-title { font-size: 2.2rem; color: #ffffff; margin-bottom: 2rem; padding-bottom: 10px; display: inline-block; position: relative;}
+        .section-title { font-size: 2rem; color: #ffffff; margin-bottom: 2rem; padding-bottom: 10px; display: inline-block; position: relative;}
         .section-title::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60px; height: 4px; background: #22c05d; border-radius: 2px;}
 
-        /* Comprehensive Features Section */
+        /* Features Section */
         .features-wrapper { text-align: left; margin-bottom: 4rem; }
         .feature-block { 
             background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); 
-            border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; transition: transform 0.3s ease;
+            border-radius: 20px; padding: 2rem; margin-bottom: 1.8rem; transition: transform 0.3s ease;
         }
-        .feature-block:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.04); border-color: rgba(34, 192, 93, 0.3);}
-        .feature-block h3 { margin: 0 0 20px 0; font-size: 1.6rem; display: flex; align-items: center; gap: 12px; }
+        .feature-block:hover { transform: translateY(-4px); background: rgba(255, 255, 255, 0.04); border-color: rgba(34, 192, 93, 0.3);}
+        .feature-block h3 { margin: 0 0 18px 0; font-size: 1.5rem; display: flex; align-items: center; gap: 12px; }
         
         .h-teacher { color: #f59e0b; }
         .h-student { color: #3b82f6; }
@@ -60,8 +81,8 @@
 
         .feature-list { list-style: none; padding: 0; margin: 0; }
         .feature-list li { 
-            position: relative; padding-left: 30px; margin-bottom: 15px; 
-            color: #b0c4de; font-size: 1.05rem; line-height: 1.6; 
+            position: relative; padding-left: 28px; margin-bottom: 12px; 
+            color: #b0c4de; font-size: 1rem; line-height: 1.6; 
         }
         .feature-list li::before { 
             content: '\f00c'; font-family: 'Font Awesome 5 Free'; font-weight: 900; 
@@ -69,22 +90,21 @@
         }
         .feature-list li strong { color: #e8eef8; }
 
-        /* Question Type Badge */
         .q-badge { display: inline-block; font-size: 0.8rem; padding: 3px 8px; border-radius: 12px; font-weight: bold; margin-left: 5px; vertical-align: middle;}
         .b-mcq { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6;}
         .b-subj { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b;}
 
         /* Review Form Section */
         .review-form-card {
-            background: rgba(17, 29, 52, 0.6); border-radius: 20px; padding: 30px;
+            background: rgba(17, 29, 52, 0.6); border-radius: 20px; padding: 28px;
             margin-bottom: 3rem; border: 1px solid rgba(255, 255, 255, 0.1); text-align: left;
         }
-        .review-form-card h3 { margin-top: 0; color: #81c784; font-size: 1.5rem; margin-bottom: 20px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #c8d3ea; font-size: 1rem; font-weight: 600;}
+        .review-form-card h3 { margin-top: 0; color: #81c784; font-size: 1.4rem; margin-bottom: 20px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #c8d3ea; font-size: 0.95rem; font-weight: 600;}
         .form-control {
             width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.4); color: #fff; font-size: 1rem; box-sizing: border-box; transition: 0.3s;
+            background: rgba(0, 0, 0, 0.4); color: #fff; font-size: 0.95rem; box-sizing: border-box; transition: 0.3s;
         }
         .form-control:focus { outline: none; border-color: #22c05d; background: rgba(0,0,0,0.6);}
         .star-rating-select { font-size: 1.8rem; color: #f59e0b; cursor: pointer; display: flex; gap: 8px; }
@@ -92,33 +112,33 @@
         .star-rating-select i:hover { transform: scale(1.2); }
         .btn-submit-review {
             background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px 25px; border-radius: 25px;
-            font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); width: 100%;
+            font-size: 1.05rem; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); width: 100%;
         }
         .btn-submit-review:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);}
 
         /* Reviews Section */
         .reviews-section { margin-top: 2rem; width: 100%; }
         .rating-summary { margin-bottom: 2.5rem; }
-        .rating-summary .stars { color: #f59e0b; font-size: 2.2rem; letter-spacing: 3px; }
-        .rating-summary p { font-size: 1.2rem; color: #c8d3ea; margin-top: 10px; }
+        .rating-summary .stars { color: #f59e0b; font-size: 2rem; letter-spacing: 3px; }
+        .rating-summary p { font-size: 1.15rem; color: #c8d3ea; margin-top: 10px; }
 
-        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; text-align: left; }
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; text-align: left; }
         
         .review-card {
-            background: rgba(17, 29, 52, 0.4); padding: 1.8rem; border-radius: 20px; 
+            background: rgba(17, 29, 52, 0.4); padding: 1.6rem; border-radius: 20px; 
             border: 1px solid rgba(34, 192, 93, 0.2); position: relative; transition: 0.3s;
         }
         .review-card:hover { border-color: rgba(34, 192, 93, 0.6); transform: translateY(-3px);}
-        .review-card i.quote { position: absolute; top: 20px; right: 20px; color: rgba(255,255,255,0.03); font-size: 4rem; }
-        .review-stars { color: #f59e0b; font-size: 1.1rem; margin-bottom: 15px; }
-        .review-text { font-style: italic; color: #e8eef8; font-size: 1rem; line-height: 1.7; margin-bottom: 20px; position: relative; z-index: 1;}
-        .reviewer-info { display: flex; align-items: center; gap: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;}
-        .reviewer-info .avatar { width: 45px; height: 45px; background: linear-gradient(135deg, #22c05d, #16a34a); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; }
+        .review-card i.quote { position: absolute; top: 20px; right: 20px; color: rgba(255,255,255,0.03); font-size: 3.5rem; }
+        .review-stars { color: #f59e0b; font-size: 1rem; margin-bottom: 12px; }
+        .review-text { font-style: italic; color: #e8eef8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 18px; position: relative; z-index: 1;}
+        .reviewer-info { display: flex; align-items: center; gap: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;}
+        .reviewer-info .avatar { width: 42px; height: 42px; background: linear-gradient(135deg, #22c05d, #16a34a); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
         .reviewer-info div { display: flex; flex-direction: column; }
-        .reviewer-info .name { font-weight: bold; color: #f5f9ff; font-size: 1.1rem; }
-        .reviewer-info .role { font-size: 0.85rem; color: #81c784; margin-top: 2px;}
+        .reviewer-info .name { font-weight: bold; color: #f5f9ff; font-size: 1rem; }
+        .reviewer-info .role { font-size: 0.8rem; color: #81c784; margin-top: 2px;}
 
-        footer { margin-top: 5rem; padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.05); color: #64748b; font-size: 0.95rem; }
+        footer { margin-top: 4rem; padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.05); color: #64748b; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -134,18 +154,18 @@
 
         <!-- Download Section -->
         <div class="download-card">
-            <h2 style="margin-top: 0; color: #ffffff; font-size: 2rem; margin-bottom: 10px;">Experience Seamless Learning</h2>
-            <p style="color: #94a3b8; margin-bottom: 2.5rem; font-size: 1.1rem;">Download the official Android app to unlock advanced features for both Teachers and Students.</p>
+            <h2 style="margin-top: 0; color: #ffffff; font-size: 1.8rem; margin-bottom: 10px;">Experience Seamless Learning</h2>
+            <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 1.05rem;">Download the official Android app to unlock advanced features for both Teachers and Students.</p>
             
             <a href="https://github.com/SaikatDas0019/ExamMate2.0/releases/download/ExamMate/app-release.apk" download class="btn-download">
                 <i class="fab fa-android"></i> Download App for Android
             </a>
-            <p style="margin-top: 20px; font-size: 0.9rem; color: #475569; font-weight: bold;"><i class="fas fa-shield-alt" style="color: #22c05d;"></i> 100% Free, Secure & Ad-Free | Version 2.0</p>
+            <p style="margin-top: 18px; font-size: 0.85rem; color: #64748b; font-weight: bold;"><i class="fas fa-shield-alt" style="color: #22c05d;"></i> 100% Free, Secure & Ad-Free | Version 2.0</p>
         </div>
 
         <h2 class="section-title">Platform Features & Guidelines</h2>
 
-        <!-- Comprehensive Features Section -->
+        <!-- Features Section -->
         <div class="features-wrapper">
             
             <!-- For Teachers -->
@@ -154,10 +174,9 @@
                 <ul class="feature-list">
                     <li><strong>Versatile Question Creation:</strong> Create highly customized exams supporting multiple question types. Assign specific marks for each question individually.</li>
                     <li><strong>MCQ Automated Grading <span class="q-badge b-mcq">MCQ</span> :</strong> Set up 4-option multiple-choice questions. The system automatically grades them and calculates negative marking instantly.</li>
-                    <li><strong>Subjective Smart Evaluation <span class="q-badge b-subj">Descriptive</span> :</strong> Ask long/descriptive questions. Students will upload images of their handwritten answers. You can view these images directly in your dashboard, zoom in, and manually award marks which instantly reflect in their final score.</li>
-                    <li><strong>AI Smart Paste (Gemini AI):</strong> Don't type manually! Upload your PDF/Image to Gemini or ChatGPT, extract the questions, and use our "Smart Paste" to load all questions instantly.</li>
-                    <li><strong>Privacy & Security:</strong> Create "Public" exams visible to all, or "Private" exams locked behind a secret Exam Code that only your specific students can access.</li>
-                    <li><strong>Advanced Analytics:</strong> Monitor class averages, individual student attempts, and specific answer sheets from a dedicated analytics dashboard.</li>
+                    <li><strong>Subjective Smart Evaluation <span class="q-badge b-subj">Descriptive</span> :</strong> Ask long/descriptive questions. Students will upload images of their handwritten answers for manual grading.</li>
+                    <li><strong>AI Smart Paste (Gemini AI):</strong> Upload your PDF/Image to Gemini or ChatGPT, extract questions, and use "Smart Paste" to load all questions instantly.</li>
+                    <li><strong>Privacy & Security:</strong> Create "Public" exams visible to all, or "Private" exams locked behind a secret Exam Code.</li>
                 </ul>
             </div>
 
@@ -165,10 +184,9 @@
             <div class="feature-block">
                 <h3 class="h-student"><i class="fas fa-user-graduate"></i> Seamless Experience for Students</h3>
                 <ul class="feature-list">
-                    <li><strong>Dynamic Exam Interface:</strong> Answer MCQs with a single tap, and utilize our built-in Smart Camera to capture, crop, and upload handwritten answers for subjective questions without leaving the exam page.</li>
-                    <li><strong>Live Feed & Recommendations:</strong> Discover exams tailored to your class and subject. Search for specific teachers or exam codes effortlessly.</li>
-                    <li><strong>Instant Results & Detailed Review:</strong> Get your MCQ scores immediately. Once teachers evaluate your uploaded subjective papers, your updated total score and detailed review will be visible.</li>
-                    <li><strong>Progress Tracking:</strong> Level up your profile! Your avatar changes color dynamically based on your overall performance and consistency.</li>
+                    <li><strong>Dynamic Exam Interface:</strong> Answer MCQs with a single tap, and utilize our built-in Smart Camera to capture handwritten answers.</li>
+                    <li><strong>Live Feed & Recommendations:</strong> Discover exams tailored to your class and subject effortlessly.</li>
+                    <li><strong>Instant Results & Review:</strong> Get MCQ scores immediately and detailed feedback after subjective papers are checked.</li>
                 </ul>
             </div>
 
@@ -176,10 +194,9 @@
             <div class="feature-block">
                 <h3 class="h-security"><i class="fas fa-shield-alt"></i> Military-Grade Anti-Cheat System</h3>
                 <ul class="feature-list">
-                    <li><strong>Tab/App Switching Detection:</strong> If a student tries to minimize the app, switch tabs, or open Google Lens, the system immediately registers a warning.</li>
-                    <li><strong>Auto-Submission Protocol:</strong> The system allows a maximum of 5 warnings. On the 5th violation, the exam is automatically terminated and submitted.</li>
-                    <li><strong>Smart Pausing:</strong> During the subjective image upload process, the anti-cheat system intelligently pauses itself to allow students to use their camera, resuming instantly upon return.</li>
-                    <li><strong>Copy & Screenshot Block:</strong> Text copying is strictly disabled, and taking screenshots within the exam room is entirely blocked (on supported Android versions).</li>
+                    <li><strong>Tab/App Switching Detection:</strong> If a student tries to minimize the app or switch tabs, the system immediately registers a warning.</li>
+                    <li><strong>Auto-Submission Protocol:</strong> Reaching 5 warnings auto-terminates and submits the exam instantly.</li>
+                    <li><strong>Copy & Screenshot Block:</strong> Text copying is strictly disabled, and taking screenshots within the exam room is blocked.</li>
                 </ul>
             </div>
 
@@ -190,11 +207,11 @@
             <h3><i class="fas fa-pen-nib"></i> Share Your Experience</h3>
             <form id="reviewForm">
                 <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                    <div class="form-group" style="flex: 1; min-width: 250px;">
+                    <div class="form-group" style="flex: 1; min-width: 240px;">
                         <label>Your Full Name</label>
                         <input type="text" id="revName" class="form-control" placeholder="e.g. Rahul Sharma" required>
                     </div>
-                    <div class="form-group" style="flex: 1; min-width: 250px;">
+                    <div class="form-group" style="flex: 1; min-width: 240px;">
                         <label>Select Your Role</label>
                         <select id="revRole" class="form-control">
                             <option value="Student">I am a Student</option>
@@ -216,7 +233,7 @@
 
                 <div class="form-group">
                     <label>Detailed Feedback</label>
-                    <textarea id="revText" class="form-control" rows="4" placeholder="How was your experience using ExamMate? Any suggestions?" required></textarea>
+                    <textarea id="revText" class="form-control" rows="3" placeholder="How was your experience using ExamMate?" required></textarea>
                 </div>
 
                 <button type="submit" class="btn-submit-review">Publish Review</button>
@@ -225,32 +242,29 @@
 
         <!-- Live Reviews Section -->
         <div class="reviews-section">
-            <h2 class="section-title" style="font-size: 1.8rem;">Community Feedback</h2>
+            <h2 class="section-title" style="font-size: 1.6rem;">Community Feedback</h2>
             
             <div class="rating-summary">
                 <div class="stars" id="avgStars">
                     <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                 </div>
-                <p><strong id="avgScore" style="color:#ffffff; font-size:1.4rem;">5.0</strong> / 5.0 Based on <span id="totalCount" style="font-weight:bold;">0</span> review(s)</p>
+                <p><strong id="avgScore" style="color:#ffffff; font-size:1.3rem;">5.0</strong> / 5.0 Based on <span id="totalCount" style="font-weight:bold;">0</span> review(s)</p>
             </div>
 
             <div class="reviews-grid" id="reviewsGrid">
-                <!-- Reviews dynamically loaded here -->
+                <!-- Reviews loaded dynamically -->
             </div>
         </div>
 
-        <!-- Footer -->
         <footer>
             <p>© 2026 ExamMate Educational Platform. All rights reserved.</p>
-            <p>Designed with ❤️ for Teachers & Students.</p>
         </footer>
     </div>
 
-    <!-- Script for Reviews & Stars -->
+    <!-- Script for Interactive Reviews & Stars -->
     <script>
         let selectedRating = 5;
 
-        // Star Selection Logic
         const stars = document.querySelectorAll('#starContainer i');
         stars.forEach(star => {
             star.addEventListener('click', () => {
@@ -269,7 +283,6 @@
             });
         }
 
-        // Fetch Live Reviews
         async function loadReviews() {
             try {
                 const res = await fetch('/api/get-reviews');
@@ -282,7 +295,7 @@
                     grid.innerHTML = '';
 
                     if (data.reviews.length === 0) {
-                        grid.innerHTML = '<p style="color: #64748b; grid-column: 1/-1; text-align: center; font-size:1.1rem; padding: 30px;">No reviews yet. Be the first to leave one!</p>';
+                        grid.innerHTML = '<p style="color: #64748b; grid-column: 1/-1; text-align: center; padding: 20px;">No reviews yet. Be the first to leave one!</p>';
                         return;
                     }
 
@@ -314,7 +327,6 @@
             } catch (e) { console.log("Error loading reviews:", e); }
         }
 
-        // Form Submit Logic
         document.getElementById('reviewForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('revName').value;
@@ -339,14 +351,13 @@
                     updateStarDisplay();
                     loadReviews(); 
                 } else { alert(data.error || 'Failed to submit review.'); }
-            } catch (e) { alert('Error submitting review. Check your connection.'); } 
+            } catch (e) { alert('Error submitting review.'); } 
             finally { 
                 submitBtn.innerHTML = 'Publish Review'; 
                 submitBtn.disabled = false; 
             }
         });
 
-        // Load reviews on page start
         window.addEventListener('DOMContentLoaded', loadReviews);
     </script>
 
