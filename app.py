@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, make_response
 import os
 import sqlite3
-from datetime import timedelta
+from datetime import timedelta, datetime
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import HTTPException
 from dotenv import load_dotenv
@@ -159,7 +159,7 @@ def init_db():
         cursor.execute('''CREATE TABLE IF NOT EXISTS likes (email VARCHAR(255), exam_code VARCHAR(50), PRIMARY KEY(email, exam_code))''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS saves (email VARCHAR(255), exam_code VARCHAR(50), PRIMARY KEY(email, exam_code))''')
         conn.commit()
-        # === UPDATE FOR VERSION 2.0 ===
+        
         try:
             cursor.execute("ALTER TABLE questions ADD COLUMN question_type VARCHAR(20) DEFAULT 'mcq';")
             conn.commit()
@@ -177,7 +177,7 @@ def init_db():
         else:
             cursor.execute('''CREATE TABLE IF NOT EXISTS subjective_answers (id INTEGER PRIMARY KEY AUTOINCREMENT, exam_code TEXT, student_email TEXT, question_id INTEGER, image_url TEXT, marks REAL DEFAULT 0.0, is_checked BOOLEAN DEFAULT FALSE);''')
         conn.commit()
-        # ==============================================================
+
         try:
             cursor.execute("ALTER TABLE exams ADD COLUMN expiry_time TIMESTAMP DEFAULT NULL;")
             conn.commit()
@@ -207,8 +207,6 @@ def home():
 @app.route('/setup_profile.html')
 def setup_profile_page(): return render_template('setup_profile.html')
 
-# === UPDATE 1: Student Exam Route is now Public ===
-# লগইন ছাড়া সরাসরি এক্সাম পেজে এক্সেস দেওয়া হয়েছে
 @app.route('/student_exam.html')
 def student_exam(): 
     return render_template('student_exam.html') 
@@ -320,6 +318,7 @@ def check_exam():
         return jsonify({"success": False, "error": "No Exam Found!"})
     except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
 
+# একক এবং সঠিক /api/get-exam-questions রাউট
 @app.route('/api/get-exam-questions', methods=['POST'])
 def get_exam_questions():
     data = request.get_json()
@@ -328,13 +327,13 @@ def get_exam_questions():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT exam_name, timer_minutes, negative_marks, class_name, subject, is_private FROM exams WHERE exam_code = {ph}", (exam_code,))
+        
+        cursor.execute(f"SELECT exam_name, timer_minutes, negative_marks, class_name, subject, is_private, expiry_time, season FROM exams WHERE exam_code = {ph}", (exam_code,))
         exam_info = cursor.fetchone()
         if not exam_info:
             conn.close()
             return jsonify({"success": False, "error": "Exam not found!"}), 404
 
-        # এখানে max_marks ডেটাবেস থেকে ফেচ করা হলো
         cursor.execute(f"SELECT id, question_text, option_a, option_b, option_c, option_d, correct_option, question_type, max_marks FROM questions WHERE exam_code = {ph}", (exam_code,))
         questions_rows = cursor.fetchall()
         conn.close()
@@ -355,16 +354,20 @@ def get_exam_questions():
             e_name = exam_info['exam_name']
             e_time = exam_info['timer_minutes']
             e_neg = exam_info.get('negative_marks', 0.0)
-            c_name = exam_info.get('class_name', '')
-            subj = exam_info.get('subject', '')
+            c_name = exam_info.get('class_name', 'General')
+            subj = exam_info.get('subject', 'General')
             is_priv = exam_info.get('is_private', False)
+            exp_time = str(exam_info.get('expiry_time', '')) if exam_info.get('expiry_time') else ''
+            seas = exam_info.get('season', 'General')
         else:
             e_name = exam_info[0]
             e_time = exam_info[1]
             e_neg = exam_info[2] if len(exam_info) > 2 else 0.0
-            c_name = exam_info[3] if len(exam_info) > 3 else ''
-            subj = exam_info[4] if len(exam_info) > 4 else ''
+            c_name = exam_info[3] if len(exam_info) > 3 else 'General'
+            subj = exam_info[4] if len(exam_info) > 4 else 'General'
             is_priv = exam_info[5] if len(exam_info) > 5 else False
+            exp_time = str(exam_info[6]) if len(exam_info) > 6 and exam_info[6] else ''
+            seas = exam_info[7] if len(exam_info) > 7 and exam_info[7] else 'General'
 
         return jsonify({ 
             "success": True, 
@@ -374,10 +377,11 @@ def get_exam_questions():
             "class_name": c_name,
             "subject": subj,
             "is_private": is_priv,
+            "expiry_time": exp_time.split('.')[0].replace(' ', 'T') if exp_time else '',
+            "season": seas,
             "questions": questions_list 
         })
-    except Exception as e: return jsonify({"success": False, "error": "Database error occurred."}), 500
-
+    except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/submit-exam-result', methods=['POST'])
 def submit_exam_result():
@@ -398,7 +402,6 @@ def submit_exam_result():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # রিএটেম্পট করলে পুরনো ডেটা ক্লিয়ার করে নতুন ডেটা বসানো হবে
         cursor.execute(f"DELETE FROM results WHERE student_email = {ph} AND exam_code = {ph}", (email, exam_code))
         cursor.execute(f"DELETE FROM subjective_answers WHERE student_email = {ph} AND exam_code = {ph}", (email, exam_code))
         
@@ -448,7 +451,7 @@ def create_exam_api():
                        (exam_code, exam_name, timer, negative_marks, teacher_email, class_name, subject, is_private))
         for q in questions:
             q_type = q.get('question_type', 'mcq')
-            max_marks = float(q.get('max_marks', 1.0)) # <-- Fix applied here
+            max_marks = float(q.get('max_marks', 1.0))
             cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option, question_type, max_marks) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
                            (exam_code, q['question_text'], q.get('option_a', ''), q.get('option_b', ''), q.get('option_c', ''), q.get('option_d', ''), q.get('correct_option', ''), q_type, max_marks))
         conn.commit()
@@ -853,8 +856,8 @@ def update_profile():
         
 @app.route('/logout')
 def logout():
-    session.pop('user', None) # Flask সেশন ক্লিয়ার করবে
-    return redirect('/?logout=1') # হোমপেজে পাঠাবে এবং ফ্রন্টএন্ড সেশন ক্লিয়ার ট্রিগার করবে
+    session.pop('user', None)
+    return redirect('/?logout=1')
 
 @app.route('/api/check-login-status', methods=['POST'])
 def check_login_status():
@@ -990,7 +993,7 @@ def teacher_update_exam():
         cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
         for q in questions:
             q_type = q.get('question_type', 'mcq')
-            max_marks = float(q.get('max_marks', 1.0)) # <-- Fix applied here
+            max_marks = float(q.get('max_marks', 1.0))
             cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option, question_type, max_marks) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
                            (exam_code, q['question_text'], q.get('option_a', ''), q.get('option_b', ''), q.get('option_c', ''), q.get('option_d', ''), q.get('correct_option', ''), q_type, max_marks))
         conn.commit()
@@ -1128,8 +1131,6 @@ def run_fix_db():
         return "<h3>🎉 Database successfully fixed! Version 2.0 tables and columns are ready!</h3>"
     except Exception as e: return f"<h3>⚠️ Error:</h3> <p>{str(e)}</p>"
 
-
-# === এখানে শুধু একটি ফাংশন রাখা হলো ===
 @app.route('/api/teacher-pending-evaluations', methods=['POST'])
 def get_pending_evaluations():
     data = request.get_json()
@@ -1138,14 +1139,12 @@ def get_pending_evaluations():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        # max_marks যোগ করা হয়েছে
         cursor.execute(f"SELECT s.id, s.student_email, s.image_url, q.question_text, q.max_marks FROM subjective_answers s JOIN questions q ON s.question_id = q.id WHERE s.exam_code = {ph} AND s.is_checked = FALSE", (exam_code,))
         rows = cursor.fetchall()
         conn.close()
         evaluations = [{"id": r["id"], "student_email": r["student_email"], "image_url": r["image_url"], "question_text": r["question_text"], "max_marks": r["max_marks"] or 1.0} for r in rows]
         return jsonify({"success": True, "evaluations": evaluations})
     except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
-
 
 @app.route('/api/teacher-submit-evaluation', methods=['POST'])
 def submit_evaluation():
@@ -1158,13 +1157,8 @@ def submit_evaluation():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        
-        # ১. খাতা চেকড করা এবং মার্কস সেভ করা
         cursor.execute(f"UPDATE subjective_answers SET marks = {ph}, is_checked = TRUE WHERE id = {ph}", (marks, ans_id))
-        
-        # ২. স্টুডেন্টের মেইন রেজাল্ট টেবিলের স্কোরের সাথে ম্যানুয়াল মার্কস যোগ করে দেওয়া
         cursor.execute(f"UPDATE results SET score = score + {ph} WHERE student_email = {ph} AND exam_code = {ph}", (marks, student_email, exam_code))
-        
         conn.commit()
         conn.close()
         return jsonify({"success": True})
@@ -1179,8 +1173,6 @@ def get_student_exam_review():
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
-        
-        # স্টুডেন্ট আগে পরীক্ষা দিয়েছে কি না এবং তার আপডেট স্কোর কত সেটা চেক করা
         cursor.execute(f"SELECT score FROM results WHERE student_email = {ph} AND exam_code = {ph}", (email, exam_code))
         res = cursor.fetchone()
         if not res:
@@ -1188,8 +1180,6 @@ def get_student_exam_review():
             return jsonify({"success": True, "taken": False})
         
         total_score = res['score'] if isinstance(res, dict) else res[0]
-        
-        # শিক্ষকের দেওয়া নম্বরগুলো তুলে আনা
         cursor.execute(f"SELECT question_id, marks, is_checked FROM subjective_answers WHERE student_email = {ph} AND exam_code = {ph}", (email, exam_code))
         subj_rows = cursor.fetchall()
         subj_data = {}
@@ -1210,9 +1200,6 @@ from flask import send_from_directory
 def sitemap():
     return send_from_directory('.', 'sitemap.xml')
 
-# ==========================================
-# 🔥 NEW API FOR SPECIAL EXAMS (STUDENT DASHBOARD)
-# ==========================================
 @app.route('/api/get-special-exams', methods=['POST'])
 def get_special_exams():
     data = request.get_json() or {}
@@ -1223,9 +1210,8 @@ def get_special_exams():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # ১. ফোল্ডার টাইপ 'live_session' অথবা রুট (folder_id = 0) থেকে লাইভ এক্সামগুলো ফেচ করা হবে
         cursor.execute("""
-            SELECT e.exam_code, e.exam_name, e.class_name, e.subject, e.season, e.expiry_time 
+            SELECT e.exam_code, e.exam_name, e.class_name, e.subject, e.season, e.expiry_time, e.folder_id 
             FROM exams e 
             LEFT JOIN drive_folders f ON e.folder_id = f.id 
             WHERE e.teacher_email = 'exammate.official@gmail.com' 
@@ -1233,12 +1219,10 @@ def get_special_exams():
         """)
         live_exams_rows = cursor.fetchall()
         
-        # স্টুডেন্টের স্কোরের ডেটা ফেচ করা
         cursor.execute(f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph}", (email,))
         history_rows = cursor.fetchall()
         history_map = {r["exam_code"] if isinstance(r, dict) else r[0]: {"score": r["score"] if isinstance(r, dict) else r[1], "total": r["total_questions"] if isinstance(r, dict) else r[2]} for r in history_rows}
         
-        from datetime import datetime
         now = datetime.now()
         
         live_exams = []
@@ -1256,9 +1240,7 @@ def get_special_exams():
 
             if exp_time_str and exp_time_str != "None":
                 try:
-                    # ডেটটাইপ পার্স করে চেক করা হচ্ছে এক্সপায়ার হয়েছে কিনা
                     expiry_dt = datetime.strptime(exp_time_str.split('.')[0], "%Y-%m-%d %H:%M:%S")
-                    # যদি সময় পার হয়ে যায়, তবে এটি লাইভ লিস্টে দেখানোর দরকার নেই (বাদ দেওয়া হলো)
                     if expiry_dt <= now:
                         continue 
                 except Exception:
@@ -1348,11 +1330,9 @@ def admin_get_special_dashboard():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # ক্যাটাগরি এবং প্লেলিস্ট ফোল্ডার ফেচ করা
         cursor.execute(f"SELECT id, folder_name, folder_type FROM drive_folders WHERE parent_id = {ph} ORDER BY id DESC", (parent_id,))
         folders = [{"id": r["id"], "name": r["folder_name"], "type": r["folder_type"]} for r in cursor.fetchall()]
         
-        # ওই ফোল্ডারের (বা রুট এর) লাইভ এক্সাম ফেচ করা
         cursor.execute(f"SELECT exam_code, exam_name, timer_minutes, expiry_time FROM exams WHERE folder_id = {ph} AND teacher_email = 'exammate.official@gmail.com' ORDER BY created_at DESC", (parent_id,))
         exams = [{"code": r["exam_code"], "name": r["exam_name"], "timer": r["timer_minutes"], "expiry_time": str(r["expiry_time"]) if r.get("expiry_time") else ""} for r in cursor.fetchall()]
         
@@ -1361,9 +1341,6 @@ def admin_get_special_dashboard():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
-# ==========================================
-# 🔥 NEW API FOR ADMIN SPECIAL EXAM CREATION
-# ==========================================
 @app.route('/api/admin/create-special-exam', methods=['POST'])
 def create_special_exam_api():
     data = request.get_json()
@@ -1371,12 +1348,11 @@ def create_special_exam_api():
     exam_name = data.get('exam_name')
     timer = data.get('timer')
     negative_marks = float(data.get('negative_marks', 0.0))
-    
     teacher_email = 'exammate.official@gmail.com' 
     
     class_name = data.get('class_name', 'General')
     subject = data.get('subject', 'General')
-    season = data.get('season', 'General') # 👈 সেশন রিসিভ করা হচ্ছে
+    season = data.get('season', 'General')
     is_private = False
     
     folder_id = data.get('folder_id', 0)
@@ -1391,7 +1367,6 @@ def create_special_exam_api():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # 👈 কুয়েরিতে season কলাম ও ভ্যালু যুক্ত করা হলো
         cursor.execute(f"INSERT INTO exams (exam_code, exam_name, timer_minutes, negative_marks, teacher_email, class_name, subject, season, is_private, folder_id, expiry_time) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
                        (exam_code, exam_name, timer, negative_marks, teacher_email, class_name, subject, season, is_private, folder_id, expiry_time))
         
@@ -1406,9 +1381,6 @@ def create_special_exam_api():
     except Exception as e: 
         return jsonify({"success": False, "error": str(e)}), 500
 
-# ==========================================
-# 🔥 API FOR SEASON ANALYTICS PAGE
-# ==========================================
 @app.route('/season_analytics.html')
 def season_analytics_page():
     return render_template('season_analytics.html') if session.get('user', {}).get('role', '').lower() == 'student' else redirect('/')
@@ -1424,8 +1396,7 @@ def get_season_analytics():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # ১. ওই সিজনের (Subject-এর) সমস্ত এক্সাম ফেচ করা
-        cursor.execute(f"SELECT exam_code, exam_name, created_at FROM exams WHERE subject = {ph} AND teacher_email = 'exammate.official@gmail.com' ORDER BY created_at ASC", (season_name,))
+        cursor.execute(f"SELECT exam_code, exam_name, created_at FROM exams WHERE season = {ph} AND teacher_email = 'exammate.official@gmail.com' ORDER BY created_at ASC", (season_name,))
         season_exams = cursor.fetchall()
         
         if not season_exams:
@@ -1435,9 +1406,7 @@ def get_season_analytics():
         exam_codes = [e['exam_code'] if isinstance(e, dict) else e[0] for e in season_exams]
         placeholders = ','.join([ph] * len(exam_codes))
         
-        # ২. স্টুডেন্টের ওই সিজনের প্রতিদিনের রেজাল্ট
         query = f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph} AND exam_code IN ({placeholders})"
-        # SQLite এবং Postgres এর প্যারামিটার লিস্ট হ্যান্ডেল
         params = [email]
         params.extend(exam_codes)
         cursor.execute(query, params)
@@ -1463,7 +1432,6 @@ def get_season_analytics():
             else:
                 daily_progress.append({"day": idx+1, "code": code, "name": name, "date": date_str, "score": 0, "total": 0, "attempted": False})
                 
-        # ৩. টোটাল সিজন লিডারবোর্ড (সর্বোচ্চ স্কোর অনুযায়ী)
         query_lb = f"SELECT r.student_email, u.name, SUM(r.score) as total_score, SUM(r.total_questions) as total_q FROM results r JOIN users u ON r.student_email = u.email WHERE r.exam_code IN ({placeholders}) GROUP BY r.student_email, u.name ORDER BY total_score DESC"
         cursor.execute(query_lb, exam_codes)
         lb_rows = cursor.fetchall()
@@ -1506,71 +1474,6 @@ def get_daily_leaderboard():
         return jsonify({"success": True, "leaderboard": lb})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
-
-@app.route('/api/get-exam-questions', methods=['POST'])
-def get_exam_questions():
-    data = request.get_json()
-    exam_code = data.get('exam_code')
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        
-        # expiry_time এবং season সহ তথ্য ফেচ করা হচ্ছে
-        cursor.execute(f"SELECT exam_name, timer_minutes, negative_marks, class_name, subject, is_private, expiry_time, season FROM exams WHERE exam_code = {ph}", (exam_code,))
-        exam_info = cursor.fetchone()
-        if not exam_info:
-            conn.close()
-            return jsonify({"success": False, "error": "Exam not found!"}), 404
-
-        cursor.execute(f"SELECT id, question_text, option_a, option_b, option_c, option_d, correct_option, question_type, max_marks FROM questions WHERE exam_code = {ph}", (exam_code,))
-        questions_rows = cursor.fetchall()
-        conn.close()
-
-        questions_list = []
-        for q in questions_rows:
-            q_type = q["question_type"] if "question_type" in q.keys() else "mcq"
-            m_marks = q["max_marks"] if "max_marks" in q.keys() and q["max_marks"] is not None else (1.0 if q_type == 'mcq' else 5.0)
-            questions_list.append({
-                "id": q["id"], "q_text": q["question_text"], 
-                "opt_a": q["option_a"], "opt_b": q["option_b"], 
-                "opt_c": q["option_c"], "opt_d": q["option_d"], 
-                "correct": q["correct_option"], "question_type": q_type,
-                "max_marks": float(m_marks)
-            })
-        
-        if isinstance(exam_info, dict):
-            e_name = exam_info['exam_name']
-            e_time = exam_info['timer_minutes']
-            e_neg = exam_info.get('negative_marks', 0.0)
-            c_name = exam_info.get('class_name', 'General')
-            subj = exam_info.get('subject', 'General')
-            is_priv = exam_info.get('is_private', False)
-            exp_time = str(exam_info.get('expiry_time', '')) if exam_info.get('expiry_time') else ''
-            seas = exam_info.get('season', 'General')
-        else:
-            e_name = exam_info[0]
-            e_time = exam_info[1]
-            e_neg = exam_info[2] if len(exam_info) > 2 else 0.0
-            c_name = exam_info[3] if len(exam_info) > 3 else 'General'
-            subj = exam_info[4] if len(exam_info) > 4 else 'General'
-            is_priv = exam_info[5] if len(exam_info) > 5 else False
-            exp_time = str(exam_info[6]) if len(exam_info) > 6 and exam_info[6] else ''
-            seas = exam_info[7] if len(exam_info) > 7 and exam_info[7] else 'General'
-
-        return jsonify({ 
-            "success": True, 
-            "exam_name": e_name, 
-            "timer_minutes": e_time, 
-            "negative_marks": float(e_neg) if e_neg else 0.0, 
-            "class_name": c_name,
-            "subject": subj,
-            "is_private": is_priv,
-            "expiry_time": exp_time.split('.')[0].replace(' ', 'T') if exp_time else '',
-            "season": seas,
-            "questions": questions_list 
-        })
-    except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/admin/update-special-exam', methods=['POST'])
 def update_special_exam_api():
