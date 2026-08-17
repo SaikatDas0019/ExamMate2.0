@@ -167,7 +167,6 @@
         window.onload = async () => {
             window.history.replaceState({modal: null}, "", window.location.href);
 
-            // Speed Optimization: Render from local cache if available
             const cachedData = localStorage.getItem('special_exams_cache');
             if (cachedData) {
                 renderSpecialData(JSON.parse(cachedData));
@@ -226,6 +225,7 @@
                     const examsInSession = sessionsMap[seasonName];
                     const bg = getRandomGradient();
 
+                    // Sequential unlocking logic: Find the first unattempted or non-expired exam in sequence
                     let activeExam = null;
                     for (let i = 0; i < examsInSession.length; i++) {
                         let ex = examsInSession[i];
@@ -235,25 +235,42 @@
                             if (expDate <= now) isExpired = true;
                         }
 
-                        if (!ex.is_attempted) {
-                            if (!isExpired) {
-                                activeExam = ex;
-                                break;
-                            } else {
-                                activeExam = ex;
-                            }
+                        // If not attempted and not expired, this is our active exam
+                        if (!ex.is_attempted && !isExpired) {
+                            activeExam = ex;
+                            break;
+                        }
+                        // If it's attempted, move to the next in series. 
+                        // If it's expired and not attempted, we can also check subsequent exams so users can access active ones in the series.
+                        if (ex.is_attempted && i === examsInSession.length - 1) {
+                            activeExam = ex; // all completed, point to the last one
                         }
                     }
 
                     if (!activeExam && examsInSession.length > 0) {
-                        activeExam = examsInSession[examsInSession.length - 1];
+                        // Fallback to the very first or last if all done
+                        activeExam = examsInSession.find(ex => !ex.is_attempted) || examsInSession[examsInSession.length - 1];
                     }
 
                     let actionBtnHtml = '';
                     let isCurrentExpired = false;
-                    if (activeExam && activeExam.expiry_time && activeExam.expiry_time !== "None") {
-                        let expDate = new Date(activeExam.expiry_time.replace(' ', 'T'));
-                        if (expDate <= now) isCurrentExpired = true;
+                    let timerDisplayHtml = '';
+
+                    if (activeExam) {
+                        if (activeExam.expiry_time && activeExam.expiry_time !== "None") {
+                            let expDate = new Date(activeExam.expiry_time.replace(' ', 'T'));
+                            if (expDate <= now) {
+                                isCurrentExpired = true;
+                            } else {
+                                // Calculate timer remaining text
+                                let diffMs = expDate - now;
+                                let diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                                let diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                                timerDisplayHtml = `<div style="font-size:0.8rem; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; display:inline-block; margin-bottom:8px;"><i class="fas fa-clock"></i> Ends in: ${diffHrs}h ${diffMins}m</div>`;
+                            }
+                        } else {
+                            timerDisplayHtml = `<div style="font-size:0.8rem; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; display:inline-block; margin-bottom:8px;"><i class="fas fa-clock"></i> Timer: ${activeExam.timer} Mins</div>`;
+                        }
                     }
 
                     if (activeExam && !activeExam.is_attempted && !isCurrentExpired) {
@@ -267,7 +284,8 @@
                         <div>
                             <div class="live-badge"><i class="fas fa-circle"></i> Live Session</div><br>
                             <h3 style="margin:0 0 4px 0; font-size:1.4rem; font-weight:800;">${seasonName}</h3>
-                            <p style="margin:0 0 15px 0; font-size:0.85rem; color:rgba(255,255,255,0.9);">Total Exams in Session: ${examsInSession.length}</p>
+                            <p style="margin:0 0 8px 0; font-size:0.85rem; color:rgba(255,255,255,0.9);">Total Exams in Session: ${examsInSession.length}</p>
+                            ${timerDisplayHtml}
                         </div>
                         <div>
                             ${actionBtnHtml}
@@ -332,14 +350,50 @@
                         container.innerHTML = '<p style="text-align:center; color:#ef4444; font-weight:bold; margin-top:20px;">No exams found here.</p>';
                         return;
                     }
+                    
+                    // Sorting playlist exams sequentially to handle series/sessions properly
+                    const sortedExams = [...data.exams].sort((a, b) => new Date(a.created_at || 0) - newDate(b.created_at || 0));
+
                     let html = '<div style="padding-top:5px;">';
-                    data.exams.forEach(ex => {
+                    sortedExams.forEach((ex, idx) => {
+                        let isExpired = false;
+                        const now = new Date();
+                        if (ex.expiry_time && ex.expiry_time !== "None") {
+                            let expDate = new Date(ex.expiry_time.replace(' ', 'T'));
+                            if (expDate <= now) isExpired = true;
+                        }
+
+                        // Determine if previous exam in series is attempted or expired so this one unlocks
+                        let isUnlocked = true;
+                        if (idx > 0) {
+                            let prevEx = sortedExams[idx - 1];
+                            let prevExpired = false;
+                            if (prevEx.expiry_time && prevEx.expiry_time !== "None") {
+                                let pExpDate = new Date(prevEx.expiry_time.replace(' ', 'T'));
+                                if (pExpDate <= now) prevExpired = true;
+                            }
+                            // Unlocked if previous is attempted OR previous is expired
+                            if (!prevEx.is_attempted && !prevExpired) {
+                                isUnlocked = false;
+                            }
+                        }
+
                         let actionBtnHtml = '';
                         if (ex.is_attempted) {
                             let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
                             actionBtnHtml = `
                                 <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">✅ Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)</div>
                                 <button style="width:100%; background:#f8fafc; color:#10b981; border:2px solid #10b981; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
+                            `;
+                        } else if (!isUnlocked) {
+                            actionBtnHtml = `
+                                <div style="margin-bottom:10px; font-size:0.85rem; color:#d97706; font-weight:bold; background:#fef3c7; padding:8px; border-radius:8px; text-align:center; border:1px solid #fde68a;">🔒 Complete or wait for the previous exam to unlock</div>
+                                <button disabled style="width:100%; background:#cbd5e1; color:#ffffff; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:not-allowed;">Locked 🔒</button>
+                            `;
+                        } else if (isExpired) {
+                            actionBtnHtml = `
+                                <div style="margin-bottom:10px; font-size:0.85rem; color:#dc2626; font-weight:bold; background:#fef2f2; padding:8px; border-radius:8px; text-align:center; border:1px solid #fecaca;">⌛ Exam Time Expired</div>
+                                <button disabled style="width:100%; background:#cbd5e1; color:#ffffff; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:not-allowed;">Expired ⌛</button>
                             `;
                         } else {
                             actionBtnHtml = `<button style="width:100%; background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(59, 130, 246, 0.3);" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
@@ -351,7 +405,7 @@
                                 <div style="width:38px; height:38px; background:#eff6ff; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1.1rem;"><i class="fas fa-file-alt"></i></div>
                                 <div style="flex:1;">
                                     <strong style="display:block; font-size:0.95rem; color:#0f172a;">Official ExamMate</strong>
-                                    <span style="display:block; font-size:0.7rem; color:#64748b;">Special Exam</span>
+                                    <span style="display:block; font-size:0.7rem; color:#64748b;">Special Exam Series</span>
                                 </div>
                             </div>
                             <div style="margin-bottom:15px;">
@@ -361,7 +415,7 @@
                                     <span style="background:#f1f5f9; color:#475569; font-size:0.7rem; font-weight:bold; padding:3px 8px; border-radius:6px;"><i class="fas fa-book"></i> ${ex.subject}</span>
                                 </div>
                                 <div style="display:flex; gap:15px; background:#f8fafc; padding:10px; border-radius:10px; border:1px dashed #cbd5e1;">
-                                    <span style="font-size:0.8rem; color:#334155; font-weight:600; display:flex; align-items:center; gap:5px;"><i class="fas fa-clock" style="color:#3b82f6;"></i> ${ex.timer} Mins</span>
+                                    <span style="font-size:0.8rem; color:#334155; font-weight:600; display:flex; align-items:center; gap:5px;"><i class="fas fa-clock" style="color:#3b82f6;"></i> Timer: ${ex.timer} Mins</span>
                                 </div>
                             </div>
                             <div style="border-top:1px solid #f1f5f9; padding-top:12px; margin-top:5px;">
