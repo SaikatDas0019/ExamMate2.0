@@ -35,7 +35,7 @@
             border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between;
         }
         .header-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0; }
-        .settings-btn { background: transparent; border: none; font-size: 1.4rem; color: #475569; cursor: pointer; transition: 0.2s;}
+        .settings-btn { background: transparent; border: none; font-size: 1.4rem; color: #475569; cursor: pointer; transition: transform 0.2s;}
         .settings-btn:hover { color: #0f172a; transform: rotate(45deg); }
         .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0;}
 
@@ -60,15 +60,16 @@
         .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
         .metric-card {
             background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 12px; text-align: center;
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+            will-change: transform;
         }
-        .metric-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); }
+        .metric-card:active { transform: scale(0.97); }
         .metric-card.full-width { grid-column: span 2; }
         .metric-card span { display: block; font-size: 0.85rem; color: #166534; font-weight: 700; margin-bottom: 5px; }
         .metric-card strong { font-size: 1.4rem; color: #14532d; }
 
         /* Analytics Panels CSS */
-        .panel-view { display: none; background: #f3f4f6; min-height: 100vh; padding: 75px 15px 80px 15px; }
+        .panel-view { display: none; background: #f3f4f6; min-height: 100vh; padding: 75px 15px 80px 15px; box-sizing: border-box; }
         #main-profile-view { display: block; }
         .page-header h1 { font-size: 18px; color: #1a1a1a; margin: 0 0 2px 0; }
         .page-header p { color: #4b5563; margin: 0; font-size: 0.8rem; }
@@ -78,11 +79,11 @@
         th { background-color: #f8fafc; color: #374151; font-weight: bold; }
         .student-name-box { display: flex; flex-direction: column; }
         .student-name-box .email { font-size: 0.7rem; color: #64748b; margin-top: 2px; }
-        .list-item-btn { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; background: #f8fafc; cursor: pointer; transition: 0.2s;}
-        .list-item-btn:hover { border-color: #3b82f6; background: #eff6ff; }
+        .list-item-btn { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; background: #f8fafc; cursor: pointer; transition: background 0.15s;}
+        .list-item-btn:hover { background: #eff6ff; border-color: #3b82f6; }
 
-        /* Feed Cards (Active Exams & Social) */
-        .feed-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        /* Feed Cards */
+        .feed-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transform: translateZ(0); }
         .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
         .feed-teacher-info { flex: 1; }
@@ -96,14 +97,13 @@
         .feed-meta i { color: #3b82f6; }
         .feed-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px; }
         .action-left { display: flex; gap: 15px; }
-        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 0; transition: 0.2s;}
+        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 0; transition: color 0.15s;}
         .action-btn span { font-size: 0.8rem; font-weight: 600; }
-        .action-btn:hover { color: #3b82f6; transform: scale(1.1); }
+        .action-btn:hover { color: #3b82f6; }
         .like-active { color: #ef4444 !important; }
         .save-active { color: #f59e0b !important; }
-        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s; }
-        .btn-attempt:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4); }
-        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s; }
+        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; }
 
         /* Edit Form Elements */
         .input-group { margin-bottom: 15px; }
@@ -119,24 +119,24 @@
 
         /* Settings Bottom Sheet */
         .settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px);}
-        .settings-sheet { background: #ffffff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 15px 40px 15px; box-sizing: border-box; animation: slideUp 0.3s ease-out;}
+        .settings-sheet { background: #ffffff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 15px 40px 15px; box-sizing: border-box; animation: slideUp 0.25s ease-out;}
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .sheet-drag-handle { width: 40px; height: 5px; background: #cbd5e1; border-radius: 5px; margin: 0 auto 20px auto; }
-        .settings-option { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 600; color: #1e293b; cursor: pointer; margin-bottom: 8px; transition: 0.2s;}
+        .settings-option { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 600; color: #1e293b; cursor: pointer; margin-bottom: 8px; transition: background 0.15s;}
         .settings-option:hover { background: #f1f5f9; }
         .settings-option i { font-size: 1.2rem; width: 25px; text-align: center; color: #64748b;}
         .opt-logout { color: #ef4444 !important; }
         .opt-logout i { color: #ef4444 !important; }
 
         /* Collection Modal */
-        .collection-filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
+        .collection-filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; scrollbar-width: none; }
         .collection-filters::-webkit-scrollbar { display: none; }
         .collection-pill { background: #ffffff; border: 1px solid #cbd5e1; color: #475569; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.2s;}
         .collection-pill.active { background: #eff6ff; color: #1e3a8a; border-color: #3b82f6; }
         
         .collection-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px);}
-        .collection-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; max-height: 85vh; overflow-y: auto;}
-        .collection-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; cursor: pointer; font-weight: bold; color: #1e293b; transition: 0.2s;}
+        .collection-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.25s ease-out; max-height: 85vh; overflow-y: auto;}
+        .collection-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; cursor: pointer; font-weight: bold; color: #1e293b; transition: background 0.15s;}
         .collection-item:hover { background: #eff6ff; border-color: #3b82f6; color: #3b82f6;}
         .collection-item i { font-size: 1.2rem; color: #3b82f6;}
         .new-collection-box { display: flex; gap: 10px; margin-top: 15px; margin-bottom: 10px;}
@@ -146,7 +146,7 @@
 
         /* Custom Share Modal & Score Modal Fix */
         .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px);}
-        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
+        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.25s ease-out; }
         .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
         .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
         .share-buttons i { font-size: 2.2rem; }
@@ -155,7 +155,7 @@
         .share-buttons .fa-copy { color: #64748b; }
 
         .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; max-height: 85vh; overflow-y: auto; }
+        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
         .score-modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
         .score-modal-close { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); margin-top: 15px;}
         
@@ -167,6 +167,10 @@
         .ans-correct-text { color: #166534; font-weight: bold; }
         .ans-wrong-text { color: #991b1b; font-weight: bold; }
         .ans-real-correct { color: #065f46; font-weight: bold; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fca5a5;}
+
+        /* Skeleton loader for lightning fast feedback */
+        .skeleton-box { background: #e2e8f0; border-radius: 6px; animation: pulse 1.2s infinite ease-in-out; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
         /* Bottom Nav */
         .bottom-nav {
@@ -183,7 +187,7 @@
 
     <div class="container">
         <!-- Main Profile View -->
-        <div id="main-profile-view">
+        <div id="main-profile-view" class="panel-main-view">
             <div class="sticky-header">
                 <h1 class="header-title">Teacher Profile</h1>
                 <button class="settings-btn" onclick="openSettings()"><i class="fas fa-cog"></i></button>
@@ -222,13 +226,13 @@
         <!-- PANEL 1: TOTAL STUDENTS -->
         <div id="panel-students" class="panel-view">
             <div class="sticky-header" style="justify-content: flex-start;">
-                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1>Total Students</h1></div>
+                <button class="btn-back" onclick="goBackToMain()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header" style="margin-left: 10px;"><h1>Total Students</h1></div>
             </div>
-            <div class="table-container">
+            <div class="table-container" style="margin-top: 15px;">
                 <table>
                     <thead><tr><th>Name (Email)</th><th>Exams Attended</th><th>Overall Avg</th></tr></thead>
-                    <tbody id="list-students-body"></tbody>
+                    <tbody id="list-students-body"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -236,25 +240,25 @@
         <!-- PANEL 2: TOTAL ATTEMPTS (LIST OF EXAMS) -->
         <div id="panel-attempts" class="panel-view">
             <div class="sticky-header" style="justify-content: flex-start;">
-                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1>Exam Attempts</h1><p>Click an exam to view students</p></div>
+                <button class="btn-back" onclick="goBackToMain()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header" style="margin-left: 10px;"><h1>Exam Attempts</h1><p>Click an exam to view students</p></div>
             </div>
-            <div id="list-attempts-box"></div>
+            <div id="list-attempts-box" style="margin-top: 15px;"><p style="text-align:center; color:#64748b;">Loading...</p></div>
         </div>
 
         <!-- PANEL 2.1: SPECIFIC EXAM ATTEMPT DETAILS -->
         <div id="panel-attempt-details" class="panel-view">
             <div class="sticky-header" style="justify-content: flex-start;">
                 <button class="btn-back" onclick="openPanel('panel-attempts')">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header">
+                <div class="page-header" style="margin-left: 10px;">
                     <h1 id="sub-attempt-title">Students</h1>
                     <p>Performance in this specific exam</p>
                 </div>
             </div>
-            <div class="table-container">
+            <div class="table-container" style="margin-top: 15px;">
                 <table>
                     <thead><tr><th>Student Name</th><th>Score</th><th>Performance</th></tr></thead>
-                    <tbody id="sub-attempt-body"></tbody>
+                    <tbody id="sub-attempt-body"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -262,13 +266,13 @@
         <!-- PANEL 3: CLASS AVERAGE (ALL EXAMS TABLE) -->
         <div id="panel-average" class="panel-view">
             <div class="sticky-header" style="justify-content: flex-start;">
-                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1>All Exams Stats</h1></div>
+                <button class="btn-back" onclick="goBackToMain()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header" style="margin-left: 10px;"><h1>All Exams Stats</h1></div>
             </div>
-            <div class="table-container">
+            <div class="table-container" style="margin-top: 15px;">
                 <table>
                     <thead><tr><th>Exam Name</th><th>Avg %</th><th>High %</th><th>Low %</th></tr></thead>
-                    <tbody id="list-average-body"></tbody>
+                    <tbody id="list-average-body"><tr><td colspan="4" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -276,10 +280,10 @@
         <!-- PANEL 4: ACTIVE EXAMS (FEED CARDS) -->
         <div id="panel-active" class="panel-view">
             <div class="sticky-header" style="justify-content: flex-start;">
-                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1>Active Exams</h1><p>Manage, Edit or Evaluate</p></div>
+                <button class="btn-back" onclick="goBackToMain()">&nbsp; ‹ &nbsp;</button>
+                <div class="page-header" style="margin-left: 10px;"><h1>Active Exams</h1><p>Manage, Edit or Evaluate</p></div>
             </div>
-            <div id="active-exams-feed">
+            <div id="active-exams-feed" style="margin-top: 15px;">
                 <p style="text-align:center; color:#64748b; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading exams...</p>
             </div>
         </div>
@@ -288,9 +292,9 @@
         <div id="panel-edit-exam" class="panel-view" style="background:#ffffff;">
             <div class="sticky-header" style="justify-content: flex-start;">
                 <button class="btn-back" onclick="openPanel('panel-active')">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1 id="edit-exam-header-title">Edit Exam</h1></div>
+                <div class="page-header" style="margin-left: 10px;"><h1 id="edit-exam-header-title">Edit Exam</h1></div>
             </div>
-            <div id="edit-exam-content" style="padding-bottom: 20px;">
+            <div id="edit-exam-content" style="padding-top: 15px; padding-bottom: 20px;">
                 <!-- Edit Form will be injected here -->
             </div>
         </div>
@@ -299,9 +303,9 @@
         <div id="panel-evaluate" class="panel-view">
             <div class="sticky-header" style="justify-content: flex-start;">
                 <button class="btn-back" onclick="openPanel('panel-active')">&nbsp; ‹ &nbsp;</button>
-                <div class="page-header"><h1 id="eval-exam-header-title">View Answers</h1><p>Check pending subjective papers</p></div>
+                <div class="page-header" style="margin-left: 10px;"><h1 id="eval-exam-header-title">View Answers</h1><p>Check pending subjective papers</p></div>
             </div>
-            <div id="eval-content" style="padding-bottom: 20px;">
+            <div id="eval-content" style="padding-top: 15px; padding-bottom: 20px;">
                 <!-- Answer Cards / Student List will be injected here -->
             </div>
         </div>
@@ -309,10 +313,10 @@
         <!-- Edit Profile -->
         <div id="edit-profile-view" class="panel-view" style="background:#ffffff;">
             <div class="sticky-header" style="justify-content: flex-start;">
-                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
-                <h1 class="header-title">Edit Profile</h1>
+                <button class="btn-back" onclick="goBackToMain()">&nbsp; ‹ &nbsp;</button>
+                <h1 class="header-title" style="margin-left: 10px;">Edit Profile</h1>
             </div>
-            <div class="content-area">
+            <div class="content-area" style="margin-top: 15px;">
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px;">
                     <div class="input-group">
                         <label>Full Name</label>
@@ -330,16 +334,14 @@
             </div>
         </div>
 
-        <!-- SAVED/LIKED EXAMS PANEL (NEW) -->
+        <!-- SAVED/LIKED EXAMS PANEL -->
         <div id="social-exams-view" class="panel-view">
-            <div class="sticky-header" style="justify-content: flex-start; gap: 15px;">
-                <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
-                <h1 class="header-title" id="social-panel-title">Saved Exams</h1>
+            <div class="sticky-header" style="justify-content: flex-start; gap: 10px;">
+                <button class="btn-back" onclick="goBackToMain()">&nbsp; ‹ &nbsp;</button>
+                <h1 class="header-title" id="social-panel-title" style="margin-left: 5px;">Saved Exams</h1>
             </div>
-            <div class="panel-content">
-                <!-- Collection Filters -->
+            <div class="panel-content" style="margin-top: 15px;">
                 <div id="collection-filter-container" class="collection-filters" style="display:none;"></div>
-                
                 <div id="social-list-container">
                     <p style="text-align:center; color:#64748b;">Loading...</p>
                 </div>
@@ -366,7 +368,7 @@
             </div>
         </div>
 
-        <!-- Collection Modal (Save Folder Selector) -->
+        <!-- Collection Modal -->
         <div class="collection-modal-overlay" id="collection-modal" onclick="if(event.target.id==='collection-modal') closeCollectionModal()">
             <div class="collection-sheet">
                 <h3 style="margin-top:0; color:#0f172a; text-align:center; font-size:1.2rem;">Save to Collection</h3>
@@ -396,7 +398,7 @@
             </div>
         </div>
 
-        <!-- Detailed Result Modal (For Attempt Preview) -->
+        <!-- Detailed Result Modal -->
         <div class="score-modal-overlay" id="detailed-result-modal">
             <div class="score-modal-box" style="text-align: left;">
                 <div class="score-modal-title" id="dr-title" style="text-align: center;">Exam Result</div>
@@ -432,8 +434,21 @@
         window.onload = async () => {
             loadProfileData();
             initCollections();
-            await fetchTeacherMetrics();
-            await fetchAllSocialExams();
+            
+            // Speed optimization: Parallel fetching with instant local cache loading if available
+            const cachedMetrics = localStorage.getItem('teacher_metrics_cache');
+            if (cachedMetrics) {
+                globalData = JSON.parse(cachedMetrics);
+                populateAnalyticsPanels(globalData);
+            }
+
+            // Handle Browser / Phone Back Button State Setup
+            window.history.replaceState({view: 'profile'}, "", window.location.href);
+
+            await Promise.all([
+                fetchTeacherMetrics(),
+                fetchAllSocialExams()
+            ]);
         };
 
         // ================= COLLECTIONS LOGIC =================
@@ -473,6 +488,7 @@
                 
                 if (data.success) {
                     globalData = data;
+                    localStorage.setItem('teacher_metrics_cache', JSON.stringify(data));
                     document.getElementById('stat-attempts').innerText = data.overall.attempts;
                     document.getElementById('stat-students').innerText = data.overall.students;
                     document.getElementById('stat-avg').innerText = data.overall.avg + '%';
@@ -497,21 +513,21 @@
         function populateAnalyticsPanels(data) {
             document.getElementById('list-students-body').innerHTML = data.leaderboard.map((s, i) => 
                 `<tr><td><div class="student-name-box"><strong>${i+1}. ${s.name}</strong><span class="email">${s.email}</span></div></td><td>${s.taken} Exams</td><td><strong style="color:#1ea64d;">${s.avg}%</strong></td></tr>`
-            ).join('') || '<tr><td colspan="3">No students found.</td></tr>';
+            ).join('') || '<tr><td colspan="3" style="text-align:center;">No students found.</td></tr>';
 
             document.getElementById('list-attempts-box').innerHTML = data.examStats.map(e => 
                 `<div class="list-item-btn" onclick="fetchAttempts('${e.code}', '${e.name.replace(/'/g, "\\'")}')">
-                    <div><strong>${e.name}</strong><br><span>Total Attempts: ${e.attempts}</span></div>
+                    <div><strong>${e.name}</strong><br><span style="font-size:0.8rem; color:#64748b;">Total Attempts: ${e.attempts}</span></div>
                     <i class="fas fa-chevron-right" style="color:#94a3b8;"></i>
                 </div>`
-            ).join('') || '<p style="text-align:center;">No exams available.</p>';
+            ).join('') || '<p style="text-align:center; color:#64748b;">No exams available.</p>';
 
             document.getElementById('list-average-body').innerHTML = data.examStats.map(e => 
                 `<tr><td>${e.name}</td><td><strong style="color:#3b82f6;">${e.avg}%</strong></td><td>${e.high}%</td><td>${e.low}%</td></tr>`
-            ).join('') || '<tr><td colspan="4">No data.</td></tr>';
+            ).join('') || '<tr><td colspan="4" style="text-align:center;">No data.</td></tr>';
         }
 
-        // ================= PANELS & NAVIGATION =================
+        // ================= PANELS & NAVIGATION WITH PERFECT HISTORY HANDLING =================
         function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
         function closeSettingsOverlay(e) { if(e.target.id === 'settings-modal') { document.getElementById('settings-modal').style.display = 'none'; } }
         function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
@@ -521,15 +537,22 @@
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
             document.getElementById('main-profile-view').style.display = 'none';
             document.getElementById(id).style.display = 'block';
-            window.scrollTo(0, 0); window.history.pushState({view: id}, "", window.location.href);
+            window.scrollTo(0, 0); 
+            
+            // Push history state so phone back button and panel back button work seamlessly
+            window.history.pushState({view: id}, "", window.location.href);
 
             if(id === 'panel-active') { loadActiveExamsFeed(); }
+        }
+
+        function goBackToMain() {
+            showMainProfile();
         }
 
         function showMainProfile() {
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
             document.getElementById('main-profile-view').style.display = 'block';
-            window.scrollTo(0, 0); window.history.pushState({view: 'profile'}, "", window.location.href);
+            window.scrollTo(0, 0); 
         }
 
         function openEditProfile() {
@@ -544,6 +567,7 @@
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
             const panel = document.getElementById('social-exams-view');
             panel.style.display = 'block';
+            window.scrollTo(0, 0);
             
             document.getElementById('social-panel-title').innerText = type === 'saved' ? '🔖 Saved Collections' : '❤️ Liked Exams';
             
@@ -726,7 +750,7 @@
             }
         }
 
-        // ================= TOGGLE SOCIAL ACTIONS (FIXED) =================
+        // ================= TOGGLE SOCIAL ACTIONS =================
         async function toggleSocialAction(btn, examCode, actionType) {
             const userEmail = localStorage.getItem('userEmail');
             if(!userEmail) return;
@@ -748,7 +772,6 @@
             } else if (actionType === 'save') {
                 const isActive = icon.classList.contains('save-active');
                 if (isActive) {
-                    // UNSAVE LOGIC (FIXED)
                     localStorage.setItem('save_' + examCode, 'false');
                     localStorage.removeItem('exam_folder_' + examCode);
                     icon.className = 'far fa-bookmark';
@@ -778,7 +801,7 @@
             openPanel('panel-attempt-details');
             document.getElementById('sub-attempt-title').innerText = examName.length > 20 ? examName.substring(0, 20) + "..." : examName;
             const tbody = document.getElementById('sub-attempt-body');
-            tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Loading...</td></tr>';
             
             try {
                 const response = await fetch('/api/teacher-analysis', {
@@ -790,8 +813,8 @@
                     tbody.innerHTML = data.all_students.map(s => 
                         `<tr><td><div class="student-name-box"><strong>${s.name}</strong><span class="email">${s.email}</span></div></td><td>${s.score}/${data.total_q}</td><td><strong style="color:#16a34a;">${s.perf}%</strong></td></tr>`
                     ).join('');
-                } else { tbody.innerHTML = '<tr><td colspan="3">No attempts yet.</td></tr>'; }
-            } catch(e) { tbody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>'; }
+                } else { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No attempts yet.</td></tr>'; }
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error loading data.</td></tr>'; }
         }
 
         async function loadActiveExamsFeed() {
@@ -857,9 +880,9 @@
                                 </div>
                             </div>`;
                         });
-                    } else { container.innerHTML = `<p style="text-align:center; color:#64748b;">No active exams found.</p>`; }
+                    } else { container.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">No active exams found.</p>`; }
                 }
-            } catch(e) { container.innerHTML = `<p style="text-align:center; color:#ef4444;">Error loading exams.</p>`; }
+            } catch(e) { container.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">Error loading exams.</p>`; }
         }
 
         // ================= EVALUATION SYSTEM =================
@@ -1005,7 +1028,6 @@
                 });
                 const data = await response.json();
                 if(data.success) {
-                    editQuestionCounter = 0;
                     let html = `
                         <div class="input-group">
                             <label>Exam Name</label>
@@ -1045,7 +1067,6 @@
                         <button class="btn-save" style="margin-bottom:40px; font-size:1.1rem; box-shadow: 0 4px 10px rgba(16,185,129,0.3);" onclick="saveEditedExam()">Update Exam 🚀</button>
                     `;
                     document.getElementById('edit-exam-content').innerHTML = html;
-                    
                     data.questions.forEach((q) => { addEditQuestionBox(q); });
                 }
             } catch(e) { document.getElementById('edit-exam-content').innerHTML = '<p style="color:red; text-align:center;">Error loading data.</p>'; }
@@ -1197,7 +1218,6 @@
             document.getElementById('custom-share-modal').style.display = 'flex';
         }
 
-        function shareRealExam(examCode, examName) { triggerCustomShare(examName, examCode); }
         function closeShareModal() { document.getElementById('custom-share-modal').style.display = 'none'; }
 
         function shareVia(platform) {
@@ -1280,7 +1300,7 @@
                                 if (isCorrect) { html += `<div class="ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`; } 
                                 else { html += `<div class="ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`; }
                             } else {
-                                html += `<div style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                                html += `<div style="color: #64748b; font-style: italic; margin-bottom: 5px;">⚠️ Not Attempted</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
                             }
                         }
                         html += `</div>`;
@@ -1291,19 +1311,28 @@
             } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
         }
 
+        // ================= PERFECT POPSTATE & BACK BUTTON SYNC =================
         window.addEventListener('popstate', function (event) {
-            let isPanelOpen = false;
-            document.querySelectorAll('.panel-view').forEach(p => { if(p.style.display === 'block') isPanelOpen = true; });
             const colModal = document.getElementById('collection-modal');
             const shareModal = document.getElementById('custom-share-modal');
             const drModal = document.getElementById('detailed-result-modal');
+            const settingsModal = document.getElementById('settings-modal');
             
             if(shareModal.style.display === 'flex') { closeShareModal(); }
             else if(colModal.style.display === 'flex') { closeCollectionModal(); }
             else if(drModal.style.display === 'flex') { drModal.style.display = 'none'; }
-            else if(document.getElementById('settings-modal').style.display === 'flex') { closeSettings(); } 
-            else if(isPanelOpen) { showMainProfile(); } 
-            else { if(document.referrer) { window.history.back(); } }
+            else if(settingsModal.style.display === 'flex') { closeSettings(); } 
+            else {
+                // If any sub-panel was open, return smoothly to main profile instead of leaving the page
+                let isPanelOpen = false;
+                document.querySelectorAll('.panel-view').forEach(p => { if(p.style.display === 'block') isPanelOpen = true; });
+                
+                if(isPanelOpen) {
+                    showMainProfile();
+                } else {
+                    if(document.referrer) { window.history.back(); }
+                }
+            }
         });
     </script>
 </body>
