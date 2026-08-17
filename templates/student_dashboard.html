@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Student Dashboard</title>
+    <title>ExamMate | Student Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script>
@@ -22,28 +22,75 @@
         
         .container { 
             width: 100%; max-width: 480px; background-color: #f1f5f9;
-            min-height: 100vh; padding: 75px 15px 80px 15px; 
+            min-height: 100vh; padding-bottom: 70px; 
             box-sizing: border-box; margin: 0 auto; position: relative; overflow-x: hidden;
         }
 
-        /* Fixed Top Header & Search */
-        .sticky-header {
+        /* SMART HEADER CSS */
+        .fixed-top-section {
             position: fixed; top: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; z-index: 999;
-            background: #ffffff; padding: 15px; box-sizing: border-box;
-            border-bottom: 1px solid #e5e7eb; display: flex; flex-direction: column; gap: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            transition: top 0.3s ease-in-out; 
         }
-        .header-top-row { display: flex; align-items: center; justify-content: space-between; }
-        .header-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0; }
-        .special-btn { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(245, 158, 11, 0.3); }
 
-        .search-filter-box { display: flex; gap: 8px; }
-        .search-input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; background: #f8fafc; }
-        .filter-select { padding: 10px 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; outline: none; background: #f8fafc; color: #475569; font-weight: 600; }
+        .sticky-header {
+            padding: 12px 15px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .profile-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .avatar { 
+            width: 40px; height: 40px; background: #e0f2fe; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.2rem; border: 2px solid #38bdf8; color: #0369a1;
+        }
+        .greeting h3 { margin: 0; font-size: 1rem; font-weight: 800; color: #0f172a; }
+        .greeting p { margin: 0; font-size: 0.7rem; color: #64748b; font-weight: 600;}
+        .bell-icon { 
+            font-size: 1.1rem; color: #4b5563; background: #f8fafc; 
+            padding: 8px; border-radius: 50%; border: 1px solid #e2e8f0; cursor: pointer; position: relative;
+        }
 
-        /* Feed Card Styles */
-        .feed-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transform: translateZ(0); }
+        .search-container { padding: 15px 15px 5px 15px; display: flex; gap: 10px; background: #ffffff; }
+        .search-input-wrapper { flex: 1; position: relative; }
+        .search-input-wrapper input {
+            width: 100%; padding: 12px 15px; padding-left: 35px;
+            background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px;
+            font-size: 0.95rem; outline: none; box-sizing: border-box; transition: border-color 0.2s, background 0.2s;
+        }
+        .search-input-wrapper input:focus { border-color: #3b82f6; background: #ffffff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .search-input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        
+        .search-btn-circle {
+            width: 45px; height: 45px; border-radius: 50%; background: #3b82f6;
+            color: white; border: none; font-size: 1.1rem; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .search-btn-circle:active { transform: scale(0.95); }
+
+        .filter-container {
+            padding: 10px 15px 15px 15px; background: #ffffff;
+            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
+            border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;
+            scrollbar-width: none;
+        }
+        .filter-container::-webkit-scrollbar { display: none; }
+        .filter-pill {
+            background: #ffffff; border: 1px solid #cbd5e1; color: #475569;
+            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 5px; outline: none;
+            transition: background 0.2s;
+        }
+        .filter-pill.active { background: #eff6ff; color: #1e3a8a; border-color: #3b82f6; }
+
+        /* MAIN FEED */
+        .feed-container { padding: 0 15px; margin-top: 185px; } 
+        .feed-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
+            padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transform: translateZ(0); will-change: transform;
+        }
         .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
         .feed-teacher-info { flex: 1; }
@@ -60,138 +107,145 @@
         .action-left { display: flex; gap: 15px; }
         .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: color 0.15s; padding: 0; }
         .action-btn span { font-size: 0.8rem; font-weight: 600; }
-        .action-btn:hover { color: #3b82f6; }
         .like-active { color: #ef4444 !important; }
         .save-active { color: #f59e0b !important; }
-        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+
+        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s; }
         .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; }
 
-        /* Toast Container */
-        #toast-container { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; width: 90%; max-width: 400px; pointer-events: none; align-items: center; }
+        /* 🔥 SPECIAL EXAMS FLOATING BUTTON */
+        .fab-special {
+            position: fixed; bottom: 85px; right: 20px;
+            width: 58px; height: 58px;
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+            cursor: pointer; z-index: 998; transition: transform 0.2s;
+            animation: bounce-subtle 2s infinite; border: 2px solid #fff;
+        }
+        .fab-special:hover { transform: scale(1.08); }
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(234, 88, 12, 0.6); }
+        }
 
-        /* Custom Modals (Share, Collection, Private Exam, Result) */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px); }
-        .modal-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.25s ease-out; max-height: 85vh; overflow-y: auto; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px; }
-        .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px; }
-        .share-buttons i { font-size: 2.2rem; }
-        .share-buttons .fa-whatsapp { color: #25D366; }
-        .share-buttons .fa-telegram { color: #0088cc; }
-        .share-buttons .fa-copy { color: #64748b; }
+        /* RESULT MODAL CSS */
+        .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .score-modal-box { 
+            position: relative; background: white; border-radius: 20px; 
+            width: 90%; max-width: 450px; text-align: left; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            display: flex; flex-direction: column; max-height: 85vh; overflow: hidden; 
+        }
+        .modal-header-fixed {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 20px 25px 15px 25px; background: #ffffff;
+            border-bottom: 1px solid #e2e8f0; z-index: 10;
+        }
+        .modal-body-scroll { padding: 15px 25px 25px 25px; overflow-y: auto; flex: 1; background: #f8fafc; }
+        .modal-close-btn-fixed {
+            background: #f1f5f9; color: #64748b; border: none;
+            width: 34px; height: 34px; border-radius: 50%;
+            font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: background 0.15s; flex-shrink: 0; margin-left: 15px;
+        }
+        .modal-close-btn-fixed:hover { background: #fee2e2; color: #ef4444; }
 
-        .collection-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; cursor: pointer; font-weight: bold; color: #1e293b; transition: background 0.15s; }
-        .collection-item:hover { background: #eff6ff; border-color: #3b82f6; color: #3b82f6; }
-        .new-collection-box { display: flex; gap: 10px; margin-top: 15px; margin-bottom: 10px; }
-        .new-collection-input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; outline: none; font-size: 0.95rem; background: #f8fafc; }
-        .new-collection-btn { background: #10b981; color: white; border: none; padding: 0 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 15px; font-size: 1rem; }
-
-        .center-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .center-modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 420px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
-        .center-modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-
-        .review-card-dr { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; }
-        .review-correct { background: #f0fdf4; border-color: #bbf7d0; }
-        .review-wrong { background: #fef2f2; border-color: #fecaca; }
-        .review-unattempted { background: #f8fafc; border-color: #e2e8f0; }
-        .review-q-text { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 10px; }
-        .ans-correct-text { color: #166534; font-weight: bold; }
-        .ans-wrong-text { color: #991b1b; font-weight: bold; }
-        .ans-real-correct { color: #065f46; font-weight: bold; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fca5a5; }
+        .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; transition: background 0.15s; background: #ffffff; }
+        .review-correct { background-color: #f0fdf4; border-color: #bbf7d0; box-shadow: 0 2px 4px rgba(34,197,94,0.05); } 
+        .review-wrong { background-color: #fef2f2; border-color: #fecaca; box-shadow: 0 2px 4px rgba(239,68,68,0.05); } 
+        .review-unattempted { background-color: #ffffff; border-color: #cbd5e1; } 
+        .review-q-text { font-weight: 700; margin-bottom: 12px; color: #1e293b; font-size: 0.95rem; }
+        .ans-correct-text { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block; margin-top: 5px;}
+        .ans-wrong-text { color: #b91c1c; font-size: 0.9rem; font-weight: 700; background: #fee2e2; padding: 6px 12px; border-radius: 8px; display: inline-block; margin-top: 5px; margin-bottom: 8px;}
+        .ans-real-correct { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block;}
+        .unattempted-border { border: 1px dashed #bbf7d0; background: transparent; color: #16a34a; margin-top: 8px;}
 
         /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; padding: 10px 0 20px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none; }
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
+            display: flex; justify-content: space-around; padding: 10px 0 20px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
+
+        /* Skeleton loader for fast perception */
+        .skeleton-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; animation: pulse 1.2s infinite ease-in-out; }
+        .skeleton-line { height: 14px; background: #e2e8f0; border-radius: 4px; margin-bottom: 10px; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Sticky Header & Filters -->
-        <div class="sticky-header">
-            <div class="header-top-row">
-                <h1 class="header-title">Exam Feed</h1>
-                <button class="special-btn" onclick="window.location.href='special_exams.html'"><i class="fas fa-star"></i> Special Exams</button>
+        <!-- SMART HEADER -->
+        <div class="fixed-top-section" id="smart-header">
+            <div class="sticky-header">
+                <div class="profile-left" onclick="window.location.href='/student_profile.html'">
+                    <div class="avatar" id="nav-avatar">S</div>
+                    <div class="greeting">
+                        <h3 id="student-name">Hi, Student</h3>
+                        <p>Ready to learn today? 🚀</p>
+                    </div>
+                </div>
+                <div class="bell-icon" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></div>
             </div>
-            <div class="search-filter-box">
-                <input type="text" id="search-input" class="search-input" placeholder="Search exams..." oninput="filterFeed()">
-                <select id="filter-class" class="filter-select" onchange="filterFeed()">
-                    <option value="All">All Class</option>
+
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="main-search" placeholder="Search subject, teacher, class, or code..." oninput="handleSearchInput(event)">
+                </div>
+                <button class="search-btn-circle" onclick="performSearch()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <div class="filter-container">
+                <select id="filter-class" class="filter-pill" onchange="loadRealFeed()">
+                    <option value="All">🎓 All Classes</option>
                 </select>
-                <select id="filter-subject" class="filter-select" onchange="filterFeed()">
-                    <option value="All">All Subject</option>
+                <select id="filter-subject" class="filter-pill" onchange="loadRealFeed()">
+                    <option value="All">📚 All Subjects</option>
                 </select>
-                <select id="filter-status" class="filter-select" onchange="filterFeed()">
-                    <option value="All">All Status</option>
-                    <option value="Attempted">Attempted</option>
-                    <option value="Pending">Pending</option>
+                <select id="filter-status" class="filter-pill active" onchange="loadRealFeed()">
+                    <option value="All">⚡ All Status</option>
+                    <option value="Unattempted">⏳ Unattempted</option>
+                    <option value="Attempted">✅ Attempted</option>
                 </select>
             </div>
         </div>
 
-        <!-- Feed Container -->
-        <div id="feed-container" style="margin-top: 15px;">
-            <p style="text-align:center; color:#64748b; margin-top:40px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Loading feed...</p>
-        </div>
-    </div>
-
-    <!-- Toast Container -->
-    <div id="toast-container"></div>
-
-    <!-- Custom Share Modal -->
-    <div class="modal-overlay" id="custom-share-modal" onclick="if(event.target.id==='custom-share-modal') closeShareModal()">
-        <div class="modal-sheet">
-            <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
-            <div class="share-buttons">
-                <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-                <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
-                <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
-            </div>
-            <button class="btn-cancel" onclick="closeShareModal()">Cancel</button>
-        </div>
-    </div>
-
-    <!-- Collection Modal (Save Folder Selector) -->
-    <div class="modal-overlay" id="collection-modal" onclick="if(event.target.id==='collection-modal') closeCollectionModal()">
-        <div class="modal-sheet">
-            <h3 style="margin-top:0; color:#0f172a; text-align:center; font-size:1.2rem;">Save to Collection</h3>
-            <p style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:-5px; margin-bottom:20px;">Choose a folder to save this exam</p>
-            <div id="collection-list"></div>
-            <div class="new-collection-box">
-                <input type="text" id="new-collection-input" class="new-collection-input" placeholder="Create new folder...">
-                <button class="new-collection-btn" onclick="createNewCollection()">+ Add</button>
-            </div>
-            <button class="btn-cancel" onclick="closeCollectionModal()">Cancel</button>
-        </div>
-    </div>
-
-    <!-- Private Exam Unlock Modal -->
-    <div class="center-modal-overlay" id="private-exam-modal" onclick="if(event.target.id==='private-exam-modal') closePrivateExamModal()">
-        <div class="center-modal-box">
-            <div class="center-modal-title">🔒 Private Exam</div>
-            <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">Enter the Exam Code provided by your teacher to unlock:</p>
-            <input type="text" id="private-code-input" class="search-input" placeholder="Enter Exam Code..." style="margin-bottom:15px; text-transform:uppercase; text-align:center; font-weight:bold;">
-            <div style="display:flex; gap:10px;">
-                <button class="btn-cancel" style="margin-top:0;" onclick="closePrivateExamModal()">Cancel</button>
-                <button class="new-collection-btn" style="flex:1; padding:12px;" onclick="verifyPrivateCode()">Unlock 🚀</button>
+        <!-- FEED CONTAINER -->
+        <div class="feed-container" id="exam-feed">
+            <div class="skeleton-card">
+                <div class="skeleton-line" style="width: 50%;"></div>
+                <div class="skeleton-line" style="width: 80%; height: 20px; margin-top: 15px;"></div>
+                <div class="skeleton-line" style="width: 30%; margin-top: 15px;"></div>
             </div>
         </div>
     </div>
 
-    <!-- Detailed Result Modal -->
-    <div class="center-modal-overlay" id="detailed-result-modal" onclick="if(event.target.id==='detailed-result-modal') document.getElementById('detailed-result-modal').style.display='none'">
-        <div class="center-modal-box" style="text-align: left; width: 90%;">
-            <div class="center-modal-title" id="dr-title" style="text-align: center;">Exam Result</div>
-            <div id="detailed-review-container"></div>
-            <button class="btn-cancel" style="background:#ef4444; color:white; margin-top:15px;" onclick="document.getElementById('detailed-result-modal').style.display='none'">Close ✖</button>
+    <!-- 🔥 FLOATING BUTTON FOR SPECIAL EXAMS -->
+    <div class="fab-special" onclick="window.location.href='/special_exams.html'">
+        <i class="fas fa-trophy"></i>
+    </div>
+
+    <!-- Main Results Modal -->
+    <div class="score-modal-overlay" id="detailed-result-modal">
+        <div class="score-modal-box">
+            <div class="modal-header-fixed">
+                <div class="score-modal-title" id="dr-title" style="font-weight:800; font-size:1.1rem; color:#0f172a; margin:0; line-height:1.4; flex:1; padding-right:10px;">Exam Result</div>
+                <button class="modal-close-btn-fixed" onclick="closeResultModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body-scroll" id="detailed-review-container"></div>
         </div>
     </div>
 
-    <!-- Fixed Bottom Navigation Bar -->
     <div class="bottom-nav">
         <a href="student_dashboard.html" class="nav-item active">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
@@ -205,130 +259,139 @@
     </div>
 
     <script>
-        let allFeedExams = [];
-        let pendingSaveExamCode = null;
-        let pendingPrivateExamCode = null;
-        let pendingPrivateIsReattempt = false;
-        let currentShareData = {};
+        // SMART HEADER HIDE/SHOW LOGIC WITH THROTTLE
+        let lastScrollTop = 0;
+        const header = document.getElementById('smart-header');
+        let ticking = false;
+        
+        window.addEventListener("scroll", function(){
+           let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+           if (!ticking) {
+               window.requestAnimationFrame(function() {
+                   if (scrollTop > lastScrollTop && scrollTop > 100){
+                       header.style.top = "-185px"; 
+                   } else {
+                       header.style.top = "0"; 
+                   }
+                   lastScrollTop = scrollTop;
+                   ticking = false;
+               });
+               ticking = true;
+           }
+        });
 
+        // DEBOUNCE SEARCH LOGIC
+        let searchTimer;
+        function handleSearchInput(e) {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                performSearch();
+            }, 350);
+        }
+
+        // ==========================================
+        // MAIN DASHBOARD LOGIC
+        // ==========================================
         window.onload = async () => {
-            initCollections();
-            window.history.replaceState({view: 'dashboard'}, "", window.location.href);
+            const userName = localStorage.getItem('userName') || "Student";
+            document.getElementById('student-name').innerText = "Hi, " + userName.split(' ')[0];
+            document.getElementById('nav-avatar').innerText = userName.charAt(0).toUpperCase();
 
-            const cachedFeed = localStorage.getItem('student_feed_cache');
-            if (cachedFeed) {
-                allFeedExams = JSON.parse(cachedFeed);
-                populateFilters(allFeedExams);
-                renderFeedCards(allFeedExams);
-            }
+            window.history.replaceState({modalOpen: false}, "", window.location.href);
 
-            await fetchFeedData();
+            // Parallel loading for maximum speed
+            await Promise.all([
+                loadFilterDropdowns(),
+                loadRealFeed(),
+                fetchAndSetAvatarColor()
+            ]);
         };
 
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.style.cssText = `background: ${type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#3b82f6')}; color: white; padding: 10px 16px; border-radius: 10px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease; transform: translateY(10px); text-align: center;`;
-            toast.innerText = message;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; }, 10);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px)';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        function initCollections() {
-            if(!localStorage.getItem('student_collections')) {
-                localStorage.setItem('student_collections', JSON.stringify(["All Saved"]));
-            }
-        }
-        function getCollections() { return JSON.parse(localStorage.getItem('student_collections')); }
-        function saveCollectionsArr(arr) { localStorage.setItem('student_collections', JSON.stringify(arr)); }
-
-        async function fetchFeedData() {
-            const userEmail = localStorage.getItem('userEmail') || "";
-            try {
-                const res = await fetch('/api/search-feed', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, query: "", class_name: "All", subject: "All", status: "All" })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    allFeedExams = data.feed;
-                    localStorage.setItem('student_feed_cache', JSON.stringify(allFeedExams));
-                    populateFilters(allFeedExams);
-                    renderFeedCards(allFeedExams);
-                }
-            } catch(e) {
-                console.log("Feed fetch error", e);
-            }
-        }
-
-        function populateFilters(exams) {
-            const classSelect = document.getElementById('filter-class');
-            const subjectSelect = document.getElementById('filter-subject');
-            
-            const classes = [...new Set(exams.map(e => e.class_name))];
-            const subjects = [...new Set(exams.map(e => e.subject))];
-
-            classSelect.innerHTML = '<option value="All">All Class</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
-            subjectSelect.innerHTML = '<option value="All">All Subject</option>' + subjects.map(s => `<option value="${s}">${s}</option>`).join('');
-        }
-
-        function checkStatus(code, prefix, dbStatus) {
-            const localVal = localStorage.getItem(prefix + code);
-            if (localVal === 'true') return true;
-            if (localVal === 'false') return false;
-            return dbStatus;
-        }
-
-        function filterFeed() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const selClass = document.getElementById('filter-class').value;
-            const selSubject = document.getElementById('filter-subject').value;
-            const selStatus = document.getElementById('filter-status').value;
-
-            const filtered = allFeedExams.filter(ex => {
-                const matchesQuery = ex.name.toLowerCase().includes(query) || ex.teacher_name.toLowerCase().includes(query);
-                const matchesClass = selClass === 'All' || ex.class_name === selClass;
-                const matchesSubject = selSubject === 'All' || ex.subject === selSubject;
-                
-                let matchesStatus = true;
-                if (selStatus === 'Attempted') matchesStatus = ex.is_attempted;
-                if (selStatus === 'Pending') matchesStatus = !ex.is_attempted;
-
-                return matchesQuery && matchesClass && matchesSubject && matchesStatus;
-            });
-
-            renderFeedCards(filtered);
-        }
-
-        function renderFeedCards(exams) {
-            const container = document.getElementById('feed-container');
-            container.innerHTML = '';
-
-            if(exams.length === 0) {
-                container.innerHTML = `<div style="text-align:center; margin-top:50px; color:#64748b;">
-                    <i class="far fa-folder-open fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><br>
-                    No exams found matching your filter.
-                </div>`;
+        async function loadFilterDropdowns() {
+            const cachedFilters = localStorage.getItem('student_filter_options_cache');
+            if (cachedFilters) {
+                renderFilters(JSON.parse(cachedFilters));
                 return;
             }
 
+            try {
+                const res = await fetch('/api/get-filter-options');
+                const data = await res.json();
+                if(data.success) {
+                    localStorage.setItem('student_filter_options_cache', JSON.stringify(data));
+                    renderFilters(data);
+                }
+            } catch(e) {}
+        }
+
+        function renderFilters(data) {
+            const classSelect = document.getElementById('filter-class');
+            data.classes.forEach(c => { classSelect.innerHTML += `<option value="${c}">${c}</option>`; });
+            const subSelect = document.getElementById('filter-subject');
+            data.subjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+        }
+
+        async function loadRealFeed(query = "") {
+            const userEmail = localStorage.getItem('userEmail');
+            const feedContainer = document.getElementById('exam-feed');
+            const selectedClass = document.getElementById('filter-class').value;
+            const selectedSubject = document.getElementById('filter-subject').value;
+            const selectedStatus = document.getElementById('filter-status').value;
+            
+            if (query) { trackStudentPreference(query, "", ""); }
+
+            try {
+                const response = await fetch('/api/search-feed', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, query: query, class_name: selectedClass, subject: selectedSubject, status: selectedStatus })
+                });
+                const data = await response.json();
+
+                if (data.success && data.feed.length > 0) {
+                    const filteredFeed = data.feed.filter(ex => {
+                        const emailField = (ex.email || ex.teacher_email || ex.creator_email || ex.user_email || "").toLowerCase();
+                        const teacherName = (ex.teacher_name || "").toLowerCase();
+                        const examString = JSON.stringify(ex).toLowerCase();
+                        
+                        return emailField !== 'exammate.official@gmail.com' && 
+                               !teacherName.includes('exammate') && 
+                               !teacherName.includes('admin') &&
+                               !emailField.includes('admin') &&
+                               !examString.includes('exammate.official@gmail.com') &&
+                               !examString.includes('admin');
+                    });
+
+                    if (filteredFeed.length > 0) {
+                        let sortedFeed = sortExamsForStudent(filteredFeed, query);
+                        renderFeedCards(sortedFeed);
+                    } else {
+                        feedContainer.innerHTML = `<div style="text-align:center; padding: 40px; color: #64748b;"><i class="fas fa-search fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams match your filters.</p></div>`;
+                    }
+                } else {
+                    feedContainer.innerHTML = `<div style="text-align:center; padding: 40px; color: #64748b;"><i class="fas fa-search fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams match your filters.</p></div>`;
+                }
+            } catch (error) { feedContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444;">Failed to load feed.</div>`; }
+        }
+
+        function performSearch() {
+            const query = document.getElementById('main-search').value.trim();
+            loadRealFeed(query);
+        }
+
+        function renderFeedCards(exams) {
+            const container = document.getElementById('exam-feed');
+            let htmlContent = '';
+            
             exams.forEach(ex => {
-                const isLiked = checkStatus(ex.code, 'like_', ex.is_liked);
-                const isSaved = checkStatus(ex.code, 'save_', ex.is_saved);
+                const isLiked = localStorage.getItem('like_' + ex.code) === 'true' || ex.is_liked;
+                const isSaved = localStorage.getItem('save_' + ex.code) === 'true' || ex.is_saved;
                 const heartClass = isLiked ? 'fas fa-heart like-active' : 'far fa-heart';
                 const saveClass = isSaved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
 
                 let actionHTML = '';
                 if (ex.is_attempted) {
                     let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
-                    let reattemptBtn = ex.is_private ? 
-                        `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="openPrivateExamModal('${ex.code}', true)">🔒 Re-attempt</button>` : 
-                        `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
+                    let reattemptBtn = ex.is_private ? `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExamReattempt('${ex.code}')">🔒 Re-attempt</button>` : `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
                     
                     actionHTML = `
                     <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">✅ Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)</div>
@@ -337,12 +400,12 @@
                         ${reattemptBtn}
                     </div>`;
                 } else {
-                    actionHTML = ex.is_private ? 
-                        `<button class="btn-attempt" style="background:#d97706;" onclick="openPrivateExamModal('${ex.code}', false)">🔒 Enter Code to Unlock</button>` : 
-                        `<button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
+                    actionHTML = ex.is_private 
+                        ? `<button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Code to Unlock</button>`
+                        : `<button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
                 }
 
-                container.innerHTML += `
+                htmlContent += `
                 <div class="feed-card">
                     <div class="feed-header">
                         <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
@@ -357,7 +420,7 @@
                             <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
                             <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
                         </div>
-                        <div class="feed-meta">
+                        <div class="feed-meta" style="margin-top:10px;">
                             <span><i class="fas fa-clock"></i> ${ex.timer} Mins</span>
                         </div>
                     </div>
@@ -365,9 +428,6 @@
                         <div class="action-left">
                             <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
                                 <i class="${heartClass}"></i> <span>${ex.likes}</span>
-                            </button>
-                            <button class="action-btn" onclick="triggerCustomShare('${ex.name.replace(/'/g, "\\'")}', '${ex.code}')">
-                                <i class="far fa-share-square"></i> <span>Share</span>
                             </button>
                         </div>
                         <button class="action-btn" id="save-btn-${ex.code}" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
@@ -377,6 +437,22 @@
                     ${actionHTML}
                 </div>`;
             });
+            container.innerHTML = htmlContent;
+        }
+
+        function accessPrivateExam(actualCode) {
+            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code to unlock:");
+            if (enteredCode) {
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `student_exam.html?code=${actualCode}`; } 
+                else { alert("❌ Incorrect Code!"); }
+            }
+        }
+        function accessPrivateExamReattempt(actualCode) {
+            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code to re-attempt:");
+            if (enteredCode) {
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `student_exam.html?code=${actualCode}&reattempt=true`; } 
+                else { alert("❌ Incorrect Code!"); }
+            }
         }
 
         async function toggleSocialAction(btn, examCode, actionType) {
@@ -394,16 +470,9 @@
                 else { icon.className = 'fas fa-heart like-active'; span.innerText = count + 1; }
             } else if (actionType === 'save') {
                 const isActive = icon.classList.contains('save-active');
-                if (isActive) {
-                    localStorage.setItem('save_' + examCode, 'false');
-                    localStorage.removeItem('exam_folder_' + examCode);
-                    icon.className = 'far fa-bookmark';
-                    showToast("Removed from saved collections.", "info");
-                } else {
-                    pendingSaveExamCode = examCode;
-                    showCollectionModal();
-                    return; 
-                }
+                localStorage.setItem('save_' + examCode, !isActive);
+                if (isActive) { icon.className = 'far fa-bookmark'; } 
+                else { icon.className = 'fas fa-bookmark save-active'; }
             }
 
             try {
@@ -411,119 +480,12 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: userEmail, exam_code: examCode, type: actionType })
                 });
-            } catch(e) {}
+            } catch (error) {}
         }
 
-        function showCollectionModal() {
-            const collections = getCollections();
-            const listContainer = document.getElementById('collection-list');
-            listContainer.innerHTML = '';
-            
-            collections.forEach(col => {
-                let iconClass = col === 'All Saved' ? 'fas fa-star' : 'far fa-folder';
-                let iconColor = col === 'All Saved' ? '#f59e0b' : '#3b82f6';
-                listContainer.innerHTML += `
-                <div class="collection-item" onclick="confirmSaveToCollection('${col}')">
-                    <i class="${iconClass}" style="color:${iconColor};"></i> <span>${col}</span>
-                </div>`;
-            });
-            document.getElementById('collection-modal').style.display = 'flex';
-            window.history.pushState({modal: 'collection'}, "", window.location.href);
-        }
-
-        function closeCollectionModal() {
-            document.getElementById('collection-modal').style.display = 'none';
-            pendingSaveExamCode = null;
-            document.getElementById('new-collection-input').value = '';
-        }
-
-        function createNewCollection() {
-            const input = document.getElementById('new-collection-input');
-            const val = input.value.trim();
-            if(val) {
-                let cols = getCollections();
-                if(!cols.includes(val)) {
-                    cols.push(val); saveCollectionsArr(cols);
-                    showCollectionModal(); input.value = '';
-                    showToast(`Folder "${val}" created!`, "success");
-                } else { showToast("Folder already exists!", "error"); }
-            }
-        }
-
-        async function confirmSaveToCollection(folderName) {
-            if(!pendingSaveExamCode) return;
-            
-            localStorage.setItem('save_' + pendingSaveExamCode, 'true');
-            localStorage.setItem('exam_folder_' + pendingSaveExamCode, folderName);
-
-            const btn = document.getElementById('save-btn-' + pendingSaveExamCode);
-            if(btn) { let icon = btn.querySelector('i'); icon.className = 'fas fa-bookmark save-active'; }
-            closeCollectionModal();
-            showToast(`Exam saved to "${folderName}"!`, "success");
-            
-            try {
-                const userEmail = localStorage.getItem('userEmail');
-                await fetch('/api/toggle-social', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, exam_code: pendingSaveExamCode, type: 'save' })
-                });
-            } catch(e) {}
-        }
-
-        function triggerCustomShare(examName, examCode) {
-            const baseUrl = window.location.origin; 
-            const examLink = `${baseUrl}/student_exam.html?code=${examCode}`;
-            const shareText = `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n`;
-            currentShareData = { title: `ExamMate - ${examName}`, text: shareText, url: examLink };
-            document.getElementById('custom-share-modal').style.display = 'flex';
-            window.history.pushState({modal: 'share'}, "", window.location.href);
-        }
-
-        function closeShareModal() { document.getElementById('custom-share-modal').style.display = 'none'; }
-
-        function shareVia(platform) {
-            const fullText = encodeURIComponent(currentShareData.text + currentShareData.url);
-            const urlOnly = encodeURIComponent(currentShareData.url);
-            let shareUrl = '';
-            if(platform === 'whatsapp') { shareUrl = `https://api.whatsapp.com/send?text=${fullText}`; window.open(shareUrl, '_blank'); } 
-            else if(platform === 'telegram') { shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`; window.open(shareUrl, '_blank'); }
-            closeShareModal();
-            showToast("Opening share link...", "info");
-        }
-
-        function copyShareLink() {
-            navigator.clipboard.writeText(currentShareData.text + currentShareData.url).then(() => {
-                showToast("✅ Exam link and details copied successfully!", "success");
-                closeShareModal();
-            }).catch(() => { showToast("Failed to copy link.", "error"); });
-        }
-
-        function openPrivateExamModal(code, isReattempt) {
-            pendingPrivateExamCode = code;
-            pendingPrivateIsReattempt = isReattempt;
-            document.getElementById('private-code-input').value = '';
-            document.getElementById('private-exam-modal').style.display = 'flex';
-            window.history.pushState({modal: 'private_exam'}, "", window.location.href);
-        }
-
-        function closePrivateExamModal() {
-            document.getElementById('private-exam-modal').style.display = 'none';
-            pendingPrivateExamCode = null;
-        }
-
-        function verifyPrivateCode() {
-            const enteredCode = document.getElementById('private-code-input').value.trim();
-            if(!enteredCode) { showToast("Please enter exam code!", "error"); return; }
-            if(enteredCode.toUpperCase() === pendingPrivateExamCode.toUpperCase()) {
-                closePrivateExamModal();
-                if(pendingPrivateIsReattempt) {
-                    window.location.href = `student_exam.html?code=${pendingPrivateExamCode}&reattempt=true`;
-                } else {
-                    window.location.href = `student_exam.html?code=${pendingPrivateExamCode}`;
-                }
-            } else {
-                showToast("❌ Incorrect Exam Code! Access denied.", "error");
-            }
+        function closeResultModal() {
+            document.getElementById('detailed-result-modal').style.display = 'none';
+            window.history.replaceState({modalOpen: false}, "", window.location.href);
         }
 
         async function showDetailedResult(code, name) {
@@ -531,7 +493,7 @@
             container.innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Fetching your answers...</p>';
             document.getElementById('dr-title').innerText = name + " - Result";
             document.getElementById('detailed-result-modal').style.display = 'flex';
-            window.history.pushState({modal: 'result'}, "", window.location.href);
+            window.history.pushState({modalOpen: true}, "", window.location.href);
 
             const userEmail = localStorage.getItem('userEmail') || "Guest Account";
 
@@ -545,11 +507,10 @@
                     const savedState = localStorage.getItem('exam_result_' + code);
                     const localAnsData = savedState ? JSON.parse(savedState).answers : null;
                     const backendSubjData = (reviewData.success && reviewData.taken) ? reviewData.subjective_data : null;
+
                     let totalMarks = qData.questions.reduce((sum, q) => { let m = parseFloat(q.max_marks); if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0); return sum + m; }, 0);
                     let displayScore = (reviewData.success && reviewData.taken) ? reviewData.total_score : 0;
-                    displayScore = Number.isInteger(displayScore) ? displayScore : parseFloat(displayScore).toFixed(2);
-                    totalMarks = Number.isInteger(totalMarks) ? totalMarks : parseFloat(totalMarks).toFixed(2);
-                    document.getElementById('dr-title').innerHTML = `${name} - Result <br><span style="font-size:0.9rem; color:#3b82f6;">Total Score: ${displayScore} / ${totalMarks}</span>`;
+                    document.getElementById('dr-title').innerHTML = `${name} <br><span style="font-size:0.9rem; color:#3b82f6;">Total Score: ${displayScore} / ${totalMarks}</span>`;
 
                     let html = '';
                     qData.questions.forEach((q, idx) => {
@@ -557,12 +518,14 @@
                         let isAttempted = false;
                         if(q.question_type === 'subjective' && backendSubjData && backendSubjData[q.id]) { isAttempted = true; } 
                         else if (studentAns !== undefined && studentAns !== "") { isAttempted = true; }
+                        
                         const isCorrect = studentAns === q.correct;
                         let cardClass = 'review-unattempted';
                         if (isAttempted) { if (q.question_type === 'subjective') { cardClass = 'review-unattempted'; } else { cardClass = isCorrect ? 'review-correct' : 'review-wrong'; } }
+
                         let maxMarks = q.max_marks || (q.question_type === 'mcq' ? 1.0 : 5.0);
 
-                        html += `<div class="review-card-dr ${cardClass}">`;
+                        html += `<div class="review-card ${cardClass}">`;
                         html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text} <span style="font-size:0.8rem; color:#64748b;">(Marks: ${maxMarks})</span></div>`;
 
                         if (q.question_type === 'subjective') {
@@ -575,36 +538,72 @@
                             const getOptionText = (letter) => { if(letter==='A') return q.opt_a; if(letter==='B') return q.opt_b; if(letter==='C') return q.opt_c; if(letter==='D') return q.opt_d; return ''; };
                             if (isAttempted) {
                                 if (isCorrect) { html += `<div class="ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`; } 
-                                else { html += `<div class="ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`; }
+                                else { html += `<div class="ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div><br><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`; }
                             } else {
-                                html += `<div style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                                html += `<div style="color: #64748b; font-style: italic; margin-bottom: 5px;">⚠️ Not Attempted</div><div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
                             }
                         }
                         html += `</div>`;
                     });
+
                     container.innerHTML = html;
                     if (window.MathJax) { MathJax.typesetPromise([container]).catch(err => console.log(err)); }
                 } else { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load questions.</p>'; }
             } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
         }
 
-        // ================= HIERARCHICAL BACK BUTTON SYNC =================
-        window.addEventListener('popstate', function (event) {
-            const shareModal = document.getElementById('custom-share-modal');
-            const colModal = document.getElementById('collection-modal');
-            const privModal = document.getElementById('private-exam-modal');
-            const drModal = document.getElementById('detailed-result-modal');
+        function trackStudentPreference(query, className, subject) {
+            let history = JSON.parse(localStorage.getItem('student_pref') || '{"searches": [], "classes": [], "subjects": []}');
+            if (query && !history.searches.includes(query.toLowerCase())) { history.searches.unshift(query.toLowerCase()); }
+            if (className && !history.classes.includes(className)) history.classes.push(className);
+            if (subject && !history.subjects.includes(subject)) history.subjects.push(subject);
+            localStorage.setItem('student_pref', JSON.stringify(history));
+        }
 
-            if (shareModal.style.display === 'flex') {
-                closeShareModal();
-            } else if (colModal.style.display === 'flex') {
-                closeCollectionModal();
-            } else if (privModal.style.display === 'flex') {
-                closePrivateExamModal();
-            } else if (drModal.style.display === 'flex') {
+        function sortExamsForStudent(feedList, currentQuery = "") {
+            let pref = JSON.parse(localStorage.getItem('student_pref') || '{"searches": [], "classes": [], "subjects": []}');
+            if (currentQuery && !pref.searches.includes(currentQuery.toLowerCase())) { pref.searches.unshift(currentQuery.toLowerCase()); }
+
+            return feedList.sort((a, b) => {
+                let scoreA = 0; let scoreB = 0;
+                pref.searches.forEach(term => {
+                    if (a.name.toLowerCase().includes(term) || a.subject.toLowerCase().includes(term) || a.class_name.toLowerCase().includes(term)) scoreA += 100;
+                    if (b.name.toLowerCase().includes(term) || b.subject.toLowerCase().includes(term) || b.class_name.toLowerCase().includes(term)) scoreB += 100;
+                });
+                if (pref.classes.includes(a.class_name)) scoreA += 50; if (pref.classes.includes(b.class_name)) scoreB += 50;
+                if (pref.subjects.includes(a.subject)) scoreA += 40; if (pref.subjects.includes(b.subject)) scoreB += 40;
+                scoreA += (a.likes * 2); scoreB += (b.likes * 2);
+                return scoreB - scoreA;
+            });
+        }
+
+        async function fetchAndSetAvatarColor() {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) return;
+            const avatar = document.getElementById('nav-avatar');
+            try {
+                const response = await fetch('/api/get-student-progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail }) });
+                const data = await response.json();
+                if (data.success) {
+                    const score = parseFloat(data.score) || 0;
+                    let avatarBg = "linear-gradient(135deg, #34d399, #10b981)"; let borderColor = "#10b981";
+                    if (score >= 50 && score < 100) { avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)"; borderColor = "#d97706"; } 
+                    else if (score >= 100 && score < 300) { avatarBg = "linear-gradient(135deg, #94a3b8, #475569)"; borderColor = "#475569"; } 
+                    else if (score >= 300 && score < 600) { avatarBg = "linear-gradient(135deg, #fde047, #eab308)"; borderColor = "#eab308"; } 
+                    else if (score >= 600) { avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; borderColor = "transparent"; }
+                    avatar.style.background = avatarBg; avatar.style.color = "#ffffff";
+                    if (score >= 600) { avatar.style.border = "none"; } else { avatar.style.border = `2px solid ${borderColor}`; }
+                }
+            } catch (error) {}
+        }
+
+        // PERFECT BACK BUTTON & MODAL SYNC
+        window.addEventListener('popstate', function (event) {
+            const drModal = document.getElementById('detailed-result-modal');
+            if(drModal.style.display === 'flex') {
                 drModal.style.display = 'none';
             } else {
-                if (document.referrer) { window.history.back(); }
+                if (document.referrer) { window.history.back(); } 
             }
         });
     </script>
