@@ -20,11 +20,11 @@
         body { 
             background-color: #f9fafb; color: #333333; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; justify-content: center; 
             -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none;
-            overscroll-behavior-y: none; /* Pull-to-refresh Block */
+            overscroll-behavior-y: none;
         }
         .container { width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh; padding: 0 1.5rem 1.5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
         
-        .sticky-header { position: sticky; top: 0; background-color: #ffffff; z-index: 999; padding: 1rem 0 0.8rem 0; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px; }
+        .sticky-header { position: sticky; top: 0; background-color: #ffffff; z-index: 999; padding: 1rem 0 0.8rem 0; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
         .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0; }
         .message-box { text-align: center; margin-top: 50px; }
         .message-box h2 { color: #ef4444; }
@@ -41,22 +41,22 @@
         .timer-box { display: flex; align-items: center; gap: 10px; }
         .timer { font-weight: bold; color: #ef4444; font-size: 1rem; background: #fee2e2; padding: 4px 8px; border-radius: 8px;}
         
-        .btn-pause { background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: 0.2s;}
+        .btn-pause { background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;}
         .btn-pause:hover { background: #d97706; }
 
         .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 10px; margin-bottom: 15px; height: 8px; overflow: hidden; }
-        .progress-bar { height: 100%; background-color: #3b82f6; width: 0%; transition: width 0.3s ease; }
+        .progress-bar { height: 100%; background-color: #3b82f6; width: 0%; transition: width 0.3s ease; will-change: width; }
         .progress-text { font-size: 0.9rem; color: #4b5563; font-weight: 600; margin-bottom: 20px; }
         hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
         
         .question-text { font-size: 1.1rem; font-weight: 600; color: #111827; margin-bottom: 1.5rem; line-height: 1.5; overflow-x: auto; }
-        .option-label { display: block; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; font-size: 1rem; color: #334155; overflow-x: auto; }
+        .option-label { display: block; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.15s ease; font-size: 1rem; color: #334155; overflow-x: auto; transform: translateZ(0); }
         .option-label:hover { background: #f1f5f9; border-color: #cbd5e1; }
         .option-label input[type="radio"] { display: none; }
         .option-label.selected { background: #eff6ff; border-color: #3b82f6; color: #1e3a8a; font-weight: 600; }
         
         .nav-buttons { display: flex; justify-content: space-between; gap: 10px; margin-top: 2rem; }
-        .btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+        .btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: bold; font-size: 1rem; cursor: pointer; transition: opacity 0.15s; }
         .btn-prev { background: #f1f5f9; color: #475569; }
         .btn-next { background: #3b82f6; color: white; }
         .btn-submit { background: #10b981; color: white; }
@@ -99,7 +99,7 @@
 
         <div id="instruction-section" class="instruction-box">
             <div class="sticky-header">
-                <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
+                <button class="btn-back" onclick="handleBackAction()">&nbsp; ‹ &nbsp;</button>
                 <h2 style="margin:0; font-size: 1.2rem; color: #1e3a8a;">Exam Rules & Warning</h2>
             </div>
             
@@ -111,7 +111,7 @@
                     <div>
                         <strong>Strict Anti-Cheat Policy:</strong><br>
                         ১. পরীক্ষা চলাকালীন ট্যাব বা অ্যাপ পরিবর্তন করা নিষেধ।<br>
-                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো ব্যবহার করা যাবেবিধা।<br>
+                        ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো ব্যবহার করা যাবে না।<br>
                         ৩. স্ক্রিনশট তোলা সম্পূর্ণ নিষিদ্ধ।<br><br>
                         <i>এই নিয়ম ভাঙলে আপনি ওয়ার্নিং পাবেন। ৫ বার ওয়ার্নিং পেলে পরীক্ষা বাতিল হয়ে যাবে! (ছবি তোলার সময় সিস্টেম নিজে থেকেই কিছুক্ষণের জন্য অ্যান্টি-চিট পজ করে রাখবে, তাই চিন্তার কিছু নেই।)</i>
                     </div>
@@ -126,7 +126,7 @@
 
         <div id="exam-section">
             <div class="sticky-header">
-                <button class="btn-back" onclick="window.history.back()">‹</button>
+                <button class="btn-back" onclick="handleBackAction()">‹</button>
                 <div class="exam-header">
                     <h2 id="display-exam-name">Exam Name</h2>
                     <div class="timer-box">
@@ -238,6 +238,9 @@
                 localStorage.removeItem(`exam_result_${examCode}`);
             }
 
+            // Setup History State Tracking for Back Button Sync
+            window.history.replaceState({section: 'instruction'}, "", window.location.href);
+
             const storedEmail = localStorage.getItem('userEmail');
             const currentUserEmail = (storedEmail && storedEmail.trim() !== "") ? storedEmail : "Guest Account";
 
@@ -266,6 +269,13 @@
             }
 
             try {
+                // Speed Optimization: Local cache check for questions if available
+                const cachedExam = localStorage.getItem(`exam_cache_${examCode}`);
+                if (cachedExam) {
+                    const data = JSON.parse(cachedExam);
+                    processExamData(data, currentUserEmail, isReattempt);
+                }
+
                 const response = await fetch('/api/get-exam-questions', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ exam_code: examCode })
@@ -273,48 +283,9 @@
                 const data = await response.json();
 
                 if (data.success && data.questions.length > 0) {
-                    dbQuestions = data.questions;
-                    examName = data.exam_name;
-                    totalQuestions = dbQuestions.length;
-                    
-                    totalMarks = dbQuestions.reduce((sum, q) => {
-                        let m = parseFloat(q.max_marks);
-                        if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0);
-                        return sum + m;
-                    }, 0);
-
-                    examMinutesLimit = data.timer_minutes;
-                    negativeMarksPerWrong = parseFloat(data.negative_marks) || 0;
-                    
-                    document.getElementById('inst-q').innerText = totalQuestions;
-                    document.getElementById('inst-time').innerText = examMinutesLimit;
-                    document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
-
-                    const reviewResp = await fetch('/api/get-student-exam-review', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
-                    });
-                    const reviewData = await reviewResp.json();
-
-                    if(reviewData.success && reviewData.taken && !isReattempt) {
-                        document.getElementById('instruction-section').style.display = 'none';
-                        document.getElementById('exam-section').style.display = 'none';
-                        document.getElementById('result-section').style.display = 'block';
-                        
-                        let displayScore = Number.isInteger(reviewData.total_score) ? reviewData.total_score : parseFloat(reviewData.total_score).toFixed(2);
-                        document.getElementById('final-score').innerText = `${displayScore}/${totalMarks}`;
-                        
-                        renderDetailedReview(reviewData.subjective_data); 
-                        return;
-                    }
-
-                    const savedState = localStorage.getItem(`exam_state_${examCode}`);
-                    if(savedState) { startActualExam(true); } 
-                    else {
-                        document.getElementById('error-section').style.display = 'none';
-                        document.getElementById('instruction-section').style.display = 'block';
-                    }
-                } else {
+                    localStorage.setItem(`exam_cache_${examCode}`, JSON.stringify(data));
+                    processExamData(data, currentUserEmail, isReattempt);
+                } else if (!cachedExam) {
                     document.getElementById('error-msg').innerText = data.error || "No questions inside this exam!";
                     document.getElementById('error-section').style.display = 'block';
                 }
@@ -324,9 +295,56 @@
             }
         };
 
+        async function processExamData(data, currentUserEmail, isReattempt) {
+            dbQuestions = data.questions;
+            examName = data.exam_name;
+            totalQuestions = dbQuestions.length;
+            
+            totalMarks = dbQuestions.reduce((sum, q) => {
+                let m = parseFloat(q.max_marks);
+                if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0);
+                return sum + m;
+            }, 0);
+
+            examMinutesLimit = data.timer_minutes;
+            negativeMarksPerWrong = parseFloat(data.negative_marks) || 0;
+            
+            document.getElementById('inst-q').innerText = totalQuestions;
+            document.getElementById('inst-time').innerText = examMinutesLimit;
+            document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
+
+            const reviewResp = await fetch('/api/get-student-exam-review', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
+            });
+            const reviewData = await reviewResp.json();
+
+            if(reviewData.success && reviewData.taken && !isReattempt) {
+                document.getElementById('instruction-section').style.display = 'none';
+                document.getElementById('exam-section').style.display = 'none';
+                document.getElementById('result-section').style.display = 'block';
+                window.history.replaceState({section: 'result'}, "", window.location.href);
+                
+                let displayScore = Number.isInteger(reviewData.total_score) ? reviewData.total_score : parseFloat(reviewData.total_score).toFixed(2);
+                document.getElementById('final-score').innerText = `${displayScore}/${totalMarks}`;
+                
+                renderDetailedReview(reviewData.subjective_data); 
+                return;
+            }
+
+            const savedState = localStorage.getItem(`exam_state_${examCode}`);
+            if(savedState) { 
+                startActualExam(true); 
+            } else {
+                document.getElementById('error-section').style.display = 'none';
+                document.getElementById('instruction-section').style.display = 'block';
+            }
+        }
+
         function startActualExam(isResuming = false) {
             document.getElementById('instruction-section').style.display = 'none';
             document.getElementById('exam-section').style.display = 'block';
+            window.history.pushState({section: 'exam'}, "", window.location.href);
             document.getElementById('display-exam-name').innerText = examName;
             
             enterFullScreen();
@@ -704,6 +722,8 @@
             document.getElementById('exam-section').style.display = 'none';
             document.getElementById('pause-overlay').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
+            window.history.replaceState({section: 'result'}, "", window.location.href);
+
             if (document.fullscreenElement) { document.exitFullscreen(); }
             
             document.getElementById('final-score').innerText = `${displayScore}/${totalMarks}`; 
@@ -715,6 +735,38 @@
             alert("আপনার ফোনে যদি ExamMate অ্যাপটি আগে থেকেই থাকে, তবে দয়া করে সেটি মেনু থেকে সরাসরি ওপেন করুন।");
             window.location.href = "https://exammate-sscn.onrender.com/download";
         }
+
+        // ================= PERFECT BACK BUTTON & HIERARCHY SYNC =================
+        function handleBackAction() {
+            if (isExamActive) {
+                if (confirm("⚠️ আপনি কি পরীক্ষা মাঝপথে ছেড়ে চলে যেতে চান? আপনার প্রগতি সেভ থাকবে তবে সময় চলতে থাকবে।")) {
+                    window.location.href = 'student_dashboard.html';
+                }
+            } else {
+                window.location.href = 'student_dashboard.html';
+            }
+        }
+
+        window.addEventListener('popstate', function (event) {
+            const state = event.state;
+            if (state && state.section) {
+                if (state.section === 'instruction') {
+                    window.location.href = 'student_dashboard.html';
+                } else if (state.section === 'exam') {
+                    if (isExamActive) {
+                        if (confirm("⚠️ আপনি কি পরীক্ষা মাঝপথে ছেড়ে চলে যেতে চান?")) {
+                            window.location.href = 'student_dashboard.html';
+                        } else {
+                            window.history.pushState({section: 'exam'}, "", window.location.href);
+                        }
+                    }
+                } else {
+                    window.location.href = 'student_dashboard.html';
+                }
+            } else {
+                window.location.href = 'student_dashboard.html';
+            }
+        });
 
         // ================= PULL-TO-REFRESH BLOCKER =================
         let touchStartY = 0;
