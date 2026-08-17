@@ -33,6 +33,7 @@
             border-radius: 20px; padding: 22px; color: white;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; justify-content:space-between;
+            cursor: pointer;
         }
         .live-banner-card::after {
             content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px;
@@ -194,7 +195,7 @@
                 sessionsMap[seasonName].push(exam);
             });
 
-            // Sort exams sequentially by creation time
+            // Sort exams sequentially by creation time (created_at)
             Object.keys(sessionsMap).forEach(seasonName => {
                 sessionsMap[seasonName].sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
             });
@@ -209,28 +210,41 @@
                     const examsInSession = sessionsMap[seasonName];
                     const bg = getRandomGradient();
 
-                    // Sequential Unlocking Rule: Next exam opens only after previous is attempted or expired
+                    // Sequential unlocking logic: Find the first unattempted or active exam
                     let activeExam = null;
                     for (let i = 0; i < examsInSession.length; i++) {
                         let ex = examsInSession[i];
                         let isExpired = false;
                         if (ex.expiry_time && ex.expiry_time !== "None") {
-                            if (new Date(ex.expiry_time) <= now) isExpired = true;
+                            let expDate = new Date(ex.expiry_time.replace(' ', 'T'));
+                            if (expDate <= now) isExpired = true;
                         }
 
-                        if (!ex.is_attempted && !isExpired) {
-                            activeExam = ex;
-                            break;
-                        } else if (!ex.is_attempted && isExpired) {
-                            continue; // Skip expired and check next
+                        if (!ex.is_attempted) {
+                            if (!isExpired) {
+                                activeExam = ex;
+                                break;
+                            } else {
+                                activeExam = ex;
+                            }
                         }
                     }
 
+                    if (!activeExam && examsInSession.length > 0) {
+                        activeExam = examsInSession[examsInSession.length - 1];
+                    }
+
                     let actionBtnHtml = '';
-                    if (activeExam) {
-                        actionBtnHtml = `<button onclick="window.location.href='student_exam.html?code=${activeExam.code}'" style="width:100%; background:rgba(0,0,0,0.3); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Current: ${activeExam.name} 🚀</button>`;
+                    let isCurrentExpired = false;
+                    if (activeExam && activeExam.expiry_time && activeExam.expiry_time !== "None") {
+                        let expDate = new Date(activeExam.expiry_time.replace(' ', 'T'));
+                        if (expDate <= now) isCurrentExpired = true;
+                    }
+
+                    if (activeExam && !activeExam.is_attempted && !isCurrentExpired) {
+                        actionBtnHtml = `<button onclick="event.stopPropagation(); window.location.href='student_exam.html?code=${activeExam.code}'" style="width:100%; background:rgba(0,0,0,0.3); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Current: ${activeExam.name} 🚀</button>`;
                     } else {
-                        actionBtnHtml = `<button onclick="window.location.href='/season_analytics.html?season=' + encodeURIComponent('${seasonName}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Session Analytics 📊</button>`;
+                        actionBtnHtml = `<button onclick="event.stopPropagation(); window.location.href='/season_analytics.html?season=' + encodeURIComponent('${seasonName}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Session Analytics 📊</button>`;
                     }
 
                     liveHtml += `
