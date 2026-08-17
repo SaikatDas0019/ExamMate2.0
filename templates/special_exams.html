@@ -33,7 +33,7 @@
             border-radius: 20px; padding: 22px; color: white;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; justify-content:space-between;
-            cursor: pointer;
+            cursor: pointer; will-change: transform;
         }
         .live-banner-card::after {
             content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px;
@@ -48,15 +48,17 @@
             min-width: 110px; height: 110px; border-radius: 20px; flex-shrink: 0;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             color: white; font-weight: 800; font-size: 0.95rem; text-align: center; padding: 10px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15); cursor: pointer; transition: 0.2s;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.15s ease;
+            will-change: transform;
         }
-        .special-folder:hover { transform: translateY(-3px); }
+        .special-folder:active { transform: scale(0.97); }
         .special-folder i { font-size: 2rem; margin-bottom: 8px; opacity: 0.9;}
 
         .playlist-container { padding: 0 20px 30px 20px; display: flex; flex-direction: column; gap: 12px; }
         .playlist-item {
             display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0;
-            border-radius: 16px; padding: 12px; gap: 15px; cursor: pointer; transition: 0.2s;
+            border-radius: 16px; padding: 12px; gap: 15px; cursor: pointer; transition: background 0.15s ease;
+            transform: translateZ(0);
         }
         .playlist-item:hover { background: #eff6ff; border-color: #bfdbfe; }
         .playlist-icon {
@@ -86,12 +88,12 @@
             background: #f1f5f9; color: #64748b; border: none;
             width: 34px; height: 34px; border-radius: 50%;
             font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; flex-shrink: 0; margin-left: 15px;
+            cursor: pointer; transition: background 0.15s ease; flex-shrink: 0; margin-left: 15px;
         }
         .modal-close-btn-fixed:hover { background: #fee2e2; color: #ef4444; }
 
         /* Review Card Styling */
-        .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; transition: 0.2s; background: #ffffff; }
+        .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; background: #ffffff; }
         .review-correct { background-color: #f0fdf4; border-color: #bbf7d0; box-shadow: 0 2px 4px rgba(34,197,94,0.05); } 
         .review-wrong { background-color: #fef2f2; border-color: #fecaca; box-shadow: 0 2px 4px rgba(239,68,68,0.05); } 
         .review-unattempted { background-color: #ffffff; border-color: #cbd5e1; } 
@@ -127,7 +129,7 @@
         <div class="score-modal-box">
             <div class="modal-header-fixed">
                 <div class="score-modal-title" id="playlist-modal-title" style="font-size:1.2rem; font-weight:800; color:#0f172a; margin:0; line-height:1.4;">Playlist Exams</div>
-                <button class="modal-close-btn-fixed" onclick="document.getElementById('playlist-exams-modal').style.display='none'"><i class="fas fa-times"></i></button>
+                <button class="modal-close-btn-fixed" onclick="closePlaylistModalUI()"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body-scroll" id="playlist-exams-list"></div>
         </div>
@@ -138,7 +140,7 @@
         <div class="score-modal-box">
             <div class="modal-header-fixed">
                 <div class="score-modal-title" id="dr-title" style="font-weight:800; font-size:1.1rem; color:#0f172a; margin:0; line-height:1.4; flex:1; padding-right:10px;">Exam Result</div>
-                <button class="modal-close-btn-fixed" onclick="document.getElementById('detailed-result-modal').style.display='none'"><i class="fas fa-times"></i></button>
+                <button class="modal-close-btn-fixed" onclick="closeResultModalUI()"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body-scroll" id="detailed-review-container"></div>
         </div>
@@ -162,12 +164,24 @@
 
         function getRandomGradient() { return specialGradients[Math.floor(Math.random() * specialGradients.length)]; }
 
-        window.onload = openSpecialExams;
+        window.onload = async () => {
+            window.history.replaceState({modal: null}, "", window.location.href);
+
+            // Speed Optimization: Render from local cache if available
+            const cachedData = localStorage.getItem('special_exams_cache');
+            if (cachedData) {
+                renderSpecialData(JSON.parse(cachedData));
+            }
+
+            await openSpecialExams();
+        };
 
         async function openSpecialExams() {
-            document.getElementById('live-special-scroll').innerHTML = '<p style="padding:20px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading live sessions...</p>';
-            document.getElementById('special-folders').innerHTML = '<p style="padding:20px; color:#64748b;">Loading categories...</p>';
-            document.getElementById('past-special-playlists').innerHTML = '<p style="padding:20px; color:#64748b;">Loading playlists...</p>';
+            if(!localStorage.getItem('special_exams_cache')) {
+                document.getElementById('live-special-scroll').innerHTML = '<p style="padding:20px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading live sessions...</p>';
+                document.getElementById('special-folders').innerHTML = '<p style="padding:20px; color:#64748b;">Loading categories...</p>';
+                document.getElementById('past-special-playlists').innerHTML = '<p style="padding:20px; color:#64748b;">Loading playlists...</p>';
+            }
             
             const userEmail = localStorage.getItem('userEmail');
 
@@ -178,7 +192,10 @@
                 });
                 const data = await res.json();
                 
-                if(data.success) { renderSpecialData(data); } 
+                if(data.success) { 
+                    localStorage.setItem('special_exams_cache', JSON.stringify(data));
+                    renderSpecialData(data); 
+                } 
                 else { alert("Error loading special data."); }
             } catch(e) { console.error(e); }
         }
@@ -195,7 +212,6 @@
                 sessionsMap[seasonName].push(exam);
             });
 
-            // Sort exams sequentially by creation time (created_at)
             Object.keys(sessionsMap).forEach(seasonName => {
                 sessionsMap[seasonName].sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
             });
@@ -210,7 +226,6 @@
                     const examsInSession = sessionsMap[seasonName];
                     const bg = getRandomGradient();
 
-                    // Sequential unlocking logic: Find the first unattempted or active exam
                     let activeExam = null;
                     for (let i = 0; i < examsInSession.length; i++) {
                         let ex = examsInSession[i];
@@ -302,6 +317,7 @@
             const container = document.getElementById('playlist-exams-list');
             container.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
             document.getElementById('playlist-exams-modal').style.display = 'flex';
+            window.history.pushState({modal: 'playlist'}, "", window.location.href);
             
             const userEmail = localStorage.getItem('userEmail');
             try {
@@ -363,11 +379,21 @@
             }
         }
 
+        function closePlaylistModalUI() {
+            document.getElementById('playlist-exams-modal').style.display = 'none';
+        }
+
+        function closeResultModalUI() {
+            document.getElementById('detailed-result-modal').style.display = 'none';
+        }
+
         async function showDetailedResult(code, name) {
             const container = document.getElementById('detailed-review-container');
             container.innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Fetching your answers...</p>';
             document.getElementById('dr-title').innerText = name + " - Result";
             document.getElementById('detailed-result-modal').style.display = 'flex';
+            window.history.pushState({modal: 'result'}, "", window.location.href);
+
             const userEmail = localStorage.getItem('userEmail') || "Guest Account";
 
             try {
@@ -383,7 +409,9 @@
 
                     let totalMarks = qData.questions.reduce((sum, q) => { let m = parseFloat(q.max_marks); if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0); return sum + m; }, 0);
                     let displayScore = (reviewData.success && reviewData.taken) ? reviewData.total_score : 0;
-                    document.getElementById('dr-title').innerHTML = `${name} <br><span style="font-size:0.9rem; color:#3b82f6;">Total Score: ${displayScore} / ${totalMarks}</span>`;
+                    displayScore = Number.isInteger(displayScore) ? displayScore : parseFloat(displayScore).toFixed(2);
+                    totalMarks = Number.isInteger(totalMarks) ? totalMarks : parseFloat(totalMarks).toFixed(2);
+                    document.getElementById('dr-title').innerHTML = `${name} - Result <br><span style="font-size:0.9rem; color:#3b82f6;">Total Score: ${displayScore} / ${totalMarks}</span>`;
 
                     let html = '';
                     qData.questions.forEach((q, idx) => {
@@ -425,13 +453,18 @@
             } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
         }
 
+        // ================= PERFECT HIERARCHICAL BACK BUTTON SYNC =================
         window.addEventListener('popstate', function (event) {
             const plModal = document.getElementById('playlist-exams-modal');
             const drModal = document.getElementById('detailed-result-modal');
             
-            if(plModal && plModal.style.display === 'flex') { plModal.style.display = 'none'; } 
-            else if(drModal && drModal.style.display === 'flex') { drModal.style.display = 'none'; } 
-            else { if (document.referrer) { window.history.back(); } }
+            if(drModal && drModal.style.display === 'flex') { 
+                drModal.style.display = 'none'; 
+            } else if(plModal && plModal.style.display === 'flex') { 
+                plModal.style.display = 'none'; 
+            } else { 
+                if (document.referrer) { window.history.back(); } 
+            }
         });
     </script>
 </body>
