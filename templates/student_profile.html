@@ -36,7 +36,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
         .header-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0; }
-        .settings-btn { background: transparent; border: none; font-size: 1.4rem; color: #475569; cursor: pointer; transition: 0.2s;}
+        .settings-btn { background: transparent; border: none; font-size: 1.4rem; color: #475569; cursor: pointer; transition: transform 0.2s;}
         .settings-btn:hover { color: #0f172a; transform: rotate(45deg); }
         .btn-back { background: transparent; border: none; color: #111827; font-size: 1.8rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0;}
 
@@ -73,22 +73,25 @@
         .progress-card { 
             background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; 
             padding: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+            will-change: transform;
         }
+        .progress-card:active { transform: scale(0.97); }
         .progress-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(34, 197, 94, 0.1); border-color: #cbd5e1;}
         .progress-info { width: 100%; display: flex; justify-content: space-between; align-items: center;}
         .progress-info span { font-size: 0.8rem; color: #475569; font-weight: 700; }
         .progress-info i { font-size: 1.2rem; color: #3b82f6; }
         .progress-card b { font-size: 1.4rem; color: #0f172a; line-height: 1; }
 
-        .panel-view { display: none; background: #f1f5f9; min-height: 100vh; padding-top: 60px; }
+        .panel-view { display: none; background: #f1f5f9; min-height: 100vh; padding-top: 60px; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 10; }
+        #main-profile-view { display: block; position: relative; }
         .panel-content { padding: 15px; }
         .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; background:#fff;}
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
         th { background-color: #f8fafc; color: #374151; font-weight: bold; }
         td { color: #4b5563; }
-        .student-select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px; box-sizing: border-box; outline: none;}
+        .student-select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px; box-sizing: border-box; outline: none; background: #fff;}
 
         .level-box { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 16px; padding: 20px; color: white; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);}
         .level-icon { font-size: 3.5rem; margin-bottom: 10px; color: #fbbf24; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
@@ -106,10 +109,10 @@
 
         /* Settings Bottom Sheet Modal */
         .settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px); }
-        .settings-sheet { background: #ffffff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 15px 90px 15px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
+        .settings-sheet { background: #ffffff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 15px 90px 15px; box-sizing: border-box; animation: slideUp 0.25s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .sheet-drag-handle { width: 40px; height: 5px; background: #cbd5e1; border-radius: 5px; margin: 0 auto 20px auto; }
-        .settings-option { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 600; color: #1e293b; cursor: pointer; transition: 0.2s; margin-bottom: 8px; }
+        .settings-option { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 600; color: #1e293b; cursor: pointer; transition: background 0.15s; margin-bottom: 8px; }
         .settings-option:hover { background: #f1f5f9; }
         .settings-option i { font-size: 1.2rem; width: 25px; text-align: center; color: #64748b;}
         .opt-logout { color: #ef4444 !important; }
@@ -122,8 +125,8 @@
         .input-group input:focus, .input-group select:focus { border-color: #3b82f6; }
         .btn-save { width: 100%; background: #10b981; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 6px rgba(16,185,129,0.2); }
 
-        /* FULL FEED CARD STYLES (From Dashboard) */
-        .feed-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        /* FULL FEED CARD STYLES */
+        .feed-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transform: translateZ(0); }
         .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
         .feed-teacher-info { flex: 1; }
@@ -138,24 +141,23 @@
         .feed-meta i { color: #3b82f6; }
         .feed-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px; }
         .action-left { display: flex; gap: 15px; }
-        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; padding: 0; }
+        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: color 0.15s; padding: 0; }
         .action-btn span { font-size: 0.8rem; font-weight: 600; }
-        .action-btn:hover { color: #3b82f6; transform: scale(1.1); }
+        .action-btn:hover { color: #3b82f6; }
         .like-active { color: #ef4444 !important; }
         .save-active { color: #f59e0b !important; }
-        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s; }
-        .btn-attempt:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4); }
-        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s; }
+        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; }
 
         /* COLLECTION MODAL */
-        .collection-filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
+        .collection-filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; scrollbar-width: none; }
         .collection-filters::-webkit-scrollbar { display: none; }
         .collection-pill { background: #ffffff; border: 1px solid #cbd5e1; color: #475569; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.2s;}
         .collection-pill.active { background: #eff6ff; color: #1e3a8a; border-color: #3b82f6; }
         
         .collection-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px);}
-        .collection-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; max-height: 85vh; overflow-y: auto;}
-        .collection-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; cursor: pointer; font-weight: bold; color: #1e293b; transition: 0.2s;}
+        .collection-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.25s ease-out; max-height: 85vh; overflow-y: auto;}
+        .collection-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; cursor: pointer; font-weight: bold; color: #1e293b; transition: background 0.15s;}
         .collection-item:hover { background: #eff6ff; border-color: #3b82f6; color: #3b82f6;}
         .collection-item i { font-size: 1.2rem; color: #3b82f6;}
         .new-collection-box { display: flex; gap: 10px; margin-top: 15px; margin-bottom: 10px;}
@@ -165,7 +167,7 @@
 
         /* SHARE MODAL & SCORE MODAL FIX */
         .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
-        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
+        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.25s ease-out; }
         .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
         .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
         .share-buttons i { font-size: 2.2rem; }
@@ -174,7 +176,7 @@
         .share-buttons .fa-copy { color: #64748b; }
 
         .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; max-height: 85vh; overflow-y: auto; }
+        .score-modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
         .score-modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
         .score-modal-close { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); margin-top: 15px;}
         .tier-card { display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; text-align: left;}
@@ -201,13 +203,13 @@
     <div class="container">
         
         <!-- MAIN PROFILE VIEW -->
-        <div id="main-profile-view">
+        <div id="main-profile-view" class="panel-view" style="display: block; position: relative; padding-top: 0;">
             <div class="sticky-header">
                 <h1 class="header-title">Profile</h1>
                 <button class="settings-btn" onclick="openSettings()"><i class="fas fa-cog"></i></button>
             </div>
 
-            <div class="profile-info-box" id="profile-info-box">
+            <div class="profile-info-box" id="profile-info-box" style="margin-top: 60px;">
                 <div class="top-left-badge" id="top-left-badge">
                     <i class="fas fa-spinner fa-spin"></i> Loading...
                 </div>
@@ -269,7 +271,7 @@
                 <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
                 <h1 class="header-title">Edit Profile</h1>
             </div>
-            <div class="panel-content">
+            <div class="panel-content" style="margin-top: 15px;">
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px;">
                     <div class="input-group">
                         <label>Full Name</label>
@@ -293,11 +295,8 @@
                 <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
                 <h1 class="header-title" id="social-panel-title">Saved Exams</h1>
             </div>
-            <div class="panel-content">
-                <div id="collection-filter-container" class="collection-filters" style="display:none;">
-                    <!-- Filter Pills will load here -->
-                </div>
-                
+            <div class="panel-content" style="margin-top: 15px;">
+                <div id="collection-filter-container" class="collection-filters" style="display:none;"></div>
                 <div id="social-list-container">
                     <p style="text-align:center; color:#64748b;">Loading...</p>
                 </div>
@@ -310,14 +309,14 @@
                 <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
                 <h1 class="header-title">My Level</h1>
             </div>
-            <div class="panel-content">
+            <div class="panel-content" style="margin-top: 15px;">
                 <div class="level-box">
                     <div class="level-icon" id="badge-icon"><i class="fas fa-seedling"></i></div>
                     <h2 class="level-title" id="badge-title">Novice</h2>
                     <p class="level-desc" id="badge-desc">Keep taking exams to level up!</p>
                     <div class="level-progress-bg"><div class="level-progress-fill" id="level-progress-bar"></div></div>
                     <div class="level-progress-text" id="level-progress-text">0 / 50 XP</div>
-                    <button class="btn-view-tiers" onclick="document.getElementById('all-levels-modal').style.display='flex'">👁️ View All Tiers</button>
+                    <button class="btn-view-tiers" onclick="openLevelsModal()">👁️ View All Tiers</button>
                 </div>
 
                 <div class="stat-grid-2">
@@ -334,10 +333,10 @@
                 <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
                 <h1 class="header-title">Exam History</h1>
             </div>
-            <div class="panel-content table-container" style="border:none;">
+            <div class="panel-content table-container" style="border:none; margin-top: 15px; background:transparent;">
                 <table>
                     <thead><tr><th>Exam Name</th><th>Score</th><th>Date</th></tr></thead>
-                    <tbody id="list-history-body"></tbody>
+                    <tbody id="list-history-body"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -348,14 +347,14 @@
                 <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
                 <h1 class="header-title">Leaderboard</h1>
             </div>
-            <div class="panel-content">
+            <div class="panel-content" style="margin-top: 15px;">
                 <select id="leaderboard-filter" class="student-select-box" onchange="loadStudentLeaderboard()">
                     <option value="all" selected>🏆 Overall Performance</option>
                 </select>
                 <div class="table-container">
                     <table>
                         <thead><tr><th>Rank</th><th>Student Name</th><th>Score/Perf</th></tr></thead>
-                        <tbody id="list-leaderboard-body"></tbody>
+                        <tbody id="list-leaderboard-body"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -367,25 +366,23 @@
                 <button class="btn-back" onclick="showMainProfile()">&nbsp; ‹ &nbsp;</button>
                 <h1 class="header-title">Recent Activity</h1>
             </div>
-            <div class="panel-content table-container" style="border:none;">
+            <div class="panel-content table-container" style="border:none; margin-top: 15px; background:transparent;">
                 <table>
                     <thead><tr><th>Recent Exams</th><th>Score</th><th>Total Qs</th></tr></thead>
-                    <tbody id="list-recent-body"></tbody>
+                    <tbody id="list-recent-body"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
 
     </div>
 
-    <!-- Collection Modal (Save Folder Selector) -->
+    <!-- Collection Modal -->
     <div class="collection-modal-overlay" id="collection-modal" onclick="if(event.target.id==='collection-modal') closeCollectionModal()">
         <div class="collection-sheet">
             <h3 style="margin-top:0; color:#0f172a; text-align:center; font-size:1.2rem;">Save to Collection</h3>
             <p style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:-5px; margin-bottom:20px;">Choose a folder to save this exam</p>
             
-            <div id="collection-list">
-                <!-- Collection List will populate here -->
-            </div>
+            <div id="collection-list"></div>
             
             <div class="new-collection-box">
                 <input type="text" id="new-collection-input" class="new-collection-input" placeholder="Create new folder...">
@@ -414,11 +411,11 @@
         <div class="score-modal-box" style="text-align: left;">
             <div class="score-modal-title" id="dr-title" style="text-align: center;">Exam Result</div>
             <div id="detailed-review-container"></div>
-            <button class="score-modal-close" onclick="document.getElementById('detailed-result-modal').style.display='none'">Close ✖</button>
+            <button class="score-modal-close" onclick="closeResultModal()">Close ✖</button>
         </div>
     </div>
 
-    <div class="score-modal-overlay" id="all-levels-modal">
+    <div class="score-modal-overlay" id="all-levels-modal" onclick="if(event.target.id==='all-levels-modal') closeLevelsModal()">
         <div class="score-modal-box">
             <div class="score-modal-title" style="color: #1e3a8a;">🏆 All Levels & Tiers</div>
             <div style="margin-bottom: 20px;">
@@ -428,7 +425,7 @@
                 <div class="tier-card" style="background:#fef9c3; border-color:#fde047;"><div class="tier-icon" style="color:#eab308;"><i class="fas fa-trophy"></i></div><div><strong style="color:#713f12; font-size:1.1rem;">Gold Master</strong><br><span style="color:#a16207; font-size:0.8rem;">300 - 599 Points</span></div></div>
                 <div class="tier-card" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); border: none; box-shadow: 0 4px 15px rgba(220, 39, 67, 0.4);"><div class="tier-icon" style="color:#ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);"><i class="fas fa-crown"></i></div><div><strong style="color:#ffffff; font-size:1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">Platinum Legend</strong><br><span style="color:rgba(255, 255, 255, 0.9); font-size:0.8rem;">600+ Points</span></div></div>
             </div>
-            <button class="score-modal-close" style="background:#3b82f6; box-shadow:0 4px 6px rgba(59,130,246,0.3);" onclick="document.getElementById('all-levels-modal').style.display='none'">Awesome! 🚀</button>
+            <button class="score-modal-close" style="background:#3b82f6; box-shadow:0 4px 6px rgba(59,130,246,0.3);" onclick="closeLevelsModal()">Awesome! 🚀</button>
         </div>
     </div>
 
@@ -453,6 +450,15 @@
         window.onload = async () => {
             loadProfileData();
             initCollections(); 
+
+            // Speed optimization: LocalStorage cache render
+            const cachedProg = localStorage.getItem('student_progress_cache');
+            if(cachedProg) {
+                renderAnalytics(JSON.parse(cachedProg));
+            }
+
+            window.history.replaceState({view: 'profile'}, "", window.location.href);
+
             await fetchAnalyticsData();
         };
 
@@ -499,76 +505,114 @@
             if(!userEmail) return;
 
             try {
-                const progRes = await fetch('/api/get-student-progress', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail })
-                });
+                const [progRes, histRes, feedRes] = await Promise.all([
+                    fetch('/api/get-student-progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail }) }),
+                    fetch('/api/get-student-history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail }) }),
+                    fetch('/api/search-feed', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail, query: "", class_name: "All", subject: "All", status: "All" }) })
+                ]);
+
                 const progData = await progRes.json();
                 if (progData.success) {
-                    document.getElementById('stat-score').innerText = progData.score;
-                    document.getElementById('stat-total').innerText = progData.total_exams;
-                    
-                    const score = parseFloat(progData.score);
-                    let badgeTitle = "Novice", badgeIcon = '<i class="fas fa-seedling" style="color:#10b981;"></i>';
-                    let nextLevelScore = 50, prevLevelScore = 0;
-                    let boxBg = "#ecfdf5", boxColor = "#064e3b", boxBorder = "1px solid #6ee7b7", boxShadow = "0 10px 20px rgba(16, 185, 129, 0.2)";
-                    let profileBg = "#ecfdf5", avatarBg = "linear-gradient(135deg, #34d399, #10b981)", badgeTopLeftHtml = '<i class="fas fa-seedling" style="color:#10b981;"></i> Novice';
-
-                    if(score >= 50 && score < 100) { badgeTitle = "Bronze Scholar"; badgeIcon = '<i class="fas fa-medal" style="color:#d97706;"></i>'; prevLevelScore = 50; nextLevelScore = 100; boxBg = "#ffedd5"; boxColor = "#7c2d12"; boxBorder = "1px solid #fdba74"; boxShadow = "0 10px 20px rgba(217, 119, 6, 0.2)"; profileBg = "#fff7ed"; avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)"; badgeTopLeftHtml = '<i class="fas fa-medal" style="color:#d97706;"></i> Bronze Scholar'; } 
-                    else if(score >= 100 && score < 300) { badgeTitle = "Silver Achiever"; badgeIcon = '<i class="fas fa-medal" style="color:#64748b;"></i>'; prevLevelScore = 100; nextLevelScore = 300; boxBg = "#f1f5f9"; boxColor = "#1e293b"; boxBorder = "1px solid #cbd5e1"; boxShadow = "0 10px 20px rgba(100, 116, 139, 0.2)"; profileBg = "#f8fafc"; avatarBg = "linear-gradient(135deg, #94a3b8, #475569)"; badgeTopLeftHtml = '<i class="fas fa-medal" style="color:#64748b;"></i> Silver Achiever'; } 
-                    else if(score >= 300 && score < 600) { badgeTitle = "Gold Master"; badgeIcon = '<i class="fas fa-trophy" style="color:#eab308;"></i>'; prevLevelScore = 300; nextLevelScore = 600; boxBg = "#fef9c3"; boxColor = "#713f12"; boxBorder = "1px solid #fde047"; boxShadow = "0 10px 20px rgba(234, 179, 8, 0.2)"; profileBg = "#fefce8"; avatarBg = "linear-gradient(135deg, #fde047, #eab308)"; badgeTopLeftHtml = '<i class="fas fa-trophy" style="color:#eab308;"></i> Gold Master'; } 
-                    else if(score >= 600) { badgeTitle = "Platinum Legend"; badgeIcon = '<i class="fas fa-crown" style="color:#ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);"></i>'; prevLevelScore = 600; nextLevelScore = 600; boxBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; boxColor = "#ffffff"; boxBorder = "none"; boxShadow = "0 10px 20px rgba(220, 39, 67, 0.4)"; profileBg = "linear-gradient(135deg, #fdf4ff 0%, #fdf2f8 100%)"; avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; badgeTopLeftHtml = '<i class="fas fa-crown" style="color:#dc2743;"></i> Platinum Legend'; }
-
-                    const levelBox = document.querySelector('.level-box');
-                    levelBox.style.background = boxBg; levelBox.style.color = boxColor; levelBox.style.border = boxBorder; levelBox.style.boxShadow = boxShadow;
-                    document.getElementById('badge-title').innerHTML = badgeTitle;
-                    document.getElementById('badge-icon').innerHTML = badgeIcon;
-                    
-                    let progressPercent = 100;
-                    if(nextLevelScore > prevLevelScore) { progressPercent = ((score - prevLevelScore) / (nextLevelScore - prevLevelScore)) * 100; document.getElementById('level-progress-text').innerText = `${score} / ${nextLevelScore} Points to Level Up 🚀`; } 
-                    else { document.getElementById('level-progress-text').innerText = `🏆 Max Level Reached!`; }
-                    setTimeout(() => { document.getElementById('level-progress-bar').style.width = `${progressPercent}%`; }, 300);
-
-                    document.getElementById('lvl-high').innerText = progData.highest + '%'; document.getElementById('lvl-low').innerText = progData.lowest + '%'; document.getElementById('lvl-avg').innerText = progData.total_exams > 0 ? (score / parseFloat(progData.total_exams)).toFixed(2) + '%' : '0%';
-                    document.getElementById('profile-info-box').style.background = profileBg; document.getElementById('main-avatar').style.background = avatarBg; document.getElementById('top-left-badge').innerHTML = badgeTopLeftHtml;
+                    localStorage.setItem('student_progress_cache', JSON.stringify(progData));
+                    renderAnalytics(progData);
                 }
 
-                const histRes = await fetch('/api/get-student-history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail }) });
                 const histData = await histRes.json();
                 if(histData.success) {
                     globalHistory = histData.history;
-                    document.getElementById('list-history-body').innerHTML = histData.history.map(h => `<tr><td><strong>${h.exam_name}</strong></td><td><strong style="color:#3b82f6;">${h.score}/${h.total}</strong></td><td>${h.date}</td></tr>`).join('') || '<tr><td colspan="3">No exams taken yet.</td></tr>';
-                    document.getElementById('list-recent-body').innerHTML = histData.history.slice(0,5).map(h => `<tr><td><strong>${h.exam_name}</strong><br><span style="font-size:0.7rem;">${h.date}</span></td><td><strong style="color:#10b981;">${((h.score/h.total)*100).toFixed(1)}%</strong></td><td>${h.total}</td></tr>`).join('') || '<tr><td colspan="3">No recent activity.</td></tr>';
+                    document.getElementById('list-history-body').innerHTML = histData.history.map(h => `<tr><td><strong>${h.exam_name}</strong></td><td><strong style="color:#3b82f6;">${h.score}/${h.total}</strong></td><td>${h.date}</td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center;">No exams taken yet.</td></tr>';
+                    document.getElementById('list-recent-body').innerHTML = histData.history.slice(0,5).map(h => `<tr><td><strong>${h.exam_name}</strong><br><span style="font-size:0.7rem; color:#64748b;">${h.date}</span></td><td><strong style="color:#10b981;">${((h.score/h.total)*100).toFixed(1)}%</strong></td><td>${h.total}</td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center;">No recent activity.</td></tr>';
+                    
                     const ldFilter = document.getElementById('leaderboard-filter');
+                    ldFilter.innerHTML = '<option value="all" selected>🏆 Overall Performance</option>';
                     const uniqueExams = [...new Set(histData.history.map(item => item.exam_name))]; 
                     uniqueExams.forEach(eName => { const opt = document.createElement('option'); opt.value = eName; opt.innerText = eName; ldFilter.appendChild(opt); });
                 }
 
-                const feedRes = await fetch('/api/search-feed', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ email: userEmail, query: "", class_name: "All", subject: "All", status: "All" })
-                });
                 const feedData = await feedRes.json();
                 if(feedData.success) { allSocialExams = feedData.feed; }
 
             } catch (error) { console.log("Analytics fetch error", error); }
         }
 
-        function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
-        function closeSettingsOverlay(e) { if(e.target.id === 'settings-modal') { document.getElementById('settings-modal').style.display = 'none'; } }
+        function renderAnalytics(progData) {
+            document.getElementById('stat-score').innerText = progData.score;
+            document.getElementById('stat-total').innerText = progData.total_exams;
+            
+            const score = parseFloat(progData.score);
+            let badgeTitle = "Novice", badgeIcon = '<i class="fas fa-seedling" style="color:#10b981;"></i>';
+            let nextLevelScore = 50, prevLevelScore = 0;
+            let boxBg = "#ecfdf5", boxColor = "#064e3b", boxBorder = "1px solid #6ee7b7", boxShadow = "0 10px 20px rgba(16, 185, 129, 0.2)";
+            let profileBg = "#ecfdf5", avatarBg = "linear-gradient(135deg, #34d399, #10b981)", badgeTopLeftHtml = '<i class="fas fa-seedling" style="color:#10b981;"></i> Novice';
+
+            if(score >= 50 && score < 100) { badgeTitle = "Bronze Scholar"; badgeIcon = '<i class="fas fa-medal" style="color:#d97706;"></i>'; prevLevelScore = 50; nextLevelScore = 100; boxBg = "#ffedd5"; boxColor = "#7c2d12"; boxBorder = "1px solid #fdba74"; boxShadow = "0 10px 20px rgba(217, 119, 6, 0.2)"; profileBg = "#fff7ed"; avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)"; badgeTopLeftHtml = '<i class="fas fa-medal" style="color:#d97706;"></i> Bronze Scholar'; } 
+            else if(score >= 100 && score < 300) { badgeTitle = "Silver Achiever"; badgeIcon = '<i class="fas fa-medal" style="color:#64748b;"></i>'; prevLevelScore = 100; nextLevelScore = 300; boxBg = "#f1f5f9"; boxColor = "#1e293b"; boxBorder = "1px solid #cbd5e1"; boxShadow = "0 10px 20px rgba(100, 116, 139, 0.2)"; profileBg = "#f8fafc"; avatarBg = "linear-gradient(135deg, #94a3b8, #475569)"; badgeTopLeftHtml = '<i class="fas fa-medal" style="color:#64748b;"></i> Silver Achiever'; } 
+            else if(score >= 300 && score < 600) { badgeTitle = "Gold Master"; badgeIcon = '<i class="fas fa-trophy" style="color:#eab308;"></i>'; prevLevelScore = 300; nextLevelScore = 600; boxBg = "#fef9c3"; boxColor = "#713f12"; boxBorder = "1px solid #fde047"; boxShadow = "0 10px 20px rgba(234, 179, 8, 0.2)"; profileBg = "#fefce8"; avatarBg = "linear-gradient(135deg, #fde047, #eab308)"; badgeTopLeftHtml = '<i class="fas fa-trophy" style="color:#eab308;"></i> Gold Master'; } 
+            else if(score >= 600) { badgeTitle = "Platinum Legend"; badgeIcon = '<i class="fas fa-crown" style="color:#ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);"></i>'; prevLevelScore = 600; nextLevelScore = 600; boxBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; boxColor = "#ffffff"; boxBorder = "none"; boxShadow = "0 10px 20px rgba(220, 39, 67, 0.4)"; profileBg = "linear-gradient(135deg, #fdf4ff 0%, #fdf2f8 100%)"; avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; badgeTopLeftHtml = '<i class="fas fa-crown" style="color:#dc2743;"></i> Platinum Legend'; }
+
+            const levelBox = document.querySelector('.level-box');
+            if(levelBox) {
+                levelBox.style.background = boxBg; levelBox.style.color = boxColor; levelBox.style.border = boxBorder; levelBox.style.boxShadow = boxShadow;
+                document.getElementById('badge-title').innerHTML = badgeTitle;
+                document.getElementById('badge-icon').innerHTML = badgeIcon;
+            }
+            
+            let progressPercent = 100;
+            if(nextLevelScore > prevLevelScore) { 
+                progressPercent = ((score - prevLevelScore) / (nextLevelScore - prevLevelScore)) * 100; 
+                document.getElementById('level-progress-text').innerText = `${score} / ${nextLevelScore} Points to Level Up 🚀`; 
+            } else { 
+                document.getElementById('level-progress-text').innerText = `🏆 Max Level Reached!`; 
+            }
+            setTimeout(() => { document.getElementById('level-progress-bar').style.width = `${progressPercent}%`; }, 300);
+
+            document.getElementById('lvl-high').innerText = progData.highest + '%'; 
+            document.getElementById('lvl-low').innerText = progData.lowest + '%'; 
+            document.getElementById('lvl-avg').innerText = progData.total_exams > 0 ? (score / parseFloat(progData.total_exams)).toFixed(2) + '%' : '0%';
+            
+            document.getElementById('profile-info-box').style.background = profileBg; 
+            document.getElementById('main-avatar').style.background = avatarBg; 
+            document.getElementById('top-left-badge').innerHTML = badgeTopLeftHtml;
+        }
+
+        // ================= PANELS & NAVIGATION WITH HISTORY SYNC =================
+        function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; window.history.pushState({modal: 'settings'}, "", window.location.href); }
+        function closeSettingsOverlay(e) { if(e.target.id === 'settings-modal') { closeSettings(); } }
         function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
+        function openLevelsModal() {
+            document.getElementById('all-levels-modal').style.display = 'flex';
+            window.history.pushState({modal: 'levels'}, "", window.location.href);
+        }
+        function closeLevelsModal() {
+            document.getElementById('all-levels-modal').style.display = 'none';
+        }
 
         function openPanel(id) {
             closeSettings();
             document.getElementById('main-profile-view').style.display = 'none';
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            document.getElementById(id).style.display = 'block';
-            window.scrollTo(0, 0); window.history.pushState({view: id}, "", window.location.href);
+            const target = document.getElementById(id);
+            if(target) {
+                target.style.display = 'block';
+                target.style.position = 'absolute';
+            }
+            window.scrollTo(0, 0); 
+            window.history.pushState({view: id}, "", window.location.href);
             if(id === 'panel-leaderboard') { loadStudentLeaderboard(); }
         }
+
         function showMainProfile() {
+            closeSettings();
+            closeLevelsModal();
+            closeCollectionModal();
+            closeShareModal();
+            closeResultModal();
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            document.getElementById('main-profile-view').style.display = 'block';
-            window.scrollTo(0, 0); window.history.pushState({view: 'profile'}, "", window.location.href);
+            const mainView = document.getElementById('main-profile-view');
+            mainView.style.display = 'block';
+            mainView.style.position = 'relative';
+            window.scrollTo(0, 0); 
         }
 
         function showCollectionModal() {
@@ -585,12 +629,14 @@
                 </div>`;
             });
             document.getElementById('collection-modal').style.display = 'flex';
+            window.history.pushState({modal: 'collection'}, "", window.location.href);
         }
 
         function closeCollectionModal() {
             document.getElementById('collection-modal').style.display = 'none';
             pendingSaveExamCode = null;
-            document.getElementById('new-collection-input').value = '';
+            const input = document.getElementById('new-collection-input');
+            if(input) input.value = '';
         }
 
         function createNewCollection() {
@@ -635,6 +681,8 @@
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
             const panel = document.getElementById('social-exams-view');
             panel.style.display = 'block';
+            panel.style.position = 'absolute';
+            window.scrollTo(0, 0);
             
             document.getElementById('social-panel-title').innerText = type === 'saved' ? '🔖 Saved Collections' : '❤️ Liked Exams';
             
@@ -666,7 +714,6 @@
             renderSocialCards('saved', folderName);
         }
 
-        // Helper function for checking exact status from LocalStorage vs Database
         function checkStatus(code, prefix, dbStatus) {
             const localVal = localStorage.getItem(prefix + code);
             if (localVal === 'true') return true;
@@ -773,25 +820,21 @@
                 if (isActive) { icon.className = 'far fa-heart'; span.innerText = count - 1; } 
                 else { icon.className = 'fas fa-heart like-active'; span.innerText = count + 1; }
                 
-                // If viewing Liked tab, re-render to hide removed card
                 if(document.getElementById('social-exams-view').style.display === 'block' && document.getElementById('social-panel-title').innerText.includes('Liked')) {
                     renderSocialCards('liked');
                 }
             } else if (actionType === 'save') {
                 const isActive = icon.classList.contains('save-active');
                 if (isActive) {
-                    // Unsave it
                     localStorage.setItem('save_' + examCode, 'false');
                     localStorage.removeItem('exam_folder_' + examCode);
                     icon.className = 'far fa-bookmark';
                     
-                    // If viewing Saved tab, re-render to hide removed card
                     if(document.getElementById('social-exams-view').style.display === 'block' && document.getElementById('social-panel-title').innerText.includes('Saved')) {
                         const activeFilter = document.querySelector('.collection-pill.active');
                         renderSocialCards('saved', activeFilter ? activeFilter.innerText : 'All Saved');
                     }
                 } else {
-                    // Open Save Collection Modal
                     pendingSaveExamCode = examCode;
                     showCollectionModal();
                     return; 
@@ -809,14 +852,14 @@
         async function loadStudentLeaderboard() {
             const filter = document.getElementById('leaderboard-filter').value;
             const tbody = document.getElementById('list-leaderboard-body');
-            tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Loading...</td></tr>';
             const uName = localStorage.getItem('userName');
             
             if(filter === 'all') { tbody.innerHTML = `<tr><td><strong>#1</strong></td><td><strong>${uName}</strong></td><td><strong style="color:#16a34a;">${document.getElementById('stat-score').innerText}</strong></td></tr>`; } 
             else {
                 const examRecord = globalHistory.find(e => e.exam_name === filter);
                 if(examRecord) { tbody.innerHTML = `<tr><td><strong>#1</strong></td><td><strong>${uName}</strong></td><td><strong style="color:#16a34a;">${((examRecord.score/examRecord.total)*100).toFixed(1)}%</strong></td></tr>`; } 
-                else { tbody.innerHTML = '<tr><td colspan="3">No records found.</td></tr>'; }
+                else { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No records found.</td></tr>'; }
             }
         }
 
@@ -834,9 +877,11 @@
             const shareText = `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n`;
             currentShareData = { title: `ExamMate - ${examName}`, text: shareText, url: examLink };
             document.getElementById('custom-share-modal').style.display = 'flex';
+            window.history.pushState({modal: 'share'}, "", window.location.href);
         }
         function shareRealExam(examCode, examName) { triggerCustomShare(examName, examCode); }
         function closeShareModal() { document.getElementById('custom-share-modal').style.display = 'none'; }
+        
         function shareVia(platform) {
             const fullText = encodeURIComponent(currentShareData.text + currentShareData.url);
             const urlOnly = encodeURIComponent(currentShareData.url);
@@ -865,11 +910,17 @@
             }
         }
 
+        function closeResultModal() {
+            document.getElementById('detailed-result-modal').style.display = 'none';
+        }
+
         async function showDetailedResult(code, name) {
             const container = document.getElementById('detailed-review-container');
             container.innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Fetching your answers...</p>';
             document.getElementById('dr-title').innerText = name + " - Result";
             document.getElementById('detailed-result-modal').style.display = 'flex';
+            window.history.pushState({modal: 'result'}, "", window.location.href);
+
             const userEmail = localStorage.getItem('userEmail') || "Guest Account";
 
             try {
@@ -914,7 +965,7 @@
                                 if (isCorrect) { html += `<div class="ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`; } 
                                 else { html += `<div class="ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`; }
                             } else {
-                                html += `<div style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                                html += `<div style="color: #64748b; font-style: italic; margin-bottom: 5px;">⚠️ Not Attempted</div><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
                             }
                         }
                         html += `</div>`;
@@ -925,19 +976,34 @@
             } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
         }
 
+        // ================= PERFECT BACK BUTTON & MODAL HIERARCHY SYNC =================
         window.addEventListener('popstate', function (event) {
-            let isPanelOpen = false;
-            document.querySelectorAll('.panel-view').forEach(p => { if(p.style.display === 'block') isPanelOpen = true; });
             const lModal = document.getElementById('all-levels-modal');
             const colModal = document.getElementById('collection-modal');
             const shareModal = document.getElementById('custom-share-modal');
-            
-            if(shareModal.style.display === 'flex') { closeShareModal(); }
-            else if(colModal.style.display === 'flex') { closeCollectionModal(); }
-            else if (lModal.style.display === 'flex') { lModal.style.display = 'none'; } 
-            else if (document.getElementById('settings-modal').style.display === 'flex') { closeSettings(); } 
-            else if (isPanelOpen) { showMainProfile(); } 
-            else { if (document.referrer) { window.history.back(); } }
+            const drModal = document.getElementById('detailed-result-modal');
+            const settingsModal = document.getElementById('settings-modal');
+
+            let isPanelOpen = false;
+            document.querySelectorAll('.panel-view').forEach(p => { 
+                if(p.style.display === 'block' && p.id !== 'main-profile-view') isPanelOpen = true; 
+            });
+
+            if (drModal.style.display === 'flex') {
+                drModal.style.display = 'none';
+            } else if (shareModal.style.display === 'flex') {
+                closeShareModal();
+            } else if (colModal.style.display === 'flex') {
+                closeCollectionModal();
+            } else if (lModal.style.display === 'flex') {
+                closeLevelsModal();
+            } else if (settingsModal.style.display === 'flex') {
+                closeSettings();
+            } else if (isPanelOpen) {
+                showMainProfile();
+            } else {
+                if (document.referrer) { window.history.back(); }
+            }
         });
     </script>
 </body>
