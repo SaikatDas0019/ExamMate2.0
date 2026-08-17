@@ -26,7 +26,6 @@
             box-sizing: border-box; margin: 0 auto; position: relative; overflow-x: hidden;
         }
 
-        /* স্মার্ট হেডারের জন্য ট্রানজিশন যোগ করা হয়েছে */
         .fixed-top-section {
             position: fixed; top: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; z-index: 999;
@@ -57,31 +56,39 @@
             width: 100%; padding: 12px 15px; padding-left: 35px;
             background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px;
             font-size: 0.95rem; outline: none; box-sizing: border-box;
+            transition: border-color 0.2s;
         }
+        .search-input-wrapper input:focus { border-color: #3b82f6; background: #ffffff; }
         .search-input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
         
         .search-btn-circle {
             width: 45px; height: 45px; border-radius: 50%; background: #3b82f6;
             color: white; border: none; font-size: 1.1rem; cursor: pointer;
             display: flex; justify-content: center; align-items: center;
+            transition: transform 0.1s;
         }
+        .search-btn-circle:active { transform: scale(0.95); }
 
         .filter-container {
             padding: 10px 15px 15px 15px; background: #ffffff;
             display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
             border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;
+            scrollbar-width: none;
         }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-pill {
             background: #ffffff; border: 1px solid #cbd5e1; color: #475569;
             padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
             cursor: pointer; display: flex; align-items: center; gap: 5px; outline: none;
+            transition: background 0.2s;
         }
+        .filter-pill:hover { background: #f8fafc; }
 
         .feed-container { padding: 0 15px; margin-top: 195px; }
         .feed-card {
             background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
             padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transform: translateZ(0); will-change: transform; /* Hardware acceleration for smooth scrolling */
         }
         
         .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -107,6 +114,7 @@
         .action-btn {
             background: transparent; border: none; color: #64748b; font-size: 1.1rem;
             cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 0;
+            transition: color 0.15s;
         }
         .action-btn span { font-size: 0.8rem; font-weight: 600; }
         .like-active { color: #ef4444 !important; }
@@ -114,7 +122,7 @@
 
         .btn-view-questions {
             width: 100%; background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe;
-            padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+            padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s;
         }
         .btn-view-questions:hover { background: #dbeafe; }
 
@@ -142,25 +150,29 @@
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
 
-        /* Custom Share Modal CSS */
         .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
-        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.3s ease-out; }
+        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.25s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
         .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
         .share-buttons i { font-size: 2.2rem; }
         .share-buttons .fa-whatsapp { color: #25D366; }
-        .share-buttons .fa-facebook-messenger { color: #0084FF; }
-        .share-buttons .fa-instagram { color: #E1306C; }
         .share-buttons .fa-telegram { color: #0088cc; }
         .share-buttons .fa-copy { color: #64748b; }
         .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; font-size: 1rem;}
+
+        /* Skeleton loader for smoother loading experience */
+        .skeleton-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
+            padding: 15px; margin-bottom: 15px; animation: pulse 1.2s infinite ease-in-out;
+        }
+        .skeleton-line { height: 14px; background: #e2e8f0; border-radius: 4px; margin-bottom: 10px; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- স্মার্ট হেডারের জন্য id="smart-header" দেওয়া হয়েছে -->
         <div class="fixed-top-section" id="smart-header">
             <div class="sticky-header">
                 <div class="profile-left" onclick="window.location.href='teacher_profile.html'">
@@ -176,7 +188,7 @@
             <div class="search-container">
                 <div class="search-input-wrapper">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="main-search" placeholder="Search subject, teacher, class, or code...">
+                    <input type="text" id="main-search" placeholder="Search subject, teacher, class, or code..." oninput="handleSearchInput(event)">
                 </div>
                 <button class="search-btn-circle" onclick="performSearch()">
                     <i class="fas fa-arrow-right"></i>
@@ -200,7 +212,12 @@
 
         <div class="feed-container" id="exam-feed">
             <div id="exams-list-container">
-                <p style="text-align:center; color:#64748b; padding:20px;">Loading feed...</p>
+                <!-- Fast loading placeholder skeleton -->
+                <div class="skeleton-card">
+                    <div class="skeleton-line" style="width: 50%;"></div>
+                    <div class="skeleton-line" style="width: 80%; height: 20px; margin-top: 15px;"></div>
+                    <div class="skeleton-line" style="width: 30%; margin-top: 15px;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -242,42 +259,68 @@
     </div>
 
     <script>
-        // SMART HEADER LOGIC: স্ক্রল করলে হেডার ওঠা-নামা করবে
+        // SMART HEADER HIDE/SHOW LOGIC WITH SCROLL THROTTLE
         let lastScrollTop = 0;
         const header = document.getElementById('smart-header');
-        
-        window.addEventListener("scroll", function(){
-           let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-           // স্ক্রল নিচে নামলে এবং ১০০ পিক্সেলের বেশি নামলে হেডার লুকাবে
-           if (scrollTop > lastScrollTop && scrollTop > 100){
-               header.style.top = "-195px"; // টিচার ড্যাশবোর্ডের হেডারের সাইজ অনুযায়ী এডজাস্ট করা হয়েছে
-           } else {
-               // স্ক্রল উপরে উঠলে হেডার ফিরে আসবে
-               header.style.top = "0"; 
-           }
-           lastScrollTop = scrollTop;
+        let ticking = false;
+
+        window.addEventListener("scroll", function() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    if (scrollTop > lastScrollTop && scrollTop > 100) {
+                        header.style.top = "-195px";
+                    } else {
+                        header.style.top = "0";
+                    }
+                    lastScrollTop = scrollTop;
+                    ticking = false;
+                });
+                ticking = true;
+            }
         });
+
+        // DEBOUNCE SEARCH LOGIC FOR BETTER PERFORMANCE
+        let searchTimer;
+        function handleSearchInput(e) {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                performSearch();
+            }, 350);
+        }
 
         window.onload = async () => {
             const userName = localStorage.getItem('userName') || "Teacher";
             document.getElementById('teacher-name').innerText = "Hi, " + userName.split(' ')[0];
             document.getElementById('nav-avatar').innerText = userName.charAt(0).toUpperCase();
 
-            await loadFilterDropdowns();
-            loadTeacherFeed();
+            // Load filters and feed concurrently for instant boot-up speed
+            await Promise.all([loadFilterDropdowns(), loadTeacherFeed()]);
         };
 
         async function loadFilterDropdowns() {
+            // Check cache to prevent redundant server calls
+            const cachedFilters = localStorage.getItem('filter_options_cache');
+            if (cachedFilters) {
+                renderFilters(JSON.parse(cachedFilters));
+                return;
+            }
+
             try {
                 const res = await fetch('/api/get-filter-options');
                 const data = await res.json();
                 if(data.success) {
-                    const classSelect = document.getElementById('filter-class');
-                    data.classes.forEach(c => { classSelect.innerHTML += `<option value="${c}">${c}</option>`; });
-                    const subSelect = document.getElementById('filter-subject');
-                    data.subjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+                    localStorage.setItem('filter_options_cache', JSON.stringify(data));
+                    renderFilters(data);
                 }
             } catch(e) { console.log("Filter load error"); }
+        }
+
+        function renderFilters(data) {
+            const classSelect = document.getElementById('filter-class');
+            data.classes.forEach(c => { classSelect.innerHTML += `<option value="${c}">${c}</option>`; });
+            const subSelect = document.getElementById('filter-subject');
+            data.subjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
         }
 
         function performSearch() {
@@ -296,8 +339,6 @@
                 trackTeacherActivity(query, "");
             }
 
-            container.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">Loading feed...</p>';
-
             try {
                 const response = await fetch('/api/search-feed', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -312,7 +353,6 @@
                 const data = await response.json();
 
                 if (data.success && data.feed.length > 0) {
-                    // Block/Filter out exams from exammate.official@gmail.com
                     const filteredFeed = data.feed.filter(ex => 
                         ex.email !== 'exammate.official@gmail.com' && 
                         ex.teacher_email !== 'exammate.official@gmail.com' && 
@@ -322,16 +362,15 @@
                     if (filteredFeed.length > 0) {
                         let sortedFeed = sortExamsForTeacher(filteredFeed);
 
-                        container.innerHTML = '';
+                        let htmlContent = '';
                         sortedFeed.forEach(ex => {
-                            // LOCAL STORAGE CHECK: সেভ বা লাইক করা আছে কিনা চেক করা হচ্ছে
                             const isLiked = localStorage.getItem('like_' + ex.code) === 'true' || ex.is_liked;
                             const isSaved = localStorage.getItem('save_' + ex.code) === 'true' || ex.is_saved;
 
                             const heartClass = isLiked ? 'fas fa-heart like-active' : 'far fa-heart';
                             const saveClass = isSaved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
 
-                            container.innerHTML += `
+                            htmlContent += `
                             <div class="feed-card">
                                 <div class="feed-header">
                                     <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
@@ -370,6 +409,7 @@
                                 <button class="btn-view-questions" onclick="viewExamQuestions('${ex.code}', '${ex.subject}', '${ex.name.replace(/'/g, "\\'")}', ${ex.is_private})">👁️ View Questions & Answers</button>
                             </div>`;
                         });
+                        container.innerHTML = htmlContent;
                     } else {
                         container.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">No exams found.</p>`;
                     }
@@ -455,7 +495,6 @@
                 let count = parseInt(span.innerText);
                 const isActive = icon.classList.contains('like-active');
                 
-                // LocalStorage Update
                 localStorage.setItem('like_' + examCode, !isActive);
                 
                 if (isActive) {
@@ -466,7 +505,6 @@
             } else if (actionType === 'save') {
                 const isActive = icon.classList.contains('save-active');
                 
-                // LocalStorage Update
                 localStorage.setItem('save_' + examCode, !isActive);
                 
                 if (isActive) { 
@@ -481,12 +519,9 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: userEmail, exam_code: examCode, type: actionType })
                 });
-            } catch(e) { console.log("Sync error, but saved in localStorage"); }
+            } catch(e) { console.log("Sync error, but saved locally"); }
         }
 
-        // ==========================================
-        // CUSTOM SHARE MODAL LOGIC
-        // ==========================================
         let currentShareData = {};
 
         function triggerCustomShare(examName, examCode) {
