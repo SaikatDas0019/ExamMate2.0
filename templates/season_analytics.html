@@ -25,6 +25,7 @@
         .stat-card {
             background: white; padding: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             text-align: center; border: 1px solid #f1f5f9; position: relative; overflow: hidden;
+            will-change: transform;
         }
         .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; }
         .stat-card.rank::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
@@ -53,11 +54,12 @@
         .timeline-content p { margin: 0 0 10px 0; font-size: 0.75rem; color: #64748b; }
         .score-pill { display: inline-block; background: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; border: 1px solid #bbf7d0; }
         .missed-pill { display: inline-block; background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; border: 1px solid #fecaca; }
-        .daily-lb-btn { background: #f1f5f9; border: none; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; color: #3b82f6; font-weight: bold; cursor: pointer; float: right; margin-top: -25px;}
+        .daily-lb-btn { background: #f1f5f9; border: none; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; color: #3b82f6; font-weight: bold; cursor: pointer; float: right; margin-top: -25px; transition: background 0.15s;}
+        .daily-lb-btn:hover { background: #e0e7ff; }
 
         /* Overall Leaderboard */
         .leaderboard { padding: 0 20px; }
-        .lb-card { display: flex; align-items: center; gap: 15px; background: white; padding: 12px 15px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 10px; border: 1px solid #e2e8f0; }
+        .lb-card { display: flex; align-items: center; gap: 15px; background: white; padding: 12px 15px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 10px; border: 1px solid #e2e8f0; transform: translateZ(0); }
         .lb-rank { font-size: 1.2rem; font-weight: 900; color: #94a3b8; width: 25px; text-align: center; }
         .lb-card.gold { background: linear-gradient(90deg, #fffbeb, #ffffff); border-color: #fde68a; }
         .lb-card.gold .lb-rank { color: #d97706; }
@@ -74,7 +76,8 @@
         .modal-box { position: relative; background: white; border-radius: 20px; width: 90%; max-width: 400px; display: flex; flex-direction: column; max-height: 80vh; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
         .modal-header h3 { margin: 0; font-size: 1.1rem; color: #0f172a; }
-        .modal-close { background: #f1f5f9; color: #ef4444; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; display: flex; justify-content: center; align-items: center;}
+        .modal-close { background: #f1f5f9; color: #ef4444; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; transition: background 0.15s;}
+        .modal-close:hover { background: #fee2e2; }
         .modal-body { padding: 20px; overflow-y: auto; flex: 1; background: #f8fafc; }
     </style>
 </head>
@@ -88,17 +91,19 @@
     </div>
 
     <!-- Daily Leaderboard Modal -->
-    <div class="modal-overlay" id="daily-lb-modal">
+    <div class="modal-overlay" id="daily-lb-modal" onclick="if(event.target.id==='daily-lb-modal') closeDailyLBModal()">
         <div class="modal-box">
             <div class="modal-header">
                 <h3 id="daily-lb-title">Daily Top 10</h3>
-                <button class="modal-close" onclick="document.getElementById('daily-lb-modal').style.display='none'"><i class="fas fa-times"></i></button>
+                <button class="modal-close" onclick="closeDailyLBModal()"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body" id="daily-lb-content"></div>
         </div>
     </div>
 
     <script>
+        let progressChartInstance = null;
+
         window.onload = async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const seasonName = urlParams.get('season');
@@ -109,6 +114,16 @@
                 return;
             }
 
+            // Setup History State
+            window.history.replaceState({modal: null}, "", window.location.href);
+
+            // Speed Optimization: Render from cache if present
+            const cacheKey = `season_analytics_${seasonName}`;
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) {
+                renderPage(JSON.parse(cachedData));
+            }
+
             try {
                 const res = await fetch('/api/get-season-analytics', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -117,8 +132,9 @@
                 const data = await res.json();
                 
                 if (data.success) {
+                    localStorage.setItem(cacheKey, JSON.stringify(data));
                     renderPage(data);
-                } else {
+                } else if (!cachedData) {
                     document.getElementById('app-container').innerHTML = `<div style="text-align:center; padding:50px; color:#ef4444;"><h2>Error</h2><p>${data.error}</p><button onclick="history.back()" style="padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:8px;">Go Back</button></div>`;
                 }
             } catch(e) {
@@ -175,7 +191,7 @@
                 if(day.attempted) {
                     let acc = day.total > 0 ? ((day.score / day.total) * 100).toFixed(0) : 0;
                     statusHtml = `<div class="score-pill">Score: ${day.score}/${day.total} (${acc}%)</div>
-                                  <button class="daily-lb-btn" onclick="openDailyLB('${day.code}', '${day.name}')"><i class="fas fa-list-ol"></i> Rank</button>`;
+                                  <button class="daily-lb-btn" onclick="openDailyLB('${day.code}', '${day.name.replace(/'/g, "\\'")}')"><i class="fas fa-list-ol"></i> Rank</button>`;
                 } else {
                     statusHtml = `<div class="missed-pill">Not Attempted / Missed</div>`;
                 }
@@ -191,7 +207,7 @@
                 </div>`;
             });
 
-            html += `</div>`; // Close timeline
+            html += `</div>`; 
 
             html += `
             <div class="section-title"><i class="fas fa-crown" style="color:#f59e0b;"></i> Overall Hall of Fame</div>
@@ -219,13 +235,16 @@
                 });
             }
 
-            html += `</div>`; // Close leaderboard
+            html += `</div>`; 
             
             document.getElementById('app-container').innerHTML = html;
 
             // Render Chart
             const ctx = document.getElementById('progressChart').getContext('2d');
-            new Chart(ctx, {
+            if (progressChartInstance !== null) {
+                progressChartInstance.destroy();
+            }
+            progressChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -258,6 +277,7 @@
             const box = document.getElementById('daily-lb-content');
             box.innerHTML = '<p style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Fetching...</p>';
             document.getElementById('daily-lb-modal').style.display = 'flex';
+            window.history.pushState({modal: 'daily_lb'}, "", window.location.href);
 
             try {
                 const res = await fetch('/api/get-daily-leaderboard', {
@@ -288,6 +308,20 @@
                 box.innerHTML = '<p style="text-align:center; color:#ef4444;">Error fetching leaderboard.</p>';
             }
         }
+
+        function closeDailyLBModal() {
+            document.getElementById('daily-lb-modal').style.display = 'none';
+        }
+
+        // ================= PERFECT BACK BUTTON HIERARCHY SYNC =================
+        window.addEventListener('popstate', function (event) {
+            const dailyModal = document.getElementById('daily-lb-modal');
+            if (dailyModal && dailyModal.style.display === 'flex') {
+                dailyModal.style.display = 'none';
+            } else {
+                if (document.referrer) { window.history.back(); }
+            }
+        });
     </script>
 </body>
 </html>
