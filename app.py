@@ -1223,13 +1223,23 @@ def get_special_exams():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
-        # 👈 season কলাম সিলেক্ট করা হলো
-        cursor.execute("SELECT exam_code, exam_name, class_name, subject, season, expiry_time FROM exams WHERE teacher_email = 'exammate.official@gmail.com' AND folder_id = 0")
+        # ১. ফোল্ডার টাইপ 'live_session' অথবা রুট (folder_id = 0) থেকে লাইভ এক্সামগুলো ফেচ করা হবে
+        cursor.execute("""
+            SELECT e.exam_code, e.exam_name, e.class_name, e.subject, e.season, e.expiry_time 
+            FROM exams e 
+            LEFT JOIN drive_folders f ON e.folder_id = f.id 
+            WHERE e.teacher_email = 'exammate.official@gmail.com' 
+            AND (e.folder_id = 0 OR f.folder_type = 'live_session')
+        """)
         live_exams_rows = cursor.fetchall()
         
+        # স্টুডেন্টের স্কোরের ডেটা ফেচ করা
         cursor.execute(f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph}", (email,))
         history_rows = cursor.fetchall()
         history_map = {r["exam_code"] if isinstance(r, dict) else r[0]: {"score": r["score"] if isinstance(r, dict) else r[1], "total": r["total_questions"] if isinstance(r, dict) else r[2]} for r in history_rows}
+        
+        from datetime import datetime
+        now = datetime.now()
         
         live_exams = []
         for r in live_exams_rows:
@@ -1237,19 +1247,26 @@ def get_special_exams():
             name = r["exam_name"] if isinstance(r, dict) else r[1]
             cls_name = r["class_name"] if isinstance(r, dict) else r[2]
             subj = r["subject"] if isinstance(r, dict) else r[3]
-            season_name = r["season"] if isinstance(r, dict) else (r[4] if len(r) > 4 else "General") # 👈 সিজন নাম ফেচ
+            season_name = r["season"] if isinstance(r, dict) else (r[4] if len(r) > 4 else "General")
             
-            # ইনডেক্স এডজাস্টমেন্ট যদি ডিকশনারি বা টাপল হয়
             if isinstance(r, dict):
-                exp_time = str(r.get("expiry_time")) if r.get("expiry_time") else None
+                exp_time_str = str(r.get("expiry_time")) if r.get("expiry_time") else None
             else:
-                exp_time = str(r[5]) if len(r) > 5 and r[5] else None
+                exp_time_str = str(r[5]) if len(r) > 5 and r[5] else None
 
-            if exp_time == "None": exp_time = None
+            if exp_time_str and exp_time_str != "None":
+                try:
+                    # ডেটটাইপ পার্স করে চেক করা হচ্ছে এক্সপায়ার হয়েছে কিনা
+                    expiry_dt = datetime.strptime(exp_time_str.split('.')[0], "%Y-%m-%d %H:%M:%S")
+                    # যদি সময় পার হয়ে যায়, তবে এটি লাইভ লিস্টে দেখানোর দরকার নেই (বাদ দেওয়া হলো)
+                    if expiry_dt <= now:
+                        continue 
+                except Exception:
+                    pass
             
             is_attempted = code in history_map
             live_exams.append({
-                "code": code, "name": name, "class_name": cls_name, "subject": subj, "season": season_name, "expiry_time": exp_time,
+                "code": code, "name": name, "class_name": cls_name, "subject": subj, "season": season_name or "General", "expiry_time": exp_time_str,
                 "is_attempted": is_attempted,
                 "score": history_map[code]["score"] if is_attempted else 0,
                 "total": history_map[code]["total"] if is_attempted else 0
