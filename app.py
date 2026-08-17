@@ -1222,8 +1222,6 @@ def get_special_exams():
         history_rows = cursor.fetchall()
         history_map = {r["exam_code"] if isinstance(r, dict) else r[0]: {"score": r["score"] if isinstance(r, dict) else r[1], "total": r["total_questions"] if isinstance(r, dict) else r[2]} for r in history_rows}
         
-        now = datetime.now()
-        
         live_exams = []
         for r in live_exams_rows:
             code = r["exam_code"] if isinstance(r, dict) else r[0]
