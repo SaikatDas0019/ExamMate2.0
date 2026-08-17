@@ -56,7 +56,7 @@
         .search-input-wrapper input {
             width: 100%; padding: 12px 15px; padding-left: 35px;
             background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px;
-            font-size: 0.95rem; outline: none; box-sizing: border-box; transition: 0.2s;
+            font-size: 0.95rem; outline: none; box-sizing: border-box; transition: border-color 0.2s, background 0.2s;
         }
         .search-input-wrapper input:focus { border-color: #3b82f6; background: #ffffff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
         .search-input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
@@ -64,20 +64,23 @@
         .search-btn-circle {
             width: 45px; height: 45px; border-radius: 50%; background: #3b82f6;
             color: white; border: none; font-size: 1.1rem; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s;
             display: flex; justify-content: center; align-items: center;
         }
+        .search-btn-circle:active { transform: scale(0.95); }
 
         .filter-container {
             padding: 10px 15px 15px 15px; background: #ffffff;
             display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
             border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;
+            scrollbar-width: none;
         }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-pill {
             background: #ffffff; border: 1px solid #cbd5e1; color: #475569;
             padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
             cursor: pointer; display: flex; align-items: center; gap: 5px; outline: none;
+            transition: background 0.2s;
         }
         .filter-pill.active { background: #eff6ff; color: #1e3a8a; border-color: #3b82f6; }
 
@@ -86,6 +89,7 @@
         .feed-card {
             background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
             padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transform: translateZ(0); will-change: transform;
         }
         .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
@@ -101,13 +105,13 @@
         .feed-meta i { color: #3b82f6; }
         .feed-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px; }
         .action-left { display: flex; gap: 15px; }
-        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; padding: 0; }
+        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: color 0.15s; padding: 0; }
         .action-btn span { font-size: 0.8rem; font-weight: 600; }
         .like-active { color: #ef4444 !important; }
         .save-active { color: #f59e0b !important; }
 
-        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s; }
-        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s; }
+        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; }
 
         /* 🔥 SPECIAL EXAMS FLOATING BUTTON */
         .fab-special {
@@ -117,9 +121,10 @@
             color: white; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.6rem; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
-            cursor: pointer; z-index: 998; transition: 0.3s;
+            cursor: pointer; z-index: 998; transition: transform 0.2s;
             animation: bounce-subtle 2s infinite; border: 2px solid #fff;
         }
+        .fab-special:hover { transform: scale(1.08); }
         @keyframes bounce-subtle {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(234, 88, 12, 0.6); }
@@ -143,11 +148,11 @@
             background: #f1f5f9; color: #64748b; border: none;
             width: 34px; height: 34px; border-radius: 50%;
             font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; flex-shrink: 0; margin-left: 15px;
+            cursor: pointer; transition: background 0.15s; flex-shrink: 0; margin-left: 15px;
         }
         .modal-close-btn-fixed:hover { background: #fee2e2; color: #ef4444; }
 
-        .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; transition: 0.2s; background: #ffffff; }
+        .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; transition: background 0.15s; background: #ffffff; }
         .review-correct { background-color: #f0fdf4; border-color: #bbf7d0; box-shadow: 0 2px 4px rgba(34,197,94,0.05); } 
         .review-wrong { background-color: #fef2f2; border-color: #fecaca; box-shadow: 0 2px 4px rgba(239,68,68,0.05); } 
         .review-unattempted { background-color: #ffffff; border-color: #cbd5e1; } 
@@ -167,6 +172,11 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
+
+        /* Skeleton loader for fast perception */
+        .skeleton-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; animation: pulse 1.2s infinite ease-in-out; }
+        .skeleton-line { height: 14px; background: #e2e8f0; border-radius: 4px; margin-bottom: 10px; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
     </style>
 </head>
 <body>
@@ -188,7 +198,7 @@
             <div class="search-container">
                 <div class="search-input-wrapper">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="main-search" placeholder="Search subject, teacher, class, or code...">
+                    <input type="text" id="main-search" placeholder="Search subject, teacher, class, or code..." oninput="handleSearchInput(event)">
                 </div>
                 <button class="search-btn-circle" onclick="performSearch()">
                     <i class="fas fa-arrow-right"></i>
@@ -212,14 +222,15 @@
 
         <!-- FEED CONTAINER -->
         <div class="feed-container" id="exam-feed">
-            <div style="text-align:center; padding: 40px; color: #64748b;">
-                <i class="fas fa-spinner fa-spin fa-2x"></i>
-                <p>Loading real exams...</p>
+            <div class="skeleton-card">
+                <div class="skeleton-line" style="width: 50%;"></div>
+                <div class="skeleton-line" style="width: 80%; height: 20px; margin-top: 15px;"></div>
+                <div class="skeleton-line" style="width: 30%; margin-top: 15px;"></div>
             </div>
         </div>
     </div>
 
-    <!-- 🔥 FLOATING BUTTON FOR SPECIAL EXAMS (Now links to new page) -->
+    <!-- 🔥 FLOATING BUTTON FOR SPECIAL EXAMS -->
     <div class="fab-special" onclick="window.location.href='/special_exams.html'">
         <i class="fas fa-trophy"></i>
     </div>
@@ -227,12 +238,10 @@
     <!-- Main Results Modal -->
     <div class="score-modal-overlay" id="detailed-result-modal">
         <div class="score-modal-box">
-            <!-- Fixed Header -->
             <div class="modal-header-fixed">
                 <div class="score-modal-title" id="dr-title" style="font-weight:800; font-size:1.1rem; color:#0f172a; margin:0; line-height:1.4; flex:1; padding-right:10px;">Exam Result</div>
-                <button class="modal-close-btn-fixed" onclick="document.getElementById('detailed-result-modal').style.display='none'"><i class="fas fa-times"></i></button>
+                <button class="modal-close-btn-fixed" onclick="closeResultModal()"><i class="fas fa-times"></i></button>
             </div>
-            <!-- Scrollable Content -->
             <div class="modal-body-scroll" id="detailed-review-container"></div>
         </div>
     </div>
@@ -250,18 +259,35 @@
     </div>
 
     <script>
+        // SMART HEADER HIDE/SHOW LOGIC WITH THROTTLE
         let lastScrollTop = 0;
         const header = document.getElementById('smart-header');
+        let ticking = false;
         
         window.addEventListener("scroll", function(){
            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-           if (scrollTop > lastScrollTop && scrollTop > 100){
-               header.style.top = "-185px"; 
-           } else {
-               header.style.top = "0"; 
+           if (!ticking) {
+               window.requestAnimationFrame(function() {
+                   if (scrollTop > lastScrollTop && scrollTop > 100){
+                       header.style.top = "-185px"; 
+                   } else {
+                       header.style.top = "0"; 
+                   }
+                   lastScrollTop = scrollTop;
+                   ticking = false;
+               });
+               ticking = true;
            }
-           lastScrollTop = scrollTop;
         });
+
+        // DEBOUNCE SEARCH LOGIC
+        let searchTimer;
+        function handleSearchInput(e) {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                performSearch();
+            }, 350);
+        }
 
         // ==========================================
         // MAIN DASHBOARD LOGIC
@@ -271,22 +297,38 @@
             document.getElementById('student-name').innerText = "Hi, " + userName.split(' ')[0];
             document.getElementById('nav-avatar').innerText = userName.charAt(0).toUpperCase();
 
-            await loadFilterDropdowns();
-            loadRealFeed();
-            fetchAndSetAvatarColor(); 
+            window.history.replaceState({modalOpen: false}, "", window.location.href);
+
+            // Parallel loading for maximum speed
+            await Promise.all([
+                loadFilterDropdowns(),
+                loadRealFeed(),
+                fetchAndSetAvatarColor()
+            ]);
         };
 
         async function loadFilterDropdowns() {
+            const cachedFilters = localStorage.getItem('student_filter_options_cache');
+            if (cachedFilters) {
+                renderFilters(JSON.parse(cachedFilters));
+                return;
+            }
+
             try {
                 const res = await fetch('/api/get-filter-options');
                 const data = await res.json();
                 if(data.success) {
-                    const classSelect = document.getElementById('filter-class');
-                    data.classes.forEach(c => { classSelect.innerHTML += `<option value="${c}">${c}</option>`; });
-                    const subSelect = document.getElementById('filter-subject');
-                    data.subjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+                    localStorage.setItem('student_filter_options_cache', JSON.stringify(data));
+                    renderFilters(data);
                 }
             } catch(e) {}
+        }
+
+        function renderFilters(data) {
+            const classSelect = document.getElementById('filter-class');
+            data.classes.forEach(c => { classSelect.innerHTML += `<option value="${c}">${c}</option>`; });
+            const subSelect = document.getElementById('filter-subject');
+            data.subjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
         }
 
         async function loadRealFeed(query = "") {
@@ -295,9 +337,9 @@
             const selectedClass = document.getElementById('filter-class').value;
             const selectedSubject = document.getElementById('filter-subject').value;
             const selectedStatus = document.getElementById('filter-status').value;
-
-            feedContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#64748b;"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Loading...</p></div>';
             
+            if (query) { trackStudentPreference(query, "", ""); }
+
             try {
                 const response = await fetch('/api/search-feed', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -306,7 +348,6 @@
                 const data = await response.json();
 
                 if (data.success && data.feed.length > 0) {
-                    // Block/Filter out exams from exammate.official@gmail.com, admin, or ExamMate
                     const filteredFeed = data.feed.filter(ex => {
                         const emailField = (ex.email || ex.teacher_email || ex.creator_email || ex.user_email || "").toLowerCase();
                         const teacherName = (ex.teacher_name || "").toLowerCase();
@@ -334,13 +375,12 @@
 
         function performSearch() {
             const query = document.getElementById('main-search').value.trim();
-            if (query) { trackStudentPreference(query, "", ""); }
             loadRealFeed(query);
         }
 
         function renderFeedCards(exams) {
             const container = document.getElementById('exam-feed');
-            container.innerHTML = '';
+            let htmlContent = '';
             
             exams.forEach(ex => {
                 const isLiked = localStorage.getItem('like_' + ex.code) === 'true' || ex.is_liked;
@@ -365,7 +405,7 @@
                         : `<button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
                 }
 
-                container.innerHTML += `
+                htmlContent += `
                 <div class="feed-card">
                     <div class="feed-header">
                         <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
@@ -397,6 +437,7 @@
                     ${actionHTML}
                 </div>`;
             });
+            container.innerHTML = htmlContent;
         }
 
         function accessPrivateExam(actualCode) {
@@ -442,11 +483,18 @@
             } catch (error) {}
         }
 
+        function closeResultModal() {
+            document.getElementById('detailed-result-modal').style.display = 'none';
+            window.history.replaceState({modalOpen: false}, "", window.location.href);
+        }
+
         async function showDetailedResult(code, name) {
             const container = document.getElementById('detailed-review-container');
             container.innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Fetching your answers...</p>';
             document.getElementById('dr-title').innerText = name + " - Result";
             document.getElementById('detailed-result-modal').style.display = 'flex';
+            window.history.pushState({modalOpen: true}, "", window.location.href);
+
             const userEmail = localStorage.getItem('userEmail') || "Guest Account";
 
             try {
@@ -549,7 +597,7 @@
             } catch (error) {}
         }
 
-        // Hardware Back Button Handler
+        // PERFECT BACK BUTTON & MODAL SYNC
         window.addEventListener('popstate', function (event) {
             const drModal = document.getElementById('detailed-result-modal');
             if(drModal.style.display === 'flex') {
