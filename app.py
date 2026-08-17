@@ -318,7 +318,6 @@ def check_exam():
         return jsonify({"success": False, "error": "No Exam Found!"})
     except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
 
-# একক এবং সঠিক /api/get-exam-questions রাউট
 @app.route('/api/get-exam-questions', methods=['POST'])
 def get_exam_questions():
     data = request.get_json()
@@ -1200,63 +1199,6 @@ from flask import send_from_directory
 def sitemap():
     return send_from_directory('.', 'sitemap.xml')
 
-@app.route('/api/get-special-exams', methods=['POST'])
-def get_special_exams():
-    data = request.get_json() or {}
-    email = data.get('email', '')
-    
-    try:
-        conn, db_type = get_db_connection()
-        cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        
-        cursor.execute("""
-            SELECT e.exam_code, e.exam_name, e.class_name, e.subject, e.season, e.expiry_time, e.folder_id 
-            FROM exams e 
-            LEFT JOIN drive_folders f ON e.folder_id = f.id 
-            WHERE e.teacher_email = 'exammate.official@gmail.com' 
-            AND (e.folder_id = 0 OR f.folder_type = 'live_session')
-        """)
-        live_exams_rows = cursor.fetchall()
-        
-        cursor.execute(f"SELECT exam_code, score, total_questions FROM results WHERE student_email = {ph}", (email,))
-        history_rows = cursor.fetchall()
-        history_map = {r["exam_code"] if isinstance(r, dict) else r[0]: {"score": r["score"] if isinstance(r, dict) else r[1], "total": r["total_questions"] if isinstance(r, dict) else r[2]} for r in history_rows}
-        
-        now = datetime.now()
-        
-        live_exams = []
-        for r in live_exams_rows:
-            code = r["exam_code"] if isinstance(r, dict) else r[0]
-            name = r["exam_name"] if isinstance(r, dict) else r[1]
-            cls_name = r["class_name"] if isinstance(r, dict) else r[2]
-            subj = r["subject"] if isinstance(r, dict) else r[3]
-            season_name = r["season"] if isinstance(r, dict) else (r[4] if len(r) > 4 else "General")
-            
-            if isinstance(r, dict):
-                exp_time_str = str(r.get("expiry_time")) if r.get("expiry_time") else None
-            else:
-                exp_time_str = str(r[5]) if len(r) > 5 and r[5] else None
-
-            if exp_time_str and exp_time_str != "None":
-                try:
-                    expiry_dt = datetime.strptime(exp_time_str.split('.')[0], "%Y-%m-%d %H:%M:%S")
-                    if expiry_dt <= now:
-                        continue 
-                except Exception:
-                    pass
-            
-            is_attempted = code in history_map
-            live_exams.append({
-                "code": code, "name": name, "class_name": cls_name, "subject": subj, "season": season_name or "General", "expiry_time": exp_time_str,
-                "is_attempted": is_attempted,
-                "score": history_map[code]["score"] if is_attempted else 0,
-                "total": history_map[code]["total"] if is_attempted else 0
-            })
-        
-        cursor.execute("SELECT id, folder_name, folder_type FROM drive_folders WHERE parent_id = 0 AND folder_type IN ('category', 'playlist')")
-        all_folders = cursor.fetchall()
-        
 @app.route('/api/get-special-exams', methods=['POST'])
 def get_special_exams():
     data = request.get_json() or {}
