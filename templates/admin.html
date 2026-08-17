@@ -162,13 +162,12 @@
             <div class="fab-plus" onclick="openSpecialPlusModal()"><i class="fas fa-plus"></i></div>
         </div>
 
-        <!-- EXAM CREATOR PANEL -->
+        <!-- EXAM CREATOR / EDITOR PANEL -->
         <div id="exam-create-panel" class="panel-view">
             <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #d97706; font-weight: bold;">
                 <i class="fas fa-info-circle"></i> Location: <span id="exam-folder-name"></span>
             </div>
 
-            <!-- ⚠️ EXAM CODE AND NAME (ALWAYS VISIBLE) -->
             <div class="form-group">
                 <label>Exam Name</label>
                 <input type="text" id="exam-name" placeholder="e.g. Day 1 Test">
@@ -185,19 +184,16 @@
                 </div>
             </div>
 
-            <!-- Group for Expiry Date (Only for Live Exams / Sessions) -->
             <div class="form-group" id="group-expiry" style="display:none; background:#fee2e2; padding:10px; border-radius:8px; border:1px solid #fecaca;">
                 <label style="color:#b91c1c;"><i class="fas fa-clock"></i> Expiry Date & Time (End Time)</label>
                 <input type="datetime-local" id="exam-expiry" style="border-color:#fca5a5;">
             </div>
 
-            <!-- Group for Season (Only for Live Exams) -->
             <div class="form-group" id="group-season" style="display:none; background:#eff6ff; padding:10px; border-radius:8px; border:1px solid #bfdbfe;">
                 <label style="color:#1d4ed8;"><i class="fas fa-calendar-alt"></i> Season Name</label>
                 <input type="text" id="exam-season" placeholder="e.g. Seven Days Quiz Challenge" style="border-color:#93c5fd; background:#fff;" readonly>
             </div>
 
-            <!-- Group for Class and Subject (Hidden for Live Exams) -->
             <div class="grid-2x2" id="group-class-subject">
                 <div class="form-group"><label>Class</label><input type="text" id="exam-class" placeholder="e.g. Class 10" value="General"></div>
                 <div class="form-group"><label>Subject</label><input type="text" id="exam-subject" placeholder="e.g. Mathematics" value="General"></div>
@@ -245,7 +241,7 @@
                 <div class="prompt-box">
                     <strong>কীভাবে প্রশ্ন তৈরি করবেন?</strong><br>
                     ১. নিচের <strong>Copy Prompt</strong> বাটনে ক্লিক করে লেখাটি কপি করুন。<br>
-                    ২. <b>ChatGPT</b> বা <b>Gemini</b> তে গিয়ে প্রম্পটটি পেস্ট করুন।<br>
+                    ২. <b>ChatGPT</b> বা <b>Gemini</b> তে গিয়ে প্রম্পটটি পেস্ট করুন。<br>
                     ৩. AI যে উত্তর দেবে, সেটি কপি করে নিচের বক্সে পেস্ট করে <b>'অ্যাড করুন'</b> বাটনে ক্লিক করুন।
                     
                     <div class="prompt-code">
@@ -277,27 +273,24 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
 
     </div>
 
-    <!-- Plus Modal (Dynamic based on folder state) -->
+    <!-- Plus Modal -->
     <div class="modal-overlay" id="plus-modal">
         <div class="modal-box">
             <div class="modal-title">Create Item</div>
-            <div id="plus-modal-buttons">
-                <!-- Dynamically injected via JS -->
-            </div>
+            <div id="plus-modal-buttons"></div>
         </div>
     </div>
 
     <script>
-        // Global variables for Special Panel
         let specialFolderHistory = [];
         let specialFolderId = 0;
         let specialFolderName = 'Special Root';
-        let specialFolderType = 'root'; // 'root', 'live_session', 'category', 'playlist'
+        let specialFolderType = 'root'; 
         
         let tempExamQuestions = [];
-        let currentExamCreationType = 'live_session_exam'; // 'live_session_exam', 'category', 'playlist'
+        let currentExamCreationType = 'live_session_exam'; 
+        let isEditingExam = false; // এডিট মোড ট্র্যাক করার জন্য
 
-        // Utilities
         function copyPrompt(textId, btnId) {
             const promptText = document.getElementById(textId).innerText;
             navigator.clipboard.writeText(promptText).then(() => {
@@ -326,9 +319,6 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             if (panelId === 'notif-panel') loadNotifications();
         }
 
-        // ==========================================
-        // NOTIFICATION LOGIC
-        // ==========================================
         async function loadNotifications() {
             const feed = document.getElementById('chat-feed');
             feed.innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading...</p>';
@@ -378,9 +368,6 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
         function toggleNotifMenu(id) { const menu = document.getElementById(`notif-action-${id}`); menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex'; }
         async function deleteNotification(id) { if(confirm("Delete this notification?")) { await fetch('/api/admin/delete-notification', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: id }) }); loadNotifications(); } }
 
-        // ==========================================
-        // SPECIAL PANEL LOGIC
-        // ==========================================
         function openSpecialPanel() {
             document.getElementById('dashboard-menu').style.display = 'none';
             document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
@@ -487,7 +474,8 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                         <span style="font-size:0.8rem; color:#10b981; font-weight:bold;">Code: ${ex.code}</span> | <span style="font-size:0.8rem; color:#64748b;">⏱ ${ex.timer} Mins</span>
                         ${expiryText}
                     </div>
-                    <div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <i class="fas fa-pen" style="color:#3b82f6; padding:5px; cursor:pointer;" onclick="editExam('${ex.code}')" title="Edit Exam"></i>
                         <i class="fas fa-trash-alt" style="color:#ef4444; padding:5px; cursor:pointer;" onclick="deleteDriveItem(event, 'exam', '${ex.code}')" title="Delete"></i>
                     </div>
                 </div>`;
@@ -525,19 +513,15 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             box.innerHTML = '';
             
             if (specialFolderId === 0) {
-                // ROOT
                 box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('live_session')"><i class="fas fa-fire" style="color:#ef4444; font-size:1.2rem;"></i> New Live Exam Session</button>`;
                 box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('category')"><i class="fas fa-folder" style="color:#f59e0b; font-size:1.2rem;"></i> New Category</button>`;
                 box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('playlist')"><i class="fas fa-list" style="color:#3b82f6; font-size:1.2rem;"></i> New Playlist</button>`;
             } else if (specialFolderType === 'live_session') {
-                // INSIDE LIVE EXAM SESSION
                 box.innerHTML += `<button class="modal-btn" onclick="openExamCreator('live_session_exam')"><i class="fas fa-file-signature" style="color:#22c55e; font-size:1.2rem;"></i> New Exam in Session</button>`;
             } else if (specialFolderType === 'category') {
-                // INSIDE CATEGORY
                 box.innerHTML += `<button class="modal-btn" onclick="openExamCreator('category')"><i class="fas fa-file-signature" style="color:#22c55e; font-size:1.2rem;"></i> New Exam in Category</button>`;
                 box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('category')"><i class="fas fa-folder-plus" style="color:#f59e0b; font-size:1.2rem;"></i> New Sub-Category</button>`;
             } else if (specialFolderType === 'playlist') {
-                // INSIDE PLAYLIST
                 box.innerHTML += `<button class="modal-btn" onclick="openExamCreator('playlist')"><i class="fas fa-file-signature" style="color:#22c55e; font-size:1.2rem;"></i> New Exam in Playlist</button>`;
             }
             
@@ -568,11 +552,12 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
         }
 
         // ==========================================
-        // EXAM CREATION LOGIC
+        // EXAM CREATION & EDITING LOGIC
         // ==========================================
         function openExamCreator(examType) {
             closeAllModals(); 
             currentExamCreationType = examType;
+            isEditingExam = false; // নতুন ক্রিয়েট মোড
             
             document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
             document.getElementById('exam-create-panel').classList.add('active');
@@ -583,7 +568,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                 document.getElementById('group-class-subject').style.display = 'none'; 
                 document.getElementById('group-expiry').style.display = 'block'; 
                 document.getElementById('group-season').style.display = 'block'; 
-                document.getElementById('exam-season').value = specialFolderName; // Automatically match folder name as season
+                document.getElementById('exam-season').value = specialFolderName; 
                 document.getElementById('exam-folder-name').innerText = specialFolderName;
             } else {
                 titleText = '<i class="fas fa-file-signature" style="color:#22c55e;"></i> Create Folder Exam';
@@ -598,9 +583,75 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             
             tempExamQuestions = []; 
             document.getElementById('exam-code').value = ''; 
+            document.getElementById('exam-code').disabled = false;
             document.getElementById('exam-name').value = ''; 
+            document.getElementById('exam-timer').value = '30';
+            document.getElementById('exam-negative').value = '0';
             document.getElementById('exam-expiry').value = ''; 
+            document.getElementById('btn-publish-exam').innerText = "Publish Exam 🚀";
             updateAdminUI();
+        }
+
+        // এক্সাম এডিট করার ফাংশন
+        async function editExam(examCode) {
+            try {
+                const res = await fetch('/api/get-exam-questions', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ exam_code: examCode })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    isEditingExam = true;
+                    document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
+                    document.getElementById('exam-create-panel').classList.add('active');
+                    document.getElementById('admin-title').innerHTML = '<i class="fas fa-pen" style="color:#3b82f6;"></i> Edit Exam: ' + data.exam_name;
+                    document.getElementById('back-btn').style.display = 'block';
+                    document.getElementById('back-btn').onclick = openSpecialPanel;
+
+                    // ফর্ম ফিল্ডগুলো প্রি-ফিল আপ করা হচ্ছে
+                    document.getElementById('exam-name').value = data.exam_name;
+                    document.getElementById('exam-code').value = examCode;
+                    document.getElementById('exam-code').disabled = true; // কোড পরিবর্তন করা যাবে না
+                    document.getElementById('exam-timer').value = data.timer_minutes;
+                    document.getElementById('exam-negative').value = data.negative_marks || 0;
+                    
+                    if(data.expiry_time) {
+                        document.getElementById('group-expiry').style.display = 'block';
+                        document.getElementById('exam-expiry').value = data.expiry_time;
+                    } else {
+                        document.getElementById('group-expiry').style.display = 'none';
+                    }
+
+                    if(data.season) {
+                        document.getElementById('group-season').style.display = 'block';
+                        document.getElementById('exam-season').value = data.season;
+                    } else {
+                        document.getElementById('group-season').style.display = 'none';
+                    }
+
+                    document.getElementById('exam-class').value = data.class_name || 'General';
+                    document.getElementById('exam-subject').value = data.subject || 'General';
+                    
+                    // প্রশ্নগুলো লোড করা
+                    tempExamQuestions = data.questions.map(q => ({
+                        question_text: q.q_text,
+                        option_a: q.opt_a,
+                        option_b: q.opt_b,
+                        option_c: q.opt_c,
+                        option_d: q.opt_d,
+                        correct_option: q.correct,
+                        question_type: q.question_type || 'mcq',
+                        max_marks: q.max_marks || 1.0
+                    }));
+
+                    document.getElementById('btn-publish-exam').innerText = "Update Exam 💾";
+                    updateAdminUI();
+                } else {
+                    alert("Failed to load exam details for editing.");
+                }
+            } catch(e) {
+                alert("Error connecting to server.");
+            }
         }
 
         function toggleExamMethod() {
@@ -706,9 +757,6 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             if (currentExamCreationType === 'live_session_exam') {
                 expiryTime = document.getElementById('exam-expiry').value; 
                 season = document.getElementById('exam-season').value.trim() || specialFolderName;
-                if (!expiryTime) {
-                    if(!confirm("You did not set an Expiry Time. Exam will be available forever. Continue?")) return;
-                }
             } else {
                 className = document.getElementById('exam-class').value.trim() || 'General';
                 subject = document.getElementById('exam-subject').value.trim() || 'General';
@@ -718,20 +766,19 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
 
             const submitBtn = document.getElementById('btn-publish-exam');
             submitBtn.disabled = true;
-            submitBtn.innerText = "Publishing... ⏳";
+            submitBtn.innerText = isEditingExam ? "Updating... ⏳" : "Publishing... ⏳";
 
-            const teacherEmail = "admin"; 
-            const teacherName = "Admin";
-            
             const payload = { 
                 exam_code: code, exam_name: name, timer: timer, 
-                negative_marks: negative, teacher_email: teacherEmail, teacher_name: teacherName,
+                negative_marks: negative, teacher_email: "admin", teacher_name: "Admin",
                 folder_id: folderIdToSave, expiry_time: expiryTime, season: season,
                 questions: tempExamQuestions, class_name: className, subject: subject
             };
 
             try {
-                const res = await fetch('/api/admin/create-special-exam', { 
+                // এডিট মোড হলে আপডেট এপিআই এবং নতুন হলে ক্রিয়েট এপিআই কল হবে
+                const endpoint = isEditingExam ? '/api/admin/update-special-exam' : '/api/admin/create-special-exam';
+                const res = await fetch(endpoint, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify(payload) 
@@ -739,13 +786,13 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                 
                 const data = await res.json();
                 if(data.success) {
-                    alert(`🎉 Special Exam created successfully in session!`); 
+                    alert(isEditingExam ? `🎉 Exam updated successfully!` : `🎉 Special Exam created successfully in session!`); 
                     openSpecialPanel(); 
-                } else { alert("Failed to publish exam: " + data.error); }
+                } else { alert("Failed to save exam: " + data.error); }
             } catch(e) { alert("Server error."); }
             finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = "Publish Exam 🚀";
+                submitBtn.innerText = isEditingExam ? "Update Exam 💾" : "Publish Exam 🚀";
             }
         }
     </script>
