@@ -15,35 +15,18 @@
             margin: 0; padding: 0; display: flex; justify-content: center;
         }
         
-        /* 
-         * Container's top padding is increased to 90px 
-         * so the content doesn't hide behind the fixed header 
-         */
         .container { 
             width: 100%; max-width: 480px; background-color: #ffffff;
             min-height: 100vh; padding: 90px 1rem 6rem 1rem; 
             box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            margin: 0 auto;
+            margin: 0 auto; position: relative; overflow-x: hidden;
         }
 
-        /* 
-         * Header is now fully FIXED to the top of the screen 
-         */
         .sticky-header {
-            position: fixed; 
-            top: 0; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            width: 100%; 
-            max-width: 480px; 
-            background-color: #ffffff; 
-            z-index: 999;
-            padding: 1rem;
-            box-sizing: border-box;
-            border-bottom: 1px solid #e5e7eb; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px;
+            position: fixed; top: 0; left: 50%; transform: translateX(-50%); 
+            width: 100%; max-width: 480px; background-color: #ffffff; z-index: 999;
+            padding: 1rem; box-sizing: border-box; border-bottom: 1px solid #e5e7eb; 
+            display: flex; align-items: center; gap: 12px;
         }
 
         .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0;}
@@ -52,13 +35,14 @@
 
         .section-title { font-size: 1.05rem; font-weight: 700; color: #111827; margin: 1.5rem 0 0.8rem 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
         
-        /* Clickable Metric Buttons */
+        /* Clickable Metric Buttons with smooth touch feedback */
         .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
         .metric-card {
             background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 12px; text-align: center;
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+            will-change: transform;
         }
-        .metric-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); }
+        .metric-card:active { transform: scale(0.97); }
         .metric-card.full-width { grid-column: span 2; }
         .metric-card span { display: block; font-size: 0.85rem; color: #166534; font-weight: 700; margin-bottom: 5px; }
         .metric-card strong { font-size: 1.4rem; color: #14532d; }
@@ -75,19 +59,19 @@
         .chart-box { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; margin-bottom: 1.5rem; }
         .chart-container { position: relative; height: 260px; width: 100%; }
 
-        .student-select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px; box-sizing: border-box; outline: none;}
+        .student-select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-bottom: 15px; box-sizing: border-box; outline: none; background: #fff;}
         .btn-view-all { background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;}
 
         /* Panels */
-        .panel-view { display: none; }
-        #main-view { display: block; }
+        .panel-view { display: none; background: #ffffff; min-height: 100vh; position: absolute; top: 0; left: 0; width: 100%; padding: 90px 1rem 6rem 1rem; box-sizing: border-box; z-index: 10; }
+        #main-view { display: block; position: relative; }
         
-        .list-item-btn { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; background: #f8fafc; cursor: pointer; transition: 0.2s;}
+        .list-item-btn { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; background: #f8fafc; cursor: pointer; transition: background 0.15s;}
         .list-item-btn:hover { border-color: #3b82f6; background: #eff6ff; }
         .list-item-btn strong { color: #1e293b; font-size: 0.95rem; }
         .list-item-btn span { color: #64748b; font-size: 0.8rem; }
 
-        .btn-del { background: #fee2e2; color: #ef4444; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;}
+        .btn-del { background: #fee2e2; color: #ef4444; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.15s;}
         .btn-del:hover { background: #fca5a5; color: white;}
 
         /* Bottom Nav */
@@ -96,7 +80,7 @@
             background: #ffffff; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; 
             padding: 10px 0 20px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
     </style>
@@ -106,8 +90,7 @@
     <div class="container">
         
         <!-- MAIN DASHBOARD VIEW -->
-        <div id="main-view">
-            <!-- 1. Fixed Header -->
+        <div id="main-view" class="panel-view" style="display: block; position: relative; padding: 0;">
             <div class="sticky-header">
                 <button class="btn-back" onclick="window.location.href='/teacher_dashboard.html'">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header">
@@ -116,65 +99,67 @@
                 </div>
             </div>
 
-            <div class="metrics-grid">
-                <div class="metric-card" onclick="openPanel('panel-students')">
-                    <span>👥 Total Students</span><strong id="m-students">0</strong>
-                </div>
-                <div class="metric-card" onclick="openPanel('panel-attempts')">
-                    <span>📝 Total Attempts</span><strong id="m-attempts">0</strong>
-                </div>
-                <div class="metric-card" onclick="openPanel('panel-average')">
-                    <span>📈 Class Average</span><strong id="m-avg">0%</strong>
-                </div>
-                <div class="metric-card" onclick="openPanel('panel-highest')">
-                    <span>🏆 Highest Score</span><strong id="m-high">0%</strong>
-                </div>
-                <div class="metric-card full-width" onclick="openPanel('panel-active')">
-                    <span>🟢 Active Exams</span><strong id="m-exams">0</strong>
-                </div>
-            </div>
-
-            <h2 class="section-title">📝 Recent Exam Performance 
-                <button class="btn-view-all" onclick="openPanel('panel-average')">View All</button>
-            </h2>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Exam Name</th><th>Avg %</th><th>High %</th><th>Attempts</th></tr></thead>
-                    <tbody id="recent-exams-body"></tbody>
-                </table>
-            </div>
-
-            <h2 class="section-title">👤 Individual Student Analysis</h2>
-            <select id="student-selector" class="student-select-box" onchange="loadStudentData()">
-                <option value="" disabled selected>Select a student...</option>
-            </select>
-
-            <div id="student-details" style="display: none;">
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
-                    <div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">
-                        <span style="font-size:0.75rem; color:#64748b;">Average</span><br><strong id="s-avg" style="color:#0f172a;">0%</strong>
+            <div style="padding-top: 10px;">
+                <div class="metrics-grid">
+                    <div class="metric-card" onclick="openPanel('panel-students')">
+                        <span>👥 Total Students</span><strong id="m-students">0</strong>
                     </div>
-                    <div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">
-                        <span style="font-size:0.75rem; color:#64748b;">Best</span><br><strong id="s-best" style="color:#0f172a;">0%</strong>
+                    <div class="metric-card" onclick="openPanel('panel-attempts')">
+                        <span>📝 Total Attempts</span><strong id="m-attempts">0</strong>
                     </div>
-                    <div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">
-                        <span style="font-size:0.75rem; color:#64748b;">Taken</span><br><strong id="s-taken" style="color:#0f172a;">0</strong>
+                    <div class="metric-card" onclick="openPanel('panel-average')">
+                        <span>📈 Class Average</span><strong id="m-avg">0%</strong>
+                    </div>
+                    <div class="metric-card" onclick="openPanel('panel-highest')">
+                        <span>🏆 Highest Score</span><strong id="m-high">0%</strong>
+                    </div>
+                    <div class="metric-card full-width" onclick="openPanel('panel-active')">
+                        <span>🟢 Active Exams</span><strong id="m-exams">0</strong>
                     </div>
                 </div>
-                <div class="chart-box"><div class="chart-container"><canvas id="progressChart"></canvas></div></div>
+
+                <h2 class="section-title">📝 Recent Exam Performance 
+                    <button class="btn-view-all" onclick="openPanel('panel-average')">View All</button>
+                </h2>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Exam Name</th><th>Avg %</th><th>High %</th><th>Attempts</th></tr></thead>
+                        <tbody id="recent-exams-body"><tr><td colspan="4" style="text-align:center;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+
+                <h2 class="section-title">👤 Individual Student Analysis</h2>
+                <select id="student-selector" class="student-select-box" onchange="loadStudentData()">
+                    <option value="" disabled selected>Select a student...</option>
+                </select>
+
+                <div id="student-details" style="display: none;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">
+                            <span style="font-size:0.75rem; color:#64748b;">Average</span><br><strong id="s-avg" style="color:#0f172a;">0%</strong>
+                        </div>
+                        <div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">
+                            <span style="font-size:0.75rem; color:#64748b;">Best</span><br><strong id="s-best" style="color:#0f172a;">0%</strong>
+                        </div>
+                        <div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">
+                            <span style="font-size:0.75rem; color:#64748b;">Taken</span><br><strong id="s-taken" style="color:#0f172a;">0</strong>
+                        </div>
+                    </div>
+                    <div class="chart-box"><div class="chart-container"><canvas id="progressChart"></canvas></div></div>
+                </div>
             </div>
         </div>
 
         <!-- PANEL 1: TOTAL STUDENTS -->
         <div id="panel-students" class="panel-view">
             <div class="sticky-header">
-                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
+                <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header"><h1>Total Students</h1></div>
             </div>
             <div class="table-container">
                 <table>
                     <thead><tr><th>Name (Email)</th><th>Exams Attended</th><th>Overall Avg</th></tr></thead>
-                    <tbody id="list-students-body"></tbody>
+                    <tbody id="list-students-body"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -182,17 +167,16 @@
         <!-- PANEL 2: TOTAL ATTEMPTS (LIST OF EXAMS) -->
         <div id="panel-attempts" class="panel-view">
             <div class="sticky-header">
-                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
+                <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header"><h1>Exam Attempts</h1><p>Click an exam to view students</p></div>
             </div>
-            <div id="list-attempts-box"></div>
+            <div id="list-attempts-box"><p style="text-align:center; color:#64748b;">Loading...</p></div>
         </div>
 
-        <!-- PANEL 2.1: SPECIFIC EXAM ATTEMPT DETAILS (NEW PAGE VIEW) -->
+        <!-- PANEL 2.1: SPECIFIC EXAM ATTEMPT DETAILS -->
         <div id="panel-attempt-details" class="panel-view">
             <div class="sticky-header">
-                <!-- Back button to return to Panel 2 (Exam List) -->
-                <button class="btn-back" onclick="backToAttemptsPanel()">&nbsp; ‹ &nbsp;</button>
+                <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header">
                     <h1 id="sub-attempt-title">Students</h1>
                     <p>Performance in this specific exam</p>
@@ -201,7 +185,7 @@
             <div class="table-container">
                 <table>
                     <thead><tr><th>Student Name</th><th>Score</th><th>Performance</th></tr></thead>
-                    <tbody id="sub-attempt-body"></tbody>
+                    <tbody id="sub-attempt-body"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -209,13 +193,13 @@
         <!-- PANEL 3: CLASS AVERAGE (ALL EXAMS TABLE) -->
         <div id="panel-average" class="panel-view">
             <div class="sticky-header">
-                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
+                <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header"><h1>All Exams Stats</h1></div>
             </div>
             <div class="table-container">
                 <table>
                     <thead><tr><th>Exam Name</th><th>Avg %</th><th>High %</th><th>Low %</th></tr></thead>
-                    <tbody id="list-average-body"></tbody>
+                    <tbody id="list-average-body"><tr><td colspan="4" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -223,7 +207,7 @@
         <!-- PANEL 4: HIGHEST SCORE (LEADERBOARD) -->
         <div id="panel-highest" class="panel-view">
             <div class="sticky-header">
-                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
+                <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header"><h1>Leaderboard</h1></div>
             </div>
             <select id="leaderboard-filter" class="student-select-box" onchange="loadLeaderboard()">
@@ -232,7 +216,7 @@
             <div class="table-container">
                 <table>
                     <thead><tr><th>Rank</th><th>Student Info</th><th>Score/Perf</th></tr></thead>
-                    <tbody id="list-leaderboard-body"></tbody>
+                    <tbody id="list-leaderboard-body"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -240,13 +224,13 @@
         <!-- PANEL 5: ACTIVE EXAMS (WITH DELETE) -->
         <div id="panel-active" class="panel-view">
             <div class="sticky-header">
-                <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
+                <button class="btn-back" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header"><h1>Manage Exams</h1><p>View release dates and manage</p></div>
             </div>
             <div class="table-container">
                 <table>
                     <thead><tr><th>Exam Name</th><th>Release Date & Time</th><th>Action</th></tr></thead>
-                    <tbody id="list-active-body"></tbody>
+                    <tbody id="list-active-body"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -255,15 +239,15 @@
 
     <!-- Bottom Nav -->
     <div class="bottom-nav">
-        <div class="nav-item" onclick="window.location.href='/teacher_dashboard.html'">
+        <a href="/teacher_dashboard.html" class="nav-item">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
-        </div>
-        <div class="nav-item active" onclick="closePanels()">
+        </a>
+        <div class="nav-item active" onclick="showView('main-view')">
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
         </div>
-        <div class="nav-item" onclick="window.location.href='/teacher_profile.html'">
+        <a href="/teacher_profile.html" class="nav-item">
             <div class="nav-icon"><i class="far fa-user"></i></div>
-        </div>
+        </a>
     </div>
 
     <script>
@@ -272,6 +256,17 @@
 
         window.onload = async () => {
             const userEmail = localStorage.getItem('userEmail');
+            
+            // Speed optimization: Instant cache rendering
+            const cachedAnalytics = localStorage.getItem('teacher_analytics_cache');
+            if (cachedAnalytics) {
+                globalData = JSON.parse(cachedAnalytics);
+                renderAnalyticsUI(globalData);
+            }
+
+            // Initialize History State
+            window.history.replaceState({view: 'main-view'}, "", window.location.href);
+
             if (userEmail) {
                 try {
                     const response = await fetch('/api/teacher-full-analytics', {
@@ -283,106 +278,104 @@
 
                     if (data.success) {
                         globalData = data;
-                        
-                        // Fill Metric Cards
-                        document.getElementById('m-students').innerText = data.overall.students;
-                        document.getElementById('m-attempts').innerText = data.overall.attempts;
-                        document.getElementById('m-avg').innerText = data.overall.avg + '%';
-                        document.getElementById('m-high').innerText = data.overall.high + '%';
-                        document.getElementById('m-exams').innerText = data.overall.exams;
-
-                        // Fill Recent 5 Exams (Main View)
-                        const recentBody = document.getElementById('recent-exams-body');
-                        const recentExams = data.examStats.slice(0, 5); // Only 5
-                        if (recentExams.length === 0) {
-                            recentBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No exams yet.</td></tr>';
-                        } else {
-                            recentBody.innerHTML = recentExams.map(e => 
-                                `<tr><td>${e.name}</td><td>${e.avg}%</td><td>${e.high}%</td><td>${e.attempts}</td></tr>`
-                            ).join('');
-                        }
-
-                        // Populate Student Dropdown
-                        const selector = document.getElementById('student-selector');
-                        data.leaderboard.forEach(s => {
-                            const opt = document.createElement('option');
-                            opt.value = s.name;
-                            opt.innerText = `${s.name} (${s.email})`;
-                            selector.appendChild(opt);
-                        });
-
-                        // Populate Leaderboard Exam Filter
-                        const ldFilter = document.getElementById('leaderboard-filter');
-                        data.examStats.forEach(e => {
-                            const opt = document.createElement('option');
-                            opt.value = e.code;
-                            opt.innerText = e.name;
-                            ldFilter.appendChild(opt);
-                        });
-
-                        populatePanels(data);
+                        localStorage.setItem('teacher_analytics_cache', JSON.stringify(data));
+                        renderAnalyticsUI(data);
                     }
                 } catch (error) { console.error("Error fetching analytics:", error); }
             }
         };
 
+        function renderAnalyticsUI(data) {
+            document.getElementById('m-students').innerText = data.overall.students;
+            document.getElementById('m-attempts').innerText = data.overall.attempts;
+            document.getElementById('m-avg').innerText = data.overall.avg + '%';
+            document.getElementById('m-high').innerText = data.overall.high + '%';
+            document.getElementById('m-exams').innerText = data.overall.exams;
+
+            const recentBody = document.getElementById('recent-exams-body');
+            const recentExams = data.examStats.slice(0, 5);
+            if (recentExams.length === 0) {
+                recentBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No exams yet.</td></tr>';
+            } else {
+                recentBody.innerHTML = recentExams.map(e => 
+                    `<tr><td>${e.name}</td><td>${e.avg}%</td><td>${e.high}%</td><td>${e.attempts}</td></tr>`
+                ).join('');
+            }
+
+            const selector = document.getElementById('student-selector');
+            selector.innerHTML = '<option value="" disabled selected>Select a student...</option>';
+            data.leaderboard.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                opt.innerText = `${s.name} (${s.email})`;
+                selector.appendChild(opt);
+            });
+
+            const ldFilter = document.getElementById('leaderboard-filter');
+            ldFilter.innerHTML = '<option value="all" selected>🏆 Overall Highest Scores (All Exams)</option>';
+            data.examStats.forEach(e => {
+                const opt = document.createElement('option');
+                opt.value = e.code;
+                opt.innerText = e.name;
+                ldFilter.appendChild(opt);
+            });
+
+            populatePanels(data);
+        }
+
         function populatePanels(data) {
-            // Panel 1: Students
             document.getElementById('list-students-body').innerHTML = data.leaderboard.map((s, i) => 
                 `<tr><td><div class="student-name-box"><strong>${i+1}. ${s.name}</strong><span class="email">${s.email}</span></div></td><td>${s.taken} Exams</td><td><strong style="color:#1ea64d;">${s.avg}%</strong></td></tr>`
-            ).join('') || '<tr><td colspan="3">No students found.</td></tr>';
+            ).join('') || '<tr><td colspan="3" style="text-align:center;">No students found.</td></tr>';
 
-            // Panel 2: Attempts
             document.getElementById('list-attempts-box').innerHTML = data.examStats.map(e => 
                 `<div class="list-item-btn" onclick="fetchAttempts('${e.code}', '${e.name.replace(/'/g, "\\'")}')">
-                    <div><strong>${e.name}</strong><br><span>Total Attempts: ${e.attempts}</span></div>
+                    <div><strong>${e.name}</strong><br><span style="font-size:0.8rem; color:#64748b;">Total Attempts: ${e.attempts}</span></div>
                     <i class="fas fa-chevron-right" style="color:#94a3b8;"></i>
                 </div>`
-            ).join('') || '<p style="text-align:center;">No exams available.</p>';
+            ).join('') || '<p style="text-align:center; color:#64748b;">No exams available.</p>';
 
-            // Panel 3: Class Average
             document.getElementById('list-average-body').innerHTML = data.examStats.map(e => 
                 `<tr><td>${e.name}</td><td><strong style="color:#3b82f6;">${e.avg}%</strong></td><td>${e.high}%</td><td>${e.low}%</td></tr>`
-            ).join('') || '<tr><td colspan="4">No data.</td></tr>';
+            ).join('') || '<tr><td colspan="4" style="text-align:center;">No data.</td></tr>';
 
-            // Panel 5: Active Exams
             document.getElementById('list-active-body').innerHTML = data.examStats.map(e => 
                 `<tr>
                     <td><strong>${e.name}</strong><br><span style="font-size:0.7rem; color:#64748b;">Code: ${e.code}</span></td>
-                    <td>${e.date}<br><span style="font-size:0.7rem;">${e.time}</span></td>
+                    <td>${e.date}<br><span style="font-size:0.7rem; color:#64748b;">${e.time}</span></td>
                     <td><button class="btn-del" onclick="deleteSpecificExam('${e.code}')"><i class="fas fa-trash"></i> Delete</button></td>
                 </tr>`
-            ).join('') || '<tr><td colspan="3">No exams found.</td></tr>';
+            ).join('') || '<tr><td colspan="3" style="text-align:center;">No exams found.</td></tr>';
             
-            // Initial Leaderboard Load (All Exams)
             loadLeaderboard();
         }
 
+        // ================= VIEW SWITCHER & HISTORY ROUTING =================
+        function showView(viewId) {
+            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+            const target = document.getElementById(viewId);
+            if (target) {
+                target.style.display = viewId === 'main-view' ? 'block' : 'block';
+                if(viewId === 'main-view') {
+                    target.style.position = 'relative';
+                }
+            }
+            window.scrollTo(0, 0);
+        }
+
         function openPanel(id) {
-            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            document.getElementById('main-view').style.display = 'none';
-            document.getElementById(id).style.display = 'block';
-            window.scrollTo(0, 0);
+            showView(id);
+            window.history.pushState({view: id}, "", window.location.href);
         }
 
-        function closePanels() {
-            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            document.getElementById('main-view').style.display = 'block';
-            window.scrollTo(0, 0);
-        }
-
-        // NEW FUNCTION: Open Attempt Details in a New White Page
         async function fetchAttempts(examCode, examName) {
-            // Switch views
-            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            document.getElementById('main-view').style.display = 'none';
-            document.getElementById('panel-attempt-details').style.display = 'block';
-            window.scrollTo(0, 0);
+            showView('panel-attempt-details');
+            window.history.pushState({view: 'panel-attempt-details', examCode: examCode}, "", window.location.href);
 
             document.getElementById('sub-attempt-title').innerText = examName.length > 20 ? examName.substring(0, 20) + "..." : examName;
             
             const tbody = document.getElementById('sub-attempt-body');
-            tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Loading...</td></tr>';
             
             try {
                 const response = await fetch('/api/teacher-analysis', {
@@ -395,22 +388,15 @@
                         `<tr><td><div class="student-name-box"><strong>${s.name}</strong><span class="email">${s.email}</span></div></td><td>${s.score}/${data.total_q}</td><td><strong style="color:#16a34a;">${s.perf}%</strong></td></tr>`
                     ).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="3">No attempts yet.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No attempts yet.</td></tr>';
                 }
-            } catch(e) { tbody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>'; }
-        }
-
-        // NEW FUNCTION: Return to Attempts Panel
-        function backToAttemptsPanel() {
-            document.getElementById('panel-attempt-details').style.display = 'none';
-            document.getElementById('panel-attempts').style.display = 'block';
-            window.scrollTo(0, 0);
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error loading data.</td></tr>'; }
         }
 
         async function loadLeaderboard() {
             const filter = document.getElementById('leaderboard-filter').value;
             const tbody = document.getElementById('list-leaderboard-body');
-            tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Loading...</td></tr>';
 
             if(filter === 'all') {
                 tbody.innerHTML = globalData.leaderboard.map((s, i) => 
@@ -419,7 +405,7 @@
                         <td><div class="student-name-box"><strong>${s.name}</strong><span class="email">${s.email}</span></div></td>
                         <td><strong style="color:#16a34a;">${s.best}%</strong></td>
                     </tr>`
-                ).join('') || '<tr><td colspan="3">No records.</td></tr>';
+                ).join('') || '<tr><td colspan="3" style="text-align:center;">No records.</td></tr>';
             } else {
                 try {
                     const response = await fetch('/api/teacher-analysis', {
@@ -432,11 +418,11 @@
                             `<tr>
                                 <td><strong>#${i+1}</strong></td>
                                 <td><div class="student-name-box"><strong>${s.name}</strong><span class="email">${s.email}</span></div></td>
-                                <td><strong style="color:#16a34a;">${s.perf}%</strong><br><span style="font-size:0.7rem;">(${s.score}/${data.total_q})</span></td>
+                                <td><strong style="color:#16a34a;">${s.perf}%</strong><br><span style="font-size:0.7rem; color:#64748b;">(${s.score}/${data.total_q})</span></td>
                             </tr>`
                         ).join('');
-                    } else { tbody.innerHTML = '<tr><td colspan="3">No attempts yet.</td></tr>'; }
-                } catch(e) { tbody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>'; }
+                    } else { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No attempts yet.</td></tr>'; }
+                } catch(e) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error loading data.</td></tr>'; }
             }
         }
 
@@ -487,6 +473,16 @@
                 }
             });
         }
+
+        // ================= PERFECT POPSTATE & BACK BUTTON SYNC =================
+        window.addEventListener('popstate', function (event) {
+            const state = event.state;
+            if (state && state.view) {
+                showView(state.view);
+            } else {
+                showView('main-view');
+            }
+        });
     </script>
 </body>
 </html>
