@@ -19,7 +19,7 @@
             margin: 0; display: flex; justify-content: center; 
             overscroll-behavior-y: none; /* Pull-to-refresh Block */
         }
-        .container { width: 100%; max-width: 500px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem 1.5rem 5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        .container { width: 100%; max-width: 500px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem 1.5rem 5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; }
         
         .back-btn { background: transparent; color: #10b981; border: none; font-weight: bold; font-size: 14px; cursor: pointer; padding: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
         h1 { font-size: 24px; color: #1a1a1a; margin-top: 0; margin-bottom: 20px; }
@@ -36,12 +36,13 @@
         
         .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: opacity 0.15s ease; box-sizing: border-box; }
+        .btn:active { transform: scale(0.98); }
         .btn-add { background-color: #8b5cf6; box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3); margin-top: 5px; }
         .btn-publish { background: linear-gradient(135deg, #10b981, #059669); padding: 15px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin-top: 20px;}
         
         .lang-toggle { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center;}
-        .lang-btn { padding: 4px 15px; font-size: 0.8rem; border-radius: 20px; border: 1px solid #8b5cf6; background: #ffffff; color: #8b5cf6; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .lang-btn { padding: 4px 15px; font-size: 0.8rem; border-radius: 20px; border: 1px solid #8b5cf6; background: #ffffff; color: #8b5cf6; cursor: pointer; font-weight: bold; transition: background 0.15s;}
         .lang-btn.active { background: #8b5cf6; color: #ffffff; }
 
         .prompt-box { background: #e0e7ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #1e3a8a; }
@@ -53,7 +54,7 @@
         .manual-guide-title { font-weight: bold; color: #1e293b; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;}
 
         .preview-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-top: 15px;}
-        .q-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .q-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 10px; margin-bottom: 15px; transform: translateZ(0); }
         .math-preview { background: #ffffff; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.95rem; overflow-x: auto;}
         .q-card textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px; font-family: inherit; font-size: 0.9rem; resize: vertical;}
         .q-card input { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;}
@@ -64,7 +65,7 @@
 <body>
 
     <div class="container">
-        <button class="back-btn" onclick="window.history.back()">&nbsp; ‹ &nbsp;</button>
+        <button class="back-btn" onclick="handleBackNavigation()">&nbsp; ‹ &nbsp;</button>
 
         <h1>Create Custom Exam</h1>
 
@@ -195,6 +196,10 @@ CRITICAL RULES FOR MATH & FORMATTING:
 
     <script>
         let tempQuestions = [];
+
+        window.onload = () => {
+            window.history.replaceState({page: 'create_exam'}, "", window.location.href);
+        };
 
         function toggleLanguage(lang) {
             const btnBn = document.getElementById('btn-bn');
@@ -397,9 +402,27 @@ CRITICAL RULES FOR MATH & FORMATTING:
             finally { publishBtn.innerText = "Publish Exam 🚀"; publishBtn.disabled = false; }
         }
         
+        // ================= PERFECT BACK BUTTON HIERARCHY SYNC =================
+        function handleBackNavigation() {
+            if (tempQuestions.length > 0) {
+                if (confirm("⚠️ আপনার কিছু অসংরক্ষিত প্রশ্ন রয়েছে। আপনি কি সত্যিই পেজ থেকে বের হতে চান?")) {
+                    window.location.href = 'teacher_dashboard.html';
+                }
+            } else {
+                window.location.href = 'teacher_dashboard.html';
+            }
+        }
+
         window.addEventListener('popstate', function (event) {
-            if (document.referrer) { window.history.back(); } 
-            else { window.location.href = '/teacher_dashboard.html'; }
+            if (tempQuestions.length > 0) {
+                if (confirm("⚠️ আপনার কিছু অসংরক্ষিত প্রশ্ন রয়েছে। আপনি কি সত্যিই পেজ থেকে বের হতে চান?")) {
+                    window.location.href = 'teacher_dashboard.html';
+                } else {
+                    window.history.pushState({page: 'create_exam'}, "", window.location.href);
+                }
+            } else {
+                window.location.href = 'teacher_dashboard.html';
+            }
         });
 
         // ================= PULL-TO-REFRESH BLOCKER =================
