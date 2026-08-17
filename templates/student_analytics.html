@@ -28,6 +28,7 @@
             width: 100%; max-width: 480px; background-color: #ffffff;
             z-index: 999; padding: 1rem; box-sizing: border-box;
             border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
 
         .btn-back { background: transparent; border: none; color: #1a1a1a; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0; }
@@ -41,18 +42,19 @@
         .metric-card {
             background: #f0fdf4; border: 1px solid #bbf7d0;
             border-radius: 12px; padding: 12px; text-align: center;
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+            will-change: transform;
         }
-        .metric-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2); }
+        .metric-card:active { transform: scale(0.97); }
         .metric-card span { display: block; font-size: 0.8rem; color: #166534; font-weight: 700; margin-bottom: 5px; }
         .metric-card strong { font-size: 1.4rem; color: #14532d; }
 
         .chart-box { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; margin-bottom: 1.5rem; }
         .chart-container { position: relative; height: 220px; width: 100%; }
 
-        /* Panel System */
-        .panel-view { display: none; }
-        #main-view { display: block; }
+        /* Panel System with Absolute Layering for smooth view switching */
+        .panel-view { display: none; background: #ffffff; min-height: 100vh; position: absolute; top: 0; left: 0; width: 100%; padding: 90px 1rem 6rem 1rem; box-sizing: border-box; z-index: 10; }
+        #main-view { display: block; position: relative; padding: 0; }
         
         .table-container { width: 100%; overflow-x: auto; margin-bottom: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
@@ -82,7 +84,7 @@
             display: flex; justify-content: space-around; padding: 10px 0 20px 0;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
     </style>
@@ -92,7 +94,7 @@
     <div class="container">
         
         <!-- MAIN ANALYTICS VIEW -->
-        <div id="main-view">
+        <div id="main-view" class="panel-view" style="display: block; position: relative; padding: 0;">
             <!-- Fixed Header -->
             <div class="sticky-header">
                 <button class="btn-back" onclick="window.location.href='/student_dashboard.html'">&nbsp; ‹ &nbsp;</button>
@@ -102,26 +104,28 @@
                 </div>
             </div>
 
-            <!-- Clickable Metrics -->
-            <h2 class="section-title">📈 Score Summary</h2>
-            <div class="metrics-grid">
-                <div class="metric-card" onclick="openPanel('panel-history')">
-                    <span>📅 Exams Given</span><strong id="m-total">0</strong>
+            <div style="padding-top: 10px;">
+                <!-- Clickable Metrics -->
+                <h2 class="section-title">📈 Score Summary</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card" onclick="openPanel('panel-history')">
+                        <span>📅 Exams Given</span><strong id="m-total">0</strong>
+                    </div>
+                    <div class="metric-card" onclick="openPanel('panel-top')">
+                        <span>🏆 Highest Score</span><strong id="m-high">0</strong>
+                    </div>
+                    <div class="metric-card" onclick="openPanel('panel-breakdown')">
+                        <span>🎯 Total Marks</span><strong id="m-sum">0</strong>
+                    </div>
+                    <div class="metric-card" onclick="openPanel('panel-improve')">
+                        <span>📉 Average Score</span><strong id="m-avg">0%</strong>
+                    </div>
                 </div>
-                <div class="metric-card" onclick="openPanel('panel-top')">
-                    <span>🏆 Highest Score</span><strong id="m-high">0</strong>
-                </div>
-                <div class="metric-card" onclick="openPanel('panel-breakdown')">
-                    <span>🎯 Total Marks</span><strong id="m-sum">0</strong>
-                </div>
-                <div class="metric-card" onclick="openPanel('panel-improve')">
-                    <span>📉 Average Score</span><strong id="m-avg">0%</strong>
-                </div>
-            </div>
 
-            <h2 class="section-title">📉 Exam Progress Graph</h2>
-            <div class="chart-box">
-                <div class="chart-container"><canvas id="progressChart"></canvas></div>
+                <h2 class="section-title">📉 Exam Progress Graph</h2>
+                <div class="chart-box">
+                    <div class="chart-container"><canvas id="progressChart"></canvas></div>
+                </div>
             </div>
         </div>
 
@@ -131,10 +135,10 @@
                 <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header"><h1>Detailed Exam History</h1></div>
             </div>
-            <div class="table-container">
+            <div class="table-container" style="margin-top: 15px;">
                 <table>
                     <thead><tr><th>Exam Name</th><th>Score</th><th>Total</th><th>Date</th><th>Accuracy</th></tr></thead>
-                    <tbody id="history-table-body"></tbody>
+                    <tbody id="history-table-body"><tr><td colspan="5" style="text-align:center;">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -145,7 +149,7 @@
                 <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header"><h1>Top Achievements 🏆</h1><p>Your best performing exams</p></div>
             </div>
-            <div id="top-achievements-container"></div>
+            <div id="top-achievements-container" style="margin-top: 15px;"><p style="text-align:center; color:#64748b;">Loading...</p></div>
         </div>
 
         <!-- PANEL 3: AREAS TO IMPROVE (AVERAGE SCORE) -->
@@ -154,10 +158,12 @@
                 <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header"><h1>Areas to Improve 📉</h1><p>Exams below your average score</p></div>
             </div>
-            <div id="improve-message" style="background:#eff6ff; padding:15px; border-radius:10px; color:#1e3a8a; font-size:0.85rem; margin-bottom:15px; border:1px solid #bfdbfe;">
-                Loading...
+            <div style="margin-top: 15px;">
+                <div id="improve-message" style="background:#eff6ff; padding:15px; border-radius:10px; color:#1e3a8a; font-size:0.85rem; margin-bottom:15px; border:1px solid #bfdbfe;">
+                    Loading...
+                </div>
+                <div id="improve-container"></div>
             </div>
-            <div id="improve-container"></div>
         </div>
 
         <!-- PANEL 4: SCORE BREAKDOWN (TOTAL MARKS) -->
@@ -166,13 +172,15 @@
                 <button class="btn-back" onclick="closePanels()">&nbsp; ‹ &nbsp;</button>
                 <div class="page-header"><h1>Score Breakdown 🎯</h1><p>Overall accuracy across all exams</p></div>
             </div>
-            <div class="chart-box" style="padding: 20px;">
-                <div class="chart-container" style="height: 250px;"><canvas id="pieChart"></canvas></div>
-            </div>
-            <div style="text-align: center; margin-top: 10px;">
-                <div style="font-size: 0.9rem; color: #475569;">Total Attempted Marks: <strong id="pb-total" style="color:#0f172a;">0</strong></div>
-                <div style="font-size: 0.9rem; color: #16a34a;">Successfully Achieved: <strong id="pb-achieved">0</strong></div>
-                <div style="font-size: 0.9rem; color: #ef4444;">Lost / Negative: <strong id="pb-lost">0</strong></div>
+            <div style="margin-top: 15px;">
+                <div class="chart-box" style="padding: 20px;">
+                    <div class="chart-container" style="height: 250px;"><canvas id="pieChart"></canvas></div>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <div style="font-size: 0.9rem; color: #475569;">Total Attempted Marks: <strong id="pb-total" style="color:#0f172a;">0</strong></div>
+                    <div style="font-size: 0.9rem; color: #16a34a;">Successfully Achieved: <strong id="pb-achieved">0</strong></div>
+                    <div style="font-size: 0.9rem; color: #ef4444;">Lost / Negative: <strong id="pb-lost">0</strong></div>
+                </div>
             </div>
         </div>
 
@@ -180,15 +188,15 @@
 
     <!-- Fixed Bottom Navigation Bar -->
     <div class="bottom-nav">
-        <div class="nav-item" onclick="window.location.href='/student_dashboard.html'">
+        <a href="/student_dashboard.html" class="nav-item">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
-        </div>
+        </a>
         <div class="nav-item active" onclick="closePanels()">
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
         </div>
-        <div class="nav-item" onclick="window.location.href='/student_profile.html'">
+        <a href="/student_profile.html" class="nav-item">
             <div class="nav-icon"><i class="far fa-user"></i></div>
-        </div>
+        </a>
     </div>
 
     <script>
@@ -200,6 +208,15 @@
         window.onload = async () => {
             const userEmail = localStorage.getItem('userEmail');
 
+            // Speed Optimization: Render immediately from cache if present
+            const cachedHistory = localStorage.getItem('student_analytics_cache');
+            if (cachedHistory) {
+                processAnalyticsData(JSON.parse(cachedHistory));
+            }
+
+            // Setup History State Tracking
+            window.history.replaceState({view: 'main-view'}, "", window.location.href);
+
             if (userEmail) {
                 try {
                     const response = await fetch('/api/get-student-history', {
@@ -210,43 +227,9 @@
                     const data = await response.json();
 
                     if (data.success && data.history.length > 0) {
-                        globalHistory = data.history;
-                        
-                        let totalExams = globalHistory.length;
-                        let highest = Math.max(...globalHistory.map(h => h.score));
-                        let sumScore = globalHistory.reduce((acc, curr) => acc + curr.score, 0);
-                        let sumTotal = globalHistory.reduce((acc, curr) => acc + curr.total, 0);
-                        globalAvgAcc = (globalHistory.reduce((acc, curr) => acc + ((curr.score / curr.total) * 100), 0) / totalExams).toFixed(1);
-
-                        // Populate Main Dashboard Cards
-                        document.getElementById('m-total').innerText = totalExams;
-                        document.getElementById('m-high').innerText = highest;
-                        document.getElementById('m-sum').innerText = sumScore.toFixed(1);
-                        document.getElementById('m-avg').innerText = globalAvgAcc + '%';
-
-                        // Panel 1: Table Population
-                        const tbody = document.getElementById('history-table-body');
-                        tbody.innerHTML = globalHistory.map(h => {
-                            let acc = ((h.score / h.total) * 100).toFixed(1);
-                            let perfClass = acc >= 75 ? "perf-high" : (acc >= 40 ? "perf-mid" : "perf-low");
-                            return `<tr><td>${h.exam_name}</td><td><strong>${h.score}</strong></td><td>${h.total}</td><td>${h.date}</td><td class="${perfClass}">${acc}%</td></tr>`;
-                        }).join('');
-
-                        // Panel 2: Top Achievements
-                        populateTopAchievements();
-
-                        // Panel 3: Areas to Improve
-                        populateImprovementAreas();
-
-                        // Panel 4: Pie Chart Data
-                        document.getElementById('pb-total').innerText = sumTotal;
-                        document.getElementById('pb-achieved').innerText = sumScore.toFixed(1);
-                        document.getElementById('pb-lost').innerText = (sumTotal - sumScore).toFixed(1);
-                        renderPieChart(sumScore, sumTotal - sumScore);
-
-                        // Main Chart Population
-                        renderChart(globalHistory);
-                    } else {
+                        localStorage.setItem('student_analytics_cache', JSON.stringify(data));
+                        processAnalyticsData(data);
+                    } else if (!cachedHistory) {
                         document.getElementById('history-table-body').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px;">No exam history found yet.</td></tr>';
                     }
                 } catch (error) {
@@ -255,13 +238,51 @@
             }
         };
 
+        function processAnalyticsData(data) {
+            globalHistory = data.history;
+            
+            let totalExams = globalHistory.length;
+            let highest = Math.max(...globalHistory.map(h => h.score));
+            let sumScore = globalHistory.reduce((acc, curr) => acc + curr.score, 0);
+            let sumTotal = globalHistory.reduce((acc, curr) => acc + curr.total, 0);
+            globalAvgAcc = (globalHistory.reduce((acc, curr) => acc + ((curr.score / curr.total) * 100), 0) / totalExams).toFixed(1);
+
+            // Populate Main Dashboard Cards
+            document.getElementById('m-total').innerText = totalExams;
+            document.getElementById('m-high').innerText = highest;
+            document.getElementById('m-sum').innerText = sumScore.toFixed(1);
+            document.getElementById('m-avg').innerText = globalAvgAcc + '%';
+
+            // Panel 1: Table Population
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = globalHistory.map(h => {
+                let acc = ((h.score / h.total) * 100).toFixed(1);
+                let perfClass = acc >= 75 ? "perf-high" : (acc >= 40 ? "perf-mid" : "perf-low");
+                return `<tr><td>${h.exam_name}</td><td><strong>${h.score}</strong></td><td>${h.total}</td><td>${h.date}</td><td class="${perfClass}">${acc}%</td></tr>`;
+            }).join('');
+
+            // Panel 2: Top Achievements
+            populateTopAchievements();
+
+            // Panel 3: Areas to Improve
+            populateImprovementAreas();
+
+            // Panel 4: Pie Chart Data
+            document.getElementById('pb-total').innerText = sumTotal;
+            document.getElementById('pb-achieved').innerText = sumScore.toFixed(1);
+            document.getElementById('pb-lost').innerText = (sumTotal - sumScore).toFixed(1);
+            renderPieChart(sumScore, sumTotal - sumScore);
+
+            // Main Chart Population
+            renderChart(globalHistory);
+        }
+
         function populateTopAchievements() {
-            // Sort by percentage descending
             const sorted = [...globalHistory].sort((a, b) => (b.score/b.total) - (a.score/a.total));
             const top3 = sorted.slice(0, 3);
             
             const container = document.getElementById('top-achievements-container');
-            if (top3.length === 0) { container.innerHTML = '<p>No data.</p>'; return; }
+            if (top3.length === 0) { container.innerHTML = '<p style="text-align:center; color:#64748b;">No data.</p>'; return; }
 
             container.innerHTML = top3.map((h, i) => {
                 let acc = ((h.score / h.total) * 100).toFixed(1);
@@ -279,7 +300,6 @@
         }
 
         function populateImprovementAreas() {
-            // Filter below average
             const weakAreas = globalHistory.filter(h => ((h.score / h.total) * 100) < parseFloat(globalAvgAcc));
             const container = document.getElementById('improve-container');
             const msg = document.getElementById('improve-message');
@@ -307,29 +327,40 @@
             }).join('');
         }
 
-        // Panel Navigation Logic
+        // ================= VIEW SWITCHER & HISTORY SYNC =================
         function openPanel(id) {
             document.getElementById('main-view').style.display = 'none';
             document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            document.getElementById(id).style.display = 'block';
+            const target = document.getElementById(id);
+            if(target) {
+                target.style.display = 'block';
+            }
             window.scrollTo(0, 0);
             window.history.pushState({view: id}, "", window.location.href);
         }
 
         function closePanels() {
-            document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
-            document.getElementById('main-view').style.display = 'block';
-            window.scrollTo(0, 0);
-            window.history.pushState({view: 'dashboard'}, "", window.location.href);
+            window.history.back();
         }
 
-        // Hardware Back Button Support
+        // Perfect Browser and Hardware Back Button Support via popstate
         window.addEventListener('popstate', function (event) {
-            let isPanelOpen = false;
-            document.querySelectorAll('.panel-view').forEach(p => { if(p.style.display === 'block') isPanelOpen = true; });
-
-            if (isPanelOpen) { closePanels(); } 
-            else { if (document.referrer) { window.history.back(); } }
+            const state = event.state;
+            if (state && state.view) {
+                if (state.view === 'main-view') {
+                    document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+                    document.getElementById('main-view').style.display = 'block';
+                } else {
+                    document.getElementById('main-view').style.display = 'none';
+                    document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+                    const target = document.getElementById(state.view);
+                    if (target) target.style.display = 'block';
+                }
+                window.scrollTo(0, 0);
+            } else {
+                document.querySelectorAll('.panel-view').forEach(p => p.style.display = 'none');
+                document.getElementById('main-view').style.display = 'block';
+            }
         });
 
         function renderChart(history) {
