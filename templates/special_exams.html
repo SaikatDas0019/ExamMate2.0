@@ -111,7 +111,7 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 0 20px; margin-top: 15px;">
-            <h3 style="margin: 0; font-size:1.1rem; color:#1e293b; font-weight:800;">🔥 Live Challenges</h3>
+            <h3 style="margin: 0; font-size:1.1rem; color:#1e293b; font-weight:800;">🔥 Live Challenge Sessions</h3>
         </div>
         <div class="live-h-scroll" id="live-special-scroll"></div>
 
@@ -122,11 +122,11 @@
         <div class="playlist-container" id="past-special-playlists"></div>
     </div>
 
-    <!-- 🔥 MODAL FOR VIEWING PLAYLIST EXAMS -->
+    <!-- 🔥 MODAL FOR VIEWING SESSION / PLAYLIST EXAMS -->
     <div class="score-modal-overlay" id="playlist-exams-modal">
         <div class="score-modal-box">
             <div class="modal-header-fixed">
-                <div class="score-modal-title" id="playlist-modal-title" style="font-size:1.2rem; font-weight:800; color:#0f172a; margin:0; line-height:1.4;">Playlist Exams</div>
+                <div class="score-modal-title" id="playlist-modal-title" style="font-size:1.2rem; font-weight:800; color:#0f172a; margin:0; line-height:1.4;">Session Exams</div>
                 <button class="modal-close-btn-fixed" onclick="document.getElementById('playlist-exams-modal').style.display='none'"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body-scroll" id="playlist-exams-list"></div>
@@ -145,7 +145,6 @@
     </div>
 
     <script>
-        // 12 Premium, Vibrant, and Attractive Gradients
         const specialGradients = [
             "linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)",
             "linear-gradient(135deg, #4776E6 0%, #8E54E9 100%)",
@@ -166,7 +165,7 @@
         window.onload = openSpecialExams;
 
         async function openSpecialExams() {
-            document.getElementById('live-special-scroll').innerHTML = '<p style="padding:20px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading live exams...</p>';
+            document.getElementById('live-special-scroll').innerHTML = '<p style="padding:20px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading live sessions...</p>';
             document.getElementById('special-folders').innerHTML = '<p style="padding:20px; color:#64748b;">Loading categories...</p>';
             document.getElementById('past-special-playlists').innerHTML = '<p style="padding:20px; color:#64748b;">Loading playlists...</p>';
             
@@ -184,9 +183,7 @@
             } catch(e) { console.error(e); }
         }
 
-        // ==========================================
-        // 🔥 GLOBAL LIVE TIMER LOGIC
-        // ==========================================
+        // Live Timer for active exam card items inside modals or banners
         setInterval(() => {
             const timers = document.querySelectorAll('.live-timer-text');
             if(timers.length === 0) return;
@@ -201,20 +198,6 @@
                 
                 if(diff <= 0) {
                     timer.innerHTML = "Expired ❌";
-                    timer.parentElement.style.background = "rgba(239,68,68,0.8)";
-                    timer.parentElement.style.borderColor = "#f87171";
-                    
-                    const card = timer.closest('.live-banner-card');
-                    if(card) {
-                        const btn = card.querySelector('button');
-                        if(btn && !btn.innerText.includes('Result') && !btn.innerText.includes('Analytics')) {
-                            btn.disabled = true;
-                            btn.style.background = "rgba(0,0,0,0.4)";
-                            btn.style.color = "#cbd5e1";
-                            btn.style.cursor = "not-allowed";
-                            btn.innerText = "Time Out ❌";
-                        }
-                    }
                 } else {
                     const d = Math.floor(diff / (1000 * 60 * 60 * 24));
                     const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
@@ -227,76 +210,93 @@
 
         function renderSpecialData(data) {
             const now = new Date();
-            data.live_exams.sort((a, b) => {
-                if (a.is_attempted && !b.is_attempted) return 1;
-                if (!a.is_attempted && b.is_attempted) return -1;
-                
-                let aDiff = Infinity, bDiff = Infinity;
-                let aExpired = false, bExpired = false;
-
-                if (a.expiry_time && a.expiry_time !== "None") {
-                    aDiff = new Date(a.expiry_time) - now;
-                    if (aDiff < 0) aExpired = true;
+            
+            // Group live exams by Season name to create session cards
+            const sessionsMap = {};
+            data.live_exams.forEach(exam => {
+                const seasonName = (exam.season && exam.season !== "None") ? exam.season : "General Challenge";
+                if (!sessionsMap[seasonName]) {
+                    sessionsMap[seasonName] = [];
                 }
-                if (b.expiry_time && b.expiry_time !== "None") {
-                    bDiff = new Date(b.expiry_time) - now;
-                    if (bDiff < 0) bExpired = true;
-                }
-
-                if (aExpired && !bExpired) return 1;
-                if (!aExpired && bExpired) return -1;
-
-                return aDiff - bDiff;
+                sessionsMap[seasonName].push(exam);
             });
 
             let liveHtml = '';
-            if(data.live_exams.length === 0) {
-                liveHtml = '<p style="padding: 20px; color:#64748b;">No live exams currently.</p>';
+            const seasonKeys = Object.keys(sessionsMap);
+
+            if(seasonKeys.length === 0) {
+                liveHtml = '<p style="padding: 20px; color:#64748b;">No live challenge sessions currently.</p>';
             } else {
-                data.live_exams.forEach(exam => {
+                seasonKeys.forEach(seasonName => {
+                    const examsInSession = sessionsMap[seasonName];
                     const bg = getRandomGradient();
-                    
+
+                    // Find the active/current sequential exam to display on the main card
+                    let activeExam = null;
+                    let allCompleted = true;
+
+                    for (let i = 0; i < examsInSession.length; i++) {
+                        let ex = examsInSession[i];
+                        let isExpired = false;
+                        if (ex.expiry_time && ex.expiry_time !== "None") {
+                            if (new Date(ex.expiry_time) <= now) isExpired = true;
+                        }
+
+                        if (!ex.is_attempted && !isExpired) {
+                            activeExam = ex;
+                            allCompleted = false;
+                            break;
+                        } else if (!ex.is_attempted && isExpired) {
+                            // If expired and not attempted, it's skipped, check next
+                            continue;
+                        } else {
+                            // Attempted
+                            allCompleted = false;
+                        }
+                    }
+
+                    // If all attempted or processed, fallback to the last one or first one
+                    if (!activeExam) {
+                        activeExam = examsInSession[examsInSession.length - 1];
+                    }
+
                     let expiryHtml = '';
                     let actionBtnHtml = '';
                     let isExpired = false;
 
-                    if (exam.expiry_time && exam.expiry_time !== "None") {
-                        const diffMs = new Date(exam.expiry_time) - now;
+                    if (activeExam.expiry_time && activeExam.expiry_time !== "None") {
+                        const diffMs = new Date(activeExam.expiry_time) - now;
                         if (diffMs > 0) {
                             expiryHtml = `<div style="background:rgba(0,0,0,0.5); padding:6px 12px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block; border:1px solid rgba(255,255,255,0.2);">
-                                ⏳ <span class="live-timer-text" data-expiry="${exam.expiry_time}">Calculating...</span>
+                                ⏳ Active Ends: <span class="live-timer-text" data-expiry="${activeExam.expiry_time}">Calculating...</span>
                             </div>`;
                         } else {
                             isExpired = true;
-                            expiryHtml = `<div style="background:rgba(239,68,68,0.8); padding:6px 12px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block; border:1px solid #f87171;">❌ Expired</div>`;
+                            expiryHtml = `<div style="background:rgba(239,68,68,0.8); padding:6px 12px; border-radius:12px; font-size:0.75rem; font-weight:bold; margin-bottom:10px; display:inline-block; border:1px solid #f87171;">❌ Current Exam Expired</div>`;
                         }
                     }
 
-                    if (exam.is_attempted) {
-                        let acc = exam.total > 0 ? ((exam.score / exam.total) * 100).toFixed(1) : 0;
+                    if (activeExam.is_attempted) {
+                        let acc = activeExam.total > 0 ? ((activeExam.score / activeExam.total) * 100).toFixed(1) : 0;
                         actionBtnHtml = `
                             <div style="background:rgba(255,255,255,0.2); padding:8px; border-radius:8px; text-align:center; border:1px solid rgba(255,255,255,0.4); margin-bottom:10px; font-weight:bold; font-size:0.85rem;">
-                                ✅ Score: ${exam.score}/${exam.total} (${acc}%)
+                                ✅ Completed: ${activeExam.score}/${activeExam.total} (${acc}%)
                             </div>
-                            <button onclick="window.location.href='/season_analytics.html?season=' + encodeURIComponent('${exam.season && exam.season !== "None" ? exam.season : exam.subject}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Season Analytics 📊</button>
+                            <button onclick="openSessionModal('${seasonName.replace(/'/g, "\\'")}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Session & Analytics 📊</button>
                         `;
                     } else if (isExpired) {
-                        actionBtnHtml = `<button disabled style="width:100%; background:rgba(0,0,0,0.4); color:#cbd5e1; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:not-allowed;">Time Out ❌</button>`;
+                        actionBtnHtml = `<button onclick="openSessionModal('${seasonName.replace(/'/g, "\\'")}')" style="width:100%; background:rgba(0,0,0,0.4); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer;">View Next Available Exam ➔</button>`;
                     } else {
-                        actionBtnHtml = `<button onclick="window.location.href='student_exam.html?code=${exam.code}'" style="width:100%; background:rgba(0,0,0,0.2); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Now 🚀</button>`;
+                        actionBtnHtml = `<button onclick="window.location.href='student_exam.html?code=${activeExam.code}'" style="width:100%; background:rgba(0,0,0,0.2); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Current Challenge 🚀</button>`;
                     }
-
-                    // Season name as large heading and exam name as slightly smaller subheading below it
-                    let seasonHeadingHtml = exam.season && exam.season !== "None" ? `<h3 style="margin:0 0 4px 0; font-size:1.5rem; font-weight:800;">${exam.season}</h3>` : '';
-                    let examNameSubHtml = `<h4 style="margin:0 0 15px 0; font-size:1.05rem; font-weight:600; color:rgba(255,255,255,0.95);">${exam.name}</h4>`;
 
                     liveHtml += `
                     <div class="live-banner-card" style="background: ${bg};">
                         <div>
-                            <div class="live-badge"><i class="fas fa-circle"></i> Live Now</div><br>
+                            <div class="live-badge"><i class="fas fa-circle"></i> ${seasonName}</div><br>
                             ${expiryHtml}
-                            ${seasonHeadingHtml}
-                            ${examNameSubHtml}
+                            <h3 style="margin:0 0 4px 0; font-size:1.4rem; font-weight:800;">${seasonName}</h3>
+                            <h4 style="margin:0 0 15px 0; font-size:1rem; font-weight:600; color:rgba(255,255,255,0.9);">Current: ${activeExam.name} (${examsInSession.length} Exams in Session)</h4>
                         </div>
                         <div>
                             ${actionBtnHtml}
@@ -305,6 +305,9 @@
                 });
             }
             document.getElementById('live-special-scroll').innerHTML = liveHtml;
+
+            // Store global session map for modal viewing
+            window.sessionExamsMap = sessionsMap;
 
             let folderHtml = '';
             let playlistHtml = '';
@@ -339,6 +342,77 @@
             
             document.getElementById('special-folders').innerHTML = folderHtml;
             document.getElementById('past-special-playlists').innerHTML = playlistHtml;
+        }
+
+        // Open modal showing all sequential exams of a specific session
+        function openSessionModal(seasonName) {
+            document.getElementById('playlist-modal-title').innerText = seasonName + " - Exams";
+            const container = document.getElementById('playlist-exams-list');
+            document.getElementById('playlist-exams-modal').style.display = 'flex';
+
+            const exams = window.sessionExamsMap[seasonName] || [];
+            if(exams.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#ef4444; font-weight:bold; margin-top:20px;">No exams found in this session.</p>';
+                return;
+            }
+
+            const now = new Date();
+            let html = '<div style="padding-top:5px;">';
+            
+            let unlocked = true; // Sequential locking logic tracker
+            exams.forEach((ex, idx) => {
+                let isExpired = false;
+                if (ex.expiry_time && ex.expiry_time !== "None") {
+                    if (new Date(ex.expiry_time) <= now) isExpired = true;
+                }
+
+                let actionBtnHtml = '';
+                let lockStatusHtml = '';
+
+                if (ex.is_attempted) {
+                    let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
+                    actionBtnHtml = `
+                        <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">✅ Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)</div>
+                        <button style="width:100%; background:#f8fafc; color:#10b981; border:2px solid #10b981; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
+                    `;
+                    unlocked = true; // Next exam becomes unlocked
+                } else if (isExpired) {
+                    actionBtnHtml = `<button disabled style="width:100%; background:#fee2e2; color:#ef4444; border:1px solid #fecaca; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:not-allowed;">Expired ❌ (Missed)</button>`;
+                    unlocked = true; // Allow moving forward if expired
+                } else if (unlocked) {
+                    actionBtnHtml = `<button style="width:100%; background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(59, 130, 246, 0.3);" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
+                    unlocked = false; // Lock subsequent exams until this one is attempted or expired
+                } else {
+                    actionBtnHtml = `<button disabled style="width:100%; background:#f1f5f9; color:#94a3b8; border:1px solid #cbd5e1; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:not-allowed;">🔒 Locked (Complete previous exam)</button>`;
+                }
+
+                let expiryText = ex.expiry_time && ex.expiry_time !== "None" ? `<span style="font-size:0.75rem; color:#ef4444;">⏳ Ends: ${ex.expiry_time}</span>` : '';
+
+                html += `
+                <div style="box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px; background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:15px;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                        <div style="width:38px; height:38px; background:#eff6ff; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1.1rem;"><i class="fas fa-tasks"></i></div>
+                        <div style="flex:1;">
+                            <strong style="display:block; font-size:0.95rem; color:#0f172a;">Day ${idx+1} Challenge</strong>
+                            ${expiryText}
+                        </div>
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <h3 style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:0 0 8px 0; line-height:1.3;">${ex.name}</h3>
+                        <div style="display:flex; gap:15px; background:#f8fafc; padding:10px; border-radius:10px; border:1px dashed #cbd5e1;">
+                            <span style="font-size:0.8rem; color:#334155; font-weight:600; display:flex; align-items:center; gap:5px;"><i class="fas fa-clock" style="color:#3b82f6;"></i> ${ex.timer} Mins</span>
+                        </div>
+                    </div>
+                    <div style="border-top:1px solid #f1f5f9; padding-top:12px; margin-top:5px;">
+                        ${actionBtnHtml}
+                    </div>
+                </div>`;
+            });
+
+            // Add season analytics button at the bottom of the modal for quick review
+            html += `<button onclick="window.location.href='/season_analytics.html?season=' + encodeURIComponent('${seasonName}')" style="width:100%; background:linear-gradient(135deg, #1e1b4b, #4338ca); color:#fff; border:none; padding:14px; border-radius:12px; font-weight:bold; font-size:1rem; cursor:pointer; margin-top:10px;">View Full Season Analytics 📊</button>`;
+            html += '</div>';
+            container.innerHTML = html;
         }
 
         async function openPlaylistModal(folderId, folderName) {
