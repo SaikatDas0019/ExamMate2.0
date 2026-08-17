@@ -1507,6 +1507,105 @@ def get_daily_leaderboard():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+@app.route('/api/get-exam-questions', methods=['POST'])
+def get_exam_questions():
+    data = request.get_json()
+    exam_code = data.get('exam_code')
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # expiry_time এবং season সহ তথ্য ফেচ করা হচ্ছে
+        cursor.execute(f"SELECT exam_name, timer_minutes, negative_marks, class_name, subject, is_private, expiry_time, season FROM exams WHERE exam_code = {ph}", (exam_code,))
+        exam_info = cursor.fetchone()
+        if not exam_info:
+            conn.close()
+            return jsonify({"success": False, "error": "Exam not found!"}), 404
+
+        cursor.execute(f"SELECT id, question_text, option_a, option_b, option_c, option_d, correct_option, question_type, max_marks FROM questions WHERE exam_code = {ph}", (exam_code,))
+        questions_rows = cursor.fetchall()
+        conn.close()
+
+        questions_list = []
+        for q in questions_rows:
+            q_type = q["question_type"] if "question_type" in q.keys() else "mcq"
+            m_marks = q["max_marks"] if "max_marks" in q.keys() and q["max_marks"] is not None else (1.0 if q_type == 'mcq' else 5.0)
+            questions_list.append({
+                "id": q["id"], "q_text": q["question_text"], 
+                "opt_a": q["option_a"], "opt_b": q["option_b"], 
+                "opt_c": q["option_c"], "opt_d": q["option_d"], 
+                "correct": q["correct_option"], "question_type": q_type,
+                "max_marks": float(m_marks)
+            })
+        
+        if isinstance(exam_info, dict):
+            e_name = exam_info['exam_name']
+            e_time = exam_info['timer_minutes']
+            e_neg = exam_info.get('negative_marks', 0.0)
+            c_name = exam_info.get('class_name', 'General')
+            subj = exam_info.get('subject', 'General')
+            is_priv = exam_info.get('is_private', False)
+            exp_time = str(exam_info.get('expiry_time', '')) if exam_info.get('expiry_time') else ''
+            seas = exam_info.get('season', 'General')
+        else:
+            e_name = exam_info[0]
+            e_time = exam_info[1]
+            e_neg = exam_info[2] if len(exam_info) > 2 else 0.0
+            c_name = exam_info[3] if len(exam_info) > 3 else 'General'
+            subj = exam_info[4] if len(exam_info) > 4 else 'General'
+            is_priv = exam_info[5] if len(exam_info) > 5 else False
+            exp_time = str(exam_info[6]) if len(exam_info) > 6 and exam_info[6] else ''
+            seas = exam_info[7] if len(exam_info) > 7 and exam_info[7] else 'General'
+
+        return jsonify({ 
+            "success": True, 
+            "exam_name": e_name, 
+            "timer_minutes": e_time, 
+            "negative_marks": float(e_neg) if e_neg else 0.0, 
+            "class_name": c_name,
+            "subject": subj,
+            "is_private": is_priv,
+            "expiry_time": exp_time.split('.')[0].replace(' ', 'T') if exp_time else '',
+            "season": seas,
+            "questions": questions_list 
+        })
+    except Exception as e: return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/admin/update-special-exam', methods=['POST'])
+def update_special_exam_api():
+    data = request.get_json()
+    exam_code = data.get('exam_code')
+    exam_name = data.get('exam_name')
+    timer = data.get('timer')
+    negative_marks = float(data.get('negative_marks', 0.0))
+    class_name = data.get('class_name', 'General')
+    subject = data.get('subject', 'General')
+    season = data.get('season', 'General')
+    expiry_time = data.get('expiry_time')
+    if not expiry_time: expiry_time = None
+    questions = data.get('questions', [])
+
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        cursor.execute(f"UPDATE exams SET exam_name = {ph}, timer_minutes = {ph}, negative_marks = {ph}, class_name = {ph}, subject = {ph}, season = {ph}, expiry_time = {ph} WHERE exam_code = {ph}", 
+                       (exam_name, timer, negative_marks, class_name, subject, season, expiry_time, exam_code))
+        
+        cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
+        for q in questions:
+            q_type = q.get('question_type', 'mcq')
+            max_marks = float(q.get('max_marks', 1.0))
+            cursor.execute(f"INSERT INTO questions (exam_code, question_text, option_a, option_b, option_c, option_d, correct_option, question_type, max_marks) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})", 
+                           (exam_code, q['question_text'] or q.get('q_text', ''), q.get('option_a', q.get('opt_a', '')), q.get('option_b', q.get('opt_b', '')), q.get('option_c', q.get('opt_c', '')), q.get('option_d', q.get('opt_d', '')), q.get('correct_option', q.get('correct', '')), q_type, max_marks))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Exam updated successfully!"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
