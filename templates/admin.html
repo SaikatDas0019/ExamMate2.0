@@ -102,10 +102,10 @@
                     <div class="card-icon"><i class="fas fa-bell"></i></div>
                     <div class="card-info"><h3>Notifications</h3><p>Send, Edit or Delete alerts</p></div>
                 </div>
-                <!-- 2. SPECIAL (Categories, Playlists, Live Exams) -->
+                <!-- 2. SPECIAL (Live Sessions, Categories, Playlists) -->
                 <div class="admin-card card-special" onclick="openSpecialPanel()">
                     <div class="card-icon"><i class="fas fa-trophy"></i></div>
-                    <div class="card-info"><h3>Special Section</h3><p>Manage Live Exams, Categories & Playlists</p></div>
+                    <div class="card-info"><h3>Special Section</h3><p>Manage Live Sessions, Categories & Playlists</p></div>
                 </div>
             </div>
         </div>
@@ -138,8 +138,8 @@
 
             <!-- ROOT VIEW -->
             <div id="special-root-view">
-                <h3 class="section-title"><i class="fas fa-fire" style="color:#ef4444;"></i> Live Exams</h3>
-                <div class="file-list" id="special-live-exams-list"></div>
+                <h3 class="section-title"><i class="fas fa-fire" style="color:#ef4444;"></i> Live Exam Sessions</h3>
+                <div class="drive-grid" id="special-live-sessions-list"></div>
 
                 <h3 class="section-title"><i class="fas fa-folder" style="color:#f59e0b;"></i> Categories</h3>
                 <div class="drive-grid" id="special-categories-list"></div>
@@ -148,7 +148,7 @@
                 <div class="drive-grid" id="special-playlists-list"></div>
             </div>
 
-            <!-- FOLDER VIEW (Inside Category or Playlist) -->
+            <!-- FOLDER VIEW (Inside Live Session, Category or Playlist) -->
             <div id="special-folder-view" style="display:none;">
                 <div id="sub-category-section" style="display:none;">
                     <h3 class="section-title"><i class="fas fa-folder-open" style="color:#f59e0b;"></i> Sub-Categories</h3>
@@ -171,7 +171,7 @@
             <!-- ⚠️ EXAM CODE AND NAME (ALWAYS VISIBLE) -->
             <div class="form-group">
                 <label>Exam Name</label>
-                <input type="text" id="exam-name" placeholder="e.g. Chapter 1 Test">
+                <input type="text" id="exam-name" placeholder="e.g. Day 1 Test">
             </div>
             
             <div class="grid-2x2">
@@ -185,7 +185,7 @@
                 </div>
             </div>
 
-            <!-- Group for Expiry Date (Only for Live Exams) -->
+            <!-- Group for Expiry Date (Only for Live Exams / Sessions) -->
             <div class="form-group" id="group-expiry" style="display:none; background:#fee2e2; padding:10px; border-radius:8px; border:1px solid #fecaca;">
                 <label style="color:#b91c1c;"><i class="fas fa-clock"></i> Expiry Date & Time (End Time)</label>
                 <input type="datetime-local" id="exam-expiry" style="border-color:#fca5a5;">
@@ -194,7 +194,7 @@
             <!-- Group for Season (Only for Live Exams) -->
             <div class="form-group" id="group-season" style="display:none; background:#eff6ff; padding:10px; border-radius:8px; border:1px solid #bfdbfe;">
                 <label style="color:#1d4ed8;"><i class="fas fa-calendar-alt"></i> Season Name</label>
-                <input type="text" id="exam-season" placeholder="e.g. Season 1" style="border-color:#93c5fd; background:#fff;">
+                <input type="text" id="exam-season" placeholder="e.g. Seven Days Quiz Challenge" style="border-color:#93c5fd; background:#fff;" readonly>
             </div>
 
             <!-- Group for Class and Subject (Hidden for Live Exams) -->
@@ -292,10 +292,10 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
         let specialFolderHistory = [];
         let specialFolderId = 0;
         let specialFolderName = 'Special Root';
-        let specialFolderType = 'root'; // 'root', 'category', 'playlist'
+        let specialFolderType = 'root'; // 'root', 'live_session', 'category', 'playlist'
         
         let tempExamQuestions = [];
-        let currentExamCreationType = 'live'; // 'live', 'category', 'playlist'
+        let currentExamCreationType = 'live_session_exam'; // 'live_session_exam', 'category', 'playlist'
 
         // Utilities
         function copyPrompt(textId, btnId) {
@@ -405,9 +405,9 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             if (specialFolderId === 0) {
                 rootView.style.display = 'block'; folderView.style.display = 'none';
                 document.getElementById('special-up-btn').style.display = 'none';
+                document.getElementById('special-live-sessions-list').innerHTML = 'Loading...';
                 document.getElementById('special-categories-list').innerHTML = 'Loading...';
                 document.getElementById('special-playlists-list').innerHTML = 'Loading...';
-                document.getElementById('special-live-exams-list').innerHTML = 'Loading...';
             } else {
                 rootView.style.display = 'none'; folderView.style.display = 'block';
                 document.getElementById('special-up-btn').style.display = 'inline-block';
@@ -439,42 +439,25 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
         }
 
         function renderSpecialRoot(folders, exams) {
-            let catHtml = '', playHtml = '';
+            let sessionHtml = '', catHtml = '', playHtml = '';
             
             folders.forEach(f => {
                 const html = `
                 <div class="folder-card" onclick="openSpecialFolder(${f.id}, '${f.name.replace(/'/g, "\\'")}', '${f.type}')">
                     <div style="display:flex; align-items:center; flex:1;">
-                        <i class="fas fa-${f.type === 'category' ? 'folder' : 'list'}" style="color:${f.type === 'category' ? '#f59e0b' : '#3b82f6'}; margin-right:8px; font-size:1.2rem;"></i> 
+                        <i class="fas fa-${f.type === 'live_session' ? 'fire' : (f.type === 'category' ? 'folder' : 'list')}" style="color:${f.type === 'live_session' ? '#ef4444' : (f.type === 'category' ? '#f59e0b' : '#3b82f6')}; margin-right:8px; font-size:1.2rem;"></i> 
                         <span>${f.name}</span>
                     </div>
                     <div><i class="fas fa-trash-alt" style="color:#ef4444; padding:5px; cursor:pointer;" onclick="deleteDriveItem(event, 'folder', ${f.id})" title="Delete"></i></div>
                 </div>`;
-                if(f.type === 'category') catHtml += html;
+                if(f.type === 'live_session') sessionHtml += html;
+                else if(f.type === 'category') catHtml += html;
                 else playHtml += html;
             });
             
+            document.getElementById('special-live-sessions-list').innerHTML = sessionHtml || '<p style="color:#64748b; font-size:0.9rem;">No live exam sessions yet.</p>';
             document.getElementById('special-categories-list').innerHTML = catHtml || '<p style="color:#64748b; font-size:0.9rem;">No categories yet.</p>';
             document.getElementById('special-playlists-list').innerHTML = playHtml || '<p style="color:#64748b; font-size:0.9rem;">No playlists yet.</p>';
-
-            let ehtml = '';
-            if(exams.length === 0) ehtml = '<p style="color:#64748b; font-size:0.9rem;">No live exams created yet.</p>';
-            exams.forEach(ex => {
-                let expiryText = ex.expiry_time && ex.expiry_time !== "None" ? `<br><span style="font-size:0.75rem; color:#ef4444;">⏳ Ends: ${ex.expiry_time}</span>` : '';
-                let seasonText = ex.season && ex.season !== "None" ? ` | <span style="font-size:0.8rem; color:#3b82f6; font-weight:bold;">Season: ${ex.season}</span>` : '';
-                ehtml += `
-                <div class="file-card">
-                    <div>
-                        <strong style="color:#1e293b; font-size:1rem;">${ex.name}</strong><br>
-                        <span style="font-size:0.8rem; color:#10b981; font-weight:bold;">Code: ${ex.code}</span>${seasonText}
-                        ${expiryText}
-                    </div>
-                    <div>
-                        <i class="fas fa-trash-alt" style="color:#ef4444; padding:5px; cursor:pointer;" onclick="deleteDriveItem(event, 'exam', '${ex.code}')" title="Delete"></i>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('special-live-exams-list').innerHTML = ehtml;
         }
 
         function renderSpecialFolder(subFolders, exams) {
@@ -494,13 +477,15 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             }
 
             let ehtml = '';
-            if(exams.length === 0) ehtml = '<p style="color:#64748b; font-size:0.9rem;">No exams in this folder.</p>';
+            if(exams.length === 0) ehtml = '<p style="color:#64748b; font-size:0.9rem;">No exams in this session/folder.</p>';
             exams.forEach(ex => {
+                let expiryText = ex.expiry_time && ex.expiry_time !== "None" ? `<br><span style="font-size:0.75rem; color:#ef4444;">⏳ Ends: ${ex.expiry_time}</span>` : '';
                 ehtml += `
                 <div class="file-card">
                     <div>
                         <strong style="color:#1e293b; font-size:1rem;">${ex.name}</strong><br>
                         <span style="font-size:0.8rem; color:#10b981; font-weight:bold;">Code: ${ex.code}</span> | <span style="font-size:0.8rem; color:#64748b;">⏱ ${ex.timer} Mins</span>
+                        ${expiryText}
                     </div>
                     <div>
                         <i class="fas fa-trash-alt" style="color:#ef4444; padding:5px; cursor:pointer;" onclick="deleteDriveItem(event, 'exam', '${ex.code}')" title="Delete"></i>
@@ -541,9 +526,12 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             
             if (specialFolderId === 0) {
                 // ROOT
-                box.innerHTML += `<button class="modal-btn" onclick="openExamCreator('live')"><i class="fas fa-fire" style="color:#ef4444; font-size:1.2rem;"></i> New Live Exam</button>`;
+                box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('live_session')"><i class="fas fa-fire" style="color:#ef4444; font-size:1.2rem;"></i> New Live Exam Session</button>`;
                 box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('category')"><i class="fas fa-folder" style="color:#f59e0b; font-size:1.2rem;"></i> New Category</button>`;
                 box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('playlist')"><i class="fas fa-list" style="color:#3b82f6; font-size:1.2rem;"></i> New Playlist</button>`;
+            } else if (specialFolderType === 'live_session') {
+                // INSIDE LIVE EXAM SESSION
+                box.innerHTML += `<button class="modal-btn" onclick="openExamCreator('live_session_exam')"><i class="fas fa-file-signature" style="color:#22c55e; font-size:1.2rem;"></i> New Exam in Session</button>`;
             } else if (specialFolderType === 'category') {
                 // INSIDE CATEGORY
                 box.innerHTML += `<button class="modal-btn" onclick="openExamCreator('category')"><i class="fas fa-file-signature" style="color:#22c55e; font-size:1.2rem;"></i> New Exam in Category</button>`;
@@ -559,7 +547,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
         async function createSpecialFolder(type) {
             closeAllModals();
             setTimeout(async () => {
-                const typeName = type === 'category' ? "Category" : "Playlist";
+                const typeName = type === 'live_session' ? "Live Exam Session" : (type === 'category' ? "Category" : "Playlist");
                 const name = prompt(`Enter ${typeName} Name:`);
                 if (name && name.trim() !== "") {
                     await fetch('/api/admin/create-drive-folder', { 
@@ -590,28 +578,28 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             document.getElementById('exam-create-panel').classList.add('active');
             
             let titleText = '';
-            if (examType === 'live') {
-                titleText = '<i class="fas fa-fire" style="color:#ef4444;"></i> Create Live Exam';
-                document.getElementById('group-class-subject').style.display = 'none'; // ক্লাস, সাবজেক্ট লাগবে না
-                document.getElementById('group-expiry').style.display = 'block'; // টাইমার লাগবে
-                document.getElementById('group-season').style.display = 'block'; // সিজন ফিল্ড দেখাবে
-                document.getElementById('exam-folder-name').innerText = "Live Exams (Root)";
+            if (examType === 'live_session_exam') {
+                titleText = '<i class="fas fa-fire" style="color:#ef4444;"></i> Create Exam in Session: ' + specialFolderName;
+                document.getElementById('group-class-subject').style.display = 'none'; 
+                document.getElementById('group-expiry').style.display = 'block'; 
+                document.getElementById('group-season').style.display = 'block'; 
+                document.getElementById('exam-season').value = specialFolderName; // Automatically match folder name as season
+                document.getElementById('exam-folder-name').innerText = specialFolderName;
             } else {
                 titleText = '<i class="fas fa-file-signature" style="color:#22c55e;"></i> Create Folder Exam';
-                document.getElementById('group-class-subject').style.display = 'grid'; // ক্লাস, সাবজেক্ট লাগবে
-                document.getElementById('group-expiry').style.display = 'none'; // টাইমার লাগবে না
-                document.getElementById('group-season').style.display = 'none'; // সিজন লাগবে না
+                document.getElementById('group-class-subject').style.display = 'grid'; 
+                document.getElementById('group-expiry').style.display = 'none'; 
+                document.getElementById('group-season').style.display = 'none'; 
                 document.getElementById('exam-folder-name').innerText = specialFolderName;
             }
             
             document.getElementById('admin-title').innerHTML = titleText;
-            document.getElementById('back-btn').onclick = openSpecialPanel; // Return to Special Manager
+            document.getElementById('back-btn').onclick = openSpecialPanel; 
             
             tempExamQuestions = []; 
-            document.getElementById('exam-code').value = ''; // Reset code
-            document.getElementById('exam-name').value = ''; // Reset name
-            document.getElementById('exam-expiry').value = ''; // Reset Expiry
-            document.getElementById('exam-season').value = ''; // Reset Season
+            document.getElementById('exam-code').value = ''; 
+            document.getElementById('exam-name').value = ''; 
+            document.getElementById('exam-expiry').value = ''; 
             updateAdminUI();
         }
 
@@ -711,14 +699,13 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             
             let className = "General";
             let subject = "General";
-            let season = "";
+            let season = specialFolderName;
             let expiryTime = "";
             let folderIdToSave = specialFolderId;
 
-            if (currentExamCreationType === 'live') {
+            if (currentExamCreationType === 'live_session_exam') {
                 expiryTime = document.getElementById('exam-expiry').value; 
-                season = document.getElementById('exam-season').value.trim() || 'General';
-                folderIdToSave = 0; 
+                season = document.getElementById('exam-season').value.trim() || specialFolderName;
                 if (!expiryTime) {
                     if(!confirm("You did not set an Expiry Time. Exam will be available forever. Continue?")) return;
                 }
@@ -733,7 +720,6 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             submitBtn.disabled = true;
             submitBtn.innerText = "Publishing... ⏳";
 
-            // Saved with admin name/email so it gets blocked in student dashboard filters
             const teacherEmail = "admin"; 
             const teacherName = "Admin";
             
@@ -753,7 +739,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                 
                 const data = await res.json();
                 if(data.success) {
-                    alert(`🎉 Special Exam created successfully!`); 
+                    alert(`🎉 Special Exam created successfully in session!`); 
                     openSpecialPanel(); 
                 } else { alert("Failed to publish exam: " + data.error); }
             } catch(e) { alert("Server error."); }
