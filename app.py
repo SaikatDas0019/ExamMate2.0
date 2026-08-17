@@ -1502,6 +1502,25 @@ def update_special_exam_api():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/force-delete/<exam_code>')
+def force_delete_exam(exam_code):
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        # এক্সামের সাথে সম্পর্কিত সমস্ত ডেটা (প্রশ্ন, রেজাল্ট, খাতা এবং মূল এক্সাম) পার্মানেন্টলি ডিলিট করা হচ্ছে
+        cursor.execute(f"DELETE FROM questions WHERE exam_code = {ph}", (exam_code,))
+        cursor.execute(f"DELETE FROM results WHERE exam_code = {ph}", (exam_code,))
+        cursor.execute(f"DELETE FROM subjective_answers WHERE exam_code = {ph}", (exam_code,))
+        cursor.execute(f"DELETE FROM exams WHERE exam_code = {ph}", (exam_code,))
+        
+        conn.commit()
+        conn.close()
+        return f"<h3>success! Exam code '{exam_code}' and all its related data have been permanently deleted from database.</h3>"
+    except Exception as e:
+        return f"<h3>Error: {str(e)}</h3>"
+        
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
