@@ -42,6 +42,12 @@
         .live-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.2); color: #ffffff; border: 1px solid rgba(255,255,255,0.5); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; animation: pulseRed 1.5s infinite;}
         @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
+        /* Unique Segmented Timer Styles */
+        .segmented-timer { display: flex; gap: 6px; margin: 8px 0 12px 0; }
+        .timer-box { background: rgba(0, 0, 0, 0.35); padding: 6px 8px; border-radius: 8px; text-align: center; min-width: 38px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(4px); }
+        .timer-digits { font-size: 1rem; font-weight: 900; line-height: 1.1; color: #ffffff; }
+        .timer-label { font-size: 0.55rem; opacity: 0.85; text-transform: uppercase; margin-top: 2px; font-weight: 700; letter-spacing: 0.5px; }
+
         .special-folders-scroll { display: flex; overflow-x: auto; gap: 15px; padding: 10px 20px 20px 20px; scrollbar-width: none; }
         .special-folders-scroll::-webkit-scrollbar { display: none; }
         .special-folder {
@@ -173,6 +179,7 @@
             }
 
             await openSpecialExams();
+            startGlobalCountdowns();
         };
 
         async function openSpecialExams() {
@@ -225,7 +232,7 @@
                     const examsInSession = sessionsMap[seasonName];
                     const bg = getRandomGradient();
 
-                    // Sequential unlocking logic: Find the first unattempted or non-expired exam in sequence
+                    // Sequential unlocking logic
                     let activeExam = null;
                     for (let i = 0; i < examsInSession.length; i++) {
                         let ex = examsInSession[i];
@@ -235,26 +242,22 @@
                             if (expDate <= now) isExpired = true;
                         }
 
-                        // If not attempted and not expired, this is our active exam
                         if (!ex.is_attempted && !isExpired) {
                             activeExam = ex;
                             break;
                         }
-                        // If it's attempted, move to the next in series. 
-                        // If it's expired and not attempted, we can also check subsequent exams so users can access active ones in the series.
                         if (ex.is_attempted && i === examsInSession.length - 1) {
-                            activeExam = ex; // all completed, point to the last one
+                            activeExam = ex;
                         }
                     }
 
                     if (!activeExam && examsInSession.length > 0) {
-                        // Fallback to the very first or last if all done
                         activeExam = examsInSession.find(ex => !ex.is_attempted) || examsInSession[examsInSession.length - 1];
                     }
 
                     let actionBtnHtml = '';
                     let isCurrentExpired = false;
-                    let timerDisplayHtml = '';
+                    let expiryAttr = '';
 
                     if (activeExam) {
                         if (activeExam.expiry_time && activeExam.expiry_time !== "None") {
@@ -262,14 +265,8 @@
                             if (expDate <= now) {
                                 isCurrentExpired = true;
                             } else {
-                                // Calculate timer remaining text
-                                let diffMs = expDate - now;
-                                let diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-                                let diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                                timerDisplayHtml = `<div style="font-size:0.8rem; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; display:inline-block; margin-bottom:8px;"><i class="fas fa-clock"></i> Ends in: ${diffHrs}h ${diffMins}m</div>`;
+                                expiryAttr = activeExam.expiry_time.replace(' ', 'T');
                             }
-                        } else {
-                            timerDisplayHtml = `<div style="font-size:0.8rem; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; display:inline-block; margin-bottom:8px;"><i class="fas fa-clock"></i> Timer: ${activeExam.timer} Mins</div>`;
                         }
                     }
 
@@ -279,13 +276,28 @@
                         actionBtnHtml = `<button onclick="event.stopPropagation(); window.location.href='/season_analytics.html?season=' + encodeURIComponent('${seasonName}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Session Analytics 📊</button>`;
                     }
 
+                    // Unique Segmented Countdown Timer Box HTML
+                    let timerBoxHtml = '';
+                    if (expiryAttr && !isCurrentExpired) {
+                        timerBoxHtml = `
+                        <div style="font-size: 0.75rem; margin-bottom: 4px; opacity: 0.9; font-weight: 600;"><i class="fas fa-clock"></i> Time Remaining:</div>
+                        <div class="segmented-timer" data-expiry="${expiryAttr}">
+                            <div class="timer-box"><div class="timer-digits t-days">00</div><div class="timer-label">Days</div></div>
+                            <div class="timer-box"><div class="timer-digits t-hours">00</div><div class="timer-label">Hours</div></div>
+                            <div class="timer-box"><div class="timer-digits t-mins">00</div><div class="timer-label">Mins</div></div>
+                            <div class="timer-box"><div class="timer-digits t-secs">00</div><div class="timer-label">Secs</div></div>
+                        </div>`;
+                    } else {
+                        timerBoxHtml = `<div style="font-size:0.85rem; background:rgba(0,0,0,0.25); padding:6px 12px; border-radius:8px; display:inline-block; margin-bottom:10px; font-weight:bold;">⌛ Session / Exam Expired</div>`;
+                    }
+
                     liveHtml += `
                     <div class="live-banner-card" style="background: ${bg};" onclick="window.location.href='/season_analytics.html?season=' + encodeURIComponent('${seasonName}')">
                         <div>
                             <div class="live-badge"><i class="fas fa-circle"></i> Live Session</div><br>
-                            <h3 style="margin:0 0 4px 0; font-size:1.4rem; font-weight:800;">${seasonName}</h3>
-                            <p style="margin:0 0 8px 0; font-size:0.85rem; color:rgba(255,255,255,0.9);">Total Exams in Session: ${examsInSession.length}</p>
-                            ${timerDisplayHtml}
+                            <h3 style="margin:0 0 4px 0; font-size:1.3rem; font-weight:800;">${seasonName}</h3>
+                            <p style="margin:0 0 8px 0; font-size:0.8rem; color:rgba(255,255,255,0.9);">Exams in Session: ${examsInSession.length}</p>
+                            ${timerBoxHtml}
                         </div>
                         <div>
                             ${actionBtnHtml}
@@ -330,6 +342,40 @@
             document.getElementById('past-special-playlists').innerHTML = playlistHtml;
         }
 
+        // Live Countdown Global Interval Function
+        function startGlobalCountdowns() {
+            setInterval(() => {
+                const timers = document.querySelectorAll('.segmented-timer');
+                const now = new Date();
+                timers.forEach(timerEl => {
+                    const expiryStr = timerEl.getAttribute('data-expiry');
+                    if (!expiryStr) return;
+                    const expDate = new Date(expiryStr);
+                    let diffMs = expDate - now;
+
+                    if (diffMs <= 0) {
+                        timerEl.innerHTML = '<div style="font-size:0.85rem; font-weight:bold; background:rgba(239,68,68,0.35); padding:6px 12px; border-radius:8px; text-align:center;">⌛ Expired</div>';
+                        return;
+                    }
+
+                    let days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    let hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    let mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    let secs = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+                    const dEl = timerEl.querySelector('.t-days');
+                    const hEl = timerEl.querySelector('.t-hours');
+                    const mEl = timerEl.querySelector('.t-mins');
+                    const sEl = timerEl.querySelector('.t-secs');
+
+                    if (dEl) dEl.innerText = String(days).padStart(2, '0');
+                    if (hEl) hEl.innerText = String(hours).padStart(2, '0');
+                    if (mEl) mEl.innerText = String(mins).padStart(2, '0');
+                    if (sEl) sEl.innerText = String(secs).padStart(2, '0');
+                });
+            }, 1000);
+        }
+
         async function openPlaylistModal(folderId, folderName) {
             document.getElementById('playlist-modal-title').innerText = folderName;
             const container = document.getElementById('playlist-exams-list');
@@ -351,8 +397,7 @@
                         return;
                     }
                     
-                    // Sorting playlist exams sequentially to handle series/sessions properly
-                    const sortedExams = [...data.exams].sort((a, b) => new Date(a.created_at || 0) - newDate(b.created_at || 0));
+                    const sortedExams = [...data.exams].sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
 
                     let html = '<div style="padding-top:5px;">';
                     sortedExams.forEach((ex, idx) => {
@@ -363,7 +408,6 @@
                             if (expDate <= now) isExpired = true;
                         }
 
-                        // Determine if previous exam in series is attempted or expired so this one unlocks
                         let isUnlocked = true;
                         if (idx > 0) {
                             let prevEx = sortedExams[idx - 1];
@@ -372,7 +416,6 @@
                                 let pExpDate = new Date(prevEx.expiry_time.replace(' ', 'T'));
                                 if (pExpDate <= now) prevExpired = true;
                             }
-                            // Unlocked if previous is attempted OR previous is expired
                             if (!prevEx.is_attempted && !prevExpired) {
                                 isUnlocked = false;
                             }
