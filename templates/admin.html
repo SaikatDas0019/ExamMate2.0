@@ -29,6 +29,7 @@
         
         .card-notif .card-icon { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
         .card-special .card-icon { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); }
+        .card-users .card-icon { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
         
         .card-info h3 { margin: 0 0 4px 0; font-size: 1.1rem; color: #1e293b; }
         .card-info p { margin: 0; font-size: 0.85rem; color: #64748b; }
@@ -85,6 +86,14 @@
         .hidden { display: none !important; }
         
         .section-title { font-size: 1rem; color: #1e293b; margin-top: 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+
+        /* User Table Styles */
+        .users-table-container { width: 100%; overflow-x: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; }
+        .users-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .users-table th, .users-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .users-table th { background-color: #f8fafc; color: #334155; font-weight: bold; }
+        .user-name-box { display: flex; flex-direction: column; }
+        .user-name-box .email { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -97,20 +106,21 @@
 
         <div id="dashboard-menu">
             <div class="admin-grid">
-                <!-- 1. NOTIFICATIONS -->
                 <div class="admin-card card-notif" onclick="openPanel('notif-panel', '📢 Notifications')">
                     <div class="card-icon"><i class="fas fa-bell"></i></div>
                     <div class="card-info"><h3>Notifications</h3><p>Send, Edit or Delete alerts</p></div>
                 </div>
-                <!-- 2. SPECIAL (Live Sessions, Categories, Playlists) -->
                 <div class="admin-card card-special" onclick="openSpecialPanel()">
                     <div class="card-icon"><i class="fas fa-trophy"></i></div>
                     <div class="card-info"><h3>Special Section</h3><p>Manage Live Sessions, Categories & Playlists</p></div>
                 </div>
+                <div class="admin-card card-users" onclick="openUsersPanel()">
+                    <div class="card-icon"><i class="fas fa-users"></i></div>
+                    <div class="card-info"><h3>Users List</h3><p>View all registered app users</p></div>
+                </div>
             </div>
         </div>
 
-        <!-- NOTIFICATION PANEL -->
         <div id="notif-panel" class="panel-view">
             <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: bold; color: #334155;">
                 <label>Target Audience:</label>
@@ -126,7 +136,27 @@
             </div>
         </div>
 
-        <!-- SPECIAL MANAGER PANEL -->
+        <div id="users-panel" class="panel-view">
+            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.9rem; color: #64748b; font-weight: bold;" id="users-count-text">Total Users: 0</span>
+                <button onclick="loadUsersList()" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: #334155;"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="users-table-container">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name & Email</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <tr><td colspan="3" style="text-align:center; color:#94a3b8;">Loading users...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div id="special-panel" class="panel-view">
             <div class="drive-breadcrumb" id="special-breadcrumb">
                 <i class="fas fa-star"></i> <span id="special-path">Special Root</span>
@@ -136,7 +166,6 @@
                 <i class="fas fa-level-up-alt"></i> Go Back
             </button>
 
-            <!-- ROOT VIEW -->
             <div id="special-root-view">
                 <h3 class="section-title"><i class="fas fa-fire" style="color:#ef4444;"></i> Live Exam Sessions</h3>
                 <div class="drive-grid" id="special-live-sessions-list"></div>
@@ -148,7 +177,6 @@
                 <div class="drive-grid" id="special-playlists-list"></div>
             </div>
 
-            <!-- FOLDER VIEW (Inside Live Session, Category or Playlist) -->
             <div id="special-folder-view" style="display:none;">
                 <div id="sub-category-section" style="display:none;">
                     <h3 class="section-title"><i class="fas fa-folder-open" style="color:#f59e0b;"></i> Sub-Categories</h3>
@@ -162,7 +190,6 @@
             <div class="fab-plus" onclick="openSpecialPlusModal()"><i class="fas fa-plus"></i></div>
         </div>
 
-        <!-- EXAM CREATOR / EDITOR PANEL -->
         <div id="exam-create-panel" class="panel-view">
             <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #d97706; font-weight: bold;">
                 <i class="fas fa-info-circle"></i> Location: <span id="exam-folder-name"></span>
@@ -273,7 +300,6 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
 
     </div>
 
-    <!-- Plus Modal -->
     <div class="modal-overlay" id="plus-modal">
         <div class="modal-box">
             <div class="modal-title">Create Item</div>
@@ -289,7 +315,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
         
         let tempExamQuestions = [];
         let currentExamCreationType = 'live_session_exam'; 
-        let isEditingExam = false; // এডিট মোড ট্র্যাক করার জন্য
+        let isEditingExam = false;
 
         function copyPrompt(textId, btnId) {
             const promptText = document.getElementById(textId).innerText;
@@ -319,6 +345,55 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             if (panelId === 'notif-panel') loadNotifications();
         }
 
+        // ================= USERS LIST PANEL LOGIC (NEW) =================
+        function openUsersPanel() {
+            document.getElementById('dashboard-menu').style.display = 'none';
+            document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
+            document.getElementById('users-panel').classList.add('active');
+            document.getElementById('admin-title').innerHTML = '<i class="fas fa-users"></i> Users List';
+            document.getElementById('back-btn').style.display = 'block';
+            document.getElementById('back-btn').onclick = showDashboardMenu;
+            loadUsersList();
+        }
+
+        async function loadUsersList() {
+            const tbody = document.getElementById('users-table-body');
+            const countText = document.getElementById('users-count-text');
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#94a3b8;">Loading users...</td></tr>';
+            
+            try {
+                const res = await fetch('/api/admin/get-users-list', { method: 'GET' });
+                const data = await res.json();
+                if(data.success) {
+                    countText.innerText = `Total Users: ${data.users.length}`;
+                    if(data.users.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#94a3b8;">No users registered yet.</td></tr>';
+                        return;
+                    }
+                    let html = '';
+                    data.users.forEach((u, i) => {
+                        let roleBadgeColor = u.role.toLowerCase() === 'teacher' ? '#3b82f6' : '#10b981';
+                        html += `
+                        <tr>
+                            <td><strong>${i+1}</strong></td>
+                            <td>
+                                <div class="user-name-box">
+                                    <strong>${u.name}</strong>
+                                    <span class="email">${u.email}</span>
+                                </div>
+                            </td>
+                            <td><span style="background:${roleBadgeColor}15; color:${roleBadgeColor}; padding:4px 8px; border-radius:6px; font-weight:bold; font-size:0.75rem;">${u.role}</span></td>
+                        </tr>`;
+                    });
+                    tbody.innerHTML = html;
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#ef4444;">Failed to load users.</td></tr>';
+                }
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#ef4444;">Server error.</td></tr>';
+            }
+        }
+
         async function loadNotifications() {
             const feed = document.getElementById('chat-feed');
             feed.innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading...</p>';
@@ -338,7 +413,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                                     ${n.message}
                                 </div>
                                 <div class="msg-actions" id="notif-action-${n.id}">
-                                    <button class="btn-edit-notif" onclick="editNotification(${n.id}, '${n.message.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i> Edit</button>
+                                    <button class="btn-edit-notif" onclick="editNotification(${n.id}, '${n.message.replace(/'/g, "\\'")}', '${n.link_url || ''}')"><i class="fas fa-pen"></i> Edit</button>
                                     <div style="width:1px; background:#e2e8f0; height:15px;"></div>
                                     <button class="btn-del-notif" onclick="deleteNotification(${n.id})"><i class="fas fa-trash"></i> Delete</button>
                                 </div>
@@ -551,13 +626,10 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             }
         }
 
-        // ==========================================
-        // EXAM CREATION & EDITING LOGIC
-        // ==========================================
         function openExamCreator(examType) {
             closeAllModals(); 
             currentExamCreationType = examType;
-            isEditingExam = false; // নতুন ক্রিয়েট মোড
+            isEditingExam = false; 
             
             document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
             document.getElementById('exam-create-panel').classList.add('active');
@@ -592,7 +664,6 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             updateAdminUI();
         }
 
-        // এক্সাম এডিট করার ফাংশন
         async function editExam(examCode) {
             try {
                 const res = await fetch('/api/get-exam-questions', {
@@ -608,10 +679,9 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                     document.getElementById('back-btn').style.display = 'block';
                     document.getElementById('back-btn').onclick = openSpecialPanel;
 
-                    // ফর্ম ফিল্ডগুলো প্রি-ফিল আপ করা হচ্ছে
                     document.getElementById('exam-name').value = data.exam_name;
                     document.getElementById('exam-code').value = examCode;
-                    document.getElementById('exam-code').disabled = true; // কোড পরিবর্তন করা যাবে না
+                    document.getElementById('exam-code').disabled = true; 
                     document.getElementById('exam-timer').value = data.timer_minutes;
                     document.getElementById('exam-negative').value = data.negative_marks || 0;
                     
@@ -632,7 +702,6 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                     document.getElementById('exam-class').value = data.class_name || 'General';
                     document.getElementById('exam-subject').value = data.subject || 'General';
                     
-                    // প্রশ্নগুলো লোড করা
                     tempExamQuestions = data.questions.map(q => ({
                         question_text: q.q_text,
                         option_a: q.opt_a,
@@ -776,7 +845,6 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             };
 
             try {
-                // এডিট মোড হলে আপডেট এপিআই এবং নতুন হলে ক্রিয়েট এপিআই কল হবে
                 const endpoint = isEditingExam ? '/api/admin/update-special-exam' : '/api/admin/create-special-exam';
                 const res = await fetch(endpoint, { 
                     method: 'POST', 
