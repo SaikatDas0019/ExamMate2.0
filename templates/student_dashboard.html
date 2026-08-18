@@ -107,6 +107,7 @@
         .action-left { display: flex; gap: 15px; }
         .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: color 0.15s; padding: 0; }
         .action-btn span { font-size: 0.8rem; font-weight: 600; }
+        .action-btn:hover { color: #3b82f6; }
         .like-active { color: #ef4444 !important; }
         .save-active { color: #f59e0b !important; }
 
@@ -129,6 +130,18 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(234, 88, 12, 0.6); }
         }
+
+        /* SHARE MODAL CSS */
+        .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
+        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.25s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
+        .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
+        .share-buttons i { font-size: 2.2rem; }
+        .share-buttons .fa-whatsapp { color: #25D366; }
+        .share-buttons .fa-telegram { color: #0088cc; }
+        .share-buttons .fa-copy { color: #64748b; }
+        .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; font-size: 1rem;}
 
         /* RESULT MODAL CSS */
         .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
@@ -182,7 +195,6 @@
 <body>
 
     <div class="container">
-        <!-- SMART HEADER -->
         <div class="fixed-top-section" id="smart-header">
             <div class="sticky-header">
                 <div class="profile-left" onclick="window.location.href='/student_profile.html'">
@@ -220,7 +232,6 @@
             </div>
         </div>
 
-        <!-- FEED CONTAINER -->
         <div class="feed-container" id="exam-feed">
             <div class="skeleton-card">
                 <div class="skeleton-line" style="width: 50%;"></div>
@@ -230,12 +241,22 @@
         </div>
     </div>
 
-    <!-- 🔥 FLOATING BUTTON FOR SPECIAL EXAMS -->
     <div class="fab-special" onclick="window.location.href='/special_exams.html'">
         <i class="fas fa-trophy"></i>
     </div>
 
-    <!-- Main Results Modal -->
+    <div class="modal-overlay-share" id="custom-share-modal">
+        <div class="share-sheet">
+            <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
+            <div class="share-buttons">
+                <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
+                <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
+            </div>
+            <button class="btn-cancel" onclick="closeShareModal()">Cancel</button>
+        </div>
+    </div>
+
     <div class="score-modal-overlay" id="detailed-result-modal">
         <div class="score-modal-box">
             <div class="modal-header-fixed">
@@ -429,6 +450,9 @@
                             <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')">
                                 <i class="${heartClass}"></i> <span>${ex.likes}</span>
                             </button>
+                            <button class="action-btn" onclick="triggerCustomShare('${ex.name.replace(/'/g, "\\'")}', '${ex.code}')">
+                                <i class="far fa-share-square"></i> <span>Share</span>
+                            </button>
                         </div>
                         <button class="action-btn" id="save-btn-${ex.code}" onclick="toggleSocialAction(this, '${ex.code}', 'save')">
                             <i class="${saveClass}"></i>
@@ -438,6 +462,30 @@
                 </div>`;
             });
             container.innerHTML = htmlContent;
+        }
+
+        // ================= SHARE FEATURE LOGIC =================
+        let currentShareData = {};
+        function triggerCustomShare(examName, examCode) {
+            const baseUrl = window.location.origin; 
+            const examLink = `${baseUrl}/student_exam.html?code=${examCode}`;
+            const shareText = `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n`;
+            currentShareData = { title: `ExamMate - ${examName}`, text: shareText, url: examLink };
+            document.getElementById('custom-share-modal').style.display = 'flex';
+        }
+        function closeShareModal() { document.getElementById('custom-share-modal').style.display = 'none'; }
+        function shareVia(platform) {
+            const fullText = encodeURIComponent(currentShareData.text + currentShareData.url);
+            const urlOnly = encodeURIComponent(currentShareData.url);
+            let shareUrl = '';
+            if(platform === 'whatsapp') { shareUrl = `https://api.whatsapp.com/send?text=${fullText}`; window.open(shareUrl, '_blank'); } 
+            else if(platform === 'telegram') { shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`; window.open(shareUrl, '_blank'); }
+            closeShareModal();
+        }
+        function copyShareLink() {
+            navigator.clipboard.writeText(currentShareData.text + currentShareData.url).then(() => {
+                alert("✅ Exam link and details copied successfully!"); closeShareModal();
+            }).catch(() => { alert("Failed to copy."); });
         }
 
         function accessPrivateExam(actualCode) {
@@ -493,7 +541,7 @@
             container.innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Fetching your answers...</p>';
             document.getElementById('dr-title').innerText = name + " - Result";
             document.getElementById('detailed-result-modal').style.display = 'flex';
-            window.history.pushState({modalOpen: true}, "", window.location.href);
+            window.history.replaceState({modalOpen: true}, "", window.location.href);
 
             const userEmail = localStorage.getItem('userEmail') || "Guest Account";
 
@@ -600,7 +648,10 @@
         // PERFECT BACK BUTTON & MODAL SYNC
         window.addEventListener('popstate', function (event) {
             const drModal = document.getElementById('detailed-result-modal');
-            if(drModal.style.display === 'flex') {
+            const shareModal = document.getElementById('custom-share-modal');
+            if(shareModal && shareModal.style.display === 'flex') {
+                closeShareModal();
+            } else if(drModal && drModal.style.display === 'flex') {
                 drModal.style.display = 'none';
             } else {
                 if (document.referrer) { window.history.back(); } 
