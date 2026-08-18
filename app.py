@@ -1515,6 +1515,35 @@ def get_users_list():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/admin/get-all-exams', methods=['GET'])
+def admin_get_all_exams():
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT e.*, u.name as teacher_name 
+            FROM exams e 
+            LEFT JOIN users u ON e.teacher_email = u.email 
+            ORDER BY e.created_at DESC
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        exams_list = []
+        for r in rows:
+            exams_list.append({
+                "code": r["exam_code"],
+                "name": r["exam_name"],
+                "teacher_name": r["teacher_name"] or "Teacher",
+                "class_name": r.get("class_name", "General"),
+                "subject": r.get("subject", "General"),
+                "timer": r["timer_minutes"],
+                "is_private": r.get("is_private", False),
+                "date": str(r["created_at"]).split()[0] if r.get("created_at") else "Recently"
+            })
+        return jsonify({"success": True, "exams": exams_list})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
