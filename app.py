@@ -1502,6 +1502,19 @@ def update_special_exam_api():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/admin/get-users-list', methods=['GET'])
+def get_users_list():
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT name, email, category FROM users ORDER BY name ASC")
+        rows = cursor.fetchall()
+        conn.close()
+        users_list = [{"name": r["name"] if isinstance(r, dict) else r[0], "email": r["email"] if isinstance(r, dict) else r[1], "role": r["category"] if isinstance(r, dict) else r[2]} for r in rows]
+        return jsonify({"success": True, "users": users_list})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
