@@ -30,6 +30,7 @@
         .card-notif .card-icon { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
         .card-special .card-icon { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); }
         .card-users .card-icon { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .card-exams .card-icon { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
         
         .card-info h3 { margin: 0 0 4px 0; font-size: 1.1rem; color: #1e293b; }
         .card-info p { margin: 0; font-size: 0.85rem; color: #64748b; }
@@ -94,6 +95,15 @@
         .users-table th { background-color: #f8fafc; color: #334155; font-weight: bold; }
         .user-name-box { display: flex; flex-direction: column; }
         .user-name-box .email { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+
+        /* Admin Feed Card Styles for Exams */
+        .admin-feed-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .admin-feed-title { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin: 0 0 6px 0; }
+        .admin-feed-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+        .admin-feed-tag { background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; }
+        .admin-feed-actions { display: flex; gap: 10px; margin-top: 12px; border-top: 1px solid #f1f5f9; padding-top: 12px; }
+        .btn-admin-view { flex: 1; background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; padding: 10px; border-radius: 10px; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
+        .btn-admin-del { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 10px 15px; border-radius: 10px; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -117,6 +127,10 @@
                 <div class="admin-card card-users" onclick="openUsersPanel()">
                     <div class="card-icon"><i class="fas fa-users"></i></div>
                     <div class="card-info"><h3>Users List</h3><p>View all registered app users</p></div>
+                </div>
+                <div class="admin-card card-exams" onclick="openExamsPanel()">
+                    <div class="card-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="card-info"><h3>Total Exams</h3><p>View, search and delete all app exams</p></div>
                 </div>
             </div>
         </div>
@@ -154,6 +168,16 @@
                         <tr><td colspan="3" style="text-align:center; color:#94a3b8;">Loading users...</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div id="exams-panel" class="panel-view">
+            <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+                <input type="text" id="admin-exam-search" class="form-group input" style="flex:1; margin-bottom:0;" placeholder="Search exams by name, code, subject..." oninput="filterAdminExams()">
+                <button onclick="loadAdminExams()" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 0 15px; border-radius: 10px; cursor: pointer; font-weight: bold; color: #334155;"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <div id="admin-exams-container" style="flex: 1; overflow-y: auto; max-height: calc(100vh - 160px);">
+                <p style="text-align:center; color:#94a3b8; padding:20px;">Loading exams...</p>
             </div>
         </div>
 
@@ -307,15 +331,21 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
         </div>
     </div>
 
+    <div class="modal-overlay" id="admin-vq-modal" onclick="if(event.target.id==='admin-vq-modal') document.getElementById('admin-vq-modal').style.display='none'">
+        <div class="modal-box" style="width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto;">
+            <div class="modal-title" id="admin-vq-title">Exam Questions</div>
+            <div id="admin-vq-container"></div>
+            <button class="modal-btn" style="background: #ef4444; color: white; justify-content: center; border: none; margin-top: 15px;" onclick="document.getElementById('admin-vq-modal').style.display='none'">Close ✖</button>
+        </div>
+    </div>
+
     <script>
         let specialFolderHistory = [];
         let specialFolderId = 0;
         let specialFolderName = 'Special Root';
         let specialFolderType = 'root'; 
         
-        let tempExamQuestions = [];
-        let currentExamCreationType = 'live_session_exam'; 
-        let isEditingExam = false;
+        let allAdminExams = [];
 
         function copyPrompt(textId, btnId) {
             const promptText = document.getElementById(textId).innerText;
@@ -345,7 +375,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             if (panelId === 'notif-panel') loadNotifications();
         }
 
-        // ================= USERS LIST PANEL LOGIC (NEW) =================
+        // ================= USERS LIST PANEL LOGIC =================
         function openUsersPanel() {
             document.getElementById('dashboard-menu').style.display = 'none';
             document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
@@ -394,6 +424,128 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
             }
         }
 
+        // ================= TOTAL EXAMS PANEL LOGIC =================
+        function openExamsPanel() {
+            document.getElementById('dashboard-menu').style.display = 'none';
+            document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
+            document.getElementById('exams-panel').classList.add('active');
+            document.getElementById('admin-title').innerHTML = '<i class="fas fa-file-alt"></i> Total Exams';
+            document.getElementById('back-btn').style.display = 'block';
+            document.getElementById('back-btn').onclick = showDashboardMenu;
+            loadAdminExams();
+        }
+
+        async function loadAdminExams() {
+            const container = document.getElementById('admin-exams-container');
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Loading exams...</p>';
+            try {
+                const res = await fetch('/api/admin/get-all-exams', { method: 'GET' });
+                const data = await res.json();
+                if(data.success) {
+                    allAdminExams = data.exams;
+                    renderAdminExams(allAdminExams);
+                } else {
+                    container.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Failed to load exams.</p>';
+                }
+            } catch(e) {
+                container.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Server error.</p>';
+            }
+        }
+
+        function filterAdminExams() {
+            const query = document.getElementById('admin-exam-search').value.toLowerCase().trim();
+            const filtered = allAdminExams.filter(ex => 
+                ex.name.toLowerCase().includes(query) || 
+                ex.code.toLowerCase().includes(query) || 
+                ex.subject.toLowerCase().includes(query) ||
+                ex.teacher_name.toLowerCase().includes(query)
+            );
+            renderAdminExams(filtered);
+        }
+
+        function renderAdminExams(exams) {
+            const container = document.getElementById('admin-exams-container');
+            if(exams.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">No exams found.</p>';
+                return;
+            }
+            let html = '';
+            exams.forEach(ex => {
+                html += `
+                <div class="admin-feed-card" id="admin-exam-${ex.code}">
+                    <div class="admin-feed-title">${ex.name} ${ex.is_private ? '🔒' : ''}</div>
+                    <div class="admin-feed-tags">
+                        <span class="admin-feed-tag"><i class="fas fa-key"></i> Code: ${ex.code}</span>
+                        <span class="admin-feed-tag"><i class="fas fa-chalkboard-teacher"></i> ${ex.teacher_name}</span>
+                        <span class="admin-feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name}</span>
+                        <span class="admin-feed-tag"><i class="fas fa-book"></i> ${ex.subject}</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:#64748b; margin-bottom:5px;">
+                        <span><i class="fas fa-clock"></i> ${ex.timer} Mins</span> | <span>Posted: ${ex.date}</span>
+                    </div>
+                    <div class="admin-feed-actions">
+                        <button class="btn-admin-view" onclick="adminViewQuestions('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')"><i class="fas fa-eye"></i> View Q&A</button>
+                        <button class="btn-admin-del" onclick="adminDeleteExam('${ex.code}')"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        async function adminViewQuestions(code, name) {
+            const container = document.getElementById('admin-vq-container');
+            container.innerHTML = '<p style="text-align:center; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading questions...</p>';
+            document.getElementById('admin-vq-title').innerText = name;
+            document.getElementById('admin-vq-modal').style.display = 'flex';
+
+            try {
+                const response = await fetch('/api/get-exam-questions', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_code: code })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    let html = '';
+                    data.questions.forEach((q, idx) => {
+                        let maxMarks = q.max_marks || (q.question_type === 'mcq' ? 1.0 : 5.0);
+                        html += `
+                        <div class="q-card" style="font-size:0.9rem;">
+                            <strong>Q${idx + 1}: ${q.q_text}</strong> <span style="font-size:0.8rem; color:#64748b;">(Marks: ${maxMarks})</span><br>
+                            <div style="margin-top:5px; font-size:0.85rem; color:#475569;">
+                                A) ${q.opt_a || 'N/A'}<br>B) ${q.opt_b || 'N/A'}<br>C) ${q.opt_c || 'N/A'}<br>D) ${q.opt_d || 'N/A'}
+                            </div>
+                            <div style="margin-top:6px; color:#10b981; font-weight:bold;">🎯 Correct Answer: ${q.correct || 'Subjective'}</div>
+                        </div>`;
+                    });
+                    container.innerHTML = html;
+                    if (window.MathJax) { MathJax.typesetPromise([container]).catch(err => console.log(err)); }
+                } else { container.innerHTML = '<p style="color:#ef4444; text-align:center;">Failed to load questions.</p>'; }
+            } catch(e) { container.innerHTML = '<p style="color:#ef4444; text-align:center;">Error fetching questions.</p>'; }
+        }
+
+        async function adminDeleteExam(code) {
+            if(confirm(`Are you sure you want to delete exam '${code}'?`)) {
+                try {
+                    const res = await fetch('/api/teacher-delete-exam', {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ exam_code: code })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        alert("Exam deleted successfully!");
+                        allAdminExams = allAdminExams.filter(e => e.code !== code);
+                        renderAdminExams(allAdminExams);
+                    } else {
+                        alert("Failed to delete exam.");
+                    }
+                } catch(e) {
+                    alert("Server error.");
+                }
+            }
+        }
+
+        // ================= NOTIFICATION PANEL LOGIC =================
         async function loadNotifications() {
             const feed = document.getElementById('chat-feed');
             feed.innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading...</p>';
@@ -443,6 +595,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
         function toggleNotifMenu(id) { const menu = document.getElementById(`notif-action-${id}`); menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex'; }
         async function deleteNotification(id) { if(confirm("Delete this notification?")) { await fetch('/api/admin/delete-notification', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: id }) }); loadNotifications(); } }
 
+        // ================= SPECIAL SECTION LOGIC =================
         function openSpecialPanel() {
             document.getElementById('dashboard-menu').style.display = 'none';
             document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
@@ -550,7 +703,6 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                         ${expiryText}
                     </div>
                     <div style="display:flex; gap:8px; align-items:center;">
-                        <i class="fas fa-pen" style="color:#3b82f6; padding:5px; cursor:pointer;" onclick="editExam('${ex.code}')" title="Edit Exam"></i>
                         <i class="fas fa-trash-alt" style="color:#ef4444; padding:5px; cursor:pointer;" onclick="deleteDriveItem(event, 'exam', '${ex.code}')" title="Delete"></i>
                     </div>
                 </div>`;
@@ -591,13 +743,8 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                 box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('live_session')"><i class="fas fa-fire" style="color:#ef4444; font-size:1.2rem;"></i> New Live Exam Session</button>`;
                 box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('category')"><i class="fas fa-folder" style="color:#f59e0b; font-size:1.2rem;"></i> New Category</button>`;
                 box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('playlist')"><i class="fas fa-list" style="color:#3b82f6; font-size:1.2rem;"></i> New Playlist</button>`;
-            } else if (specialFolderType === 'live_session') {
-                box.innerHTML += `<button class="modal-btn" onclick="openExamCreator('live_session_exam')"><i class="fas fa-file-signature" style="color:#22c55e; font-size:1.2rem;"></i> New Exam in Session</button>`;
             } else if (specialFolderType === 'category') {
-                box.innerHTML += `<button class="modal-btn" onclick="openExamCreator('category')"><i class="fas fa-file-signature" style="color:#22c55e; font-size:1.2rem;"></i> New Exam in Category</button>`;
                 box.innerHTML += `<button class="modal-btn" onclick="createSpecialFolder('category')"><i class="fas fa-folder-plus" style="color:#f59e0b; font-size:1.2rem;"></i> New Sub-Category</button>`;
-            } else if (specialFolderType === 'playlist') {
-                box.innerHTML += `<button class="modal-btn" onclick="openExamCreator('playlist')"><i class="fas fa-file-signature" style="color:#22c55e; font-size:1.2rem;"></i> New Exam in Playlist</button>`;
             }
             
             box.innerHTML += `<button class="modal-btn" style="color:#ef4444; justify-content: center; margin-top: 15px; border-color: #fca5a5; background: #fef2f2;" onclick="closeAllModals()">Cancel</button>`;
@@ -625,244 +772,7 @@ Note: Enclose all numbers, math formulas and variables strictly inside single do
                 loadSpecialContents(); 
             }
         }
-
-        function openExamCreator(examType) {
-            closeAllModals(); 
-            currentExamCreationType = examType;
-            isEditingExam = false; 
-            
-            document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
-            document.getElementById('exam-create-panel').classList.add('active');
-            
-            let titleText = '';
-            if (examType === 'live_session_exam') {
-                titleText = '<i class="fas fa-fire" style="color:#ef4444;"></i> Create Exam in Session: ' + specialFolderName;
-                document.getElementById('group-class-subject').style.display = 'none'; 
-                document.getElementById('group-expiry').style.display = 'block'; 
-                document.getElementById('group-season').style.display = 'block'; 
-                document.getElementById('exam-season').value = specialFolderName; 
-                document.getElementById('exam-folder-name').innerText = specialFolderName;
-            } else {
-                titleText = '<i class="fas fa-file-signature" style="color:#22c55e;"></i> Create Folder Exam';
-                document.getElementById('group-class-subject').style.display = 'grid'; 
-                document.getElementById('group-expiry').style.display = 'none'; 
-                document.getElementById('group-season').style.display = 'none'; 
-                document.getElementById('exam-folder-name').innerText = specialFolderName;
-            }
-            
-            document.getElementById('admin-title').innerHTML = titleText;
-            document.getElementById('back-btn').onclick = openSpecialPanel; 
-            
-            tempExamQuestions = []; 
-            document.getElementById('exam-code').value = ''; 
-            document.getElementById('exam-code').disabled = false;
-            document.getElementById('exam-name').value = ''; 
-            document.getElementById('exam-timer').value = '30';
-            document.getElementById('exam-negative').value = '0';
-            document.getElementById('exam-expiry').value = ''; 
-            document.getElementById('btn-publish-exam').innerText = "Publish Exam 🚀";
-            updateAdminUI();
-        }
-
-        async function editExam(examCode) {
-            try {
-                const res = await fetch('/api/get-exam-questions', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ exam_code: examCode })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    isEditingExam = true;
-                    document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
-                    document.getElementById('exam-create-panel').classList.add('active');
-                    document.getElementById('admin-title').innerHTML = '<i class="fas fa-pen" style="color:#3b82f6;"></i> Edit Exam: ' + data.exam_name;
-                    document.getElementById('back-btn').style.display = 'block';
-                    document.getElementById('back-btn').onclick = openSpecialPanel;
-
-                    document.getElementById('exam-name').value = data.exam_name;
-                    document.getElementById('exam-code').value = examCode;
-                    document.getElementById('exam-code').disabled = true; 
-                    document.getElementById('exam-timer').value = data.timer_minutes;
-                    document.getElementById('exam-negative').value = data.negative_marks || 0;
-                    
-                    if(data.expiry_time) {
-                        document.getElementById('group-expiry').style.display = 'block';
-                        document.getElementById('exam-expiry').value = data.expiry_time;
-                    } else {
-                        document.getElementById('group-expiry').style.display = 'none';
-                    }
-
-                    if(data.season) {
-                        document.getElementById('group-season').style.display = 'block';
-                        document.getElementById('exam-season').value = data.season;
-                    } else {
-                        document.getElementById('group-season').style.display = 'none';
-                    }
-
-                    document.getElementById('exam-class').value = data.class_name || 'General';
-                    document.getElementById('exam-subject').value = data.subject || 'General';
-                    
-                    tempExamQuestions = data.questions.map(q => ({
-                        question_text: q.q_text,
-                        option_a: q.opt_a,
-                        option_b: q.opt_b,
-                        option_c: q.opt_c,
-                        option_d: q.opt_d,
-                        correct_option: q.correct,
-                        question_type: q.question_type || 'mcq',
-                        max_marks: q.max_marks || 1.0
-                    }));
-
-                    document.getElementById('btn-publish-exam').innerText = "Update Exam 💾";
-                    updateAdminUI();
-                } else {
-                    alert("Failed to load exam details for editing.");
-                }
-            } catch(e) {
-                alert("Error connecting to server.");
-            }
-        }
-
-        function toggleExamMethod() {
-            const method = document.getElementById('exam-method').value;
-            document.getElementById('method-json').classList.add('hidden'); document.getElementById('method-manual').classList.add('hidden'); document.getElementById('method-ai').classList.add('hidden');
-            document.getElementById(`method-${method}`).classList.remove('hidden');
-        }
-
-        function updateAdminUI() {
-            document.getElementById('q-count').innerText = tempExamQuestions.length;
-            const list = document.getElementById('admin-preview-list');
-            if(tempExamQuestions.length === 0) { list.innerHTML = ''; return; }
-            
-            let html = '';
-            tempExamQuestions.forEach((q, i) => {
-                html += `
-                <div class="q-card">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <span style="font-weight:bold; font-size:0.85rem; color:#3b82f6;">Q${i+1}</span>
-                        <button onclick="removeQuestion(${i})" style="border:none; background:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button>
-                    </div>
-                    <div class="math-preview"><strong>Q:</strong> ${q.question_text} <br><br>A) ${q.option_a} &nbsp;&nbsp; B) ${q.option_b} &nbsp;&nbsp; C) ${q.option_c} &nbsp;&nbsp; D) ${q.option_d}</div>
-                    <textarea onchange="updateQData(${i}, 'question_text', this.value)">${q.question_text}</textarea>
-                    <div class="grid-2x2">
-                        <div style="display:flex; gap:3px;"><span style="font-size:0.75rem; font-weight:bold;">A</span><input type="text" value="${q.option_a}" onchange="updateQData(${i}, 'option_a', this.value)"></div>
-                        <div style="display:flex; gap:3px;"><span style="font-size:0.75rem; font-weight:bold;">B</span><input type="text" value="${q.option_b}" onchange="updateQData(${i}, 'option_b', this.value)"></div>
-                        <div style="display:flex; gap:3px;"><span style="font-size:0.75rem; font-weight:bold;">C</span><input type="text" value="${q.option_c}" onchange="updateQData(${i}, 'option_c', this.value)"></div>
-                        <div style="display:flex; gap:3px;"><span style="font-size:0.75rem; font-weight:bold;">D</span><input type="text" value="${q.option_d}" onchange="updateQData(${i}, 'option_d', this.value)"></div>
-                    </div>
-                    <div style="margin-top:8px; display:flex; align-items:center; gap:10px; font-size:0.8rem; font-weight:bold; color:#10b981;">
-                        সঠিক উত্তর: 
-                        <select onchange="updateQData(${i}, 'correct_option', this.value)" style="padding:2px; border:1px solid #cbd5e1; border-radius:4px; outline:none;">
-                            <option value="A" ${q.correct_option === 'A' ? 'selected' : ''}>A</option>
-                            <option value="B" ${q.correct_option === 'B' ? 'selected' : ''}>B</option>
-                            <option value="C" ${q.correct_option === 'C' ? 'selected' : ''}>C</option>
-                            <option value="D" ${q.correct_option === 'D' ? 'selected' : ''}>D</option>
-                        </select>
-                    </div>
-                </div>`;
-            });
-            list.innerHTML = html;
-            if (window.MathJax) { MathJax.typesetPromise([list]).catch(function (err) {}); }
-        }
-
-        function updateQData(index, field, value) { tempExamQuestions[index][field] = value; updateAdminUI(); }
-        function removeQuestion(index) { if(confirm("মুছে ফেলতে চান?")) { tempExamQuestions.splice(index, 1); updateAdminUI(); } }
-
-        function handleJsonUpload(e) {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try { const parsed = JSON.parse(evt.target.result); if (Array.isArray(parsed) && parsed.length > 0) { tempExamQuestions = tempExamQuestions.concat(parsed); updateAdminUI(); alert("Loaded!"); } } 
-                catch(err) { alert("Error reading JSON file."); }
-            };
-            reader.readAsText(file);
-        }
-
-        function addManualQuestion() {
-            const q = document.getElementById('q-text').value;
-            const a = document.getElementById('opt-a').value, b = document.getElementById('opt-b').value, c = document.getElementById('opt-c').value, d = document.getElementById('opt-d').value;
-            if (!q || !a || !b) { alert("Fill all fields!"); return; }
-            tempExamQuestions.push({ question_text: q, option_a: a, option_b: b, option_c: c, option_d: d, correct_option: "A" });
-            document.getElementById('q-text').value = ''; document.getElementById('opt-a').value = ''; document.getElementById('opt-b').value = ''; document.getElementById('opt-c').value = ''; document.getElementById('opt-d').value = '';
-            updateAdminUI();
-        }
-
-        function processScannedText() {
-            const text = document.getElementById('scanned-text-result').value;
-            if (!text.trim()) { alert("বক্সে প্রশ্ন পেস্ট করুন!"); return; }
-            let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            let currentQ = null; let addedCount = 0;
-            for(let i=0; i<lines.length; i++) {
-                let line = lines[i];
-                let optMatch = line.match(/^[\(]?([A-D])[a-z]?[\)\.]?\s+(.*)/i); 
-                let ansMatch = line.match(/^(Ans|Answer|উত্তর)[\s\:\.\-]*([A-D])/i);
-                if (ansMatch && currentQ) { currentQ.correct_option = ansMatch[2].toUpperCase(); } 
-                else if (optMatch && currentQ) {
-                    let optChar = optMatch[1].toUpperCase();
-                    if (optChar === 'A') currentQ.option_a = optMatch[2]; if (optChar === 'B') currentQ.option_b = optMatch[2];
-                    if (optChar === 'C') currentQ.option_c = optMatch[2]; if (optChar === 'D') currentQ.option_d = optMatch[2];
-                } else {
-                    if (currentQ && (!currentQ.option_a || !currentQ.option_b)) { currentQ.question_text += " \n" + line; } 
-                    else { if (currentQ) { tempExamQuestions.push(currentQ); addedCount++; } currentQ = { question_text: line, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A" }; }
-                }
-            }
-            if (currentQ) { tempExamQuestions.push(currentQ); addedCount++; }
-            document.getElementById('scanned-text-result').value = ""; updateAdminUI();
-            alert(`✅ ${addedCount} টি প্রশ্ন সফলভাবে যুক্ত হয়েছে!`);
-        }
-
-        async function publishExam() {
-            const name = document.getElementById('exam-name').value.trim();
-            const code = document.getElementById('exam-code').value.trim().toUpperCase();
-            const timer = document.getElementById('exam-timer').value;
-            const negative = document.getElementById('exam-negative').value;
-            
-            let className = "General";
-            let subject = "General";
-            let season = specialFolderName;
-            let expiryTime = "";
-            let folderIdToSave = specialFolderId;
-
-            if (currentExamCreationType === 'live_session_exam') {
-                expiryTime = document.getElementById('exam-expiry').value; 
-                season = document.getElementById('exam-season').value.trim() || specialFolderName;
-            } else {
-                className = document.getElementById('exam-class').value.trim() || 'General';
-                subject = document.getElementById('exam-subject').value.trim() || 'General';
-            }
-            
-            if(!name || !code || tempExamQuestions.length === 0) { alert("Please fill all details and add questions."); return; }
-
-            const submitBtn = document.getElementById('btn-publish-exam');
-            submitBtn.disabled = true;
-            submitBtn.innerText = isEditingExam ? "Updating... ⏳" : "Publishing... ⏳";
-
-            const payload = { 
-                exam_code: code, exam_name: name, timer: timer, 
-                negative_marks: negative, teacher_email: "admin", teacher_name: "Admin",
-                folder_id: folderIdToSave, expiry_time: expiryTime, season: season,
-                questions: tempExamQuestions, class_name: className, subject: subject
-            };
-
-            try {
-                const endpoint = isEditingExam ? '/api/admin/update-special-exam' : '/api/admin/create-special-exam';
-                const res = await fetch(endpoint, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(payload) 
-                });
-                
-                const data = await res.json();
-                if(data.success) {
-                    alert(isEditingExam ? `🎉 Exam updated successfully!` : `🎉 Special Exam created successfully in session!`); 
-                    openSpecialPanel(); 
-                } else { alert("Failed to save exam: " + data.error); }
-            } catch(e) { alert("Server error."); }
-            finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = isEditingExam ? "Update Exam 💾" : "Publish Exam 🚀";
-            }
-        }
+        function closeAllModals() { document.getElementById('plus-modal').style.display = 'none'; }
     </script>
 </body>
 </html>
