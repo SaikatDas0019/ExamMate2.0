@@ -121,10 +121,10 @@
                 <input type="checkbox" id="agree-check" style="margin-right: 8px; transform: scale(1.2);"> 
                 I agree to the strict rules and will not use unfair means.
             </div>
-            <!-- নতুন ইনপুট ফিল্ড -->
+            <!-- নতুন ইনপুট ফিল্ড (oninput যুক্ত করা হয়েছে) -->
             <div style="margin: 20px 0; text-align: left;">
                 <label style="font-weight: bold; margin-bottom: 5px; display: block;">আপনার নাম লিখুন:</label>
-                <input type="text" id="student-name" placeholder="Example: Saikat" required 
+                <input type="text" id="guest-student-name" placeholder="Example: Saikat" required oninput="validateForm()"
                        style="padding: 12px; width: 100%; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1rem;">
             </div>
             <button class="btn btn-submit" id="start-btn" style="width: 100%; opacity: 0.5;" disabled onclick="startActualExam()">Start Exam 🚀</button>
@@ -225,14 +225,22 @@
         let currentUploadIndex = -1;
         let cropperInstance = null;
 
-        document.getElementById('agree-check').onchange = function(e) {
+        // ফর্ম ভ্যালিডেশন ফাংশন (নাম লেখা এবং টিক দেওয়া দুটোই নিশ্চিত করবে)
+        function validateForm() {
+            const agreeCheck = document.getElementById('agree-check').checked;
+            const nameInput = document.getElementById('guest-student-name').value.trim();
             const btn = document.getElementById('start-btn');
-            if(e.target.checked) {
-                btn.disabled = false; btn.style.opacity = '1';
+
+            if (agreeCheck && nameInput !== "") {
+                btn.disabled = false; 
+                btn.style.opacity = '1';
             } else {
-                btn.disabled = true; btn.style.opacity = '0.5';
+                btn.disabled = true; 
+                btn.style.opacity = '0.5';
             }
-        };
+        }
+
+        document.getElementById('agree-check').onchange = validateForm;
 
         window.onload = async () => {
             const urlParams = new URLSearchParams(window.location.search);
