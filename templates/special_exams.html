@@ -98,6 +98,18 @@
         }
         .modal-close-btn-fixed:hover { background: #fee2e2; color: #ef4444; }
 
+        /* SHARE MODAL CSS */
+        .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
+        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.25s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
+        .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
+        .share-buttons i { font-size: 2.2rem; }
+        .share-buttons .fa-whatsapp { color: #25D366; }
+        .share-buttons .fa-telegram { color: #0088cc; }
+        .share-buttons .fa-copy { color: #64748b; }
+        .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; font-size: 1rem;}
+
         /* Review Card Styling */
         .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; background: #ffffff; }
         .review-correct { background-color: #f0fdf4; border-color: #bbf7d0; box-shadow: 0 2px 4px rgba(34,197,94,0.05); } 
@@ -138,6 +150,19 @@
                 <button class="modal-close-btn-fixed" onclick="closePlaylistModalUI()"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body-scroll" id="playlist-exams-list"></div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal-overlay-share" id="custom-share-modal">
+        <div class="share-sheet">
+            <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
+            <div class="share-buttons">
+                <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
+                <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
+            </div>
+            <button class="btn-cancel" onclick="closeShareModal()">Cancel</button>
         </div>
     </div>
 
@@ -232,7 +257,6 @@
                     const examsInSession = sessionsMap[seasonName];
                     const bg = getRandomGradient();
 
-                    // Sequential unlocking logic
                     let activeExam = null;
                     for (let i = 0; i < examsInSession.length; i++) {
                         let ex = examsInSession[i];
@@ -271,12 +295,19 @@
                     }
 
                     if (activeExam && !activeExam.is_attempted && !isCurrentExpired) {
-                        actionBtnHtml = `<button onclick="event.stopPropagation(); window.location.href='student_exam.html?code=${activeExam.code}'" style="width:100%; background:rgba(0,0,0,0.3); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt Current: ${activeExam.name} 🚀</button>`;
+                        actionBtnHtml = `
+                        <div style="display:flex; gap:8px;">
+                            <button onclick="event.stopPropagation(); window.location.href='student_exam.html?code=${activeExam.code}'" style="flex:1; background:rgba(0,0,0,0.3); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.9rem; cursor:pointer; backdrop-filter:blur(5px);">Attempt: ${activeExam.name} 🚀</button>
+                            <button onclick="event.stopPropagation(); triggerCustomShare('${seasonName.replace(/'/g, "\\'")}', '${activeExam.code}')" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.4); padding:0 14px; border-radius:10px; cursor:pointer;" title="Share Session/Exam"><i class="fas fa-share-alt"></i></button>
+                        </div>`;
                     } else {
-                        actionBtnHtml = `<button onclick="event.stopPropagation(); window.location.href='/season_analytics.html?season=' + encodeURIComponent('${seasonName}')" style="width:100%; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Session Analytics 📊</button>`;
+                        actionBtnHtml = `
+                        <div style="display:flex; gap:8px;">
+                            <button onclick="event.stopPropagation(); window.location.href='/season_analytics.html?season=' + encodeURIComponent('${seasonName}')" style="flex:1; background:#ffffff; color:#1e293b; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:0.9rem; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);">View Analytics 📊</button>
+                            <button onclick="event.stopPropagation(); triggerCustomShare('${seasonName.replace(/'/g, "\\'")}', '${activeExam ? activeExam.code : ''}')" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.4); padding:0 14px; border-radius:10px; cursor:pointer;" title="Share"><i class="fas fa-share-alt"></i></button>
+                        </div>`;
                     }
 
-                    // Unique Segmented Countdown Timer Box HTML
                     let timerBoxHtml = '';
                     if (expiryAttr && !isCurrentExpired) {
                         timerBoxHtml = `
@@ -342,7 +373,6 @@
             document.getElementById('past-special-playlists').innerHTML = playlistHtml;
         }
 
-        // Live Countdown Global Interval Function
         function startGlobalCountdowns() {
             setInterval(() => {
                 const timers = document.querySelectorAll('.segmented-timer');
@@ -426,20 +456,30 @@
                             let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
                             actionBtnHtml = `
                                 <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">✅ Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)</div>
-                                <button style="width:100%; background:#f8fafc; color:#10b981; border:2px solid #10b981; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
-                            `;
+                                <div style="display:flex; gap:8px;">
+                                    <button style="flex:1; background:#f8fafc; color:#10b981; border:2px solid #10b981; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
+                                    <button style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:0 14px; border-radius:10px; cursor:pointer;" onclick="triggerCustomShare('${ex.name.replace(/'/g, "\\'")}', '${ex.code}')" title="Share Exam"><i class="fas fa-share-alt"></i></button>
+                                </div>`;
                         } else if (!isUnlocked) {
                             actionBtnHtml = `
                                 <div style="margin-bottom:10px; font-size:0.85rem; color:#d97706; font-weight:bold; background:#fef3c7; padding:8px; border-radius:8px; text-align:center; border:1px solid #fde68a;">🔒 Complete or wait for the previous exam to unlock</div>
-                                <button disabled style="width:100%; background:#cbd5e1; color:#ffffff; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:not-allowed;">Locked 🔒</button>
-                            `;
+                                <div style="display:flex; gap:8px;">
+                                    <button disabled style="flex:1; background:#cbd5e1; color:#ffffff; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:not-allowed;">Locked 🔒</button>
+                                    <button style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:0 14px; border-radius:10px; cursor:pointer;" onclick="triggerCustomShare('${ex.name.replace(/'/g, "\\'")}', '${ex.code}')" title="Share Exam"><i class="fas fa-share-alt"></i></button>
+                                </div>`;
                         } else if (isExpired) {
                             actionBtnHtml = `
                                 <div style="margin-bottom:10px; font-size:0.85rem; color:#dc2626; font-weight:bold; background:#fef2f2; padding:8px; border-radius:8px; text-align:center; border:1px solid #fecaca;">⌛ Exam Time Expired</div>
-                                <button disabled style="width:100%; background:#cbd5e1; color:#ffffff; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:not-allowed;">Expired ⌛</button>
-                            `;
+                                <div style="display:flex; gap:8px;">
+                                    <button disabled style="flex:1; background:#cbd5e1; color:#ffffff; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:not-allowed;">Expired ⌛</button>
+                                    <button style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:0 14px; border-radius:10px; cursor:pointer;" onclick="triggerCustomShare('${ex.name.replace(/'/g, "\\'")}', '${ex.code}')" title="Share Exam"><i class="fas fa-share-alt"></i></button>
+                                </div>`;
                         } else {
-                            actionBtnHtml = `<button style="width:100%; background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(59, 130, 246, 0.3);" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
+                            actionBtnHtml = `
+                            <div style="display:flex; gap:8px;">
+                                <button style="flex:1; background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:12px; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(59, 130, 246, 0.3);" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>
+                                <button style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:0 14px; border-radius:10px; cursor:pointer;" onclick="triggerCustomShare('${ex.name.replace(/'/g, "\\'")}', '${ex.code}')" title="Share Exam"><i class="fas fa-share-alt"></i></button>
+                            </div>`;
                         }
 
                         html += `
@@ -474,6 +514,30 @@
             } catch(e) {
                 container.innerHTML = '<p style="text-align:center; color:#ef4444;">Server error.</p>';
             }
+        }
+
+        // ================= SHARE FEATURE LOGIC =================
+        let currentShareData = {};
+        function triggerCustomShare(examName, examCode) {
+            const baseUrl = window.location.origin; 
+            const examLink = examCode ? `${baseUrl}/student_exam.html?code=${examCode}` : `${baseUrl}/special_exams.html`;
+            const shareText = `🚀 Prepare for success with ExamMate!\n\n📚 Exam/Session Name: ${examName}\n\nClick the link below to view details and start your exam instantly. Best of luck! 🎯\n\n`;
+            currentShareData = { title: `ExamMate - ${examName}`, text: shareText, url: examLink };
+            document.getElementById('custom-share-modal').style.display = 'flex';
+        }
+        function closeShareModal() { document.getElementById('custom-share-modal').style.display = 'none'; }
+        function shareVia(platform) {
+            const fullText = encodeURIComponent(currentShareData.text + currentShareData.url);
+            const urlOnly = encodeURIComponent(currentShareData.url);
+            let shareUrl = '';
+            if(platform === 'whatsapp') { shareUrl = `https://api.whatsapp.com/send?text=${fullText}`; window.open(shareUrl, '_blank'); } 
+            else if(platform === 'telegram') { shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`; window.open(shareUrl, '_blank'); }
+            closeShareModal();
+        }
+        function copyShareLink() {
+            navigator.clipboard.writeText(currentShareData.text + currentShareData.url).then(() => {
+                alert("✅ Exam link and details copied successfully!"); closeShareModal();
+            }).catch(() => { alert("Failed to copy."); });
         }
 
         function closePlaylistModalUI() {
@@ -554,8 +618,11 @@
         window.addEventListener('popstate', function (event) {
             const plModal = document.getElementById('playlist-exams-modal');
             const drModal = document.getElementById('detailed-result-modal');
+            const shareModal = document.getElementById('custom-share-modal');
             
-            if(drModal && drModal.style.display === 'flex') { 
+            if(shareModal && shareModal.style.display === 'flex') {
+                closeShareModal();
+            } else if(drModal && drModal.style.display === 'flex') { 
                 drModal.style.display = 'none'; 
             } else if(plModal && plModal.style.display === 'flex') { 
                 plModal.style.display = 'none'; 
