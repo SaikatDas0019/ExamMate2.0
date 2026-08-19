@@ -1,5 +1,5 @@
 Flask
-gunicorn app:app
+gunicorn
 psycopg2-binary
 SQLAlchemy
 python-dotenv
