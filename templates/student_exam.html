@@ -707,7 +707,7 @@
         async function submitExam() {
             isExamActive = false;
             clearInterval(timerInterval); 
-            
+    
             let score = 0;
             let subjArray = [];
 
@@ -722,18 +722,26 @@
             });
 
             let displayScore = Number.isInteger(score) ? score : parseFloat(score.toFixed(2));
-            const storedEmail = localStorage.getItem('userEmail');
-            const userEmail = (storedEmail && storedEmail.trim() !== "") ? storedEmail : "Guest Account";
+    
+            // লোকালস্টোরেজ থেকে নাম ও ইউনিক ইমেইল তুলে নিচ্ছি
+            const userEmail = localStorage.getItem('userEmail') || "guest@guest.com";
+            const userName = localStorage.getItem('userName') || "Guest Student";
 
             try {
                 await fetch('/api/submit-exam-result', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email: userEmail, exam_code: examCode, exam_name: examName, 
-                        score: displayScore, total_questions: totalMarks, warnings: warningsCount,
+                        email: userEmail,
+                        name: userName, // <--- নামটি ব্যাকএন্ডে পাঠানো হচ্ছে
+                        exam_code: examCode, 
+                        exam_name: examName, 
+                        score: displayScore, 
+                        total_questions: totalMarks, 
+                        warnings: warningsCount,
                         subjective_answers: subjArray 
                     })
                 });
+        
                 localStorage.setItem('exam_result_' + examCode, JSON.stringify({ answers: studentAnswers, score: displayScore, total: totalMarks }));
                 localStorage.removeItem(`exam_state_${examCode}`);
             } catch (e) { console.log("Failed to save score"); }
