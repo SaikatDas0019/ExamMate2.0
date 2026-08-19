@@ -121,6 +121,12 @@
                 <input type="checkbox" id="agree-check" style="margin-right: 8px; transform: scale(1.2);"> 
                 I agree to the strict rules and will not use unfair means.
             </div>
+            <!-- নতুন ইনপুট ফিল্ড -->
+            <div style="margin: 20px 0; text-align: left;">
+                <label style="font-weight: bold; margin-bottom: 5px; display: block;">আপনার নাম লিখুন:</label>
+                <input type="text" id="student-name" placeholder="Example: Saikat" required 
+                       style="padding: 12px; width: 100%; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1rem;">
+            </div>
             <button class="btn btn-submit" id="start-btn" style="width: 100%; opacity: 0.5;" disabled onclick="startActualExam()">Start Exam 🚀</button>
         </div>
 
@@ -342,6 +348,14 @@
         }
 
         function startActualExam(isResuming = false) {
+            // নতুন নাম চেক করার লজিক
+            const nameInput = document.getElementById('student-name').value;
+            if (!nameInput.trim()) {
+                alert("পরীক্ষা শুরু করতে দয়া করে আপনার নাম লিখুন।");
+                return;
+            }
+            // নামটিকে লোকাল স্টোরেজে সেভ করছি, যাতে সাবমিট করার সময় এটিই ইমেইল হিসেবে যায়
+            localStorage.setItem('userEmail', nameInput); 
             document.getElementById('instruction-section').style.display = 'none';
             document.getElementById('exam-section').style.display = 'block';
             window.history.pushState({section: 'exam'}, "", window.location.href);
