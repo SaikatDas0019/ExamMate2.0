@@ -386,9 +386,10 @@ def get_exam_questions():
 def submit_exam_result():
     data = request.get_json()
     email = data.get('email')
+    name = data.get('name', 'Guest Student') # ফ্রন্টএন্ড থেকে পাঠানো নাম
     
     if not email or email.strip() == "":
-        email = "Guest_Student"
+        email = f"guest_{datetime.now().timestamp()}@guest.com"
         
     exam_code = data.get('exam_code')
     exam_name = data.get('exam_name')
@@ -401,6 +402,14 @@ def submit_exam_result():
         cursor = conn.cursor()
         ph = "%s" if db_type == 'postgres' else "?"
         
+        # ১. নিশ্চিত করছি যে এই গেস্ট ইউজারটি `users` টেবিলে রেজিস্টার্ড আছে, 
+        # যাতে লিডারবোর্ডের JOIN কুয়েরি কোনো এরর না দেয়।
+        cursor.execute(f"SELECT email FROM users WHERE email = {ph}", (email,))
+        user_exists = cursor.fetchone()
+        if not user_exists:
+            cursor.execute(f"INSERT INTO users (email, name, category, is_logged_in) VALUES ({ph}, {ph}, {ph}, {ph})", (email, name, 'Student', False))
+        
+        # ২. পুরনো ফলাফল ডিলিট করে নতুন ফলাফল সেভ করা
         cursor.execute(f"DELETE FROM results WHERE student_email = {ph} AND exam_code = {ph}", (email, exam_code))
         cursor.execute(f"DELETE FROM subjective_answers WHERE student_email = {ph} AND exam_code = {ph}", (email, exam_code))
         
@@ -412,7 +421,9 @@ def submit_exam_result():
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Result saved successfully!"})
-    except Exception as e: return jsonify({"success": False, "error": "Failed to save result."}), 500
+    except Exception as e: 
+        print("Submit Error:", e)
+        return jsonify({"success": False, "error": "Failed to save result."}), 500
 
 @app.route('/api/get-student-history', methods=['POST'])
 def get_student_history():
