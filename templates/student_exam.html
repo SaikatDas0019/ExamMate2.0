@@ -348,14 +348,19 @@
         }
 
         function startActualExam(isResuming = false) {
-            // নতুন নাম চেক করার লজিক
-            const nameInput = document.getElementById('student-name').value;
-            if (!nameInput.trim()) {
+            // নতুন নাম নেওয়ার লজিক
+            const nameInput = document.getElementById('guest-student-name').value.trim();
+            if (!nameInput) {
                 alert("পরীক্ষা শুরু করতে দয়া করে আপনার নাম লিখুন।");
                 return;
             }
-            // নামটিকে লোকাল স্টোরেজে সেভ করছি, যাতে সাবমিট করার সময় এটিই ইমেইল হিসেবে যায়
-            localStorage.setItem('userEmail', nameInput); 
+    
+            // নামের সাথে টাইমস্ট্যাম্প যুক্ত করে একটি ইউনিক ডামি ইমেইল তৈরি করছি (যাতে ডেটাবেজে কোনো ডুপ্লিকেট এরর না হয়)
+            const uniqueGuestEmail = nameInput.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now() + '@guest.com';
+    
+            localStorage.setItem('userEmail', uniqueGuestEmail);
+            localStorage.setItem('userName', nameInput);
+
             document.getElementById('instruction-section').style.display = 'none';
             document.getElementById('exam-section').style.display = 'block';
             window.history.pushState({section: 'exam'}, "", window.location.href);
