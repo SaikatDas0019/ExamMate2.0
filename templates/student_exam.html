@@ -118,15 +118,17 @@
                 </li>
             </ul>
             <div class="warning-text">
-                <input type="checkbox" id="agree-check" style="margin-right: 8px; transform: scale(1.2);"> 
+                <input type="checkbox" id="agree-check" style="margin-right: 8px; transform: scale(1.2);" onchange="validateForm()"> 
                 I agree to the strict rules and will not use unfair means.
             </div>
-            <!-- নতুন ইনপুট ফিল্ড (oninput যুক্ত করা হয়েছে) -->
-            <div style="margin: 20px 0; text-align: left;">
+            
+            <!-- নাম ইনপুট বক্স (লগইন করা না থাকলে দেখাবে) -->
+            <div style="margin: 20px 0; text-align: left;" id="name-input-box">
                 <label style="font-weight: bold; margin-bottom: 5px; display: block;">আপনার নাম লিখুন:</label>
-                <input type="text" id="guest-student-name" placeholder="Example: Saikat" required oninput="validateForm()"
+                <input type="text" id="guest-student-name" placeholder="Example: Saikat" oninput="validateForm()"
                        style="padding: 12px; width: 100%; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1rem;">
             </div>
+
             <button class="btn btn-submit" id="start-btn" style="width: 100%; opacity: 0.5;" disabled onclick="startActualExam()">Start Exam 🚀</button>
         </div>
 
@@ -225,13 +227,17 @@
         let currentUploadIndex = -1;
         let cropperInstance = null;
 
-        // ফর্ম ভ্যালিডেশন ফাংশন (নাম লেখা এবং টিক দেওয়া দুটোই নিশ্চিত করবে)
+        // ফর্ম ভ্যালিডেশন ফাংশন (লগইন করা থাকলে শুধু টিক মার্ক, না থাকলে নাম + টিক মার্ক চেক করবে)
         function validateForm() {
             const agreeCheck = document.getElementById('agree-check').checked;
+            const storedEmail = localStorage.getItem('userEmail');
+            const isLoggedIn = storedEmail && storedEmail.trim() !== "" && !storedEmail.includes('@guest.com');
             const nameInput = document.getElementById('guest-student-name').value.trim();
             const btn = document.getElementById('start-btn');
 
-            if (agreeCheck && nameInput !== "") {
+            let isValid = isLoggedIn ? agreeCheck : (agreeCheck && nameInput !== "");
+
+            if (isValid) {
                 btn.disabled = false; 
                 btn.style.opacity = '1';
             } else {
@@ -239,8 +245,6 @@
                 btn.style.opacity = '0.5';
             }
         }
-
-        document.getElementById('agree-check').onchange = validateForm;
 
         window.onload = async () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -256,7 +260,18 @@
             window.history.replaceState({section: 'instruction'}, "", window.location.href);
 
             const storedEmail = localStorage.getItem('userEmail');
-            const currentUserEmail = (storedEmail && storedEmail.trim() !== "") ? storedEmail : "Guest Account";
+            const isLoggedIn = storedEmail && storedEmail.trim() !== "" && !storedEmail.includes('@guest.com');
+            const currentUserEmail = isLoggedIn ? storedEmail : "Guest Account";
+
+            // যদি ইউজার লগইন করা থাকে, তবে নামের ইনপুট বক্সটি হাইড থাকবে
+            const nameInputBox = document.getElementById('name-input-box');
+            if (isLoggedIn) {
+                nameInputBox.style.display = 'none';
+            } else {
+                nameInputBox.style.display = 'block';
+            }
+
+            validateForm();
 
             const dashBtn = document.getElementById('btn-return-dashboard');
             const continueBtn = document.getElementById('btn-continue-app');
@@ -266,7 +281,7 @@
             const isAppWebView = /wv/.test(userAgent) || /Android.*Version\/[0-9].[0-9]/.test(userAgent);
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-            if (isAppWebView || isStandalone || (storedEmail && storedEmail.trim() !== "")) {
+            if (isAppWebView || isStandalone || isLoggedIn) {
                 if(dashBtn) dashBtn.style.display = 'block';     
                 if(continueBtn) continueBtn.style.display = 'none';      
                 if(headBackBtn) headBackBtn.style.display = 'block'; 
@@ -283,11 +298,10 @@
             }
 
             try {
-                // Speed Optimization: Local cache check for questions if available
                 const cachedExam = localStorage.getItem(`exam_cache_${examCode}`);
                 if (cachedExam) {
                     const data = JSON.parse(cachedExam);
-                    processExamData(data, currentUserEmail, isReattempt);
+                    processExamData(data, currentUserEmail, isReattempt, isLoggedIn);
                 }
 
                 const response = await fetch('/api/get-exam-questions', {
@@ -298,7 +312,7 @@
 
                 if (data.success && data.questions.length > 0) {
                     localStorage.setItem(`exam_cache_${examCode}`, JSON.stringify(data));
-                    processExamData(data, currentUserEmail, isReattempt);
+                    processExamData(data, currentUserEmail, isReattempt, isLoggedIn);
                 } else if (!cachedExam) {
                     document.getElementById('error-msg').innerText = data.error || "No questions inside this exam!";
                     document.getElementById('error-section').style.display = 'block';
@@ -309,7 +323,7 @@
             }
         };
 
-        async function processExamData(data, currentUserEmail, isReattempt) {
+        async function processExamData(data, currentUserEmail, isReattempt, isLoggedIn) {
             dbQuestions = data.questions;
             examName = data.exam_name;
             totalQuestions = dbQuestions.length;
@@ -327,11 +341,15 @@
             document.getElementById('inst-time').innerText = examMinutesLimit;
             document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
 
-            const reviewResp = await fetch('/api/get-student-exam-review', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
-            });
-            const reviewData = await reviewResp.json();
+            // লিংকে ক্লিক করে আসা ইউজারদের বারবার পরীক্ষা দেওয়ার সুযোগ দিতে শুধুমাত্র রেজিস্টার্ড ইউজারদের ক্ষেত্রে 'taken' চেক করা হবে
+            let reviewData = { success: false, taken: false };
+            if (isLoggedIn) {
+                const reviewResp = await fetch('/api/get-student-exam-review', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
+                });
+                reviewData = await reviewResp.json();
+            }
 
             if(reviewData.success && reviewData.taken && !isReattempt) {
                 document.getElementById('instruction-section').style.display = 'none';
@@ -347,7 +365,7 @@
             }
 
             const savedState = localStorage.getItem(`exam_state_${examCode}`);
-            if(savedState) { 
+            if(savedState && isLoggedIn) { 
                 startActualExam(true); 
             } else {
                 document.getElementById('error-section').style.display = 'none';
@@ -356,18 +374,19 @@
         }
 
         function startActualExam(isResuming = false) {
-            // নতুন নাম নেওয়ার লজিক
-            const nameInput = document.getElementById('guest-student-name').value.trim();
-            if (!nameInput) {
-                alert("পরীক্ষা শুরু করতে দয়া করে আপনার নাম লিখুন।");
-                return;
+            const storedEmail = localStorage.getItem('userEmail');
+            const isLoggedIn = storedEmail && storedEmail.trim() !== "" && !storedEmail.includes('@guest.com');
+
+            if (!isLoggedIn) {
+                const nameInput = document.getElementById('guest-student-name').value.trim();
+                if (!nameInput) {
+                    alert("পরীক্ষা শুরু করতে দয়া করে আপনার নাম লিখুন।");
+                    return;
+                }
+                const uniqueGuestEmail = nameInput.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now() + '@guest.com';
+                localStorage.setItem('userEmail', uniqueGuestEmail);
+                localStorage.setItem('userName', nameInput);
             }
-    
-            // নামের সাথে টাইমস্ট্যাম্প যুক্ত করে একটি ইউনিক ডামি ইমেইল তৈরি করছি (যাতে ডেটাবেজে কোনো ডুপ্লিকেট এরর না হয়)
-            const uniqueGuestEmail = nameInput.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now() + '@guest.com';
-    
-            localStorage.setItem('userEmail', uniqueGuestEmail);
-            localStorage.setItem('userName', nameInput);
 
             document.getElementById('instruction-section').style.display = 'none';
             document.getElementById('exam-section').style.display = 'block';
@@ -731,7 +750,6 @@
 
             let displayScore = Number.isInteger(score) ? score : parseFloat(score.toFixed(2));
     
-            // লোকালস্টোরেজ থেকে নাম ও ইউনিক ইমেইল তুলে নিচ্ছি
             const userEmail = localStorage.getItem('userEmail') || "guest@guest.com";
             const userName = localStorage.getItem('userName') || "Guest Student";
 
@@ -740,7 +758,7 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email: userEmail,
-                        name: userName, // <--- নামটি ব্যাকএন্ডে পাঠানো হচ্ছে
+                        name: userName,
                         exam_code: examCode, 
                         exam_name: examName, 
                         score: displayScore, 
@@ -771,7 +789,6 @@
             window.location.href = "https://exammate-sscn.onrender.com/download";
         }
 
-        // ================= PERFECT BACK BUTTON & HIERARCHY SYNC =================
         function handleBackAction() {
             if (isExamActive) {
                 if (confirm("⚠️ আপনি কি পরীক্ষা মাঝপথে ছেড়ে চলে যেতে চান? আপনার প্রগতি সেভ থাকবে তবে সময় চলতে থাকবে।")) {
@@ -803,9 +820,7 @@
             }
         });
 
-        // ================= PULL-TO-REFRESH BLOCKER =================
         let touchStartY = 0;
-        
         document.addEventListener('touchstart', e => {
             touchStartY = e.touches[0].clientY;
         }, { passive: false });
@@ -818,7 +833,6 @@
                 e.preventDefault();
             }
         }, { passive: false });
-        // ===========================================================
     </script>
 </body>
 </html>
