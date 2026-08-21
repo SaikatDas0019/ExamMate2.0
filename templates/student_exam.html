@@ -121,13 +121,6 @@
                 <input type="checkbox" id="agree-check" style="margin-right: 8px; transform: scale(1.2);" onchange="validateForm()"> 
                 I agree to the strict rules and will not use unfair means.
             </div>
-            
-            <!-- নাম ইনপুট বক্স (লগইন করা না থাকলে দেখাবে) -->
-            <div style="margin: 20px 0; text-align: left;" id="name-input-box">
-                <label style="font-weight: bold; margin-bottom: 5px; display: block;">আপনার নাম লিখুন:</label>
-                <input type="text" id="guest-student-name" placeholder="Example: Saikat" oninput="validateForm()"
-                       style="padding: 12px; width: 100%; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1rem;">
-            </div>
 
             <button class="btn btn-submit" id="start-btn" style="width: 100%; opacity: 0.5;" disabled onclick="startActualExam()">Start Exam 🚀</button>
         </div>
@@ -181,11 +174,7 @@
                 <div id="detailed-review-container"></div>
             </div>
 
-            <button class="btn btn-next" id="btn-return-dashboard" style="width:100%; margin-top:20px; display: none;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
-
-            <button id="btn-continue-app" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 15px; width: 100%; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openAppOrDownload()">
-                <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> View Analysis in App
-            </button>
+            <button class="btn btn-next" id="btn-return-dashboard" style="width:100%; margin-top:20px;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
         </div>
     </div>
 
@@ -227,17 +216,12 @@
         let currentUploadIndex = -1;
         let cropperInstance = null;
 
-        // ফর্ম ভ্যালিডেশন ফাংশন (লগইন করা থাকলে শুধু টিক মার্ক, না থাকলে নাম + টিক মার্ক চেক করবে)
+        // ফর্ম ভ্যালিডেশন ফাংশন (শুধু টিক মার্ক চেক করবে)
         function validateForm() {
             const agreeCheck = document.getElementById('agree-check').checked;
-            const storedEmail = localStorage.getItem('userEmail');
-            const isLoggedIn = storedEmail && storedEmail.trim() !== "" && !storedEmail.includes('@guest.com');
-            const nameInput = document.getElementById('guest-student-name').value.trim();
             const btn = document.getElementById('start-btn');
 
-            let isValid = isLoggedIn ? agreeCheck : (agreeCheck && nameInput !== "");
-
-            if (isValid) {
+            if (agreeCheck) {
                 btn.disabled = false; 
                 btn.style.opacity = '1';
             } else {
@@ -256,40 +240,16 @@
                 localStorage.removeItem(`exam_result_${examCode}`);
             }
 
-            // Setup History State Tracking for Back Button Sync
             window.history.replaceState({section: 'instruction'}, "", window.location.href);
 
-            const storedEmail = localStorage.getItem('userEmail');
-            const isLoggedIn = storedEmail && storedEmail.trim() !== "" && !storedEmail.includes('@guest.com');
-            const currentUserEmail = isLoggedIn ? storedEmail : "Guest Account";
-
-            // যদি ইউজার লগইন করা থাকে, তবে নামের ইনপুট বক্সটি হাইড থাকবে
-            const nameInputBox = document.getElementById('name-input-box');
-            if (isLoggedIn) {
-                nameInputBox.style.display = 'none';
-            } else {
-                nameInputBox.style.display = 'block';
+            const currentUserEmail = localStorage.getItem('userEmail');
+            if(!currentUserEmail) {
+                document.getElementById('error-msg').innerText = "User not logged in!";
+                document.getElementById('error-section').style.display = 'block';
+                return;
             }
 
             validateForm();
-
-            const dashBtn = document.getElementById('btn-return-dashboard');
-            const continueBtn = document.getElementById('btn-continue-app');
-            const headBackBtn = document.getElementById('header-back-btn');
-
-            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            const isAppWebView = /wv/.test(userAgent) || /Android.*Version\/[0-9].[0-9]/.test(userAgent);
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-
-            if (isAppWebView || isStandalone || isLoggedIn) {
-                if(dashBtn) dashBtn.style.display = 'block';     
-                if(continueBtn) continueBtn.style.display = 'none';      
-                if(headBackBtn) headBackBtn.style.display = 'block'; 
-            } else {
-                if(dashBtn) dashBtn.style.display = 'none';      
-                if(continueBtn) continueBtn.style.display = 'block';     
-                if(headBackBtn) headBackBtn.style.display = 'none'; 
-            }
             
             if(!examCode) {
                 document.getElementById('error-msg').innerText = "No Exam Code Selected!";
@@ -301,7 +261,7 @@
                 const cachedExam = localStorage.getItem(`exam_cache_${examCode}`);
                 if (cachedExam) {
                     const data = JSON.parse(cachedExam);
-                    processExamData(data, currentUserEmail, isReattempt, isLoggedIn);
+                    processExamData(data, currentUserEmail, isReattempt);
                 }
 
                 const response = await fetch('/api/get-exam-questions', {
@@ -312,7 +272,7 @@
 
                 if (data.success && data.questions.length > 0) {
                     localStorage.setItem(`exam_cache_${examCode}`, JSON.stringify(data));
-                    processExamData(data, currentUserEmail, isReattempt, isLoggedIn);
+                    processExamData(data, currentUserEmail, isReattempt);
                 } else if (!cachedExam) {
                     document.getElementById('error-msg').innerText = data.error || "No questions inside this exam!";
                     document.getElementById('error-section').style.display = 'block';
@@ -323,7 +283,7 @@
             }
         };
 
-        async function processExamData(data, currentUserEmail, isReattempt, isLoggedIn) {
+        async function processExamData(data, currentUserEmail, isReattempt) {
             dbQuestions = data.questions;
             examName = data.exam_name;
             totalQuestions = dbQuestions.length;
@@ -341,15 +301,11 @@
             document.getElementById('inst-time').innerText = examMinutesLimit;
             document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
 
-            // লিংকে ক্লিক করে আসা ইউজারদের বারবার পরীক্ষা দেওয়ার সুযোগ দিতে শুধুমাত্র রেজিস্টার্ড ইউজারদের ক্ষেত্রে 'taken' চেক করা হবে
-            let reviewData = { success: false, taken: false };
-            if (isLoggedIn) {
-                const reviewResp = await fetch('/api/get-student-exam-review', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
-                });
-                reviewData = await reviewResp.json();
-            }
+            const reviewResp = await fetch('/api/get-student-exam-review', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
+            });
+            const reviewData = await reviewResp.json();
 
             if(reviewData.success && reviewData.taken && !isReattempt) {
                 document.getElementById('instruction-section').style.display = 'none';
@@ -365,7 +321,7 @@
             }
 
             const savedState = localStorage.getItem(`exam_state_${examCode}`);
-            if(savedState && isLoggedIn) { 
+            if(savedState) { 
                 startActualExam(true); 
             } else {
                 document.getElementById('error-section').style.display = 'none';
@@ -374,20 +330,6 @@
         }
 
         function startActualExam(isResuming = false) {
-            const storedEmail = localStorage.getItem('userEmail');
-            const isLoggedIn = storedEmail && storedEmail.trim() !== "" && !storedEmail.includes('@guest.com');
-
-            if (!isLoggedIn) {
-                const nameInput = document.getElementById('guest-student-name').value.trim();
-                if (!nameInput) {
-                    alert("পরীক্ষা শুরু করতে দয়া করে আপনার নাম লিখুন।");
-                    return;
-                }
-                const uniqueGuestEmail = nameInput.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now() + '@guest.com';
-                localStorage.setItem('userEmail', uniqueGuestEmail);
-                localStorage.setItem('userName', nameInput);
-            }
-
             document.getElementById('instruction-section').style.display = 'none';
             document.getElementById('exam-section').style.display = 'block';
             window.history.pushState({section: 'exam'}, "", window.location.href);
@@ -750,8 +692,8 @@
 
             let displayScore = Number.isInteger(score) ? score : parseFloat(score.toFixed(2));
     
-            const userEmail = localStorage.getItem('userEmail') || "guest@guest.com";
-            const userName = localStorage.getItem('userName') || "Guest Student";
+            const userEmail = localStorage.getItem('userEmail');
+            const userName = localStorage.getItem('userName') || "Student";
 
             try {
                 await fetch('/api/submit-exam-result', {
@@ -782,11 +724,6 @@
             document.getElementById('final-score').innerText = `${displayScore}/${totalMarks}`; 
             
             renderDetailedReview();
-        }
-
-        function openAppOrDownload() {
-            alert("আপনার ফোনে যদি ExamMate অ্যাপটি আগে থেকেই থাকে, তবে দয়া করে সেটি মেনু থেকে সরাসরি ওপেন করুন।");
-            window.location.href = "https://exammate-sscn.onrender.com/download";
         }
 
         function handleBackAction() {
