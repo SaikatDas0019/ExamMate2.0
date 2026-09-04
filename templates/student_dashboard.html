@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Student Feed</title>
+    <title>ExamMate | Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script>
@@ -21,7 +21,7 @@
         }
         
         .container { 
-            width: 100%; max-width: 480px; background-color: #f1f5f9;
+            width: 100%; max-width: 480px; background-color: #ffffff;
             min-height: 100vh; padding-bottom: 70px; 
             box-sizing: border-box; margin: 0 auto; position: relative; overflow-x: hidden;
         }
@@ -38,44 +38,89 @@
             padding: 12px 15px; display: flex; align-items: center; justify-content: space-between;
             border-bottom: 1px solid #f8fafc;
         }
-        .profile-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .avatar { 
-            width: 40px; height: 40px; background: #e0f2fe; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 1.2rem; border: 2px solid #38bdf8; color: #0369a1;
+        
+        .logo-text { font-size: 1.4rem; font-weight: 800; color: #3b82f6; margin: 0; }
+        
+        .header-icons {
+            display: flex; gap: 15px; align-items: center;
         }
-        .greeting h3 { margin: 0; font-size: 1rem; font-weight: 800; color: #0f172a; }
-        .greeting p { margin: 0; font-size: 0.7rem; color: #64748b; font-weight: 600;}
-        .bell-icon { 
-            font-size: 1.1rem; color: #4b5563; background: #f8fafc; 
+        .header-icon { 
+            font-size: 1.2rem; color: #4b5563; background: #f8fafc; 
             padding: 8px; border-radius: 50%; border: 1px solid #e2e8f0; cursor: pointer; position: relative;
+            display: flex; justify-content: center; align-items: center; width: 40px; height: 40px;
+            transition: background 0.2s;
         }
+        .header-icon:hover { background: #e2e8f0; color: #1e293b; }
 
-        .search-container { padding: 15px 15px 5px 15px; display: flex; gap: 10px; background: #ffffff; }
-        .search-input-wrapper { flex: 1; position: relative; }
-        .search-input-wrapper input {
+        /* MAIN FEED - SOCIAL MEDIA STYLE */
+        .feed-container { padding: 0; margin-top: 70px; background: #ffffff;} 
+        
+        .feed-card {
+            background: #ffffff; 
+            padding: 15px 0; margin-bottom: 0; 
+            border-bottom: 1px solid #e2e8f0; /* Separator Line */
+        }
+        .feed-card:last-child { border-bottom: none; }
+
+        .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 0 15px; }
+        .feed-avatar { width: 40px; height: 40px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.2rem; border: 1px solid #e2e8f0;}
+        .feed-teacher-info { flex: 1; }
+        .feed-teacher-info strong { display: block; font-size: 0.95rem; color: #0f172a; }
+        .feed-teacher-info span { display: block; font-size: 0.75rem; color: #64748b; }
+        
+        .feed-body { margin-bottom: 15px; padding: 0 15px; }
+        .feed-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; line-height: 1.3;}
+        .feed-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;}
+        .feed-tag { background: #f1f5f9; color: #475569; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 6px; }
+        .feed-meta { display: flex; gap: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px dashed #cbd5e1;}
+        .feed-meta span { font-size: 0.8rem; color: #334155; font-weight: 600; display: flex; align-items: center; gap: 5px;}
+        .feed-meta i { color: #3b82f6; }
+        
+        .feed-actions { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px 0 15px; margin-bottom: 12px; }
+        .action-left { display: flex; gap: 20px; }
+        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: color 0.15s; padding: 0; }
+        .action-btn span { font-size: 0.9rem; font-weight: 600; }
+        .action-btn:hover { color: #3b82f6; }
+        .like-active { color: #ef4444 !important; }
+        .save-active { color: #f59e0b !important; }
+
+        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s; margin-top: 10px; }
+        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .feed-action-container { padding: 0 15px; }
+
+        /* SEARCH OVERLAY CSS */
+        .search-overlay {
+            display: none; position: fixed; top: 0; left: 50%; transform: translateX(-50%); 
+            width: 100%; max-width: 480px; height: 100vh; background: #ffffff; z-index: 2001; 
+            flex-direction: column; animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .search-header {
+            display: flex; align-items: center; padding: 15px; gap: 10px;
+            border-bottom: 1px solid #e2e8f0; background: #ffffff;
+        }
+        .search-back-btn { background: none; border: none; font-size: 1.2rem; color: #475569; cursor: pointer; padding: 5px; }
+        
+        .search-input-wrapper-full { flex: 1; position: relative; }
+        .search-input-wrapper-full input {
             width: 100%; padding: 12px 15px; padding-left: 35px;
             background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px;
             font-size: 0.95rem; outline: none; box-sizing: border-box; transition: border-color 0.2s, background 0.2s;
         }
-        .search-input-wrapper input:focus { border-color: #3b82f6; background: #ffffff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-        .search-input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        .search-input-wrapper-full input:focus { border-color: #3b82f6; background: #ffffff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .search-input-wrapper-full i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
         
         .search-btn-circle {
             width: 45px; height: 45px; border-radius: 50%; background: #3b82f6;
             color: white; border: none; font-size: 1.1rem; cursor: pointer;
             box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s;
-            display: flex; justify-content: center; align-items: center;
+            display: flex; justify-content: center; align-items: center; flex-shrink: 0;
         }
         .search-btn-circle:active { transform: scale(0.95); }
 
-        .filter-container {
-            padding: 10px 15px 15px 15px; background: #ffffff;
-            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
-            border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;
-            scrollbar-width: none;
-        }
-        .filter-container::-webkit-scrollbar { display: none; }
+        .search-filters { padding: 15px; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #e5e7eb; scrollbar-width: none; background: #ffffff;}
+        .search-filters::-webkit-scrollbar { display: none; }
         .filter-pill {
             background: #ffffff; border: 1px solid #cbd5e1; color: #475569;
             padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
@@ -83,53 +128,8 @@
             transition: background 0.2s;
         }
         .filter-pill.active { background: #eff6ff; color: #1e3a8a; border-color: #3b82f6; }
-
-        /* MAIN FEED */
-        .feed-container { padding: 0 15px; margin-top: 185px; } 
-        .feed-card {
-            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
-            padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            transform: translateZ(0); will-change: transform;
-        }
-        .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .feed-avatar { width: 38px; height: 38px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; }
-        .feed-teacher-info { flex: 1; }
-        .feed-teacher-info strong { display: block; font-size: 0.95rem; color: #0f172a; }
-        .feed-teacher-info span { display: block; font-size: 0.7rem; color: #64748b; }
-        .feed-body { margin-bottom: 15px; }
-        .feed-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; line-height: 1.3;}
-        .feed-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;}
-        .feed-tag { background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; }
-        .feed-meta { display: flex; gap: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px dashed #cbd5e1;}
-        .feed-meta span { font-size: 0.8rem; color: #334155; font-weight: 600; display: flex; align-items: center; gap: 5px;}
-        .feed-meta i { color: #3b82f6; }
-        .feed-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px; }
-        .action-left { display: flex; gap: 15px; }
-        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: color 0.15s; padding: 0; }
-        .action-btn span { font-size: 0.8rem; font-weight: 600; }
-        .action-btn:hover { color: #3b82f6; }
-        .like-active { color: #ef4444 !important; }
-        .save-active { color: #f59e0b !important; }
-
-        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s; }
-        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; }
-
-        /* 🔥 SPECIAL EXAMS FLOATING BUTTON */
-        .fab-special {
-            position: fixed; bottom: 85px; right: 20px;
-            width: 58px; height: 58px;
-            background: linear-gradient(135deg, #f59e0b, #ea580c);
-            color: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
-            cursor: pointer; z-index: 998; transition: transform 0.2s;
-            animation: bounce-subtle 2s infinite; border: 2px solid #fff;
-        }
-        .fab-special:hover { transform: scale(1.08); }
-        @keyframes bounce-subtle {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(234, 88, 12, 0.6); }
-        }
+        
+        .search-results-container { flex: 1; overflow-y: auto; padding-bottom: 20px; background: #ffffff;}
 
         /* SHARE MODAL CSS */
         .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
@@ -175,7 +175,7 @@
         .ans-real-correct { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block;}
         .unattempted-border { border: 1px dashed #bbf7d0; background: transparent; color: #16a34a; margin-top: 8px;}
 
-        /* Bottom Nav */
+        /* Bottom Nav - UPDATED ORDER */
         .bottom-nav {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
@@ -184,10 +184,10 @@
         }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
         .nav-item.active { color: #3b82f6; font-weight: bold; }
-        .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
+        .nav-icon { font-size: 1.3rem; margin-bottom: 3px; }
 
         /* Skeleton loader for fast perception */
-        .skeleton-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; animation: pulse 1.2s infinite ease-in-out; }
+        .skeleton-card { background: #ffffff; padding: 15px; border-bottom: 1px solid #e2e8f0; animation: pulse 1.2s infinite ease-in-out; }
         .skeleton-line { height: 14px; background: #e2e8f0; border-radius: 4px; margin-bottom: 10px; }
         @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
     </style>
@@ -195,56 +195,70 @@
 <body>
 
     <div class="container">
+        <!-- UPDATED HEADER -->
         <div class="fixed-top-section" id="smart-header">
             <div class="sticky-header">
-                <div class="profile-left" onclick="window.location.href='/student_profile.html'">
-                    <div class="avatar" id="nav-avatar">S</div>
-                    <div class="greeting">
-                        <h3 id="student-name">Hi, Student</h3>
-                        <p>Ready to learn today? 🚀</p>
-                    </div>
+                <div class="logo-text"><i class="fas fa-graduation-cap"></i> ExamMate</div>
+                <div class="header-icons">
+                    <div class="header-icon" onclick="window.location.href='create_exam.html'"><i class="fas fa-plus"></i></div>
+                    <div class="header-icon" onclick="openSearch()"><i class="fas fa-search"></i></div>
+                    <div class="header-icon" onclick="window.location.href='notification.html'"><i class="fas fa-bell"></i></div>
                 </div>
-                <div class="bell-icon" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></div>
-            </div>
-
-            <div class="search-container">
-                <div class="search-input-wrapper">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="main-search" placeholder="Search subject, teacher, class, or code..." oninput="handleSearchInput(event)">
-                </div>
-                <button class="search-btn-circle" onclick="performSearch()">
-                    <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-
-            <div class="filter-container">
-                <select id="filter-class" class="filter-pill" onchange="loadRealFeed()">
-                    <option value="All">🎓 All Classes</option>
-                </select>
-                <select id="filter-subject" class="filter-pill" onchange="loadRealFeed()">
-                    <option value="All">📚 All Subjects</option>
-                </select>
-                <select id="filter-status" class="filter-pill active" onchange="loadRealFeed()">
-                    <option value="All">⚡ All Status</option>
-                    <option value="Unattempted">⏳ Unattempted</option>
-                    <option value="Attempted">✅ Attempted</option>
-                </select>
             </div>
         </div>
 
         <div class="feed-container" id="exam-feed">
+            <!-- Skeleton Loader -->
             <div class="skeleton-card">
-                <div class="skeleton-line" style="width: 50%;"></div>
-                <div class="skeleton-line" style="width: 80%; height: 20px; margin-top: 15px;"></div>
-                <div class="skeleton-line" style="width: 30%; margin-top: 15px;"></div>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0;"></div>
+                    <div style="flex: 1;">
+                        <div class="skeleton-line" style="width: 50%;"></div>
+                        <div class="skeleton-line" style="width: 30%; height: 10px;"></div>
+                    </div>
+                </div>
+                <div class="skeleton-line" style="width: 80%; height: 20px; margin-bottom: 10px;"></div>
+                <div class="skeleton-line" style="width: 40%;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FULL SCREEN SEARCH OVERLAY -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-header">
+            <button class="search-back-btn" onclick="closeSearch()"><i class="fas fa-arrow-left"></i></button>
+            <div class="search-input-wrapper-full">
+                <i class="fas fa-search"></i>
+                <input type="text" id="main-search" placeholder="Search exams, subjects, classes..." oninput="handleSearchInput(event)">
+            </div>
+            <button class="search-btn-circle" onclick="performSearch()">
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        
+        <div class="search-filters filter-container" style="padding: 10px 15px 15px 15px; border-bottom: 1px solid #e5e7eb; margin-bottom: 0;">
+            <select id="filter-class" class="filter-pill" onchange="performSearch()">
+                <option value="All">🎓 All Classes</option>
+            </select>
+            <select id="filter-subject" class="filter-pill" onchange="performSearch()">
+                <option value="All">📚 All Subjects</option>
+            </select>
+            <select id="filter-status" class="filter-pill active" onchange="performSearch()">
+                <option value="All">⚡ All Status</option>
+                <option value="Unattempted">⏳ Unattempted</option>
+                <option value="Attempted">✅ Attempted</option>
+            </select>
+        </div>
+        
+        <div class="search-results-container" id="search-results">
+            <div style="text-align:center; padding: 60px 20px; color: #94a3b8;">
+                <i class="fas fa-search fa-4x" style="color:#e2e8f0; margin-bottom:15px;"></i>
+                <p style="font-size: 1.1rem; font-weight: 500;">Type to search exams...</p>
             </div>
         </div>
     </div>
 
-    <div class="fab-special" onclick="window.location.href='/special_exams.html'">
-        <i class="fas fa-trophy"></i>
-    </div>
-
+    <!-- SHARE MODAL -->
     <div class="modal-overlay-share" id="custom-share-modal">
         <div class="share-sheet">
             <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
@@ -257,6 +271,7 @@
         </div>
     </div>
 
+    <!-- RESULT MODAL -->
     <div class="score-modal-overlay" id="detailed-result-modal">
         <div class="score-modal-box">
             <div class="modal-header-fixed">
@@ -267,20 +282,35 @@
         </div>
     </div>
 
+    <!-- UPDATED BOTTOM NAV BAR -->
     <div class="bottom-nav">
-        <a href="student_dashboard.html" class="nav-item active">
-            <div class="nav-icon"><i class="fas fa-home"></i></div>
-        </a>
+        <!-- Analysis Button Moved to Left -->
         <a href="student_analytics.html" class="nav-item">
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
         </a>
+        <!-- Home Button Moved to Center -->
+        <a href="student_dashboard.html" class="nav-item active">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+        </a>
+        <!-- Profile Button Moved to Right -->
         <a href="student_profile.html" class="nav-item">
             <div class="nav-icon"><i class="far fa-user"></i></div>
         </a>
     </div>
 
     <script>
-        // SMART HEADER HIDE/SHOW LOGIC WITH THROTTLE
+        // SEARCH OVERLAY LOGIC
+        function openSearch() {
+            document.getElementById('search-overlay').style.display = 'flex';
+            document.getElementById('main-search').focus();
+            window.history.pushState({searchOpen: true}, "");
+        }
+        
+        function closeSearch() {
+            document.getElementById('search-overlay').style.display = 'none';
+        }
+
+        // SMART HEADER HIDE/SHOW LOGIC WITH THROTTLE 
         let lastScrollTop = 0;
         const header = document.getElementById('smart-header');
         let ticking = false;
@@ -289,8 +319,8 @@
            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
            if (!ticking) {
                window.requestAnimationFrame(function() {
-                   if (scrollTop > lastScrollTop && scrollTop > 100){
-                       header.style.top = "-185px"; 
+                   if (scrollTop > lastScrollTop && scrollTop > 60){
+                       header.style.top = "-70px"; 
                    } else {
                        header.style.top = "0"; 
                    }
@@ -314,17 +344,12 @@
         // MAIN DASHBOARD LOGIC
         // ==========================================
         window.onload = async () => {
-            const userName = localStorage.getItem('userName') || "Student";
-            document.getElementById('student-name').innerText = "Hi, " + userName.split(' ')[0];
-            document.getElementById('nav-avatar').innerText = userName.charAt(0).toUpperCase();
-
             window.history.replaceState({modalOpen: false}, "", window.location.href);
 
             // Parallel loading for maximum speed
             await Promise.all([
                 loadFilterDropdowns(),
-                loadRealFeed(),
-                fetchAndSetAvatarColor()
+                loadRealFeed()
             ]);
         };
 
@@ -352,12 +377,22 @@
             data.subjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
         }
 
-        async function loadRealFeed(query = "") {
+        async function loadRealFeed(query = "", isSearch = false) {
             const userEmail = localStorage.getItem('userEmail');
-            const feedContainer = document.getElementById('exam-feed');
-            const selectedClass = document.getElementById('filter-class').value;
-            const selectedSubject = document.getElementById('filter-subject').value;
-            const selectedStatus = document.getElementById('filter-status').value;
+            let feedContainer;
+            let selectedClass = "All";
+            let selectedSubject = "All";
+            let selectedStatus = "All";
+            
+            if (isSearch) {
+                feedContainer = document.getElementById('search-results');
+                selectedClass = document.getElementById('filter-class').value;
+                selectedSubject = document.getElementById('filter-subject').value;
+                selectedStatus = document.getElementById('filter-status').value;
+                feedContainer.innerHTML = `<div style="text-align:center; padding: 60px 20px; color: #64748b;"><i class="fas fa-spinner fa-spin fa-3x" style="color:#3b82f6; margin-bottom:15px;"></i><p>Searching...</p></div>`;
+            } else {
+                feedContainer = document.getElementById('exam-feed');
+            }
             
             if (query) { trackStudentPreference(query, "", ""); }
 
@@ -384,23 +419,22 @@
 
                     if (filteredFeed.length > 0) {
                         let sortedFeed = sortExamsForStudent(filteredFeed, query);
-                        renderFeedCards(sortedFeed);
+                        renderFeedCards(sortedFeed, feedContainer);
                     } else {
-                        feedContainer.innerHTML = `<div style="text-align:center; padding: 40px; color: #64748b;"><i class="fas fa-search fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams match your filters.</p></div>`;
+                        feedContainer.innerHTML = `<div style="text-align:center; padding: 60px 20px; color: #94a3b8;"><i class="fas fa-box-open fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams found.</p></div>`;
                     }
                 } else {
-                    feedContainer.innerHTML = `<div style="text-align:center; padding: 40px; color: #64748b;"><i class="fas fa-search fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams match your filters.</p></div>`;
+                    feedContainer.innerHTML = `<div style="text-align:center; padding: 60px 20px; color: #94a3b8;"><i class="fas fa-box-open fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams found.</p></div>`;
                 }
             } catch (error) { feedContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444;">Failed to load feed.</div>`; }
         }
 
         function performSearch() {
             const query = document.getElementById('main-search').value.trim();
-            loadRealFeed(query);
+            loadRealFeed(query, true);
         }
 
-        function renderFeedCards(exams) {
-            const container = document.getElementById('exam-feed');
+        function renderFeedCards(exams, container) {
             let htmlContent = '';
             
             exams.forEach(ex => {
@@ -415,21 +449,26 @@
                     let reattemptBtn = ex.is_private ? `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExamReattempt('${ex.code}')">🔒 Re-attempt</button>` : `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
                     
                     actionHTML = `
-                    <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">✅ Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)</div>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-result" style="flex:1;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
-                        ${reattemptBtn}
+                    <div class="feed-action-container">
+                        <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">✅ Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)</div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-result" style="flex:1;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
+                            ${reattemptBtn}
+                        </div>
                     </div>`;
                 } else {
                     actionHTML = ex.is_private 
-                        ? `<button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Code to Unlock</button>`
-                        : `<button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button>`;
+                        ? `<div class="feed-action-container"><button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Code to Unlock</button></div>`
+                        : `<div class="feed-action-container"><button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button></div>`;
                 }
+
+                // Initial Avatar Letter Extraction
+                const teacherInitial = ex.teacher_name ? ex.teacher_name.charAt(0).toUpperCase() : 'T';
 
                 htmlContent += `
                 <div class="feed-card">
                     <div class="feed-header">
-                        <div class="feed-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div class="feed-avatar">${teacherInitial}</div>
                         <div class="feed-teacher-info">
                             <strong>${ex.teacher_name}</strong>
                             <span>Posted ${ex.date}</span>
@@ -625,34 +664,18 @@
             });
         }
 
-        async function fetchAndSetAvatarColor() {
-            const userEmail = localStorage.getItem('userEmail');
-            if (!userEmail) return;
-            const avatar = document.getElementById('nav-avatar');
-            try {
-                const response = await fetch('/api/get-student-progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail }) });
-                const data = await response.json();
-                if (data.success) {
-                    const score = parseFloat(data.score) || 0;
-                    let avatarBg = "linear-gradient(135deg, #34d399, #10b981)"; let borderColor = "#10b981";
-                    if (score >= 50 && score < 100) { avatarBg = "linear-gradient(135deg, #fbbf24, #d97706)"; borderColor = "#d97706"; } 
-                    else if (score >= 100 && score < 300) { avatarBg = "linear-gradient(135deg, #94a3b8, #475569)"; borderColor = "#475569"; } 
-                    else if (score >= 300 && score < 600) { avatarBg = "linear-gradient(135deg, #fde047, #eab308)"; borderColor = "#eab308"; } 
-                    else if (score >= 600) { avatarBg = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; borderColor = "transparent"; }
-                    avatar.style.background = avatarBg; avatar.style.color = "#ffffff";
-                    if (score >= 600) { avatar.style.border = "none"; } else { avatar.style.border = `2px solid ${borderColor}`; }
-                }
-            } catch (error) {}
-        }
-
         // PERFECT BACK BUTTON & MODAL SYNC
         window.addEventListener('popstate', function (event) {
             const drModal = document.getElementById('detailed-result-modal');
             const shareModal = document.getElementById('custom-share-modal');
+            const searchOverlay = document.getElementById('search-overlay');
+            
             if(shareModal && shareModal.style.display === 'flex') {
                 closeShareModal();
             } else if(drModal && drModal.style.display === 'flex') {
                 drModal.style.display = 'none';
+            } else if(searchOverlay && searchOverlay.style.display === 'flex') {
+                closeSearch();
             } else {
                 if (document.referrer) { window.history.back(); } 
             }
