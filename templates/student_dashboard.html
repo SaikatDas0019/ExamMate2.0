@@ -58,7 +58,7 @@
         .feed-card {
             background: #ffffff; 
             padding: 15px 0; margin-bottom: 0; 
-            border-bottom: 1px solid #e2e8f0; /* Separator Line */
+            border-bottom: 1px solid #e2e8f0; 
         }
         .feed-card:last-child { border-bottom: none; }
 
@@ -87,6 +87,23 @@
         .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s; margin-top: 10px; }
         .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .feed-action-container { padding: 0 15px; }
+
+        /* 🔥 SPECIAL EXAMS FLOATING BUTTON */
+        .fab-special {
+            position: fixed; bottom: 85px; right: 20px;
+            width: 58px; height: 58px;
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+            cursor: pointer; z-index: 998; transition: transform 0.2s;
+            animation: bounce-subtle 2s infinite; border: 2px solid #fff;
+        }
+        .fab-special:hover { transform: scale(1.08); }
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(234, 88, 12, 0.6); }
+        }
 
         /* SEARCH OVERLAY CSS */
         .search-overlay {
@@ -175,7 +192,7 @@
         .ans-real-correct { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block;}
         .unattempted-border { border: 1px dashed #bbf7d0; background: transparent; color: #16a34a; margin-top: 8px;}
 
-        /* Bottom Nav - UPDATED ORDER */
+        /* Bottom Nav */
         .bottom-nav {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
@@ -186,7 +203,7 @@
         .nav-item.active { color: #3b82f6; font-weight: bold; }
         .nav-icon { font-size: 1.3rem; margin-bottom: 3px; }
 
-        /* Skeleton loader for fast perception */
+        /* Skeleton loader */
         .skeleton-card { background: #ffffff; padding: 15px; border-bottom: 1px solid #e2e8f0; animation: pulse 1.2s infinite ease-in-out; }
         .skeleton-line { height: 14px; background: #e2e8f0; border-radius: 4px; margin-bottom: 10px; }
         @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
@@ -195,20 +212,20 @@
 <body>
 
     <div class="container">
-        <!-- UPDATED HEADER -->
+        <!-- HEADER -->
         <div class="fixed-top-section" id="smart-header">
             <div class="sticky-header">
                 <div class="logo-text"><i class="fas fa-graduation-cap"></i> ExamMate</div>
                 <div class="header-icons">
-                    <div class="header-icon" onclick="window.location.href='create_exam.html'"><i class="fas fa-plus"></i></div>
+                    <!-- প্লাস আইকন (লিংক আপডেট করা হয়েছে) -->
+                    <div class="header-icon" onclick="window.location.href='/create_exam.html'"><i class="fas fa-plus"></i></div>
                     <div class="header-icon" onclick="openSearch()"><i class="fas fa-search"></i></div>
-                    <div class="header-icon" onclick="window.location.href='notification.html'"><i class="fas fa-bell"></i></div>
+                    <div class="header-icon" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></div>
                 </div>
             </div>
         </div>
 
         <div class="feed-container" id="exam-feed">
-            <!-- Skeleton Loader -->
             <div class="skeleton-card">
                 <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
                     <div style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0;"></div>
@@ -223,7 +240,12 @@
         </div>
     </div>
     
-    <!-- FULL SCREEN SEARCH OVERLAY -->
+    <!-- স্পেশাল এক্সামস ফ্লোটিং বাটন (পুনরায় যুক্ত করা হয়েছে) -->
+    <div class="fab-special" onclick="window.location.href='/special_exams.html'">
+        <i class="fas fa-trophy"></i>
+    </div>
+
+    <!-- SEARCH OVERLAY -->
     <div class="search-overlay" id="search-overlay">
         <div class="search-header">
             <button class="search-back-btn" onclick="closeSearch()"><i class="fas fa-arrow-left"></i></button>
@@ -282,24 +304,20 @@
         </div>
     </div>
 
-    <!-- UPDATED BOTTOM NAV BAR -->
+    <!-- BOTTOM NAV BAR -->
     <div class="bottom-nav">
-        <!-- Analysis Button Moved to Left -->
         <a href="student_analytics.html" class="nav-item">
             <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
         </a>
-        <!-- Home Button Moved to Center -->
         <a href="student_dashboard.html" class="nav-item active">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
         </a>
-        <!-- Profile Button Moved to Right -->
         <a href="student_profile.html" class="nav-item">
             <div class="nav-icon"><i class="far fa-user"></i></div>
         </a>
     </div>
 
     <script>
-        // SEARCH OVERLAY LOGIC
         function openSearch() {
             document.getElementById('search-overlay').style.display = 'flex';
             document.getElementById('main-search').focus();
@@ -310,7 +328,6 @@
             document.getElementById('search-overlay').style.display = 'none';
         }
 
-        // SMART HEADER HIDE/SHOW LOGIC WITH THROTTLE 
         let lastScrollTop = 0;
         const header = document.getElementById('smart-header');
         let ticking = false;
@@ -331,7 +348,6 @@
            }
         });
 
-        // DEBOUNCE SEARCH LOGIC
         let searchTimer;
         function handleSearchInput(e) {
             clearTimeout(searchTimer);
@@ -340,13 +356,9 @@
             }, 350);
         }
 
-        // ==========================================
-        // MAIN DASHBOARD LOGIC
-        // ==========================================
         window.onload = async () => {
             window.history.replaceState({modalOpen: false}, "", window.location.href);
 
-            // Parallel loading for maximum speed
             await Promise.all([
                 loadFilterDropdowns(),
                 loadRealFeed()
@@ -446,7 +458,7 @@
                 let actionHTML = '';
                 if (ex.is_attempted) {
                     let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
-                    let reattemptBtn = ex.is_private ? `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExamReattempt('${ex.code}')">🔒 Re-attempt</button>` : `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
+                    let reattemptBtn = ex.is_private ? `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExamReattempt('${ex.code}')">🔒 Re-attempt</button>` : `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='/student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
                     
                     actionHTML = `
                     <div class="feed-action-container">
@@ -459,10 +471,9 @@
                 } else {
                     actionHTML = ex.is_private 
                         ? `<div class="feed-action-container"><button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Code to Unlock</button></div>`
-                        : `<div class="feed-action-container"><button class="btn-attempt" onclick="window.location.href='student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button></div>`;
+                        : `<div class="feed-action-container"><button class="btn-attempt" onclick="window.location.href='/student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button></div>`;
                 }
 
-                // Initial Avatar Letter Extraction
                 const teacherInitial = ex.teacher_name ? ex.teacher_name.charAt(0).toUpperCase() : 'T';
 
                 htmlContent += `
@@ -503,7 +514,6 @@
             container.innerHTML = htmlContent;
         }
 
-        // ================= SHARE FEATURE LOGIC =================
         let currentShareData = {};
         function triggerCustomShare(examName, examCode) {
             const baseUrl = window.location.origin; 
@@ -530,14 +540,14 @@
         function accessPrivateExam(actualCode) {
             const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code to unlock:");
             if (enteredCode) {
-                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `student_exam.html?code=${actualCode}`; } 
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `/student_exam.html?code=${actualCode}`; } 
                 else { alert("❌ Incorrect Code!"); }
             }
         }
         function accessPrivateExamReattempt(actualCode) {
             const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code to re-attempt:");
             if (enteredCode) {
-                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `student_exam.html?code=${actualCode}&reattempt=true`; } 
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `/student_exam.html?code=${actualCode}&reattempt=true`; } 
                 else { alert("❌ Incorrect Code!"); }
             }
         }
@@ -664,7 +674,6 @@
             });
         }
 
-        // PERFECT BACK BUTTON & MODAL SYNC
         window.addEventListener('popstate', function (event) {
             const drModal = document.getElementById('detailed-result-modal');
             const shareModal = document.getElementById('custom-share-modal');
