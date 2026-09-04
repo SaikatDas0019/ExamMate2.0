@@ -56,17 +56,66 @@
 
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #05070f; display: flex; flex-direction: column;
+            background: #ffffff; display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 9999;
             transition: opacity 0.3s ease;
         }
-        .spinner {
-            width: 50px; height: 50px; border: 4px solid rgba(34, 192, 93, 0.2);
-            border-top: 4px solid #22c05d; border-radius: 50%;
-            animation: spin 1s linear infinite; margin-bottom: 15px;
+
+        .logo-wrap { position: relative; display: flex; font-size: clamp(2.2rem, 9vw, 4rem); font-weight: 900; }
+
+        .letter {
+            display: inline-block; opacity: 0; animation-fill-mode: forwards;
+            animation-duration: 0.9s; animation-timing-function: cubic-bezier(.34, 1.56, .64, 1);
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 1.1rem; color: #c8d3ea; font-weight: 600; letter-spacing: 0.5px; }
+        .col-dark { color: #1c1c1e; }
+        .col-blue { color: #2f66f0; }
+
+        .from-top    { animation-name: flyFromTop; }
+        .from-bottom { animation-name: flyFromBottom; }
+        .from-left   { animation-name: flyFromLeft; }
+        .from-right  { animation-name: flyFromRight; }
+        .from-tl     { animation-name: flyFromTL; }
+        .from-tr     { animation-name: flyFromTR; }
+        .from-bl     { animation-name: flyFromBL; }
+        .from-br     { animation-name: flyFromBR; }
+
+        @keyframes flyFromTop    { 0% { transform: translateY(-300px) rotate(-20deg); opacity: 0; } 100% { transform: translateY(0) rotate(0); opacity: 1; } }
+        @keyframes flyFromBottom { 0% { transform: translateY(300px) rotate(20deg); opacity: 0; } 100% { transform: translateY(0) rotate(0); opacity: 1; } }
+        @keyframes flyFromLeft   { 0% { transform: translateX(-400px) rotate(-30deg); opacity: 0; } 100% { transform: translateX(0) rotate(0); opacity: 1; } }
+        @keyframes flyFromRight  { 0% { transform: translateX(400px) rotate(30deg); opacity: 0; } 100% { transform: translateX(0) rotate(0); opacity: 1; } }
+        @keyframes flyFromTL { 0% { transform: translate(-300px, -300px) rotate(-40deg) scale(0.3); opacity: 0; } 100% { transform: translate(0,0) rotate(0) scale(1); opacity: 1; } }
+        @keyframes flyFromTR { 0% { transform: translate(300px, -300px) rotate(40deg) scale(0.3); opacity: 0; } 100% { transform: translate(0,0) rotate(0) scale(1); opacity: 1; } }
+        @keyframes flyFromBL { 0% { transform: translate(-300px, 300px) rotate(40deg) scale(0.3); opacity: 0; } 100% { transform: translate(0,0) rotate(0) scale(1); opacity: 1; } }
+        @keyframes flyFromBR { 0% { transform: translate(300px, 300px) rotate(-40deg) scale(0.3); opacity: 0; } 100% { transform: translate(0,0) rotate(0) scale(1); opacity: 1; } }
+
+        .e-wrap { position: relative; display: inline-block; }
+
+        .sparkle { position: absolute; top: -22%; right: -20%; width: 34%; height: 34%; pointer-events: none; overflow: visible; }
+        .sparkle line { stroke: #2f66f0; stroke-width: 3; stroke-linecap: round; opacity: 0; animation: sparklePop 0.45s ease-out forwards; }
+        .s1 { transform-origin: 12px 34px; animation-delay: 1.35s; }
+        .s2 { transform-origin: 21px 34px; animation-delay: 1.48s; }
+        .s3 { transform-origin: 30px 34px; animation-delay: 1.61s; }
+        @keyframes sparklePop { 0% { opacity: 0; transform: scale(0); } 60% { opacity: 1; transform: scale(1.3); } 100% { opacity: 1; transform: scale(1); } }
+
+        .underline-box { width: clamp(180px, 60vw, 260px); height: 30px; margin-top: 6px; }
+        .underline-path {
+            fill: none; stroke: #2f66f0; stroke-width: 5; stroke-linecap: round;
+            stroke-dasharray: 1; stroke-dashoffset: 1;
+            animation: drawLine 0.8s ease-in-out forwards; animation-delay: 1.7s;
+        }
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+
+        .loading-text {
+            margin-top: 26px; color: #666; font-size: 1rem; font-weight: 600; letter-spacing: 0.5px;
+            opacity: 0; animation: fadeIn 0.6s ease forwards; animation-delay: 2.1s;
+            display: flex; align-items: center; gap: 6px;
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: #2f66f0; animation: bounceDot 1.2s infinite ease-in-out; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes bounceDot { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; } 40% { transform: translateY(-6px); opacity: 1; } }
 
         #main-content { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; }
 
@@ -183,8 +232,29 @@
 <body>
 
     <div id="loading-screen">
-        <div class="spinner"></div>
-        <div class="loading-text">ExamMate is starting...</div>
+        <div class="logo-wrap">
+            <span class="letter col-dark from-tl"    style="animation-delay:0.00s">E</span>
+            <span class="letter col-dark from-top"   style="animation-delay:0.06s">x</span>
+            <span class="letter col-dark from-tr"    style="animation-delay:0.12s">a</span>
+            <span class="letter col-dark from-left"  style="animation-delay:0.18s">m</span>
+            <span class="letter col-blue from-right" style="animation-delay:0.24s">M</span>
+            <span class="letter col-blue from-bl"    style="animation-delay:0.30s">a</span>
+            <span class="letter col-blue from-bottom" style="animation-delay:0.36s">t</span>
+            <span class="e-wrap">
+                <span class="letter col-blue from-br" style="animation-delay:0.42s">e</span>
+                <svg class="sparkle" viewBox="0 0 42 42">
+                    <line class="s1" x1="12" y1="34" x2="4"  y2="18" />
+                    <line class="s2" x1="21" y1="34" x2="21" y2="10" />
+                    <line class="s3" x1="30" y1="34" x2="38" y2="18" />
+                </svg>
+            </span>
+        </div>
+        <div class="underline-box">
+            <svg viewBox="0 0 260 30" width="100%" height="30">
+                <path class="underline-path" pathLength="1" d="M10,20 C 90,5 170,5 250,15" />
+            </svg>
+        </div>
+        <div class="loading-text">ExamMate is starting<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
     </div>
 
     <div id="main-content">
@@ -368,6 +438,8 @@
             const loadingScreen = document.getElementById('loading-screen');
             const mainContent = document.getElementById('main-content');
             const loadingText = document.querySelector('.loading-text');
+            const loadStartTime = Date.now();
+            const MIN_ANIM_MS = 2300; // নতুন লোগো অ্যানিমেশনটা যেন পুরোটা দেখা যায়, তার আগে হাইড না হয়
             
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('logout') === '1') {
@@ -426,12 +498,16 @@
             }
 
             clearSession();
-            loadingScreen.style.opacity = '0';
+            const elapsed = Date.now() - loadStartTime;
+            const remaining = Math.max(0, MIN_ANIM_MS - elapsed);
             setTimeout(() => {
-                loadingScreen.style.display = 'none';
-                mainContent.style.display = 'flex';
-                loadReviews();
-            }, 300);
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    mainContent.style.display = 'flex';
+                    loadReviews();
+                }, 300);
+            }, remaining);
         });
 
         document.getElementById('btn-google-login').addEventListener('click', async () => {
