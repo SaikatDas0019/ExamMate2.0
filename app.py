@@ -220,7 +220,8 @@ def teacher_profile(): return render_template('teacher_profile.html') if session
 @app.route('/student_profile.html')
 def student_profile(): return render_template('student_profile.html') if session.get('user', {}).get('role', '').lower() == 'student' else redirect('/')
 @app.route('/create_exam.html')
-def create_exam(): return render_template('create_exam.html') if session.get('user', {}).get('role', '').lower() == 'teacher' else redirect('/')
+def create_exam(): 
+    return render_template('create_exam.html')
 @app.route('/teacher_analytics.html')
 def teacher_analytics(): return render_template('teacher_analytics.html') if session.get('user', {}).get('role', '').lower() == 'teacher' else redirect('/')
 @app.route('/notification.html')
