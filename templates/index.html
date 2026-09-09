@@ -386,7 +386,7 @@
     <!-- Firebase SDK Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
@@ -437,18 +437,58 @@
         window.addEventListener('DOMContentLoaded', async () => {
             const loadingScreen = document.getElementById('loading-screen');
             const mainContent = document.getElementById('main-content');
-            const loadingText = document.querySelector('.loading-text');
             const loadStartTime = Date.now();
-            const MIN_ANIM_MS = 2300; // নতুন লোগো অ্যানিমেশনটা যেন পুরোটা দেখা যায়, তার আগে হাইড না হয়
-            
+            const MIN_ANIM_MS = 2300;
+
+            // 1. Handle Google sign-in redirect result FIRST.
+            try {
+                const result = await getRedirectResult(auth);
+
+                if (result && result.user) {
+                    const user = result.user;
+                    const userData = {
+                        email: user.email,
+                        name: user.displayName || '',
+                        photo_url: user.photoURL || ''
+                    };
+
+                    const response = await fetch('/api/google-login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        if (data.is_new) {
+                            localStorage.setItem('temp_user', JSON.stringify(userData));
+                            window.location.replace('/setup_profile.html');
+                            return;
+                        }
+
+                        saveSessionLocally(userData.email, data.name, data.role);
+                        window.location.replace(data.redirect_url);
+                        return;
+                    }
+
+                    console.error('Login failed:', data.error);
+                    alert('Login failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Redirect Sign-In Error:', error);
+            }
+
+            // 2. Handle explicit logout.
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('logout') === '1') {
                 clearSession();
-                window.history.replaceState({}, document.title, "/");
+                window.history.replaceState({}, document.title, '/');
             }
 
+            // 3. Check existing server session/local session.
             const savedEmail = localStorage.getItem('userEmail') || getCookie('userEmail');
-            
+
             if (savedEmail) {
                 try {
                     const response = await fetch('/api/check-login-status', {
@@ -456,19 +496,25 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: savedEmail })
                     });
+
                     const data = await response.json();
-                    
+
                     if (data.logged_in) {
                         saveSessionLocally(data.email, data.name, data.role);
                         window.location.replace(data.redirect_url);
-                        return; 
+                        return;
                     }
-                } catch (e) { console.log("Status check error:", e); }
+                } catch (e) {
+                    console.log('Status check error:', e);
+                }
             }
 
+            // Only clear old local session after redirect-result processing.
             clearSession();
+
             const elapsed = Date.now() - loadStartTime;
             const remaining = Math.max(0, MIN_ANIM_MS - elapsed);
+
             setTimeout(() => {
                 loadingScreen.style.opacity = '0';
                 setTimeout(() => {
@@ -480,42 +526,19 @@
         });
 
         document.getElementById('btn-google-login').addEventListener('click', async () => {
-            // ফুল-স্ক্রিন লোডিং স্পিনার রিমুভ করে বাটনের ভেতরেই লোডিং স্ট্যাটাস সেট করা হচ্ছে
             const btn = document.getElementById('btn-google-login');
+
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Please wait...';
             btn.style.opacity = '0.8';
-            btn.style.pointerEvents = 'none'; // যাতে ইউজার ডাবল ক্লিক না করতে পারে
-    
+            btn.style.pointerEvents = 'none';
+
             try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                const userData = { email: user.email, name: user.displayName, photo_url: user.photoURL };
-
-                const response = await fetch('/api/google-login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(userData)
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    if (data.is_new) {
-                        localStorage.setItem('temp_user', JSON.stringify(userData));
-                        window.location.href = '/setup_profile.html';
-                    } else {
-                        saveSessionLocally(userData.email, data.name, data.role);
-                        window.location.replace(data.redirect_url);
-                    }
-                } else {
-                    alert("Login failed: " + data.error);
-                    btn.innerHTML = '<img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo"> Continue with Google';
-                    btn.style.opacity = '1';
-                    btn.style.pointerEvents = 'auto';
-                }
+                // Redirect-based Google login works better than popup in WebView/app wrappers.
+                await signInWithRedirect(auth, provider);
             } catch (error) {
-                console.error("Sign-In Error:", error);
-                alert("Sign-In failed.");
-                // এরর হলে বাটন আগের অবস্থায় ফিরিয়ে আনা হবে
+                console.error('Sign-In Redirect Error:', error);
+                alert('Sign-In failed. Please try again.');
+
                 btn.innerHTML = '<img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo"> Continue with Google';
                 btn.style.opacity = '1';
                 btn.style.pointerEvents = 'auto';
