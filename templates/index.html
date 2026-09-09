@@ -386,7 +386,7 @@
     <!-- Firebase SDK Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
@@ -447,37 +447,6 @@
                 window.history.replaceState({}, document.title, "/");
             }
 
-            try {
-                const result = await getRedirectResult(auth);
-                if (result && result.user) {
-                    loadingText.innerText = "Authenticating...";
-                    const user = result.user;
-                    const userData = { email: user.email, name: user.displayName, photo_url: user.photoURL };
-
-                    const response = await fetch('/api/google-login', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(userData)
-                    });
-                    const data = await response.json();
-
-                    if(data.success) {
-                        if(data.is_new) {
-                            localStorage.setItem('temp_user', JSON.stringify(userData));
-                            window.location.href = '/setup_profile.html';
-                        } else {
-                            saveSessionLocally(userData.email, data.name, data.role);
-                            window.location.replace(data.redirect_url);
-                        }
-                        return; 
-                    } else {
-                        alert("Login failed: " + data.error);
-                    }
-                }
-            } catch (error) {
-                console.error("Redirect Error:", error);
-            }
-
             const savedEmail = localStorage.getItem('userEmail') || getCookie('userEmail');
             
             if (savedEmail) {
@@ -518,10 +487,35 @@
             btn.style.pointerEvents = 'none'; // যাতে ইউজার ডাবল ক্লিক না করতে পারে
     
             try {
-                await signInWithRedirect(auth, provider);
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                const userData = { email: user.email, name: user.displayName, photo_url: user.photoURL };
+
+                const response = await fetch('/api/google-login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(userData)
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.is_new) {
+                        localStorage.setItem('temp_user', JSON.stringify(userData));
+                        window.location.href = '/setup_profile.html';
+                    } else {
+                        saveSessionLocally(userData.email, data.name, data.role);
+                        window.location.replace(data.redirect_url);
+                    }
+                } else {
+                    alert("Login failed: " + data.error);
+                    btn.innerHTML = '<img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo"> Continue with Google';
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                }
             } catch (error) {
+                console.error("Sign-In Error:", error);
                 alert("Sign-In failed.");
-                // এরর হলে বাটন আগের অবস্থায় ফিরিয়ে আনা হবে
+                // এরর হলে বাটন আগের অবস্থায় ফিরিয়ে আনা হবে
                 btn.innerHTML = '<img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo"> Continue with Google';
                 btn.style.opacity = '1';
                 btn.style.pointerEvents = 'auto';
