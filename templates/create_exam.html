@@ -141,33 +141,39 @@
                 
                 <div class="prompt-code">
                     <button onclick="copyPrompt('ai-prompt', 'copy-btn')" id="copy-btn" class="copy-btn"><i class="fas fa-copy"></i> Copy Prompt</button>
-                    <code id="ai-prompt">You are an expert Math text formatter and AI assistant. Please read the provided text/images and extract the questions.
+                    <code id="ai-prompt">You are an expert Math Question Paper Formatter. Read the provided images/text and extract all questions accurately.
 
-1. If a question is multiple-choice, format it EXACTLY like this:
-Q: [Question Text]
+Format:
+
+For MCQ:
+Q: [Question]
 A) [Option A]
 B) [Option B]
 C) [Option C]
 D) [Option D]
-Ans: [Correct Option A/B/C/D]
+Ans: [A/B/C/D]
 
-2. If a question is descriptive/subjective (long question without options), format it EXACTLY like this:
-Q: [Question Text]
+For descriptive questions:
+Q: [Question]
 
-CRITICAL RULES FOR MATH & FORMATTING:
-1. You MUST enclose ALL numbers, formulas, fractions, variables, and math symbols strictly inside single dollar signs (...). Example: \frac{1}{2}, x^2, 5.
-2. ALWAYS use valid LaTeX commands. Ensure backslashes are NOT dropped!
-3. Keep the regular text completely outside the dollar signs. Do not use markdown code blocks.</code>
+Math & LaTeX Rules:
+
+- Put every number, formula, fraction, variable, and mathematical symbol inside single "$...$".
+- Use valid LaTeX commands, e.g. $\frac{1}{2}$, $x^2$, $a+b=5$.
+- Never drop or alter LaTeX backslashes ("\").
+- Keep normal text completely outside "$...$".
+- Do not use Markdown code blocks.
+- Preserve the original question and options accurately.</code>
                 </div>
             </div>
 
             <div class="manual-guide">
-                <div class="manual-guide-title"><i class="fas fa-edit"></i> <span id="manual-title-text">ম্যানুয়ালি প্রশ্ন দেওয়ার নিয়ম:</span></div>
+                <div class="manual-guide-title"><i class="fas fa-edit"></i> <span id="manual-title-text">Manual question rules:</span></div>
                 <span id="manual-desc-text">আপনি চাইলে নিজে টাইপ করেও প্রশ্ন দিতে পারেন। শুধু নিচের মতো করে সাজিয়ে বক্সে পেস্ট করুন:</span>
                 <div style="background: #ffffff; padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; color: #334155; border: 1px solid #e2e8f0; font-size: 0.8rem;">
-                    <strong>লং কোশ্চেন (Subjective):</strong><br>
-                    Q: নিউটনের দ্বিতীয় সূত্রটি লেখো।<br><br>
-                    <strong>এমসিকিউ (MCQ):</strong><br>
+                    <strong>Long Question:</strong><br>
+                    Q: Write Newton's second law.<br><br>
+                    <strong>MCQ:</strong><br>
                     Q: What is the capital of France?<br>
                     A) Berlin<br>
                     B) Paris<br>
