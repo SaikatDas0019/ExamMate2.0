@@ -10,6 +10,11 @@ from psycopg2.extras import RealDictCursor
 import json
 import PyPDF2
 import requests
+import smtplib
+from email.message import EmailMessage
+import random
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 load_dotenv()
 
@@ -24,6 +29,26 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+def send_otp_email(receiver_email, otp):
+    sender = "exammate.official@gmail.com"
+    app_password = os.environ.get('GOOGLE_APP_PASSWORD')
+    
+    msg = EmailMessage()
+    msg.set_content(f"Welcome to ExamMate! Your OTP is: {otp}\n\nDo not share this with anyone.")
+    msg['Subject'] = "ExamMate Login OTP"
+    msg['From'] = sender
+    msg['To'] = receiver_email
+    
+    try:
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.login(sender, app_password)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        print("Email Error:", e)
+        return False
+        
 def get_db_connection():
     if DATABASE_URL:
         conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
@@ -34,6 +59,12 @@ def get_db_connection():
         return conn, 'sqlite'
 
 def init_db():
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN password TEXT;")
+        conn.commit()
+    except Exception:
+        if db_type == 'postgres': conn.rollback()
+        
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
@@ -267,6 +298,100 @@ def google_login():
             return jsonify({"success": True, "is_new": True})
     except Exception as e: return jsonify({"success": False, "error": "Database error occurred."}), 500
 
+@app.route('/api/email-auth-step1', methods=['POST'])
+def email_auth_step1():
+    data = request.get_json()
+    email = data.get('email')
+    forgot = data.get('forgot', False)
+    
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT password FROM users WHERE email = {ph}", (email,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user and user['password'] and not forgot:
+            # User has password, show password login step
+            return jsonify({"requires_password": True})
+        else:
+            # New user or forgot password, generate and send OTP
+            otp = str(random.randint(100000, 999999))
+            session['otp_code'] = otp
+            session['otp_email'] = email
+            send_otp_email(email, otp)
+            return jsonify({"requires_otp": True})
+    except Exception as e:
+        return jsonify({"error": "Database error"}), 500
+
+@app.route('/api/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.get_json()
+    email = data.get('email')
+    otp = data.get('otp')
+    
+    if session.get('otp_email') == email and session.get('otp_code') == otp:
+        return jsonify({"success": True})
+    return jsonify({"success": False, "error": "Invalid or expired OTP!"})
+
+@app.route('/api/set-password', methods=['POST'])
+def set_password():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    
+    # OTP ভেরিফিকেশন ছাড়া পাসওয়ার্ড সেট করতে দেবো না
+    if session.get('otp_email') != email:
+        return jsonify({"success": False, "error": "Unauthorized"})
+
+    hashed_pw = generate_password_hash(password)
+    
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        
+        cursor.execute(f"SELECT name, category FROM users WHERE email = {ph}", (email,))
+        user = cursor.fetchone()
+        
+        if user:
+            cursor.execute(f"UPDATE users SET password = {ph} WHERE email = {ph}", (hashed_pw, email))
+            conn.commit()
+            conn.close()
+            session['user'] = {'email': email, 'name': user['name'], 'role': user['category']}
+            return jsonify({"success": True, "is_new": False, "email": email, "name": user['name'], "role": user['category'], "redirect_url": "/student_dashboard.html" if user['category'].lower() == "student" else "/teacher_dashboard.html"})
+        else:
+            # নতুন ইউজার
+            conn.close()
+            # পাসওয়ার্ড সেশনে রাখছি, setup_profile শেষে save হবে
+            session['temp_password'] = hashed_pw 
+            return jsonify({"success": True, "is_new": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database Error"})
+
+@app.route('/api/login-with-password', methods=['POST'])
+def login_with_password():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == 'postgres' else "?"
+        cursor.execute(f"SELECT name, category, password FROM users WHERE email = {ph}", (email,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user and user['password'] and check_password_hash(user['password'], password):
+            session['user'] = {'email': email, 'name': user['name'], 'role': user['category']}
+            return jsonify({"success": True, "email": email, "name": user['name'], "role": user['category'], "redirect_url": "/student_dashboard.html" if user['category'].lower() == "student" else "/teacher_dashboard.html"})
+        else:
+            return jsonify({"success": False, "error": "Incorrect password!"})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Database Error"})
+        
 @app.route('/api/complete-signup', methods=['POST'])
 def complete_signup():
     data = request.get_json()
