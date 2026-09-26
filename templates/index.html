@@ -582,6 +582,12 @@
             if(!email) return showError("Please enter a valid email address.");
             currentEmail = email;
 
+            const btn = document.querySelector('#step-email .btn-action');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Please wait...';
+            btn.disabled = true;
+            btn.style.opacity = '0.8';
+
             try {
                 const res = await fetch('/api/email-auth-step1', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -596,12 +602,24 @@
                 } else {
                     showError(data.error || "An error occurred.");
                 }
-            } catch(e) { showError("Server connection error."); }
+            } catch(e) { 
+                showError("Server connection error."); 
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
         }
 
         async function loginWithPassword() {
             const password = document.getElementById('password-input').value;
             if(!password) return showError("Enter your password.");
+
+            const btn = document.querySelector('#step-password .btn-action');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Please wait...';
+            btn.disabled = true;
+            btn.style.opacity = '0.8';
 
             try {
                 const res = await fetch('/api/login-with-password', {
@@ -616,10 +634,21 @@
                 } else {
                     showError(data.error || "Incorrect password.");
                 }
-            } catch(e) { showError("Server error."); }
+            } catch(e) { 
+                showError("Server error."); 
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
         }
 
         async function startForgotPass() {
+            const btn = document.querySelector('.forgot-pass');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending OTP...';
+            btn.style.pointerEvents = 'none';
+
             try {
                 const res = await fetch('/api/email-auth-step1', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -628,12 +657,23 @@
                 const data = await res.json();
                 if(data.requires_otp) showStep('step-otp');
                 else showError(data.error || "Failed to send OTP.");
-            } catch(e) { showError("Server error."); }
+            } catch(e) { 
+                showError("Server error."); 
+            } finally {
+                btn.innerHTML = originalText;
+                btn.style.pointerEvents = 'auto';
+            }
         }
 
         async function verifyOtp() {
             const otp = document.getElementById('otp-input').value.trim();
             if(!otp) return showError("Enter the OTP.");
+
+            const btn = document.querySelector('#step-otp .btn-action');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Please wait...';
+            btn.disabled = true;
+            btn.style.opacity = '0.8';
 
             try {
                 const res = await fetch('/api/verify-otp', {
@@ -646,12 +686,24 @@
                 } else {
                     showError(data.error || "Invalid OTP.");
                 }
-            } catch(e) { showError("Server error."); }
+            } catch(e) { 
+                showError("Server error."); 
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
         }
 
         async function setNewPassword() {
             const newPass = document.getElementById('new-password-input').value;
             if(newPass.length < 6) return showError("Password must be at least 6 characters.");
+
+            const btn = document.querySelector('#step-set-password .btn-action');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Please wait...';
+            btn.disabled = true;
+            btn.style.opacity = '0.8';
 
             try {
                 const res = await fetch('/api/set-password', {
@@ -670,7 +722,13 @@
                 } else {
                     showError(data.error || "Failed to set password.");
                 }
-            } catch(e) { showError("Server error."); }
+            } catch(e) { 
+                showError("Server error."); 
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
         }
 
         // Common utility functions
