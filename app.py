@@ -60,12 +60,6 @@ def get_db_connection():
 
 def init_db():
     try:
-        cursor.execute("ALTER TABLE users ADD COLUMN password TEXT;")
-        conn.commit()
-    except Exception:
-        if db_type == 'postgres': conn.rollback()
-        
-    try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
         
@@ -91,6 +85,12 @@ def init_db():
             ''')
         conn.commit()
         
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN password TEXT;")
+            conn.commit()
+        except Exception:
+            if db_type == 'postgres': conn.rollback()
+            
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN photo_url TEXT;")
             conn.commit()
