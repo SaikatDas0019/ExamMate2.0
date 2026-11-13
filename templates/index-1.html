@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="theme-color" content="#05070f">
+    <title>ExamMate | Online Exam &amp; Smart Evaluation Platform</title>
+    <meta name="keywords" content="ExamMate, Exam App, Best Exam App, Final Exam Preparation, ExamMate App Download, Android Exam App">
+    <meta name="description" content="Easily take online exams at ExamMate, access Teacher &amp; Student Dashboards, and prepare effectively with MCQ &amp; Subjective practice tools.">
+    <meta name="google-site-verification" content="hn-qApsUCGJszMHEgHT2rT1eunNTsTSyaKdGcANEXFU">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "ExamMate",
+      "url": "https://exammate-sscn.onrender.com/"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ExamMate",
+      "operatingSystem": "ANDROID, WEB",
+      "applicationCategory": "EducationalApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      }
+    }
+    </script>
+
+    <style>
+        :root { color-scheme: dark; }
+        * { box-sizing: border-box; }
+        body {
+            background: linear-gradient(180deg, #08101f 0%, #04060d 100%);
+            color: #e8eef8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start;
+        }
+        button, input, select, textarea { font: inherit; }
+        button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: 3px solid #93c5fd; outline-offset: 3px;
+        }
+        #loading-screen {
+            position: fixed; inset: 0; background: #fff; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999; transition: opacity .3s ease;
+        }
+        .logo-wrap { position: relative; display: flex; font-size: clamp(2.2rem, 9vw, 4rem); font-weight: 900; }
+        .letter { display: inline-block; opacity: 0; animation-fill-mode: forwards; animation-duration: .9s; animation-timing-function: cubic-bezier(.34,1.56,.64,1); }
+        .col-dark { color: #1c1c1e; } .col-blue { color: #2f66f0; }
+        .from-top { animation-name: flyFromTop; } .from-bottom { animation-name: flyFromBottom; }
+        .from-left { animation-name: flyFromLeft; } .from-right { animation-name: flyFromRight; }
+        .from-tl { animation-name: flyFromTL; } .from-tr { animation-name: flyFromTR; }
+        .from-bl { animation-name: flyFromBL; } .from-br { animation-name: flyFromBR; }
+        @keyframes flyFromTop { 0% { transform: translateY(-300px) rotate(-20deg); opacity: 0; } 100% { transform: translateY(0) rotate(0); opacity: 1; } }
+        @keyframes flyFromBottom { 0% { transform: translateY(300px) rotate(20deg); opacity: 0; } 100% { transform: translateY(0) rotate(0); opacity: 1; } }
+        @keyframes flyFromLeft { 0% { transform: translateX(-400px) rotate(-30deg); opacity: 0; } 100% { transform: translateX(0) rotate(0); opacity: 1; } }
+        @keyframes flyFromRight { 0% { transform: translateX(400px) rotate(30deg); opacity: 0; } 100% { transform: translateX(0) rotate(0); opacity: 1; } }
+        @keyframes flyFromTL { 0% { transform: translate(-300px,-300px) rotate(-40deg) scale(.3); opacity: 0; } 100% { transform: translate(0,0) rotate(0) scale(1); opacity: 1; } }
+        @keyframes flyFromTR { 0% { transform: translate(300px,-300px) rotate(40deg) scale(.3); opacity: 0; } 100% { transform: translate(0,0) rotate(0) scale(1); opacity: 1; } }
+        @keyframes flyFromBL { 0% { transform: translate(-300px,300px) rotate(40deg) scale(.3); opacity: 0; } 100% { transform: translate(0,0) rotate(0) scale(1); opacity: 1; } }
+        @keyframes flyFromBR { 0% { transform: translate(300px,300px) rotate(-40deg) scale(.3); opacity: 0; } 100% { transform: translate(0,0) rotate(0) scale(1); opacity: 1; } }
+        .e-wrap { position: relative; display: inline-block; }
+        .sparkle { position: absolute; top: -22%; right: -20%; width: 34%; height: 34%; pointer-events: none; overflow: visible; }
+        .sparkle line { stroke: #2f66f0; stroke-width: 3; stroke-linecap: round; opacity: 0; animation: sparklePop .45s ease-out forwards; }
+        .s1 { transform-origin: 12px 34px; animation-delay: 1.35s; }
+        .s2 { transform-origin: 21px 34px; animation-delay: 1.48s; }
+        .s3 { transform-origin: 30px 34px; animation-delay: 1.61s; }
+        @keyframes sparklePop { 0% { opacity: 0; transform: scale(0); } 60% { opacity: 1; transform: scale(1.3); } 100% { opacity: 1; transform: scale(1); } }
+        .underline-box { width: clamp(180px,60vw,260px); height: 30px; margin-top: 6px; }
+        .underline-path { fill: none; stroke: #2f66f0; stroke-width: 5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: drawLine .8s ease-in-out forwards; animation-delay: 1.7s; }
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+        .loading-text { margin-top: 26px; color: #666; font-size: 1rem; font-weight: 600; letter-spacing: .5px; opacity: 0; animation: fadeIn .6s ease forwards; animation-delay: 2.1s; display: flex; align-items: center; gap: 6px; }
+        @keyframes fadeIn { to { opacity: 1; } }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: #2f66f0; animation: bounceDot 1.2s infinite ease-in-out; }
+        .dot:nth-child(2) { animation-delay: .15s; } .dot:nth-child(3) { animation-delay: .3s; }
+        @keyframes bounceDot { 0%,80%,100% { transform: translateY(0); opacity: .4; } 40% { transform: translateY(-6px); opacity: 1; } }
+        #main-content { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; }
+        .container { padding: 2rem 1rem; max-width: 850px; width: 100%; }
+        .header-section { text-align: center; margin-bottom: 2rem; }
+        .header-section h1 { margin: 0 0 .35rem; color: #22c05d; font-size: clamp(2.2rem,8vw,3rem); letter-spacing: -.03em; font-weight: 900; }
+        .header-section p { margin: 0; color: #c8d3ea; font-size: 1.15rem; font-weight: 500; }
+        .auth-card { background: rgba(17,29,52,.5); border-radius: 26px; padding: 35px 25px; margin-bottom: 2.5rem; box-shadow: 0 25px 80px rgba(0,0,0,.3); border: 2px solid rgba(34,192,93,.4); text-align: center; }
+        .auth-card h2 { margin: 0 0 1.5rem; color: #f2f7ff; font-size: 1.5rem; }
+        .btn-google,.btn-email { width: 100%; max-width: 320px; margin: 0 auto; border: 0; border-radius: 25px; padding: .85rem 1rem; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all .3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-google { background: #fff; color: #374151; box-shadow: 0 4px 15px rgba(255,255,255,.1); }
+        .btn-google:hover { background: #f9fafb; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,255,255,.2); }
+        .btn-google img { width: 22px; height: 22px; }
+        .btn-email { background: #22c05d; color: #fff; box-shadow: 0 4px 15px rgba(34,192,93,.3); }
+        .btn-email:hover { background: #1da04d; transform: translateY(-2px); }
+        .auth-divider { display: flex; align-items: center; justify-content: center; margin: 20px auto; max-width: 320px; color: #b0c4de; font-size: .9rem; }
+        .auth-divider::before,.auth-divider::after { content: ""; flex: 1; border-bottom: 1px solid rgba(255,255,255,.2); margin: 0 10px; }
+        .email-auth-box { background: #fff; color: #1c1c1e; padding: 25px; border-radius: 20px; max-width: 360px; width: 100%; margin: 20px auto 0; display: none; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+        .email-auth-box h3 { margin: 0 0 15px; font-size: 1.2rem; color: #111827; text-align: center; }
+        .email-auth-box label { display: block; font-size: .9rem; color: #4b5563; margin-bottom: 5px; font-weight: 700; }
+        .email-auth-box input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px; margin-bottom: 15px; font-size: 1rem; background: #f9fafb; color: #111827; }
+        .email-auth-box input:focus { outline: none; border-color: #2f66f0; }
+        .btn-action { width: 100%; background: #2f66f0; color: #fff; border: 0; padding: 11px 10px; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: .3s; }
+        .btn-action:hover { background: #2554c7; } button:disabled { cursor: wait !important; opacity: .65 !important; }
+        .forgot-pass { display: block; width: 100%; text-align: right; font-size: .85rem; color: #2f66f0; cursor: pointer; margin-top: -10px; margin-bottom: 15px; text-decoration: underline; background: transparent; border: 0; padding: 0; }
+        .features-section { margin-top: 1rem; text-align: left; }
+        .section-title { font-size: 1.8rem; color: #fff; margin-bottom: 1.5rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+        .feature-card { background: rgba(30,166,77,.08); border: 1px solid rgba(34,192,93,.3); border-radius: 16px; padding: 1.2rem; display: flex; flex-direction: column; gap: 10px; transition: transform .3s ease; }
+        .feature-card:hover { transform: translateY(-3px); background: rgba(30,166,77,.15); }
+        .feature-header { display: flex; align-items: center; gap: 12px; }
+        .feature-icon { font-size: 1.2rem; color: #22c05d; background: rgba(255,255,255,.05); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex: 0 0 40px; }
+        .feature-card strong { color: #f4fbff; font-size: 1.05rem; } .feature-card p { margin: 0; color: #b0c4de; font-size: .9rem; line-height: 1.5; }
+        .app-banner { background: linear-gradient(135deg,rgba(34,192,93,.15),rgba(59,130,246,.15)); border: 1px solid rgba(34,192,93,.4); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 3rem; }
+        .app-banner h3 { margin: 0 0 10px; color: #fff; font-size: 1.3rem; } .app-banner p { color: #c8d3ea; font-size: .95rem; margin-bottom: 15px; }
+        .btn-download-link { display: inline-flex; align-items: center; gap: 8px; background: #22c05d; color: #fff; padding: 10px 22px; border-radius: 20px; text-decoration: none; font-weight: 700; font-size: .95rem; transition: .3s; }
+        .btn-download-link:hover { background: #16a34a; transform: translateY(-2px); }
+        .review-form-card { background: rgba(17,29,52,.6); border-radius: 20px; padding: 28px; margin-bottom: 3rem; border: 1px solid rgba(255,255,255,.1); text-align: left; }
+        .review-form-card h3 { margin-top: 0; color: #81c784; font-size: 1.4rem; margin-bottom: 20px; }
+        .form-group { margin-bottom: 18px; } .form-group label { display: block; margin-bottom: 8px; color: #c8d3ea; font-size: .95rem; font-weight: 600; }
+        .form-control { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.4); color: #fff; font-size: .95rem; transition: .3s; }
+        .form-control:focus { outline: none; border-color: #22c05d; background: rgba(0,0,0,.6); }
+        .star-rating-select { font-size: 1.8rem; color: #f59e0b; cursor: pointer; display: flex; gap: 8px; }
+        .star-rating-select i { transition: transform .2s; } .star-rating-select i:hover { transform: scale(1.2); }
+        .btn-submit-review { background: linear-gradient(135deg,#3b82f6,#2563eb); color: #fff; border: 0; padding: 12px 25px; border-radius: 25px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: .3s; box-shadow: 0 5px 15px rgba(59,130,246,.3); width: 100%; }
+        .btn-submit-review:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,.5); }
+        .reviews-section { margin-top: 2rem; width: 100%; text-align: center; } .rating-summary { margin-bottom: 2.5rem; }
+        .rating-summary .stars { color: #f59e0b; font-size: 2rem; letter-spacing: 3px; } .rating-summary p { font-size: 1.15rem; color: #c8d3ea; margin-top: 10px; }
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 1.5rem; text-align: left; }
+        .review-card { background: rgba(17,29,52,.4); padding: 1.6rem; border-radius: 20px; border: 1px solid rgba(34,192,93,.2); position: relative; transition: .3s; overflow-wrap: anywhere; }
+        .review-card:hover { border-color: rgba(34,192,93,.6); transform: translateY(-3px); }
+        .review-card i.quote { position: absolute; top: 20px; right: 20px; color: rgba(255,255,255,.08); font-size: 3.5rem; pointer-events: none; }
+        .review-stars { color: #f59e0b; font-size: 1rem; margin-bottom: 12px; } .review-text { font-style: italic; color: #e8eef8; font-size: .95rem; line-height: 1.6; margin-bottom: 18px; position: relative; z-index: 1; white-space: pre-wrap; }
+        .reviewer-info { display: flex; align-items: center; gap: 12px; border-top: 1px solid rgba(255,255,255,.1); padding-top: 12px; min-width: 0; }
+        .reviewer-info .avatar { width: 42px; height: 42px; flex: 0 0 42px; background: linear-gradient(135deg,#22c05d,#16a34a); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
+        .reviewer-details { display: flex; flex-direction: column; min-width: 0; } .reviewer-info .name { font-weight: 700; color: #f5f9ff; font-size: 1rem; overflow-wrap: anywhere; }
+        .reviewer-info .role { font-size: .8rem; color: #81c784; margin-top: 2px; }
+        #error-msg { color: #ef4444; font-size: .95rem; margin: 15px auto 0; display: none; font-weight: 700; text-align: center; max-width: 420px; }
+        #review-status { min-height: 1.2em; margin: 10px 0 0; font-size: .9rem; color: #c8d3ea; }
+        .empty-reviews { color: #94a3b8; grid-column: 1/-1; text-align: center; padding: 20px; }
+        footer { margin-top: 4rem; text-align: center; color: #64748b; font-size: .85rem; padding-bottom: 2rem; }
+        @media (max-width: 520px) {
+            .container { padding: 1.5rem .85rem; } .auth-card { padding: 28px 16px; border-radius: 20px; }
+            .review-form-card { padding: 20px 16px; } .section-title { font-size: 1.45rem; }
+            .features-grid { grid-template-columns: 1fr; } .reviews-grid { grid-template-columns: 1fr; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen" aria-label="Loading ExamMate">
+        <div class="logo-wrap" aria-hidden="true">
+            <span class="letter col-dark from-tl" style="animation-delay:0s">E</span>
+            <span class="letter col-dark from-top" style="animation-delay:.06s">x</span>
+            <span class="letter col-dark from-tr" style="animation-delay:.12s">a</span>
+            <span class="letter col-dark from-left" style="animation-delay:.18s">m</span>
+            <span class="letter col-blue from-right" style="animation-delay:.24s">M</span>
+            <span class="letter col-blue from-bl" style="animation-delay:.30s">a</span>
+            <span class="letter col-blue from-bottom" style="animation-delay:.36s">t</span>
+            <span class="e-wrap"><span class="letter col-blue from-br" style="animation-delay:.42s">e</span>
+                <svg class="sparkle" viewBox="0 0 42 42" aria-hidden="true"><line class="s1" x1="12" y1="34" x2="4" y2="18"></line><line class="s2" x1="21" y1="34" x2="21" y2="10"></line><line class="s3" x1="30" y1="34" x2="38" y2="18"></line></svg>
+            </span>
+        </div>
+        <div class="underline-box"><svg viewBox="0 0 260 30" width="100%" height="30" aria-hidden="true"><path class="underline-path" pathLength="1" d="M10,20 C90,5 170,5 250,15"></path></svg></div>
+        <div class="loading-text">ExamMate is starting<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    </div>
+
+    <main id="main-content">
+        <div class="container">
+            <header class="header-section">
+                <h1>ExamMate</h1>
+                <p>The Ultimate Smart Evaluation &amp; Online Examination Platform</p>
+            </header>
+
+            <section class="auth-card" aria-labelledby="auth-heading">
+                <h2 id="auth-heading">Get Started with ExamMate</h2>
+                <button type="button" class="btn-google" id="btn-google-login">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" width="22" height="22">
+                    <span>Continue with Google</span>
+                </button>
+                <div class="auth-divider"><span>OR</span></div>
+                <button type="button" class="btn-email" id="btn-show-email" aria-expanded="false" aria-controls="email-flow-container">
+                    <i class="fas fa-envelope" aria-hidden="true"></i> Continue with Email
+                </button>
+
+                <div class="email-auth-box" id="email-flow-container">
+                    <div id="step-email">
+                        <h3>Sign In / Sign Up</h3>
+                        <label for="email-input">Email Address</label>
+                        <input type="email" id="email-input" placeholder="e.g. student@example.com" autocomplete="email" inputmode="email" maxlength="255" required>
+                        <button type="button" class="btn-action" id="email-next-btn">Next <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+                    </div>
+                    <div id="step-password" hidden>
+                        <h3>Enter Password</h3>
+                        <label for="password-input">Password</label>
+                        <input type="password" id="password-input" placeholder="Your password" autocomplete="current-password" maxlength="128">
+                        <button type="button" class="forgot-pass" id="forgot-pass-btn">Forgot Password?</button>
+                        <button type="button" class="btn-action" id="login-password-btn">Log In</button>
+                    </div>
+                    <div id="step-otp" hidden>
+                        <h3>Verify Email</h3>
+                        <p style="font-size:.85rem;color:#4b5563;margin-top:-10px;margin-bottom:15px;">A one-time verification code will be sent to your email.</p>
+                        <label for="otp-input">Enter 6-digit OTP</label>
+                        <input type="text" id="otp-input" placeholder="XXXXXX" maxlength="6" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}">
+                        <button type="button" class="btn-action" id="verify-otp-btn">Verify OTP</button>
+                    </div>
+                    <div id="step-set-password" hidden>
+                        <h3>Set Password</h3>
+                        <label for="new-password-input">New Password</label>
+                        <input type="password" id="new-password-input" placeholder="8–128 characters" autocomplete="new-password" minlength="8" maxlength="128">
+                        <button type="button" class="btn-action" id="set-password-btn">Save &amp; Continue</button>
+                    </div>
+                </div>
+                <div id="error-msg" role="alert" aria-live="polite"></div>
+            </section>
+
+            <section class="features-section" aria-labelledby="features-heading">
+                <h2 class="section-title" id="features-heading"><i class="fas fa-star" style="color:#f59e0b" aria-hidden="true"></i> Key Platform Features</h2>
+                <div class="features-grid">
+                    <article class="feature-card"><div class="feature-header"><div class="feature-icon"><i class="fas fa-clock" aria-hidden="true"></i></div><strong>Smart Timers</strong></div><p>Real-time countdown exam environment with customizable limits.</p></article>
+                    <article class="feature-card"><div class="feature-header"><div class="feature-icon"><i class="fas fa-robot" aria-hidden="true"></i></div><strong>AI Smart Paste</strong></div><p>Teachers can auto-import questions easily using AI integrations.</p></article>
+                    <article class="feature-card"><div class="feature-header"><div class="feature-icon"><i class="fas fa-camera" aria-hidden="true"></i></div><strong>Handwritten Uploads</strong></div><p>Built-in camera scanner for uploading subjective exam papers easily.</p></article>
+                    <article class="feature-card"><div class="feature-header"><div class="feature-icon"><i class="fas fa-shield-alt" aria-hidden="true"></i></div><strong>Anti-Cheat Shield</strong></div><p>Advanced tab-switch tracking and auto-submit cheat prevention.</p></article>
+                </div>
+            </section>
+
+            <section class="app-banner" aria-labelledby="download-heading">
+                <h3 id="download-heading"><i class="fab fa-android" style="color:#22c05d" aria-hidden="true"></i> Download Android App</h3>
+                <p>Get our official Ad-Free Android App for detailed guidelines &amp; faster experience.</p>
+                <a href="/download" class="btn-download-link"><i class="fas fa-download" aria-hidden="true"></i> Go to Download Page</a>
+            </section>
+
+            <section class="review-form-card" aria-labelledby="review-form-heading">
+                <h3 id="review-form-heading"><i class="fas fa-pen-nib" aria-hidden="true"></i> Share Your Rating &amp; Feedback</h3>
+                <form id="reviewForm">
+                    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                        <div class="form-group" style="flex:1;min-width:240px;">
+                            <label for="revName">Your Full Name</label>
+                            <input type="text" id="revName" class="form-control" placeholder="e.g. Rahul Sharma" maxlength="100" autocomplete="name" required>
+                        </div>
+                        <div class="form-group" style="flex:1;min-width:240px;">
+                            <label for="revRole">Select Your Role</label>
+                            <select id="revRole" class="form-control"><option value="Student">I am a Student</option><option value="Teacher">I am a Teacher</option></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label id="rating-label">Rate ExamMate</label>
+                        <div class="star-rating-select" id="starContainer" role="group" aria-labelledby="rating-label" aria-label="Choose a rating from one to five stars">
+                            <i class="fas fa-star" data-val="1" role="button" tabindex="0" aria-label="1 star" aria-pressed="false"></i>
+                            <i class="fas fa-star" data-val="2" role="button" tabindex="0" aria-label="2 stars" aria-pressed="false"></i>
+                            <i class="fas fa-star" data-val="3" role="button" tabindex="0" aria-label="3 stars" aria-pressed="false"></i>
+                            <i class="fas fa-star" data-val="4" role="button" tabindex="0" aria-label="4 stars" aria-pressed="false"></i>
+                            <i class="fas fa-star" data-val="5" role="button" tabindex="0" aria-label="5 stars" aria-pressed="true"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="revText">Your Review</label>
+                        <textarea id="revText" class="form-control" rows="3" maxlength="2000" placeholder="Write your experience or feedback..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit-review" id="submit-review-btn">Publish Review</button>
+                    <p id="review-status" role="status" aria-live="polite"></p>
+                </form>
+            </section>
+
+            <section class="reviews-section" aria-labelledby="reviews-heading">
+                <h2 class="section-title" id="reviews-heading"><i class="fas fa-comments" style="color:#3b82f6" aria-hidden="true"></i> User Feedback</h2>
+                <div class="rating-summary">
+                    <div class="stars" id="avgStars" aria-label="Average rating not available"><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i></div>
+                    <p><strong id="avgScore" style="color:#fff;font-size:1.3rem;">—</strong> / 5.0 Based on <span id="totalCount" style="font-weight:bold;">0</span> review(s)</p>
+                </div>
+                <div class="reviews-grid" id="reviewsGrid" aria-live="polite"><p class="empty-reviews">Loading reviews...</p></div>
+            </section>
+
+            <footer><p>© 2026 ExamMate Educational Platform. All rights reserved.</p></footer>
+        </div>
+    </main>
+
+    <!-- Firebase Google Authentication. The backend verifies the Google OAuth ID token. -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
+            authDomain: "exammate-4dfa2.firebaseapp.com",
+            projectId: "exammate-4dfa2",
+            storageBucket: "exammate-4dfa2.firebasestorage.app",
+            messagingSenderId: "424847388051",
+            appId: "1:424847388051:web:73730432aaddc54e48c66"
+        };
+
+        const firebaseApp = initializeApp(firebaseConfig);
+        const firebaseAuth = getAuth(firebaseApp);
+        const googleProvider = new GoogleAuthProvider();
+        googleProvider.setCustomParameters({ prompt: "select_account" });
+
+        async function postJson(url, payload) {
+            const response = await fetch(url, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                body: JSON.stringify(payload || {})
+            });
+            let data;
+            try { data = await response.json(); }
+            catch (_) { throw new Error("The server returned an unreadable response. Please try again."); }
+            if (!response.ok && !data.error) throw new Error(`Request failed (${response.status}). Please try again.`);
+            return data;
+        }
+
+        async function finishGoogleLogin(result) {
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const googleIdToken = credential && credential.idToken;
+            if (!googleIdToken) {
+                throw new Error("Google did not provide a verifiable sign-in token. Please try again.");
+            }
+
+            const response = await postJson("/api/google-login", { id_token: googleIdToken });
+            if (!response.success) throw new Error(response.error || "Google sign-in could not be completed.");
+
+            const user = result.user;
+            const email = (user && user.email) ? user.email : "";
+            if (response.is_new) {
+                localStorage.setItem("temp_user", JSON.stringify({
+                    email,
+                    name: response.name || (user && user.displayName) || "",
+                    photo_url: response.photo_url || (user && user.photoURL) || ""
+                }));
+                window.location.replace("/setup_profile.html");
+                return;
+            }
+
+            window.saveSessionLocally(email, response.name || (user && user.displayName) || "", response.role || "Student");
+            window.location.replace(response.redirect_url || "/student_dashboard.html");
+        }
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            const loadingScreen = document.getElementById("loading-screen");
+            const mainContent = document.getElementById("main-content");
+            const startedAt = Date.now();
+            const minAnimationMs = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 250 : 1800;
+            let startupError = "";
+
+            try {
+                const redirectResult = await getRedirectResult(firebaseAuth);
+                if (redirectResult && redirectResult.user) {
+                    await finishGoogleLogin(redirectResult);
+                    return;
+                }
+            } catch (error) {
+                console.error("Google redirect sign-in failed:", error);
+                startupError = error && error.message ? error.message : "Google sign-in failed. Please try again.";
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get("logout") === "1") {
+                window.clearSession(true);
+                window.history.replaceState({}, document.title, "/");
+            }
+
+            // Login status is determined by the server-side Flask session, never by a client-supplied email.
+            try {
+                const status = await postJson("/api/check-login-status", {});
+                if (status.logged_in) {
+                    window.saveSessionLocally(status.email, status.name, status.role);
+                    window.location.replace(status.redirect_url || "/student_dashboard.html");
+                    return;
+                }
+            } catch (error) {
+                console.warn("Could not check the current login session:", error);
+            }
+
+            window.clearSession(false);
+            const remaining = Math.max(0, minAnimationMs - (Date.now() - startedAt));
+            window.setTimeout(() => {
+                loadingScreen.style.opacity = "0";
+                window.setTimeout(() => {
+                    loadingScreen.style.display = "none";
+                    mainContent.style.display = "flex";
+                    window.loadReviews();
+                    if (startupError) window.showError(startupError);
+                }, 300);
+            }, remaining);
+        });
+
+        document.getElementById("btn-google-login").addEventListener("click", async () => {
+            const button = document.getElementById("btn-google-login");
+            if (button.disabled) return;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>Redirecting to Google...</span>';
+            try {
+                await signInWithRedirect(firebaseAuth, googleProvider);
+            } catch (error) {
+                console.error("Unable to start Google sign-in:", error);
+                window.showError(error && error.message ? error.message : "Could not start Google sign-in. Please try again.");
+                button.disabled = false;
+                button.innerHTML = '<img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" width="22" height="22"><span>Continue with Google</span>';
+            }
+        });
+    </script>
+
+    <!-- Email Authentication -->
+    <script>
+        let currentEmail = "";
+        const emailFlow = document.getElementById("email-flow-container");
+        const errorMessage = document.getElementById("error-msg");
+
+        function showError(message) {
+            errorMessage.textContent = String(message || "Something went wrong. Please try again.");
+            errorMessage.style.display = "block";
+        }
+        window.showError = showError;
+
+        function clearError() {
+            errorMessage.textContent = "";
+            errorMessage.style.display = "none";
+        }
+
+        function showStep(stepId) {
+            ["step-email", "step-password", "step-otp", "step-set-password"].forEach((id) => {
+                const step = document.getElementById(id);
+                step.hidden = id !== stepId;
+            });
+            clearError();
+        }
+
+        function setButtonLoading(button, loadingText) {
+            if (!button || button.dataset.loading === "true") return null;
+            const original = button.innerHTML;
+            button.dataset.loading = "true";
+            button.disabled = true;
+            button.innerHTML = `<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ${loadingText}`;
+            return () => {
+                button.innerHTML = original;
+                button.disabled = false;
+                delete button.dataset.loading;
+            };
+        }
+
+        async function postJson(url, payload) {
+            const response = await fetch(url, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                body: JSON.stringify(payload || {})
+            });
+            let data;
+            try { data = await response.json(); }
+            catch (_) { throw new Error("The server returned an unreadable response. Please try again."); }
+            if (!response.ok && !data.error) throw new Error(`Request failed (${response.status}). Please try again.`);
+            return data;
+        }
+
+        document.getElementById("btn-show-email").addEventListener("click", () => {
+            const willOpen = emailFlow.style.display !== "block";
+            emailFlow.style.display = willOpen ? "block" : "none";
+            document.getElementById("btn-show-email").setAttribute("aria-expanded", String(willOpen));
+            if (willOpen) document.getElementById("email-input").focus();
+            clearError();
+        });
+
+        async function checkEmail() {
+            clearError();
+            const email = document.getElementById("email-input").value.trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255) {
+                showError("Please enter a valid email address.");
+                return;
+            }
+            currentEmail = email;
+            const restore = setButtonLoading(document.getElementById("email-next-btn"), "Please wait...");
+            try {
+                const data = await postJson("/api/email-auth-step1", { email });
+                if (data.requires_password) {
+                    showStep("step-password");
+                    document.getElementById("password-input").focus();
+                } else if (data.requires_otp) {
+                    showStep("step-otp");
+                    document.getElementById("otp-input").focus();
+                } else {
+                    showError(data.error || "Could not continue. Please try again.");
+                }
+            } catch (error) {
+                showError(error.message || "Server connection error.");
+            } finally { if (restore) restore(); }
+        }
+        window.checkEmail = checkEmail;
+        document.getElementById("email-next-btn").addEventListener("click", checkEmail);
+        document.getElementById("email-input").addEventListener("keydown", (event) => { if (event.key === "Enter") checkEmail(); });
+
+        async function loginWithPassword() {
+            clearError();
+            const password = document.getElementById("password-input").value;
+            if (!password) { showError("Enter your password."); return; }
+            const restore = setButtonLoading(document.getElementById("login-password-btn"), "Please wait...");
+            try {
+                const data = await postJson("/api/login-with-password", { email: currentEmail, password });
+                if (data.success) {
+                    window.saveSessionLocally(data.email, data.name, data.role);
+                    window.location.replace(data.redirect_url || "/student_dashboard.html");
+                    return;
+                }
+                showError(data.error || "Incorrect email or password.");
+            } catch (error) { showError(error.message || "Server error."); }
+            finally { if (restore) restore(); }
+        }
+        window.loginWithPassword = loginWithPassword;
+        document.getElementById("login-password-btn").addEventListener("click", loginWithPassword);
+        document.getElementById("password-input").addEventListener("keydown", (event) => { if (event.key === "Enter") loginWithPassword(); });
+
+        async function startForgotPass() {
+            clearError();
+            if (!currentEmail) { showError("Enter your email address first."); showStep("step-email"); return; }
+            const restore = setButtonLoading(document.getElementById("forgot-pass-btn"), "Sending OTP...");
+            try {
+                const data = await postJson("/api/email-auth-step1", { email: currentEmail, forgot: true });
+                if (data.requires_otp) {
+                    showStep("step-otp");
+                    document.getElementById("otp-input").focus();
+                } else showError(data.error || "Failed to send OTP.");
+            } catch (error) { showError(error.message || "Server error."); }
+            finally { if (restore) restore(); }
+        }
+        window.startForgotPass = startForgotPass;
+        document.getElementById("forgot-pass-btn").addEventListener("click", startForgotPass);
+
+        async function verifyOtp() {
+            clearError();
+            const otp = document.getElementById("otp-input").value.trim();
+            if (!/^\d{6}$/.test(otp)) { showError("Enter the 6-digit OTP."); return; }
+            const restore = setButtonLoading(document.getElementById("verify-otp-btn"), "Verifying...");
+            try {
+                const data = await postJson("/api/verify-otp", { email: currentEmail, otp });
+                if (data.success) {
+                    showStep("step-set-password");
+                    document.getElementById("new-password-input").focus();
+                } else showError(data.error || "Invalid or expired OTP.");
+            } catch (error) { showError(error.message || "Server error."); }
+            finally { if (restore) restore(); }
+        }
+        window.verifyOtp = verifyOtp;
+        document.getElementById("verify-otp-btn").addEventListener("click", verifyOtp);
+        document.getElementById("otp-input").addEventListener("keydown", (event) => { if (event.key === "Enter") verifyOtp(); });
+
+        async function setNewPassword() {
+            clearError();
+            const newPassword = document.getElementById("new-password-input").value;
+            if (newPassword.length < 8 || newPassword.length > 128) {
+                showError("Password must be 8–128 characters long.");
+                return;
+            }
+            const restore = setButtonLoading(document.getElementById("set-password-btn"), "Saving...");
+            try {
+                const data = await postJson("/api/set-password", { email: currentEmail, password: newPassword });
+                if (!data.success) { showError(data.error || "Failed to set password."); return; }
+                if (data.is_new) {
+                    localStorage.setItem("temp_user", JSON.stringify({ email: currentEmail, name: "", photo_url: "" }));
+                    window.location.replace("/setup_profile.html");
+                    return;
+                }
+                window.saveSessionLocally(data.email, data.name, data.role);
+                window.location.replace(data.redirect_url || "/student_dashboard.html");
+            } catch (error) { showError(error.message || "Server error."); }
+            finally { if (restore) restore(); }
+        }
+        window.setNewPassword = setNewPassword;
+        document.getElementById("set-password-btn").addEventListener("click", setNewPassword);
+        document.getElementById("new-password-input").addEventListener("keydown", (event) => { if (event.key === "Enter") setNewPassword(); });
+
+        // Compatibility helpers for existing pages that read the old local session hints.
+        function setLegacyEmailCookie(email) {
+            if (!email) return;
+            const secure = window.location.protocol === "https:" ? "; Secure" : "";
+            document.cookie = `userEmail=${email}; Max-Age=31536000; Path=/; SameSite=Lax${secure}`;
+        }
+
+        function clearLegacyEmailCookie() {
+            const secure = window.location.protocol === "https:" ? "; Secure" : "";
+            document.cookie = `userEmail=; Max-Age=0; Path=/; SameSite=Lax${secure}`;
+        }
+
+        function saveSessionLocally(email, name, role) {
+            if (email) {
+                localStorage.setItem("userEmail", email);
+                localStorage.setItem("user", JSON.stringify({ email, name: name || "", role: role || "Student" }));
+                setLegacyEmailCookie(email);
+            }
+            if (name) localStorage.setItem("userName", name);
+        }
+        window.saveSessionLocally = saveSessionLocally;
+
+        function clearSession(clearPending = false) {
+            ["userEmail", "userName", "user"].forEach((key) => localStorage.removeItem(key));
+            clearLegacyEmailCookie();
+            if (clearPending) localStorage.removeItem("temp_user");
+        }
+        window.clearSession = clearSession;
+    </script>
+
+    <!-- Rating and safe review rendering -->
+    <script>
+        let selectedRating = 5;
+        const ratingStars = Array.from(document.querySelectorAll("#starContainer [data-val]"));
+
+        function updateStarDisplay() {
+            ratingStars.forEach((star, index) => {
+                const active = index < selectedRating;
+                star.classList.toggle("fas", active);
+                star.classList.toggle("far", !active);
+                star.setAttribute("aria-pressed", String(Number(star.dataset.val) === selectedRating));
+            });
+        }
+        ratingStars.forEach((star) => {
+            const choose = () => { selectedRating = Number(star.dataset.val); updateStarDisplay(); };
+            star.addEventListener("click", choose);
+            star.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(); }
+            });
+        });
+        updateStarDisplay();
+
+        function makeStarRow(rating) {
+            const row = document.createElement("div");
+            row.className = "review-stars";
+            const safeRating = Math.max(0, Math.min(5, Math.round(Number(rating) || 0)));
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement("i");
+                star.className = i <= safeRating ? "fas fa-star" : "far fa-star";
+                if (i > safeRating) star.style.color = "rgba(245,158,11,.3)";
+                star.setAttribute("aria-hidden", "true");
+                row.appendChild(star);
+            }
+            return row;
+        }
+
+        function renderReviews(reviews) {
+            const grid = document.getElementById("reviewsGrid");
+            grid.replaceChildren();
+            if (!Array.isArray(reviews) || reviews.length === 0) {
+                const empty = document.createElement("p");
+                empty.className = "empty-reviews";
+                empty.textContent = "No reviews yet. Be the first to leave one!";
+                grid.appendChild(empty);
+                return;
+            }
+
+            reviews.slice(0, 60).forEach((review) => {
+                if (!review || typeof review !== "object") return;
+                const name = String(review.name || "ExamMate User").slice(0, 100);
+                const reviewText = String(review.text || "").slice(0, 2000);
+                const role = String(review.role || "Student").toLowerCase() === "teacher" ? "Teacher" : "Student";
+                const date = String(review.date || "").slice(0, 40);
+                const card = document.createElement("article");
+                card.className = "review-card";
+
+                const quote = document.createElement("i");
+                quote.className = "fas fa-quote-right quote";
+                quote.setAttribute("aria-hidden", "true");
+                card.appendChild(quote);
+                card.appendChild(makeStarRow(review.rating));
+
+                const paragraph = document.createElement("p");
+                paragraph.className = "review-text";
+                paragraph.textContent = `“${reviewText}”`;
+                card.appendChild(paragraph);
+
+                const info = document.createElement("div");
+                info.className = "reviewer-info";
+                const avatar = document.createElement("div");
+                avatar.className = "avatar";
+                avatar.textContent = Array.from(name)[0] ? Array.from(name)[0].toUpperCase() : "E";
+                const details = document.createElement("div");
+                details.className = "reviewer-details";
+                const nameElement = document.createElement("span");
+                nameElement.className = "name";
+                nameElement.textContent = name;
+                const roleElement = document.createElement("span");
+                roleElement.className = "role";
+                roleElement.style.color = role === "Teacher" ? "#f59e0b" : "#3b82f6";
+                const roleIcon = document.createElement("i");
+                roleIcon.className = role === "Teacher" ? "fas fa-chalkboard-teacher" : "fas fa-user-graduate";
+                roleIcon.setAttribute("aria-hidden", "true");
+                roleElement.append(roleIcon, document.createTextNode(` ${role}${date ? ` • ${date}` : ""}`));
+                details.append(nameElement, roleElement);
+                info.append(avatar, details);
+                card.appendChild(info);
+                grid.appendChild(card);
+            });
+        }
+
+        async function loadReviews() {
+            const grid = document.getElementById("reviewsGrid");
+            try {
+                const response = await fetch("/api/get-reviews", { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json" } });
+                if (!response.ok) throw new Error(`Reviews request failed (${response.status})`);
+                const data = await response.json();
+                if (!data.success) throw new Error(data.error || "Could not load reviews.");
+
+                const average = Number(data.avg_rating);
+                const count = Math.max(0, Number(data.total_reviews) || 0);
+                document.getElementById("avgScore").textContent = count && Number.isFinite(average) ? average.toFixed(1) : "—";
+                document.getElementById("totalCount").textContent = String(count);
+                const averageStars = document.getElementById("avgStars");
+                averageStars.replaceChildren();
+                const roundedAverage = count && Number.isFinite(average) ? Math.max(0, Math.min(5, Math.round(average))) : 0;
+                for (let i = 1; i <= 5; i++) {
+                    const star = document.createElement("i");
+                    star.className = i <= roundedAverage ? "fas fa-star" : "far fa-star";
+                    star.setAttribute("aria-hidden", "true");
+                    averageStars.appendChild(star);
+                }
+                averageStars.setAttribute("aria-label", count ? `Average rating ${average.toFixed(1)} out of 5` : "No ratings yet");
+                renderReviews(data.reviews);
+            } catch (error) {
+                console.warn("Error loading reviews:", error);
+                grid.replaceChildren();
+                const message = document.createElement("p");
+                message.className = "empty-reviews";
+                message.textContent = "Reviews are temporarily unavailable. Please try again later.";
+                grid.appendChild(message);
+            }
+        }
+        window.loadReviews = loadReviews;
+
+        document.getElementById("reviewForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const name = document.getElementById("revName").value.trim();
+            const role = document.getElementById("revRole").value;
+            const reviewText = document.getElementById("revText").value.trim();
+            const status = document.getElementById("review-status");
+            const button = document.getElementById("submit-review-btn");
+            status.textContent = "";
+
+            if (!name || name.length > 100 || !reviewText || reviewText.length > 2000) {
+                status.textContent = "Please enter a name and a review (maximum 2,000 characters).";
+                return;
+            }
+            const restore = (() => {
+                if (button.disabled) return null;
+                const original = button.textContent;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Submitting...';
+                return () => { button.textContent = original; button.disabled = false; };
+            })();
+
+            try {
+                const response = await fetch("/api/submit-review", {
+                    method: "POST", credentials: "same-origin",
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    body: JSON.stringify({ name, role: role === "Teacher" ? "Teacher" : "Student", rating: selectedRating, text: reviewText })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.error || "Failed to submit review.");
+                document.getElementById("reviewForm").reset();
+                selectedRating = 5;
+                updateStarDisplay();
+                status.textContent = "Thank you! Your feedback has been submitted.";
+                await loadReviews();
+            } catch (error) {
+                status.textContent = error.message || "Error submitting review. Please try again.";
+            } finally { if (restore) restore(); }
+        });
+    </script>
+</body>
+</html>
