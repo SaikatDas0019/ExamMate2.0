@@ -285,8 +285,8 @@
     <!-- Firebase Google Authentication. The backend verifies the Google OAuth ID token. -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        
         const firebaseConfig = {
             apiKey: "AIzaSyDEAVNT-8aGWYU-fWiFJd7mdjAmcOE4P8o",
             authDomain: "exammate-4dfa2.firebaseapp.com",
@@ -348,23 +348,7 @@
             const minAnimationMs = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 250 : 1800;
             let startupError = "";
 
-            try {
-                const redirectResult = await getRedirectResult(firebaseAuth);
-                if (redirectResult && redirectResult.user) {
-                    await finishGoogleLogin(redirectResult);
-                    return;
-                }
-            } catch (error) {
-                console.error("Google redirect sign-in failed:", error);
-                startupError = error && error.message ? error.message : "Google sign-in failed. Please try again.";
-            }
-
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get("logout") === "1") {
-                window.clearSession(true);
-                window.history.replaceState({}, document.title, "/");
-            }
-
+        
             // Login status is determined by the server-side Flask session, never by a client-supplied email.
             try {
                 const status = await postJson("/api/check-login-status", {});
@@ -396,7 +380,8 @@
             button.disabled = true;
             button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>Redirecting to Google...</span>';
             try {
-                await signInWithRedirect(firebaseAuth, googleProvider);
+                const result = await signInWithPopup(firebaseAuth, googleProvider);
+                await finishGoogleLogin(result);
             } catch (error) {
                 console.error("Unable to start Google sign-in:", error);
                 window.showError(error && error.message ? error.message : "Could not start Google sign-in. Please try again.");
