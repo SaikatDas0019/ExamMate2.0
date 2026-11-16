@@ -138,48 +138,82 @@ def _db_user_by_email(email):
         conn.close()
 
 def send_otp_email(receiver_email, otp):
-    api_key = os.getenv("RESEND_API_KEY")
-    sender = os.getenv("RESEND_FROM_EMAIL")
+    subject = "ExamMate Login OTP"
+    body_text = (
+        f"Welcome to ExamMate! Your OTP is: {otp}\n\n"
+        "This code expires in 5 minutes. Do not share it with anyone."
+    )
 
-    if not api_key or not sender:
-        app.logger.error("Resend email API is not configured.")
-        return False
-
-    payload = {
-        "from": sender,
-        "to": [receiver_email],
-        "subject": "ExamMate Login OTP",
-        "text": (
-            f"Welcome to ExamMate! Your OTP is: {otp}\n\n"
-            "This code expires in 5 minutes. Do not share it with anyone."
-        )
-    }
-
-    try:
-        response = requests.post(
-            "https://api.resend.com/emails",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
-            },
-            json=payload,
-            timeout=20
-        )
-
-        if response.status_code not in (200, 201):
-            app.logger.error(
-                "Resend API failed: %s %s",
-                response.status_code,
-                response.text[:1000]
+    # ১. Google Apps Script Webhook (Render Free Tier যদি SMTP পোর্ট ব্লক করে, তবে ১০০% ফ্রি বিকল্প)
+    script_url = (os.getenv("GOOGLE_SCRIPT_URL") or "").strip()
+    if script_url:
+        try:
+            resp = requests.post(
+                script_url,
+                json={"to": receiver_email, "subject": subject, "text": body_text},
+                timeout=15,
             )
-            return False
+            if resp.status_code == 200 and resp.json().get("success"):
+                return True
+            app.logger.error("Google Script Email failed: %s %s", resp.status_code, resp.text[:300])
+        except Exception:
+            app.logger.exception("Google Script Email request failed")
 
-        return True
+    # ২. Gmail SMTP সিস্টেম (Render-এ থাকা SMTP_FROM_EMAIL এবং SMTP_PASSWORD / MAIL_APP_PASSWORD ব্যবহার করবে)
+    smtp_user = (os.getenv("SMTP_FROM_EMAIL") or os.getenv("RESEND_FROM_EMAIL") or "").strip()
+    smtp_pass = (os.getenv("SMTP_PASSWORD") or os.getenv("MAIL_APP_PASSWORD") or "").strip().replace(" ", "")
 
-    except requests.RequestException:
-        app.logger.exception("Resend email request failed")
-        return False
+    if smtp_user and smtp_pass:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = f"ExamMate <{smtp_user}>"
+        msg["To"] = receiver_email
+        msg.set_content(body_text)
 
+        # প্রথমে Port 465 (SSL) এবং কাজ না করলে Port 587 (TLS) দিয়ে চেষ্টা করবে
+        for port, use_ssl in ((465, True), (587, False)):
+            try:
+                if use_ssl:
+                    with smtplib.SMTP_SSL("smtp.gmail.com", port, timeout=10) as server:
+                        server.login(smtp_user, smtp_pass)
+                        server.send_message(msg)
+                else:
+                    with smtplib.SMTP("smtp.gmail.com", port, timeout=10) as server:
+                        server.ehlo()
+                        server.starttls()
+                        server.ehlo()
+                        server.login(smtp_user, smtp_pass)
+                        server.send_message(msg)
+                return True
+            except Exception as exc:
+                app.logger.error("SMTP failed on port %s: %s", port, exc)
+
+    # ৩. Resend API (ভবিষ্যতে কাস্টম ডোমেইন ভেরিফাই করলে কাজ করবে)
+    api_key = (os.getenv("RESEND_API_KEY") or "").strip()
+    sender = (os.getenv("RESEND_FROM_EMAIL") or "").strip()
+    if api_key and sender and not sender.lower().endswith("@gmail.com"):
+        try:
+            response = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "from": sender,
+                    "to": [receiver_email],
+                    "subject": subject,
+                    "text": body_text,
+                },
+                timeout=15,
+            )
+            if response.status_code in (200, 201):
+                return True
+            app.logger.error("Resend API failed: %s %s", response.status_code, response.text[:500])
+        except requests.RequestException:
+            app.logger.exception("Resend email request failed")
+
+    return False
 
 @app.before_request
 def enforce_route_permissions():
