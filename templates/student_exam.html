@@ -16,16 +16,22 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <style>
-        :root { color-scheme: light; }
-        body { 
-            background-color: #f9fafb; color: #333333; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; justify-content: center; 
+        :root { color-scheme: light; --primary:#416cf0; --text:#172344; --muted:#7885a1; --border:#e8edfa; }
+        * { box-sizing: border-box; }
+        body {
+            background: #eef2ff; color: var(--text); font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased;
             -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none;
             overscroll-behavior-y: none;
         }
-        .container { width: 100%; max-width: 450px; background-color: #ffffff; min-height: 100vh; padding: 0 1.5rem 1.5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
-        
-        .sticky-header { position: sticky; top: 0; background-color: #ffffff; z-index: 999; padding: 1rem 0 0.8rem 0; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .btn-back { background: transparent; border: none; color: #111827; font-size: 2.2rem; font-weight: bold; cursor: pointer; line-height: 0.8; padding: 0; }
+        .container { width: 100%; max-width: 480px; background: #f7f8ff; min-height: 100vh; padding: 0 15px 24px; box-shadow: 0 0 45px rgba(36,55,110,.07); position: relative; overflow-x: hidden; }
+        .top-header { position: sticky; top: 0; z-index: 900; height: 68px; margin: 0 -15px 18px; padding: 0 17px; background: rgba(255,255,255,.96); border-bottom: 1px solid rgba(220,228,250,.85); box-shadow: 0 8px 24px rgba(42,61,120,.06); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display:flex; align-items:center; justify-content:flex-start; }
+        .profile-header-brand { display:flex; align-items:center; gap:10px; pointer-events:none; }
+        .brand-mark { width:39px; height:39px; display:flex; align-items:center; justify-content:center; color:#fff; border-radius:13px; font-size:1.1rem; background:linear-gradient(145deg,#4e8cff,#6554ed); box-shadow:0 6px 14px rgba(72,104,236,.28); }
+        .brand-copy { display:flex; flex-direction:column; gap:1px; line-height:1.05; }
+        .brand-copy strong { color:#315fe0; font-size:1.22rem; font-weight:900; letter-spacing:-.55px; }
+        .brand-copy span { color:#8a96b0; font-size:.55rem; font-weight:850; letter-spacing:1.25px; }
+        .section-heading { margin: 0 0 16px; color:#202e54; font-size:1.15rem; font-weight:800; }
         .message-box { text-align: center; margin-top: 50px; }
         .message-box h2 { color: #ef4444; }
         
@@ -91,17 +97,20 @@
 <body>
 
     <div class="container">
-        
+        <header class="top-header" aria-label="ExamMate exam header">
+            <div class="profile-header-brand">
+                <span class="brand-mark"><i class="fas fa-graduation-cap"></i></span>
+                <div class="brand-copy"><strong>ExamMate</strong><span>EXAM ROOM</span></div>
+            </div>
+        </header>
+
         <div id="error-section" class="message-box">
             <h2 id="error-msg">Loading Exam...</h2>
             <button class="btn btn-next" style="margin-top:20px;" onclick="window.location.href='student_dashboard.html'">Return to Dashboard 🏠</button>
         </div>
 
         <div id="instruction-section" class="instruction-box">
-            <div class="sticky-header">
-                <button class="btn-back" onclick="handleBackAction()">&nbsp; ‹ &nbsp;</button>
-                <h2 style="margin:0; font-size: 1.2rem; color: #1e3a8a;">Exam Rules & Warning</h2>
-            </div>
+            <h2 class="section-heading">Exam Rules &amp; Warning</h2>
             
             <ul class="rule-list">
                 <li><i class="fas fa-question-circle"></i> <div><strong>Total Questions:</strong> <span id="inst-q">0</span></div></li>
@@ -110,10 +119,11 @@
                 <li style="color: #dc2626;"><i class="fas fa-shield-alt" style="color: #dc2626;"></i> 
                     <div>
                         <strong>Strict Anti-Cheat Policy:</strong><br>
-                        ১. পরীক্ষা চলাকালীন ট্যাব বা অ্যাপ পরিবর্তন করা নিষেধ।<br>
+                        ১. পরীক্ষা চলাকালীন অন্য ট্যাব, অ্যাপ বা উইন্ডোতে যাওয়া যাবে না।<br>
                         ২. গুগল লেন্স বা অন্য কোনো ফ্লোটিং উইন্ডো ব্যবহার করা যাবে না।<br>
-                        ৩. স্ক্রিনশট তোলা সম্পূর্ণ নিষিদ্ধ।<br><br>
-                        <i>এই নিয়ম ভাঙলে আপনি ওয়ার্নিং পাবেন। ৫ বার ওয়ার্নিং পেলে পরীক্ষা বাতিল হয়ে যাবে! (ছবি তোলার সময় সিস্টেম নিজে থেকেই কিছুক্ষণের জন্য অ্যান্টি-চিট পজ করে রাখবে, তাই চিন্তার কিছু নেই।)</i>
+                        ৩. প্রশ্ন কপি, কাট বা পেস্ট করা যাবে না।<br>
+                        ৪. স্ক্রিনশট বা অন্য কোনোভাবে প্রশ্ন শেয়ার করা নিষিদ্ধ।<br><br>
+                        <i>সমর্থিত ব্রাউজার ইভেন্টে নিয়মভঙ্গ ধরা পড়লে ওয়ার্নিং হবে। ৫টি ওয়ার্নিং হলে পরীক্ষা অটো-সাবমিট হবে। ক্যামেরা/ফাইল পিকার ব্যবহারের সময় সংশ্লিষ্ট সাময়িক অ্যাপ-সুইচ ইভেন্ট উপেক্ষা করা হবে। সব ধরনের স্ক্রিনশট বা OS-স্তরের আচরণ ব্রাউজার নির্ভরযোগ্যভাবে শনাক্ত করতে পারে না।</i>
                     </div>
                 </li>
             </ul>
@@ -126,15 +136,12 @@
         </div>
 
         <div id="exam-section">
-            <div class="sticky-header">
-                <button class="btn-back" onclick="handleBackAction()">‹</button>
-                <div class="exam-header">
+            <div class="exam-header" style="margin: 4px 0 16px;">
                     <h2 id="display-exam-name">Exam Name</h2>
                     <div class="timer-box">
                         <button class="btn-pause" id="btn-pause" onclick="togglePause()">⏸️ Pause</button>
                         <div class="timer"><i class="fas fa-clock"></i> <span id="time-left">00:00</span></div>
                     </div>
-                </div>
             </div>
             
             <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
@@ -150,7 +157,7 @@
             <div class="nav-buttons">
                 <button class="btn btn-prev" id="btn-prev" onclick="changeQuestion(-1)">⬅️ Previous</button>
                 <button class="btn btn-next" id="btn-next" onclick="changeQuestion(1)">Next ➡️</button>
-                <button class="btn btn-submit" id="btn-submit" onclick="submitExam()" style="display:none;">Submit 🚀</button>
+                <button class="btn btn-submit" id="btn-submit" onclick="confirmManualSubmit()" style="display:none;">Submit 🚀</button>
             </div>
         </div>
 
@@ -161,10 +168,7 @@
         </div>
 
         <div id="result-section" class="result-box">
-            <div class="sticky-header">
-                <button class="btn-back" id="header-back-btn" onclick="window.location.href='student_dashboard.html'">‹</button>
-                <h2 style="margin:0; font-size: 1.2rem;">Exam Completed</h2>
-            </div>
+            <h2 class="section-heading">Exam Completed</h2>
             
             <div class="score-circle" id="final-score">0/0</div>
             <p class="success-text">Your answers have been submitted successfully!</p>
@@ -204,9 +208,17 @@
         let studentAnswers = {}; 
         let totalQuestions = 0;
         let totalMarks = 0; 
-        let timerInterval;
+        let timerInterval = null;
+        let autosaveInterval = null;
         let timeInSeconds = 0;
+        let isSubmitting = false;
+        let lastWarningAt = 0;
+        let lastVisibilityWarningAt = 0;
+        let allowUnloadPrompt = false;
+        const EXAM_STATE_VERSION = 2;
         let examMinutesLimit = 0;
+        let examStartedAt = null;
+        let isReattemptMode = false;
         let isPaused = false;
         let isExamActive = false;
         let warningsCount = 0;
@@ -233,12 +245,15 @@
         window.onload = async () => {
             const urlParams = new URLSearchParams(window.location.search);
             examCode = urlParams.get('code');
-            const isReattempt = urlParams.get('reattempt') === 'true'; 
+            const isReattempt = urlParams.get('reattempt') === 'true';
+            isReattemptMode = isReattempt;
 
             if (isReattempt) {
                 localStorage.removeItem(`exam_state_${examCode}`);
                 localStorage.removeItem(`exam_result_${examCode}`);
             }
+            // Remove legacy cached question payloads (the old endpoint exposed answer keys).
+            localStorage.removeItem(`exam_cache_${examCode}`);
 
             window.history.replaceState({section: 'instruction'}, "", window.location.href);
 
@@ -258,22 +273,16 @@
             }
 
             try {
-                const cachedExam = localStorage.getItem(`exam_cache_${examCode}`);
-                if (cachedExam) {
-                    const data = JSON.parse(cachedExam);
-                    processExamData(data, currentUserEmail, isReattempt);
-                }
-
-                const response = await fetch('/api/get-exam-questions', {
+                const response = await fetch('/api/get-exam-questions-v2', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify({ exam_code: examCode })
                 });
                 const data = await response.json();
 
-                if (data.success && data.questions.length > 0) {
-                    localStorage.setItem(`exam_cache_${examCode}`, JSON.stringify(data));
-                    processExamData(data, currentUserEmail, isReattempt);
-                } else if (!cachedExam) {
+                if (response.ok && data.success && Array.isArray(data.questions) && data.questions.length > 0) {
+                    await processExamData(data, currentUserEmail, isReattempt);
+                } else {
                     document.getElementById('error-msg').innerText = data.error || "No questions inside this exam!";
                     document.getElementById('error-section').style.display = 'block';
                 }
@@ -301,11 +310,17 @@
             document.getElementById('inst-time').innerText = examMinutesLimit;
             document.getElementById('inst-neg').innerText = negativeMarksPerWrong > 0 ? `-${negativeMarksPerWrong}` : "0 (No negative)";
 
-            const reviewResp = await fetch('/api/get-student-exam-review', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
-            });
-            const reviewData = await reviewResp.json();
+            let reviewData = { success: false, taken: false };
+            try {
+                const reviewResp = await fetch('/api/get-student-exam-review', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ email: currentUserEmail, exam_code: examCode })
+                });
+                reviewData = await reviewResp.json();
+            } catch (reviewError) {
+                console.warn('Could not load previous exam review:', reviewError);
+            }
 
             if(reviewData.success && reviewData.taken && !isReattempt) {
                 document.getElementById('instruction-section').style.display = 'none';
@@ -321,88 +336,155 @@
             }
 
             const savedState = localStorage.getItem(`exam_state_${examCode}`);
-            if(savedState) { 
-                startActualExam(true); 
-            } else {
+            if(savedState) {
+                try {
+                    const parsedState = JSON.parse(savedState);
+                    if (parsedState.version === EXAM_STATE_VERSION && Number(parsedState.timeLeft) > 0) {
+                        startActualExam(true);
+                        return;
+                    }
+                } catch (stateError) { console.warn('Invalid saved exam state:', stateError); }
+                localStorage.removeItem(`exam_state_${examCode}`);
+            }
+            {
                 document.getElementById('error-section').style.display = 'none';
                 document.getElementById('instruction-section').style.display = 'block';
             }
         }
 
         function startActualExam(isResuming = false) {
+            if (isExamActive) return;
             document.getElementById('instruction-section').style.display = 'none';
             document.getElementById('exam-section').style.display = 'block';
-            window.history.pushState({section: 'exam'}, "", window.location.href);
+            window.history.pushState({section: 'exam', examCode}, "", window.location.href);
             document.getElementById('display-exam-name').innerText = examName;
-            
-            enterFullScreen();
 
-            if(isResuming) {
+            if (isResuming) {
                 const savedState = localStorage.getItem(`exam_state_${examCode}`);
-                if(savedState) {
-                    const stateData = JSON.parse(savedState);
-                    timeInSeconds = stateData.timeLeft;
-                    studentAnswers = stateData.answers || {};
-                    currentIndex = stateData.currentIndex || 0;
-                    warningsCount = stateData.warnings || 0;
+                if (savedState) {
+                    try {
+                        const stateData = JSON.parse(savedState);
+                        timeInSeconds = Math.max(1, parseInt(stateData.timeLeft, 10) || 1);
+                        studentAnswers = stateData.answers && typeof stateData.answers === 'object' ? stateData.answers : {};
+                        currentIndex = Math.min(Math.max(0, parseInt(stateData.currentIndex, 10) || 0), totalQuestions - 1);
+                        warningsCount = Math.max(0, Math.min(5, parseInt(stateData.warnings, 10) || 0));
+                        examStartedAt = stateData.startedAt || new Date().toISOString();
+                    } catch (e) {
+                        timeInSeconds = examMinutesLimit * 60;
+                        studentAnswers = {}; currentIndex = 0; warningsCount = 0;
+                    }
                 }
             } else {
                 timeInSeconds = examMinutesLimit * 60;
+                studentAnswers = {}; currentIndex = 0; warningsCount = 0;
+                examStartedAt = new Date().toISOString();
             }
+            if (!examStartedAt) examStartedAt = new Date().toISOString();
 
             isExamActive = true;
+            isPaused = false;
+            isSubmitting = false;
             updateTimerDisplay(timeInSeconds);
             startTimer();
             loadQuestion(currentIndex);
-            
-            setInterval(saveExamState, 5000);
+            if (autosaveInterval) clearInterval(autosaveInterval);
+            autosaveInterval = setInterval(saveExamState, 5000);
+            enterFullScreen();
         }
 
         document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('copy', event => {
-            event.preventDefault();
-            alert("⚠️ কপি করা সম্পূর্ণ নিষেধ!");
+        ['copy', 'cut', 'paste'].forEach(eventName => {
+            document.addEventListener(eventName, event => {
+                if (isExamActive) {
+                    event.preventDefault();
+                    if (eventName === 'copy' || eventName === 'cut' || eventName === 'paste') {
+                        showTemporaryNotice('পরীক্ষার সময় Copy, Cut এবং Paste নিষিদ্ধ।');
+                    }
+                }
+            });
+        });
+        document.addEventListener('keydown', event => {
+            if (!isExamActive) return;
+            const key = String(event.key || '').toLowerCase();
+            if ((event.ctrlKey || event.metaKey) && ['c','x','v','a','u','s','p'].includes(key)) {
+                event.preventDefault();
+                showTemporaryNotice('এই Keyboard Shortcut পরীক্ষার সময় নিষিদ্ধ।');
+            }
+            if (key === 'f12' || (event.ctrlKey && event.shiftKey && ['i','j','c'].includes(key))) {
+                event.preventDefault();
+            }
         });
 
+        function showTemporaryNotice(message) {
+            // Keep the exam uninterrupted; repeated native alerts can themselves cause focus events.
+            const existing = document.getElementById('exam-inline-notice');
+            if (existing) existing.remove();
+            const notice = document.createElement('div');
+            notice.id = 'exam-inline-notice';
+            notice.textContent = message;
+            notice.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:10000;background:#172344;color:#fff;padding:11px 16px;border-radius:12px;font-size:13px;max-width:90%;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.2)';
+            document.body.appendChild(notice);
+            setTimeout(() => notice.remove(), 1800);
+        }
+
         function enterFullScreen() {
-            let elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen(); } 
-            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
-            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            const elem = document.documentElement;
+            try {
+                const request = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
+                if (request && !document.fullscreenElement) {
+                    const result = request.call(elem);
+                    if (result && typeof result.catch === 'function') result.catch(() => {});
+                }
+            } catch (e) { console.warn('Fullscreen is unavailable:', e); }
         }
 
         function triggerWarning(reason) {
-            if (!isExamActive || isPaused || isUploadingImage) return;
-
-            warningsCount++;
+            if (!isExamActive || isPaused || isUploadingImage || isSubmitting) return;
+            const now = Date.now();
+            // visibilitychange and blur commonly fire together for one app switch.
+            if (now - lastWarningAt < 1800) return;
+            lastWarningAt = now;
+            warningsCount = Math.min(5, warningsCount + 1);
             saveExamState();
-            
+
             if (warningsCount >= 5) {
-                alert(`🚨 FINAL WARNING (5/5): ${reason}\n\nআপনার পরীক্ষা স্বয়ংক্রিয়ভাবে বাতিল (Auto-Submit) করা হচ্ছে!`);
-                submitExam();
+                alert(`🚨 FINAL WARNING (5/5): ${reason}\n\nআপনার পরীক্ষা স্বয়ংক্রিয়ভাবে সাবমিট করা হচ্ছে।`);
+                submitExam('warning-limit');
             } else {
-                alert(`⚠️ WARNING ${warningsCount}/5: ${reason}\n\nআর ${5 - warningsCount} বার এমন হলে পরীক্ষা অটো-সাবমিট হয়ে যাবে!`);
+                alert(`⚠️ WARNING ${warningsCount}/5: ${reason}\n\nআর ${5 - warningsCount} বার এমন হলে পরীক্ষা অটো-সাবমিট হবে!`);
                 enterFullScreen();
             }
         }
 
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden) { triggerWarning("আপনি ট্যাব পরিবর্তন করেছেন বা ব্রাউজার মিনিমাইজ করার চেষ্টা করেছেন!"); }
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && !isUploadingImage) {
+                lastVisibilityWarningAt = Date.now();
+                triggerWarning('আপনি পরীক্ষা চলাকালীন অন্য ট্যাব/অ্যাপ বা ব্রাউজারের বাইরে গেছেন।');
+            }
         });
-        window.addEventListener("blur", () => { triggerWarning("আপনি অন্য উইন্ডো বা অ্যাপে টাচ করার চেষ্টা করেছেন!"); });
+        window.addEventListener('blur', () => {
+            if (isUploadingImage || !isExamActive) return;
+            // If visibilitychange already recorded the same transition, do not count twice.
+            if (Date.now() - lastVisibilityWarningAt < 1800) return;
+            triggerWarning('আপনি অন্য উইন্ডো বা অ্যাপে যাওয়ার চেষ্টা করেছেন।');
+        });
         document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement) { triggerWarning("আপনি ফুল-স্ক্রিন মোড থেকে বের হওয়ার বা নোটিফিকেশন বার টানার চেষ্টা করেছেন!"); }
+            if (isExamActive && !isUploadingImage && !document.fullscreenElement) {
+                triggerWarning('আপনি ফুল-স্ক্রিন মোড থেকে বের হয়েছেন।');
+            }
         });
 
         function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 if(!isPaused) {
                     timeInSeconds--;
                     updateTimerDisplay(timeInSeconds);
                     if(timeInSeconds <= 0) {
                         clearInterval(timerInterval);
+                        timerInterval = null;
                         alert("⏳ Time is up! Auto-submitting your exam.");
-                        submitExam();
+                        submitExam('time-up');
                     }
                 }
             }, 1000);
@@ -417,6 +499,9 @@
         function saveExamState() {
             if(isExamActive) {
                 const state = {
+                    version: EXAM_STATE_VERSION,
+                    savedAt: Date.now(),
+                    startedAt: examStartedAt,
                     timeLeft: timeInSeconds,
                     answers: studentAnswers,
                     currentIndex: currentIndex,
@@ -461,7 +546,12 @@
             btn.onclick = resumeFromUpload;
             
             document.getElementById('upload-overlay').style.display = 'flex';
-            document.getElementById(`file-upload-${index}`).click();
+            const picker = document.getElementById(`file-upload-${index}`);
+            if (picker) {
+                picker.removeEventListener('cancel', resumeFromUpload);
+                picker.addEventListener('cancel', resumeFromUpload, { once: true });
+                picker.click();
+            }
         }
 
         function resumeFromUpload() {
@@ -472,7 +562,11 @@
 
         function handleFileSelect(event) {
             const file = event.target.files[0];
-            if (!file) return; 
+            if (!file) {
+                // The native camera/file picker was canceled; return to the exam safely.
+                resumeFromUpload();
+                return;
+            } 
 
             document.getElementById('upload-overlay').style.display = 'none';
             const reader = new FileReader();
@@ -599,7 +693,12 @@
             if (window.MathJax) { MathJax.typesetPromise([qTextElement, optsContainer]).catch(function (err) { console.log(err); }); }
         }
 
-        function changeQuestion(step) { currentIndex += step; saveExamState(); loadQuestion(currentIndex); }
+        function changeQuestion(step) {
+            if (!isExamActive || isSubmitting) return;
+            const nextIndex = currentIndex + step;
+            if (nextIndex < 0 || nextIndex >= totalQuestions) return;
+            currentIndex = nextIndex; saveExamState(); loadQuestion(currentIndex);
+        }
 
         function renderDetailedReview(backendSubjData = null) {
             const container = document.getElementById('detailed-review-container');
@@ -619,11 +718,11 @@
                     isAttempted = true;
                 }
                 
-                const isCorrect = studentAns === q.correct;
+                const hasAnswerKey = typeof q.correct === 'string' && q.correct.length > 0;
+                const isCorrect = hasAnswerKey && studentAns === q.correct;
                 let cardClass = 'review-unattempted';
-                if (isAttempted) {
-                    if (q.question_type === 'subjective') { cardClass = 'review-unattempted'; } 
-                    else { cardClass = isCorrect ? 'review-correct' : 'review-wrong'; }
+                if (isAttempted && q.question_type === 'mcq' && hasAnswerKey) {
+                    cardClass = isCorrect ? 'review-correct' : 'review-wrong';
                 }
 
                 let maxMarks = q.max_marks || (q.question_type === 'mcq' ? 1.0 : 5.0);
@@ -655,15 +754,16 @@
                     };
 
                     if (isAttempted) {
-                        if (isCorrect) {
-                            html += `<div class="review-ans ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                        html += `<div class="review-ans">Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
+                        if (hasAnswerKey) {
+                            if (isCorrect) html += `<div class="ans-real-correct">✅ Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                            else html += `<div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
                         } else {
-                            html += `<div class="review-ans ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`;
-                            html += `<div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                            html += `<div class="ans-real-correct unattempted-border">ℹ️ উত্তর যাচাই সার্ভার/শিক্ষকের রিভিউয়ের মাধ্যমে হবে।</div>`;
                         }
                     } else {
                         html += `<div class="review-ans" style="color: #64748b; font-style: italic;">⚠️ Not Attempted</div>`;
-                        html += `<div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                        if (hasAnswerKey) html += `<div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
                     }
                 }
 
@@ -673,87 +773,189 @@
             if (window.MathJax) { MathJax.typesetPromise([container]).catch(function (err) { console.log(err); }); }
         }
 
-        async function submitExam() {
-            isExamActive = false;
-            clearInterval(timerInterval); 
-    
-            let score = 0;
-            let subjArray = [];
+        function buildSubmissionPayload(reason = 'manual') {
+            const answersByQuestionId = {};
+            const subjectiveAnswers = [];
 
-            dbQuestions.forEach((q, idx) => {
-                if (q.question_type === 'mcq' && studentAnswers[idx]) { 
-                    if (studentAnswers[idx] === q.correct) { score += (q.max_marks || 1.0); } 
-                    else { score -= negativeMarksPerWrong; }
-                }
-                if (q.question_type === 'subjective' && studentAnswers[idx] && studentAnswers[idx].startsWith('http')) {
-                    subjArray.push({ question_id: q.id, image_url: studentAnswers[idx] });
+            dbQuestions.forEach((question, index) => {
+                const answer = studentAnswers[index];
+                if (String(question.question_type || 'mcq').toLowerCase() === 'subjective') {
+                    if (typeof answer === 'string' && /^https?:\/\//i.test(answer)) {
+                        subjectiveAnswers.push({ question_id: question.id, image_url: answer });
+                    }
+                } else {
+                    // Include every MCQ, including blanks; the server calculates correctness.
+                    answersByQuestionId[String(question.id)] = answer || '';
                 }
             });
 
-            let displayScore = Number.isInteger(score) ? score : parseFloat(score.toFixed(2));
-    
-            const userEmail = localStorage.getItem('userEmail');
-            const userName = localStorage.getItem('userName') || "Student";
-
-            try {
-                await fetch('/api/submit-exam-result', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: userEmail,
-                        name: userName,
-                        exam_code: examCode, 
-                        exam_name: examName, 
-                        score: displayScore, 
-                        total_questions: totalMarks, 
-                        warnings: warningsCount,
-                        subjective_answers: subjArray 
-                    })
-                });
-        
-                localStorage.setItem('exam_result_' + examCode, JSON.stringify({ answers: studentAnswers, score: displayScore, total: totalMarks }));
-                localStorage.removeItem(`exam_state_${examCode}`);
-            } catch (e) { console.log("Failed to save score"); }
-
-            document.getElementById('exam-section').style.display = 'none';
-            document.getElementById('pause-overlay').style.display = 'none';
-            document.getElementById('result-section').style.display = 'block';
-            window.history.replaceState({section: 'result'}, "", window.location.href);
-
-            if (document.fullscreenElement) { document.exitFullscreen(); }
-            
-            document.getElementById('final-score').innerText = `${displayScore}/${totalMarks}`; 
-            
-            renderDetailedReview();
+            const startedAtMs = examStartedAt ? Date.parse(examStartedAt) : Date.now();
+            return {
+                exam_code: examCode,
+                answers: answersByQuestionId,
+                subjective_answers: subjectiveAnswers,
+                warnings: warningsCount,
+                submit_reason: reason,
+                is_reattempt: isReattemptMode,
+                started_at: examStartedAt,
+                submitted_at: new Date().toISOString(),
+                elapsed_seconds: Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)),
+                time_remaining_seconds: Math.max(0, timeInSeconds),
+                client_question_count: totalQuestions
+            };
         }
 
-        function handleBackAction() {
-            if (isExamActive) {
-                if (confirm("⚠️ আপনি কি পরীক্ষা মাঝপথে ছেড়ে চলে যেতে চান? আপনার প্রগতি সেভ থাকবে তবে সময় চলতে থাকবে।")) {
-                    window.location.href = 'student_dashboard.html';
-                }
+        function confirmManualSubmit() {
+            if (!isExamActive || isSubmitting) return;
+            const unanswered = dbQuestions.reduce((count, question, index) => {
+                return count + (studentAnswers[index] ? 0 : 1);
+            }, 0);
+            const message = unanswered
+                ? `আপনি ${unanswered}টি প্রশ্নের উত্তর দেননি। তবুও কি পরীক্ষা Submit করতে চান?`
+                : 'আপনি কি নিশ্চিত যে পরীক্ষা Submit করতে চান?';
+            if (confirm(message)) submitExam('manual');
+        }
+
+        function escapeHtml(value) {
+            return String(value == null ? '' : value).replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[character]));
+        }
+
+        function renderXpSummary(xp) {
+            const old = document.getElementById('exam-xp-summary');
+            if (old) old.remove();
+            if (!xp) return;
+
+            const panel = document.createElement('div');
+            panel.id = 'exam-xp-summary';
+            panel.className = 'review-card';
+            panel.style.marginTop = '16px';
+
+            if (xp.eligible === false) {
+                panel.innerHTML = '<div style="text-align:center;font-weight:700;color:#475569;">এই পরীক্ষার জন্য XP পরিবর্তন হয়নি</div><p style="text-align:center;color:#64748b;font-size:.88rem;margin:7px 0 0;">একটি নির্দিষ্ট পরীক্ষার প্রথম Attempt-এই XP হিসাব করা হয়।</p>';
             } else {
-                window.location.href = 'student_dashboard.html';
+                const delta = Number(xp.xp_delta || 0);
+                const deltaLabel = `${delta > 0 ? '+' : ''}${delta} XP`;
+                const awards = Array.isArray(xp.awards) ? xp.awards : [];
+                const awardHtml = awards.map(item => {
+                    const amount = Number(item.xp || 0);
+                    const amountLabel = `${amount > 0 ? '+' : ''}${amount} XP`;
+                    return `<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #edf0f7;font-size:.88rem;"><span>${escapeHtml(item.description || item.event || 'XP')}</span><strong>${amountLabel}</strong></div>`;
+                }).join('');
+
+                panel.innerHTML = `
+                    <h3 style="margin:0 0 12px;color:#315fe0;">🎮 Gamification Update</h3>
+                    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;text-align:center;margin-bottom:12px;">
+                        <div style="background:#eff6ff;border-radius:10px;padding:11px;"><small style="color:#64748b;">XP Change</small><div style="font-size:1.2rem;font-weight:900;color:#315fe0;">${deltaLabel}</div></div>
+                        <div style="background:#f5f3ff;border-radius:10px;padding:11px;"><small style="color:#64748b;">Total XP</small><div style="font-size:1.2rem;font-weight:900;color:#5b4bce;">${Number(xp.xp_total || 0)} XP</div></div>
+                        <div style="background:#f0fdf4;border-radius:10px;padding:11px;"><small style="color:#64748b;">Level</small><div style="font-size:1.1rem;font-weight:900;color:#15803d;">${Number(xp.level || 1)}</div></div>
+                        <div style="background:#fff7ed;border-radius:10px;padding:11px;"><small style="color:#64748b;">Current Streak</small><div style="font-size:1.1rem;font-weight:900;color:#c2410c;">${Number(xp.current_streak || 0)} days</div></div>
+                    </div>
+                    ${xp.mcq_accuracy !== undefined ? `<p style="font-size:.88rem;color:#475569;margin:0 0 10px;">MCQ Accuracy: <strong>${Number(xp.mcq_accuracy).toFixed(2)}%</strong> · Longest Streak: <strong>${Number(xp.longest_streak || 0)} days</strong></p>` : ''}
+                    ${awardHtml || '<p style="font-size:.88rem;color:#64748b;margin:0;">এই পরীক্ষায় অতিরিক্ত কোনো XP event হয়নি।</p>'}`;
+            }
+            document.querySelector('#result-section .success-text').insertAdjacentElement('afterend', panel);
+        }
+
+        async function submitExam(reason = 'manual') {
+            if (!isExamActive || isSubmitting) return;
+            isSubmitting = true;
+
+            const submitButton = document.getElementById('btn-submit');
+            if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'Submitting...'; }
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            if (autosaveInterval) { clearInterval(autosaveInterval); autosaveInterval = null; }
+            saveExamState();
+
+            const payload = buildSubmissionPayload(reason);
+            try {
+                const response = await fetch('/api/submit-exam-result-v2', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    keepalive: reason === 'leave' || reason === 'warning-limit' || reason === 'time-up',
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.error || 'পরীক্ষার ফলাফল সেভ করা যায়নি।');
+
+                isExamActive = false;
+                isPaused = false;
+                localStorage.setItem('exam_result_' + examCode, JSON.stringify({
+                    answers: studentAnswers, score: data.score, total: data.total_marks,
+                    xp: data.xp || null, submit_reason: reason
+                }));
+                localStorage.removeItem(`exam_state_${examCode}`);
+
+                // A confirmed exit submits first; only after server success do we navigate away.
+                if (reason === 'leave') {
+                    allowUnloadPrompt = true;
+                    window.location.replace('student_dashboard.html');
+                    return;
+                }
+
+                document.getElementById('exam-section').style.display = 'none';
+                document.getElementById('pause-overlay').style.display = 'none';
+                document.getElementById('result-section').style.display = 'block';
+                window.history.replaceState({ section: 'result', examCode }, '', window.location.href);
+                if (document.fullscreenElement && document.exitFullscreen) {
+                    try { await document.exitFullscreen(); } catch (e) { /* browser may deny */ }
+                }
+
+                const score = Number(data.score || 0);
+                const total = Number(data.total_marks || 0);
+                document.getElementById('final-score').innerText = `${Number.isInteger(score) ? score : score.toFixed(2)}/${Number.isInteger(total) ? total : total.toFixed(2)}`;
+                renderXpSummary(data.xp);
+                renderDetailedReview();
+            } catch (error) {
+                console.error('Exam submission failed:', error);
+                isSubmitting = false;
+                if (submitButton) { submitButton.disabled = false; submitButton.textContent = 'Submit 🚀'; }
+                isExamActive = true;
+                if (timeInSeconds > 0 && !timerInterval) startTimer();
+                if (!autosaveInterval) autosaveInterval = setInterval(saveExamState, 5000);
+                saveExamState();
+                alert(`${error.message || 'সার্ভারে ফলাফল পাঠানো যায়নি।'}\nইন্টারনেট সংযোগ ঠিক করে আবার Submit করুন। আপনার উত্তর এই ডিভাইসে সেভ রাখা হয়েছে।`);
             }
         }
 
-        window.addEventListener('popstate', function (event) {
-            const state = event.state;
-            if (state && state.section) {
-                if (state.section === 'instruction') {
-                    window.location.href = 'student_dashboard.html';
-                } else if (state.section === 'exam') {
-                    if (isExamActive) {
-                        if (confirm("⚠️ আপনি কি পরীক্ষা মাঝপথে ছেড়ে চলে যেতে চান?")) {
-                            window.location.href = 'student_dashboard.html';
-                        } else {
-                            window.history.pushState({section: 'exam'}, "", window.location.href);
-                        }
-                    }
-                } else {
-                    window.location.href = 'student_dashboard.html';
+        function handleBackAction() {
+            if (!isExamActive || isSubmitting) return;
+            const shouldSubmit = confirm('⚠️ আপনি কি পরীক্ষা ছেড়ে বের হতে চান?\n\nOK চাপলে আপনার বর্তমান উত্তর Submit করে Dashboard-এ নিয়ে যাওয়া হবে।\nCancel চাপলে পরীক্ষা চলতে থাকবে।');
+            if (shouldSubmit) submitExam('leave');
+        }
+
+        window.addEventListener('popstate', function () {
+            if (isExamActive && !isSubmitting) {
+                const shouldSubmit = confirm('⚠️ আপনি কি পরীক্ষা ছেড়ে বের হতে চান?\n\nOK চাপলে আপনার বর্তমান উত্তর Submit করে Dashboard-এ নিয়ে যাওয়া হবে।\nCancel চাপলে পরীক্ষা চলতে থাকবে।');
+                // Restore the active exam history entry before awaiting submission.
+                window.history.pushState({ section: 'exam', examCode }, '', window.location.href);
+                if (shouldSubmit) submitExam('leave');
+            } else if (!isExamActive) {
+                window.location.replace('student_dashboard.html');
+            }
+        });
+
+        // Native browser prompt protects against accidental reload/close. Browsers do not
+        // permit a reliable custom auto-submit during page termination.
+        window.addEventListener('beforeunload', function (event) {
+            if (isExamActive && !allowUnloadPrompt && !isSubmitting) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        });
+        window.addEventListener('pagehide', () => {
+            if (!isExamActive || isUploadingImage || isSubmitting) return;
+            saveExamState();
+            // Best effort only: a browser may cancel requests while closing/reloading.
+            if (navigator.sendBeacon) {
+                try {
+                    const body = new Blob([JSON.stringify(buildSubmissionPayload('page-unload'))], { type: 'application/json' });
+                    navigator.sendBeacon('/api/submit-exam-result-v2', body);
+                } catch (error) {
+                    console.warn('Could not queue background submission:', error);
                 }
-            } else {
-                window.location.href = 'student_dashboard.html';
             }
         });
 
