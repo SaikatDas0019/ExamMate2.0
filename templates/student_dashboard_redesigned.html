@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root { color-scheme: light; }
+        body { 
+            background-color: #f1f5f9; color: #333333; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; display: flex; justify-content: center;
+        }
+        
+        .container { 
+            width: 100%; max-width: 480px; background-color: #ffffff;
+            min-height: 100vh; padding-bottom: 70px; 
+            box-sizing: border-box; margin: 0 auto; position: relative; overflow-x: hidden;
+        }
+
+        /* SMART HEADER CSS */
+        .fixed-top-section {
+            position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; z-index: 999;
+            background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            transition: top 0.3s ease-in-out; 
+        }
+
+        .sticky-header {
+            padding: 12px 15px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #f8fafc;
+        }
+        
+        .logo-text { font-size: 1.4rem; font-weight: 800; color: #3b82f6; margin: 0; }
+        
+        .header-icons {
+            display: flex; gap: 15px; align-items: center;
+        }
+        .header-icon { 
+            font-size: 1.2rem; color: #4b5563; background: #f8fafc; 
+            padding: 8px; border-radius: 50%; border: 1px solid #e2e8f0; cursor: pointer; position: relative;
+            display: flex; justify-content: center; align-items: center; width: 40px; height: 40px;
+            transition: background 0.2s;
+        }
+        .header-icon:hover { background: #e2e8f0; color: #1e293b; }
+
+        /* MAIN FEED - SOCIAL MEDIA STYLE */
+        .feed-container { padding: 0; margin-top: 70px; background: #ffffff;} 
+        
+        .feed-card {
+            background: #ffffff; 
+            padding: 15px 0; margin-bottom: 0; 
+            border-bottom: 1px solid #e2e8f0; 
+        }
+        .feed-card:last-child { border-bottom: none; }
+
+        .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 0 15px; }
+        .feed-avatar { width: 40px; height: 40px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.2rem; border: 1px solid #e2e8f0;}
+        .feed-teacher-info { flex: 1; }
+        .feed-teacher-info strong { display: block; font-size: 0.95rem; color: #0f172a; }
+        .feed-teacher-info span { display: block; font-size: 0.75rem; color: #64748b; }
+        
+        .feed-body { margin-bottom: 15px; padding: 0 15px; }
+        .feed-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; line-height: 1.3;}
+        .feed-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;}
+        .feed-tag { background: #f1f5f9; color: #475569; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 6px; }
+        .feed-meta { display: flex; gap: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px dashed #cbd5e1;}
+        .feed-meta span { font-size: 0.8rem; color: #334155; font-weight: 600; display: flex; align-items: center; gap: 5px;}
+        .feed-meta i { color: #3b82f6; }
+        
+        .feed-actions { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px 0 15px; margin-bottom: 12px; }
+        .action-left { display: flex; gap: 20px; }
+        .action-btn { background: transparent; border: none; color: #64748b; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: color 0.15s; padding: 0; }
+        .action-btn span { font-size: 0.9rem; font-weight: 600; }
+        .action-btn:hover { color: #3b82f6; }
+        .like-active { color: #ef4444 !important; }
+        .save-active { color: #f59e0b !important; }
+
+        .btn-attempt { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s; margin-top: 10px; }
+        .btn-result { width: 100%; background: #f8fafc; color: #10b981; border: 2px solid #10b981; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .feed-action-container { padding: 0 15px; }
+
+        /* SEARCH OVERLAY CSS */
+        .search-overlay {
+            display: none; position: fixed; top: 0; left: 50%; transform: translateX(-50%); 
+            width: 100%; max-width: 480px; height: 100vh; background: #ffffff; z-index: 2001; 
+            flex-direction: column; animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .search-header {
+            display: flex; align-items: center; padding: 15px; gap: 10px;
+            border-bottom: 1px solid #e2e8f0; background: #ffffff;
+        }
+        .search-back-btn { background: none; border: none; font-size: 1.2rem; color: #475569; cursor: pointer; padding: 5px; }
+        
+        .search-input-wrapper-full { flex: 1; position: relative; }
+        .search-input-wrapper-full input {
+            width: 100%; padding: 12px 15px; padding-left: 35px;
+            background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 25px;
+            font-size: 0.95rem; outline: none; box-sizing: border-box; transition: border-color 0.2s, background 0.2s;
+        }
+        .search-input-wrapper-full input:focus { border-color: #3b82f6; background: #ffffff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .search-input-wrapper-full i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        
+        .search-btn-circle {
+            width: 45px; height: 45px; border-radius: 50%; background: #3b82f6;
+            color: white; border: none; font-size: 1.1rem; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: transform 0.1s;
+            display: flex; justify-content: center; align-items: center; flex-shrink: 0;
+        }
+        .search-btn-circle:active { transform: scale(0.95); }
+
+        .search-filters { padding: 15px; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #e5e7eb; scrollbar-width: none; background: #ffffff;}
+        .search-filters::-webkit-scrollbar { display: none; }
+        .filter-pill {
+            background: #ffffff; border: 1px solid #cbd5e1; color: #475569;
+            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 5px; outline: none;
+            transition: background 0.2s;
+        }
+        .filter-pill.active { background: #eff6ff; color: #1e3a8a; border-color: #3b82f6; }
+        
+        .search-results-container { flex: 1; overflow-y: auto; padding-bottom: 20px; background: #ffffff;}
+
+        /* SHARE MODAL CSS */
+        .modal-overlay-share { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: flex-end; }
+        .share-sheet { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 25px 20px; box-sizing: border-box; animation: slideUp 0.25s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .share-buttons { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 15px;}
+        .share-buttons button { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.85rem; color: #333; cursor: pointer; gap: 8px; font-weight: 600; width: 65px;}
+        .share-buttons i { font-size: 2.2rem; }
+        .share-buttons .fa-whatsapp { color: #25D366; }
+        .share-buttons .fa-telegram { color: #0088cc; }
+        .share-buttons .fa-copy { color: #64748b; }
+        .btn-cancel { background: #f1f5f9; color: #64748b; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; font-size: 1rem;}
+
+        /* RESULT MODAL CSS */
+        .score-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .score-modal-box { 
+            position: relative; background: white; border-radius: 20px; 
+            width: 90%; max-width: 450px; text-align: left; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            display: flex; flex-direction: column; max-height: 85vh; overflow: hidden; 
+        }
+        .modal-header-fixed {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 20px 25px 15px 25px; background: #ffffff;
+            border-bottom: 1px solid #e2e8f0; z-index: 10;
+        }
+        .modal-body-scroll { padding: 15px 25px 25px 25px; overflow-y: auto; flex: 1; background: #f8fafc; }
+        .modal-close-btn-fixed {
+            background: #f1f5f9; color: #64748b; border: none;
+            width: 34px; height: 34px; border-radius: 50%;
+            font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: background 0.15s; flex-shrink: 0; margin-left: 15px;
+        }
+        .modal-close-btn-fixed:hover { background: #fee2e2; color: #ef4444; }
+
+        .review-card { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; transition: background 0.15s; background: #ffffff; }
+        .review-correct { background-color: #f0fdf4; border-color: #bbf7d0; box-shadow: 0 2px 4px rgba(34,197,94,0.05); } 
+        .review-wrong { background-color: #fef2f2; border-color: #fecaca; box-shadow: 0 2px 4px rgba(239,68,68,0.05); } 
+        .review-unattempted { background-color: #ffffff; border-color: #cbd5e1; } 
+        .review-q-text { font-weight: 700; margin-bottom: 12px; color: #1e293b; font-size: 0.95rem; }
+        .ans-correct-text { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block; margin-top: 5px;}
+        .ans-wrong-text { color: #b91c1c; font-size: 0.9rem; font-weight: 700; background: #fee2e2; padding: 6px 12px; border-radius: 8px; display: inline-block; margin-top: 5px; margin-bottom: 8px;}
+        .ans-real-correct { color: #15803d; font-size: 0.9rem; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 8px; display: inline-block;}
+        .unattempted-border { border: 1px dashed #bbf7d0; background: transparent; color: #16a34a; margin-top: 8px;}
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: #ffffff; border-top: 1px solid #e5e7eb;
+            display: flex; justify-content: space-around; padding: 10px 0 20px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6b7280; font-size: 0.75rem; cursor: pointer; flex: 1; text-decoration: none;}
+        .nav-item.active { color: #3b82f6; font-weight: bold; }
+        .nav-icon { font-size: 1.3rem; margin-bottom: 3px; }
+
+        /* Skeleton loader */
+        .skeleton-card { background: #ffffff; padding: 15px; border-bottom: 1px solid #e2e8f0; animation: pulse 1.2s infinite ease-in-out; }
+        .skeleton-line { height: 14px; background: #e2e8f0; border-radius: 4px; margin-bottom: 10px; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        /* ===== ExamMate Game UI refresh ===== */
+        :root {
+            --ink: #172554;
+            --muted: #71809a;
+            --blue: #3568f5;
+            --violet: #7657ed;
+            --line: #e8edfa;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            background: #eef2ff;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .container {
+            background: #f7f8ff;
+            min-height: 100dvh;
+            padding-bottom: 112px;
+            box-shadow: 0 0 45px rgba(36, 55, 110, .07);
+        }
+        .fixed-top-section {
+            background: rgba(255,255,255,.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(220,228,250,.8);
+            box-shadow: 0 8px 28px rgba(42,61,120,.08);
+        }
+        .sticky-header {
+            min-height: 68px;
+            padding: 10px 17px;
+            border: 0;
+        }
+        .logo-text {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 1.42rem;
+            letter-spacing: -.7px;
+            color: #315fe0;
+        }
+        .logo-text i {
+            width: 39px; height: 39px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 13px;
+            color: #fff;
+            font-size: 1.1rem;
+            background: linear-gradient(145deg,#4e8cff,#6554ed);
+            box-shadow: 0 6px 14px rgba(72,104,236,.28);
+        }
+        .header-icons { gap: 9px; }
+        .header-icon {
+            width: 43px; height: 43px; padding: 0;
+            color: #53617f;
+            border: 1px solid #e7ebf7;
+            border-radius: 15px;
+            background: #f8f9ff;
+            box-shadow: 0 3px 9px rgba(40,58,110,.04);
+            transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+        }
+        .header-icon:active { transform: scale(.93); background: #edf1ff; }
+        .feed-container { margin-top: 70px; padding: 10px 12px 22px; background: transparent; }
+        .feed-card {
+            position: relative;
+            overflow: hidden;
+            margin: 0 0 14px;
+            padding: 15px 0 14px;
+            border: 1px solid #e6eaff;
+            border-radius: 20px;
+            background: linear-gradient(155deg,#fff 0%,#fff 65%,#f7f8ff 100%);
+            box-shadow: 0 7px 22px rgba(52,72,140,.065);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .feed-card:active { transform: scale(.992); }
+        .card-glow {
+            position: absolute; top: -52px; right: -38px;
+            width: 135px; height: 105px; border-radius: 50%;
+            background: radial-gradient(circle,rgba(107,111,255,.13),transparent 70%);
+            pointer-events: none;
+        }
+        .feed-header { position: relative; padding: 0 15px; gap: 10px; margin-bottom: 14px; }
+        .feed-avatar {
+            width: 42px; height: 42px; flex: 0 0 42px;
+            border: 0; border-radius: 14px;
+            color: #fff; font-weight: 800;
+            background: linear-gradient(145deg,#6d8eff,#7259e9);
+            box-shadow: 0 5px 12px rgba(91,103,229,.2);
+        }
+        .feed-teacher-info strong { color: #1d2b50; font-size: .9rem; }
+        .feed-teacher-info span { color: #8a95ad; font-size: .72rem; margin-top: 3px; }
+        .exam-status {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 8px; border-radius: 8px;
+            font-size: .57rem; font-weight: 900; letter-spacing: .35px;
+            white-space: nowrap;
+        }
+        .status-ready { color: #2861d9; background: #edf3ff; }
+        .status-done { color: #0c966b; background: #e8fbf3; }
+        .status-locked { color: #b87518; background: #fff5e5; }
+        .feed-body { position: relative; padding: 0 15px; margin-bottom: 12px; }
+        .feed-title {
+            color: #17264c; font-size: 1.13rem; line-height: 1.3;
+            letter-spacing: -.25px; margin-bottom: 11px;
+        }
+        .feed-tags { gap: 7px; margin-bottom: 12px; }
+        .feed-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 10px; border-radius: 9px;
+            color: #566586; background: #f0f3fc;
+            font-size: .72rem; font-weight: 750;
+        }
+        .feed-tag i { color: #637ef0; }
+        .challenge-meta {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 7px;
+            padding: 10px; border: 1px solid #edf0fa; border-radius: 13px;
+            background: #fafbff;
+        }
+        .challenge-meta span {
+            display: inline-flex; align-items: center; gap: 5px;
+            color: #687693; font-size: .72rem; font-weight: 700;
+        }
+        .challenge-meta i { color: #6880ed; }
+        .challenge-meta .xp-chip {
+            margin-left: auto; padding: 5px 8px; border-radius: 8px;
+            color: #a56b0a; background: #fff5dc;
+        }
+        .challenge-meta .xp-chip i { color: #e9a52e; }
+        .challenge-hint {
+            margin-top: 10px; padding: 8px 10px;
+            color: #7b6bc5; background: #f4f1ff;
+            border-radius: 10px; font-size: .7rem; font-weight: 700;
+        }
+        .challenge-hint i { margin-right: 5px; }
+        .progress-wrap { margin-top: 12px; }
+        .progress-label { display: flex; justify-content: space-between; margin-bottom: 6px; color: #8290aa; font-size: .7rem; font-weight: 700; }
+        .progress-label strong { color: #168c6a; }
+        .progress-track { height: 7px; overflow: hidden; border-radius: 10px; background: #e9eef8; }
+        .progress-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#27c79a,#4b91f7); }
+        .feed-actions { padding: 9px 15px 0; margin: 0 0 10px; border-top: 1px solid #f0f2fa; }
+        .action-left { gap: 20px; }
+        .action-btn { color: #8390a8; font-size: 1.12rem; transition: transform .15s ease,color .15s ease; }
+        .action-btn:active { transform: scale(.9); }
+        .action-btn span { font-size: .78rem; }
+        .feed-action-container { padding: 0 15px; }
+        .btn-attempt, .btn-result {
+            min-height: 46px; border-radius: 13px;
+            font-size: .91rem; letter-spacing: .1px;
+            transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+        }
+        .btn-attempt {
+            background: linear-gradient(110deg,#477ff6,#6559e9);
+            box-shadow: 0 7px 15px rgba(75,104,231,.22);
+        }
+        .btn-attempt:active, .btn-result:active { transform: scale(.985); filter: brightness(.97); }
+        .btn-result { color: #168d70; background: #effcf7; border: 1.5px solid #b7efda; }
+        .bottom-nav {
+            bottom: max(0px, env(safe-area-inset-bottom));
+            width: 100%; max-width: 480px;
+            display: grid; grid-template-columns: repeat(3,1fr);
+            align-items: center; gap: 8px;
+            padding: 9px 13px calc(9px + env(safe-area-inset-bottom));
+            box-sizing: border-box;
+            border: 1px solid rgba(225,231,249,.9);
+            border-bottom: 0; border-radius: 20px 20px 0 0;
+            background: rgba(255,255,255,.96);
+            backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+            box-shadow: 0 -8px 28px rgba(38,55,110,.09);
+        }
+        .nav-item {
+            min-height: 55px; gap: 3px; justify-content: center;
+            border-radius: 14px; color: #8994aa;
+            font-size: .66rem; font-weight: 750; letter-spacing: .15px;
+            transition: background .18s ease, color .18s ease, transform .18s ease;
+        }
+        .nav-icon { margin: 0; font-size: 1.15rem; }
+        .nav-item.active {
+            color: #416cf0;
+            background: linear-gradient(135deg,#edf3ff,#f4f1ff);
+        }
+        .nav-item.nav-special { color: #bd8423; }
+        .nav-item.nav-special .nav-icon {
+            width: 29px; height: 25px; display: flex; align-items: center; justify-content: center;
+            border-radius: 9px; background: #fff4dc; color: #d59625;
+        }
+        .nav-item:active { transform: scale(.95); }
+        .skeleton-card { border-radius: 17px; margin-bottom: 12px; border: 1px solid #edf0fa; }
+        .search-overlay { background: #f8f9ff; }
+        .search-header { background: rgba(255,255,255,.96); }
+        .search-results-container { background: #f8f9ff; padding: 10px 12px; }
+        @media (min-width: 481px) {
+            body { padding: 18px 0; }
+            .container { min-height: calc(100dvh - 36px); border-radius: 24px; overflow: hidden; }
+            .fixed-top-section, .bottom-nav { max-width: 480px; }
+            .bottom-nav { border-radius: 20px 20px 0 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HEADER -->
+        <div class="fixed-top-section" id="smart-header">
+            <div class="sticky-header">
+                <div class="logo-text"><i class="fas fa-graduation-cap"></i><span>ExamMate</span></div>
+                <div class="header-icons">
+                    <!-- প্লাস আইকন (লিংক আপডেট করা হয়েছে) -->
+                    <button class="header-icon" type="button" aria-label="Create exam" onclick="window.location.href='/create_exam.html'"><i class="fas fa-plus"></i></button>
+                    <button class="header-icon" type="button" aria-label="Search exams" onclick="openSearch()"><i class="fas fa-search"></i></button>
+                    <button class="header-icon" type="button" aria-label="Notifications" onclick="window.location.href='/notification.html'"><i class="fas fa-bell"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="feed-container" id="exam-feed">
+            <div class="skeleton-card">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0;"></div>
+                    <div style="flex: 1;">
+                        <div class="skeleton-line" style="width: 50%;"></div>
+                        <div class="skeleton-line" style="width: 30%; height: 10px;"></div>
+                    </div>
+                </div>
+                <div class="skeleton-line" style="width: 80%; height: 20px; margin-bottom: 10px;"></div>
+                <div class="skeleton-line" style="width: 40%;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SEARCH OVERLAY -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-header">
+            <button class="search-back-btn" onclick="closeSearch()"><i class="fas fa-arrow-left"></i></button>
+            <div class="search-input-wrapper-full">
+                <i class="fas fa-search"></i>
+                <input type="text" id="main-search" placeholder="Search exams, subjects, classes..." oninput="handleSearchInput(event)">
+            </div>
+            <button class="search-btn-circle" onclick="performSearch()">
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        
+        <div class="search-filters filter-container" style="padding: 10px 15px 15px 15px; border-bottom: 1px solid #e5e7eb; margin-bottom: 0;">
+            <select id="filter-class" class="filter-pill" onchange="performSearch()">
+                <option value="All">🎓 All Classes</option>
+            </select>
+            <select id="filter-subject" class="filter-pill" onchange="performSearch()">
+                <option value="All">📚 All Subjects</option>
+            </select>
+            <select id="filter-status" class="filter-pill active" onchange="performSearch()">
+                <option value="All">⚡ All Status</option>
+                <option value="Unattempted">⏳ Unattempted</option>
+                <option value="Attempted">✅ Attempted</option>
+            </select>
+        </div>
+        
+        <div class="search-results-container" id="search-results">
+            <div style="text-align:center; padding: 60px 20px; color: #94a3b8;">
+                <i class="fas fa-search fa-4x" style="color:#e2e8f0; margin-bottom:15px;"></i>
+                <p style="font-size: 1.1rem; font-weight: 500;">Type to search exams...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHARE MODAL -->
+    <div class="modal-overlay-share" id="custom-share-modal">
+        <div class="share-sheet">
+            <h3 style="margin-top:0; color:#0f172a; text-align:center;">Share Exam Via</h3>
+            <div class="share-buttons">
+                <button onclick="shareVia('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                <button onclick="shareVia('telegram')"><i class="fab fa-telegram"></i> Telegram</button>
+                <button onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
+            </div>
+            <button class="btn-cancel" onclick="closeShareModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- RESULT MODAL -->
+    <div class="score-modal-overlay" id="detailed-result-modal">
+        <div class="score-modal-box">
+            <div class="modal-header-fixed">
+                <div class="score-modal-title" id="dr-title" style="font-weight:800; font-size:1.1rem; color:#0f172a; margin:0; line-height:1.4; flex:1; padding-right:10px;">Exam Result</div>
+                <button class="modal-close-btn-fixed" onclick="closeResultModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body-scroll" id="detailed-review-container"></div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV BAR -->
+    <nav class="bottom-nav" aria-label="Main navigation">
+        <a href="/special_exams.html" class="nav-item nav-special">
+            <span class="nav-icon"><i class="fas fa-trophy"></i></span>
+            <span>Special</span>
+        </a>
+        <a href="/student_dashboard.html" class="nav-item active" aria-current="page">
+            <span class="nav-icon"><i class="fas fa-house"></i></span>
+            <span>Home</span>
+        </a>
+        <a href="/student_profile.html" class="nav-item">
+            <span class="nav-icon"><i class="fas fa-user"></i></span>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script>
+        function openSearch() {
+            document.getElementById('search-overlay').style.display = 'flex';
+            document.getElementById('main-search').focus();
+            window.history.pushState({searchOpen: true}, "");
+        }
+        
+        function closeSearch() {
+            document.getElementById('search-overlay').style.display = 'none';
+        }
+
+        let lastScrollTop = 0;
+        const header = document.getElementById('smart-header');
+        let ticking = false;
+        
+        window.addEventListener("scroll", function(){
+           let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+           if (!ticking) {
+               window.requestAnimationFrame(function() {
+                   if (scrollTop > lastScrollTop && scrollTop > 60){
+                       header.style.top = "-70px"; 
+                   } else {
+                       header.style.top = "0"; 
+                   }
+                   lastScrollTop = scrollTop;
+                   ticking = false;
+               });
+               ticking = true;
+           }
+        });
+
+        let searchTimer;
+        function handleSearchInput(e) {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                performSearch();
+            }, 350);
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            window.history.replaceState({modalOpen: false}, "", window.location.href);
+
+            await Promise.all([
+                loadFilterDropdowns(),
+                loadRealFeed()
+            ]);
+        });
+
+        async function loadFilterDropdowns() {
+            const cachedFilters = localStorage.getItem('student_filter_options_cache');
+            if (cachedFilters) {
+                renderFilters(JSON.parse(cachedFilters));
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/get-filter-options');
+                const data = await res.json();
+                if(data.success) {
+                    localStorage.setItem('student_filter_options_cache', JSON.stringify(data));
+                    renderFilters(data);
+                }
+            } catch(e) {}
+        }
+
+        function renderFilters(data) {
+            const classSelect = document.getElementById('filter-class');
+            data.classes.forEach(c => { classSelect.innerHTML += `<option value="${c}">${c}</option>`; });
+            const subSelect = document.getElementById('filter-subject');
+            data.subjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+        }
+
+        async function loadRealFeed(query = "", isSearch = false) {
+            const userEmail = localStorage.getItem('userEmail');
+            let feedContainer;
+            let selectedClass = "All";
+            let selectedSubject = "All";
+            let selectedStatus = "All";
+            
+            if (isSearch) {
+                feedContainer = document.getElementById('search-results');
+                selectedClass = document.getElementById('filter-class').value;
+                selectedSubject = document.getElementById('filter-subject').value;
+                selectedStatus = document.getElementById('filter-status').value;
+                feedContainer.innerHTML = `<div style="text-align:center; padding: 60px 20px; color: #64748b;"><i class="fas fa-spinner fa-spin fa-3x" style="color:#3b82f6; margin-bottom:15px;"></i><p>Searching...</p></div>`;
+            } else {
+                feedContainer = document.getElementById('exam-feed');
+            }
+            
+            if (query) { trackStudentPreference(query, "", ""); }
+
+            try {
+                const response = await fetch('/api/search-feed', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, query: query, class_name: selectedClass, subject: selectedSubject, status: selectedStatus })
+                });
+                const data = await response.json();
+
+                if (data.success && data.feed.length > 0) {
+                    const filteredFeed = data.feed.filter(ex => {
+                        const emailField = (ex.email || ex.teacher_email || ex.creator_email || ex.user_email || "").toLowerCase();
+                        const teacherName = (ex.teacher_name || "").toLowerCase();
+                        const examString = JSON.stringify(ex).toLowerCase();
+                        
+                        return emailField !== 'exammate.official@gmail.com' && 
+                               !teacherName.includes('exammate') && 
+                               !teacherName.includes('admin') &&
+                               !emailField.includes('admin') &&
+                               !examString.includes('exammate.official@gmail.com') &&
+                               !examString.includes('admin');
+                    });
+
+                    if (filteredFeed.length > 0) {
+                        let sortedFeed = sortExamsForStudent(filteredFeed, query);
+                        renderFeedCards(sortedFeed, feedContainer);
+                    } else {
+                        feedContainer.innerHTML = `<div style="text-align:center; padding: 60px 20px; color: #94a3b8;"><i class="fas fa-box-open fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams found.</p></div>`;
+                    }
+                } else {
+                    feedContainer.innerHTML = `<div style="text-align:center; padding: 60px 20px; color: #94a3b8;"><i class="fas fa-box-open fa-3x" style="color:#cbd5e1; margin-bottom:15px;"></i><p>No exams found.</p></div>`;
+                }
+            } catch (error) { feedContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444;">Failed to load feed.</div>`; }
+        }
+
+        function performSearch() {
+            const query = document.getElementById('main-search').value.trim();
+            loadRealFeed(query, true);
+        }
+
+        function XP_POINTS(exam) {
+            const minutes = Math.max(0, Number(exam.timer) || 0);
+            return Math.max(10, Math.min(100, minutes * 2));
+        }
+
+        function renderFeedCards(exams, container) {
+            let htmlContent = '';
+            
+            exams.forEach(ex => {
+                const isLiked = localStorage.getItem('like_' + ex.code) === 'true' || ex.is_liked;
+                const isSaved = localStorage.getItem('save_' + ex.code) === 'true' || ex.is_saved;
+                const heartClass = isLiked ? 'fas fa-heart like-active' : 'far fa-heart';
+                const saveClass = isSaved ? 'fas fa-bookmark save-active' : 'far fa-bookmark';
+
+                let actionHTML = '';
+                if (ex.is_attempted) {
+                    let acc = ex.total > 0 ? ((ex.score / ex.total) * 100).toFixed(1) : 0;
+                    let reattemptBtn = ex.is_private ? `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#d97706; border:1px solid #fde68a; box-shadow:none;" onclick="accessPrivateExamReattempt('${ex.code}')">🔒 Re-attempt</button>` : `<button class="btn-attempt" style="flex:1; background:#f1f5f9; color:#3b82f6; border:1px solid #bfdbfe; box-shadow:none;" onclick="window.location.href='/student_exam.html?code=${ex.code}&reattempt=true'">Re-attempt</button>`;
+                    
+                    actionHTML = `
+                    <div class="feed-action-container">
+                        <div style="margin-bottom:10px; font-size:0.85rem; color:#16a34a; font-weight:bold; background:#f0fdf4; padding:8px; border-radius:8px; text-align:center; border:1px solid #bbf7d0;">✅ Attempted (Score: ${ex.score}/${ex.total} - ${acc}%)</div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-result" style="flex:1;" onclick="showDetailedResult('${ex.code}', '${ex.name.replace(/'/g, "\\'")}')">View Result 📊</button>
+                            ${reattemptBtn}
+                        </div>
+                    </div>`;
+                } else {
+                    actionHTML = ex.is_private 
+                        ? `<div class="feed-action-container"><button class="btn-attempt" style="background:#d97706;" onclick="accessPrivateExam('${ex.code}')">🔒 Enter Code to Unlock</button></div>`
+                        : `<div class="feed-action-container"><button class="btn-attempt" onclick="window.location.href='/student_exam.html?code=${ex.code}'">Attempt Exam 🚀</button></div>`;
+                }
+
+                const teacherInitial = ex.teacher_name ? ex.teacher_name.charAt(0).toUpperCase() : 'T';
+
+                const scorePercent = ex.is_attempted && Number(ex.total) > 0
+                    ? Math.max(0, Math.min(100, (Number(ex.score) / Number(ex.total)) * 100))
+                    : 0;
+                const examPoints = ex.is_attempted ? Math.round(scorePercent) :  XP_POINTS(ex);
+                const examStatus = ex.is_attempted ? 'COMPLETED' : (ex.is_private ? 'LOCKED CHALLENGE' : 'READY TO PLAY');
+
+                htmlContent += `
+                <article class="feed-card">
+                    <div class="card-glow"></div>
+                    <div class="feed-header">
+                        <div class="feed-avatar">${teacherInitial}</div>
+                        <div class="feed-teacher-info">
+                            <strong>${ex.teacher_name || 'ExamMate Teacher'}</strong>
+                            <span>Posted ${ex.date || 'Recently'}</span>
+                        </div>
+                        <span class="exam-status ${ex.is_attempted ? 'status-done' : (ex.is_private ? 'status-locked' : 'status-ready')}">
+                            <i class="fas ${ex.is_attempted ? 'fa-check-circle' : (ex.is_private ? 'fa-lock' : 'fa-bolt')}"></i>
+                            ${examStatus}
+                        </span>
+                    </div>
+                    <div class="feed-body">
+                        <h3 class="feed-title">${ex.name || 'Untitled Exam'} ${ex.is_private ? '🔒' : ''}</h3>
+                        <div class="feed-tags">
+                            <span class="feed-tag"><i class="fas fa-graduation-cap"></i> ${ex.class_name || 'Class'}</span>
+                            <span class="feed-tag"><i class="fas fa-book"></i> ${ex.subject || 'Subject'}</span>
+                        </div>
+                        <div class="challenge-meta">
+                            <span><i class="fas fa-hourglass-half"></i> ${ex.timer || 0} min</span>
+                            <span><i class="fas fa-layer-group"></i> ${ex.total || '—'} questions/marks</span>
+                            <span class="xp-chip"><i class="fas fa-star"></i> ${examPoints} XP</span>
+                        </div>
+                        ${ex.is_attempted ? `
+                        <div class="progress-wrap">
+                            <div class="progress-label"><span>Your progress</span><strong>${scorePercent.toFixed(1)}%</strong></div>
+                            <div class="progress-track"><span style="width:${scorePercent}%"></span></div>
+                        </div>` : `
+                        <div class="challenge-hint"><i class="fas fa-gamepad"></i> Challenge yourself • Earn your progress</div>`}
+                    </div>
+                    <div class="feed-actions">
+                        <div class="action-left">
+                            <button class="action-btn" onclick="toggleSocialAction(this, '${ex.code}', 'like')" aria-label="Like exam">
+                                <i class="${heartClass}"></i> <span>${ex.likes || 0}</span>
+                            </button>
+                            <button class="action-btn" onclick="triggerCustomShare('${String(ex.name || '').replace(/'/g, "\\'")}', '${ex.code}')" aria-label="Share exam">
+                                <i class="far fa-share-square"></i> <span>Share</span>
+                            </button>
+                        </div>
+                        <button class="action-btn" id="save-btn-${ex.code}" onclick="toggleSocialAction(this, '${ex.code}', 'save')" aria-label="Save exam">
+                            <i class="${saveClass}"></i>
+                        </button>
+                    </div>
+                    ${actionHTML}
+                </article>`;
+            });
+            container.innerHTML = htmlContent;
+        }
+
+        let currentShareData = {};
+        function triggerCustomShare(examName, examCode) {
+            const baseUrl = window.location.origin; 
+            const examLink = `${baseUrl}/student_exam.html?code=${examCode}`;
+            const shareText = `🚀 Prepare for success with ExamMate!\n\n📚 Exam Name: ${examName}\n\nClick the link below to read the instructions and start your exam instantly. Best of luck! 🎯\n\n`;
+            currentShareData = { title: `ExamMate - ${examName}`, text: shareText, url: examLink };
+            document.getElementById('custom-share-modal').style.display = 'flex';
+        }
+        function closeShareModal() { document.getElementById('custom-share-modal').style.display = 'none'; }
+        function shareVia(platform) {
+            const fullText = encodeURIComponent(currentShareData.text + currentShareData.url);
+            const urlOnly = encodeURIComponent(currentShareData.url);
+            let shareUrl = '';
+            if(platform === 'whatsapp') { shareUrl = `https://api.whatsapp.com/send?text=${fullText}`; window.open(shareUrl, '_blank'); } 
+            else if(platform === 'telegram') { shareUrl = `https://t.me/share/url?url=${urlOnly}&text=${encodeURIComponent(currentShareData.text)}`; window.open(shareUrl, '_blank'); }
+            closeShareModal();
+        }
+        function copyShareLink() {
+            navigator.clipboard.writeText(currentShareData.text + currentShareData.url).then(() => {
+                alert("✅ Exam link and details copied successfully!"); closeShareModal();
+            }).catch(() => { alert("Failed to copy."); });
+        }
+
+        function accessPrivateExam(actualCode) {
+            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code to unlock:");
+            if (enteredCode) {
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `/student_exam.html?code=${actualCode}`; } 
+                else { alert("❌ Incorrect Code!"); }
+            }
+        }
+        function accessPrivateExamReattempt(actualCode) {
+            const enteredCode = prompt("🔒 This is a private exam.\nEnter the Exam Code to re-attempt:");
+            if (enteredCode) {
+                if (enteredCode.trim().toUpperCase() === actualCode.toUpperCase()) { window.location.href = `/student_exam.html?code=${actualCode}&reattempt=true`; } 
+                else { alert("❌ Incorrect Code!"); }
+            }
+        }
+
+        async function toggleSocialAction(btn, examCode, actionType) {
+            const userEmail = localStorage.getItem('userEmail');
+            if(!userEmail) return;
+
+            let icon = btn.querySelector('i');
+            
+            if (actionType === 'like') {
+                let span = btn.querySelector('span');
+                let count = parseInt(span.innerText);
+                const isActive = icon.classList.contains('like-active');
+                localStorage.setItem('like_' + examCode, !isActive);
+                if (isActive) { icon.className = 'far fa-heart'; span.innerText = count - 1; } 
+                else { icon.className = 'fas fa-heart like-active'; span.innerText = count + 1; }
+            } else if (actionType === 'save') {
+                const isActive = icon.classList.contains('save-active');
+                localStorage.setItem('save_' + examCode, !isActive);
+                if (isActive) { icon.className = 'far fa-bookmark'; } 
+                else { icon.className = 'fas fa-bookmark save-active'; }
+            }
+
+            try {
+                await fetch('/api/toggle-social', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, exam_code: examCode, type: actionType })
+                });
+            } catch (error) {}
+        }
+
+        function closeResultModal() {
+            document.getElementById('detailed-result-modal').style.display = 'none';
+            window.history.replaceState({modalOpen: false}, "", window.location.href);
+        }
+
+        async function showDetailedResult(code, name) {
+            const container = document.getElementById('detailed-review-container');
+            container.innerHTML = '<p style="text-align:center; color:#64748b; margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Fetching your answers...</p>';
+            document.getElementById('dr-title').innerText = name + " - Result";
+            document.getElementById('detailed-result-modal').style.display = 'flex';
+            window.history.replaceState({modalOpen: true}, "", window.location.href);
+
+            const userEmail = localStorage.getItem('userEmail') || "Guest Account";
+
+            try {
+                const qResponse = await fetch('/api/get-exam-questions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exam_code: code }) });
+                const qData = await qResponse.json();
+                const reviewResp = await fetch('/api/get-student-exam-review', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userEmail, exam_code: code }) });
+                const reviewData = await reviewResp.json();
+
+                if (qData.success) {
+                    const savedState = localStorage.getItem('exam_result_' + code);
+                    const localAnsData = savedState ? JSON.parse(savedState).answers : null;
+                    const backendSubjData = (reviewData.success && reviewData.taken) ? reviewData.subjective_data : null;
+
+                    let totalMarks = qData.questions.reduce((sum, q) => { let m = parseFloat(q.max_marks); if (isNaN(m)) m = (q.question_type === 'mcq' ? 1.0 : 5.0); return sum + m; }, 0);
+                    let displayScore = (reviewData.success && reviewData.taken) ? reviewData.total_score : 0;
+                    document.getElementById('dr-title').innerHTML = `${name} <br><span style="font-size:0.9rem; color:#3b82f6;">Total Score: ${displayScore} / ${totalMarks}</span>`;
+
+                    let html = '';
+                    qData.questions.forEach((q, idx) => {
+                        const studentAns = (localAnsData && localAnsData[idx]) ? localAnsData[idx] : undefined;
+                        let isAttempted = false;
+                        if(q.question_type === 'subjective' && backendSubjData && backendSubjData[q.id]) { isAttempted = true; } 
+                        else if (studentAns !== undefined && studentAns !== "") { isAttempted = true; }
+                        
+                        const isCorrect = studentAns === q.correct;
+                        let cardClass = 'review-unattempted';
+                        if (isAttempted) { if (q.question_type === 'subjective') { cardClass = 'review-unattempted'; } else { cardClass = isCorrect ? 'review-correct' : 'review-wrong'; } }
+
+                        let maxMarks = q.max_marks || (q.question_type === 'mcq' ? 1.0 : 5.0);
+
+                        html += `<div class="review-card ${cardClass}">`;
+                        html += `<div class="review-q-text">Q${idx + 1}: ${q.q_text} <span style="font-size:0.8rem; color:#64748b;">(Marks: ${maxMarks})</span></div>`;
+
+                        if (q.question_type === 'subjective') {
+                            if (isAttempted) {
+                                html += `<div style="color: #0369a1; font-weight:bold;">✅ Answer Uploaded</div>`;
+                                if(backendSubjData && backendSubjData[q.id] && backendSubjData[q.id].is_checked) { html += `<div class="ans-real-correct" style="color:#10b981;">✅ <b>শিক্ষক নম্বর দিয়েছেন:</b> ${backendSubjData[q.id].marks} / ${maxMarks} Marks</div>`; } 
+                                else { html += `<div class="ans-real-correct" style="color:#d97706;">⏳ <b>খাতা দেখা বাকি আছে</b></div>`; }
+                            } else { html += `<div style="color: #64748b; font-style: italic;">⚠️ No Image Uploaded</div>`; }
+                        } else {
+                            const getOptionText = (letter) => { if(letter==='A') return q.opt_a; if(letter==='B') return q.opt_b; if(letter==='C') return q.opt_c; if(letter==='D') return q.opt_d; return ''; };
+                            if (isAttempted) {
+                                if (isCorrect) { html += `<div class="ans-correct-text">✅ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div>`; } 
+                                else { html += `<div class="ans-wrong-text">❌ Your Answer: ${studentAns}) ${getOptionText(studentAns)}</div><br><div class="ans-real-correct">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`; }
+                            } else {
+                                html += `<div style="color: #64748b; font-style: italic; margin-bottom: 5px;">⚠️ Not Attempted</div><div class="ans-real-correct unattempted-border">🎯 Correct Answer: ${q.correct}) ${getOptionText(q.correct)}</div>`;
+                            }
+                        }
+                        html += `</div>`;
+                    });
+
+                    container.innerHTML = html;
+                    if (window.MathJax) { MathJax.typesetPromise([container]).catch(err => console.log(err)); }
+                } else { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load questions.</p>'; }
+            } catch (e) { container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading results.</p>'; }
+        }
+
+        function trackStudentPreference(query, className, subject) {
+            let history = JSON.parse(localStorage.getItem('student_pref') || '{"searches": [], "classes": [], "subjects": []}');
+            if (query && !history.searches.includes(query.toLowerCase())) { history.searches.unshift(query.toLowerCase()); }
+            if (className && !history.classes.includes(className)) history.classes.push(className);
+            if (subject && !history.subjects.includes(subject)) history.subjects.push(subject);
+            localStorage.setItem('student_pref', JSON.stringify(history));
+        }
+
+        function sortExamsForStudent(feedList, currentQuery = "") {
+            let pref = JSON.parse(localStorage.getItem('student_pref') || '{"searches": [], "classes": [], "subjects": []}');
+            if (currentQuery && !pref.searches.includes(currentQuery.toLowerCase())) { pref.searches.unshift(currentQuery.toLowerCase()); }
+
+            return feedList.sort((a, b) => {
+                let scoreA = 0; let scoreB = 0;
+                pref.searches.forEach(term => {
+                    if (a.name.toLowerCase().includes(term) || a.subject.toLowerCase().includes(term) || a.class_name.toLowerCase().includes(term)) scoreA += 100;
+                    if (b.name.toLowerCase().includes(term) || b.subject.toLowerCase().includes(term) || b.class_name.toLowerCase().includes(term)) scoreB += 100;
+                });
+                if (pref.classes.includes(a.class_name)) scoreA += 50; if (pref.classes.includes(b.class_name)) scoreB += 50;
+                if (pref.subjects.includes(a.subject)) scoreA += 40; if (pref.subjects.includes(b.subject)) scoreB += 40;
+                scoreA += (a.likes * 2); scoreB += (b.likes * 2);
+                return scoreB - scoreA;
+            });
+        }
+
+        window.addEventListener('popstate', function (event) {
+            const drModal = document.getElementById('detailed-result-modal');
+            const shareModal = document.getElementById('custom-share-modal');
+            const searchOverlay = document.getElementById('search-overlay');
+            
+            if(shareModal && shareModal.style.display === 'flex') {
+                closeShareModal();
+            } else if(drModal && drModal.style.display === 'flex') {
+                drModal.style.display = 'none';
+            } else if(searchOverlay && searchOverlay.style.display === 'flex') {
+                closeSearch();
+            } else {
+                if (document.referrer) { window.history.back(); } 
+            }
+        });
+    </script>
+</body>
+</html>
