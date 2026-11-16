@@ -144,22 +144,7 @@ def send_otp_email(receiver_email, otp):
         "This code expires in 5 minutes. Do not share it with anyone."
     )
 
-    # ১. Google Apps Script Webhook (Render Free Tier যদি SMTP পোর্ট ব্লক করে, তবে ১০০% ফ্রি বিকল্প)
-    script_url = (os.getenv("GOOGLE_SCRIPT_URL") or "").strip()
-    if script_url:
-        try:
-            resp = requests.post(
-                script_url,
-                json={"to": receiver_email, "subject": subject, "text": body_text},
-                timeout=15,
-            )
-            if resp.status_code == 200 and resp.json().get("success"):
-                return True
-            app.logger.error("Google Script Email failed: %s %s", resp.status_code, resp.text[:300])
-        except Exception:
-            app.logger.exception("Google Script Email request failed")
-
-    # ২. Gmail SMTP সিস্টেম (Render-এ থাকা SMTP_FROM_EMAIL এবং SMTP_PASSWORD / MAIL_APP_PASSWORD ব্যবহার করবে)
+    # Render-এ সেট করা SMTP_FROM_EMAIL (বা RESEND_FROM_EMAIL) এবং SMTP_PASSWORD (বা MAIL_APP_PASSWORD) ব্যবহার করবে
     smtp_user = (os.getenv("SMTP_FROM_EMAIL") or os.getenv("RESEND_FROM_EMAIL") or "").strip()
     smtp_pass = (os.getenv("SMTP_PASSWORD") or os.getenv("MAIL_APP_PASSWORD") or "").strip().replace(" ", "")
 
@@ -188,7 +173,7 @@ def send_otp_email(receiver_email, otp):
             except Exception as exc:
                 app.logger.error("SMTP failed on port %s: %s", port, exc)
 
-    # ৩. Resend API (ভবিষ্যতে কাস্টম ডোমেইন ভেরিফাই করলে কাজ করবে)
+    # ব্যাকআপ হিসেবে Resend API রাখা হলো (যদি ভবিষ্যতে ডোমেইন ভেরিফাই করা হয়)
     api_key = (os.getenv("RESEND_API_KEY") or "").strip()
     sender = (os.getenv("RESEND_FROM_EMAIL") or "").strip()
     if api_key and sender and not sender.lower().endswith("@gmail.com"):
@@ -209,7 +194,6 @@ def send_otp_email(receiver_email, otp):
             )
             if response.status_code in (200, 201):
                 return True
-            app.logger.error("Resend API failed: %s %s", response.status_code, response.text[:500])
         except requests.RequestException:
             app.logger.exception("Resend email request failed")
 
