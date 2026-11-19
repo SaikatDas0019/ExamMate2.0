@@ -1,0 +1,5658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMate | Player Profile</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script"
+            async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    <style>
+        :root {
+            color-scheme: light;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --bg: #f4f7fb;
+            --card: #ffffff;
+            --green: #10b981;
+            --red: #ef4444;
+            --orange: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family:
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
+        }
+
+        button,
+        input,
+        textarea,
+        select {
+            font-family: inherit;
+        }
+
+        button {
+            -webkit-appearance: none;
+        }
+
+        /* =========================================================
+           MAIN APP CONTAINER
+        ========================================================= */
+
+        .app {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            margin: 0 auto;
+            background: var(--bg);
+            position: relative;
+            overflow-x: hidden;
+            padding-bottom: 82px;
+        }
+
+        /* =========================================================
+           TOP HEADER
+        ========================================================= */
+
+        .top-header {
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            height: 62px;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 18px;
+        }
+
+        .top-title {
+            font-size: 1.25rem;
+            font-weight: 850;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .settings-button {
+            width: 42px;
+            height: 42px;
+
+            border: none;
+            background: transparent;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: #475569;
+            font-size: 1.35rem;
+            cursor: pointer;
+
+            border-radius: 50%;
+            transition: 0.2s ease;
+        }
+
+        .settings-button:active {
+            transform: scale(0.9);
+            background: #f1f5f9;
+        }
+
+        /* =========================================================
+           PROFILE HERO
+        ========================================================= */
+
+        .profile-hero {
+            position: relative;
+            background:
+                linear-gradient(
+                    180deg,
+                    #dbeafe 0%,
+                    #eff6ff 45%,
+                    #ffffff 45%,
+                    #ffffff 100%
+                );
+
+            padding: 30px 18px 24px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .profile-avatar-wrap {
+            position: relative;
+            width: 96px;
+            height: 96px;
+            margin: 0 auto 13px;
+        }
+
+        .profile-avatar {
+            width: 96px;
+            height: 96px;
+
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 2.7rem;
+            font-weight: 900;
+            color: #ffffff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #60a5fa,
+                    #2563eb
+                );
+
+            border: 4px solid #ffffff;
+            box-shadow:
+                0 8px 25px rgba(37,99,235,0.22);
+
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-edit-dot {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+
+            width: 28px;
+            height: 28px;
+
+            border-radius: 50%;
+            background: #ffffff;
+
+            border: 1px solid var(--border);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: var(--primary);
+            font-size: 0.75rem;
+
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+        }
+
+        .profile-name {
+            margin: 0;
+
+            font-size: 1.55rem;
+            line-height: 1.2;
+
+            font-weight: 900;
+            color: var(--text);
+        }
+
+        .profile-email {
+            margin: 6px 0 13px;
+
+            font-size: 0.88rem;
+            color: var(--muted);
+
+            word-break: break-word;
+        }
+
+        .achievement-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            padding: 7px 14px;
+
+            border-radius: 999px;
+
+            background: rgba(255,255,255,0.95);
+
+            border: 1px solid #bfdbfe;
+
+            color: #1e3a8a;
+
+            font-size: 0.82rem;
+            font-weight: 800;
+
+            box-shadow: 0 4px 12px rgba(59,130,246,0.10);
+        }
+
+        /* =========================================================
+           QUICK STATS
+        ========================================================= */
+
+        .quick-stats {
+            margin: 0 15px;
+            margin-top: -1px;
+
+            background: #ffffff;
+
+            border: 1px solid var(--border);
+            border-radius: 16px;
+
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+
+            overflow: hidden;
+
+            box-shadow:
+                0 6px 18px rgba(15,23,42,0.06);
+        }
+
+        .quick-stat {
+            padding: 15px 5px;
+            text-align: center;
+
+            border-right: 1px solid var(--border);
+        }
+
+        .quick-stat:last-child {
+            border-right: none;
+        }
+
+        .quick-stat-value {
+            display: block;
+
+            font-size: 1.1rem;
+            font-weight: 900;
+
+            color: var(--text);
+
+            line-height: 1.1;
+        }
+
+        .quick-stat-label {
+            display: block;
+
+            margin-top: 5px;
+
+            font-size: 0.62rem;
+            font-weight: 700;
+
+            color: var(--muted);
+        }
+
+        /* =========================================================
+           ACHIEVEMENT CARD
+        ========================================================= */
+
+        .section {
+            padding: 18px 15px 0;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 10px;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+
+            font-size: 1.05rem;
+            font-weight: 850;
+
+            color: var(--text);
+        }
+
+        .see-more {
+            border: none;
+            background: transparent;
+
+            color: var(--primary);
+            font-size: 0.78rem;
+            font-weight: 800;
+
+            cursor: pointer;
+        }
+
+        .achievement-card {
+            position: relative;
+
+            background: #ffffff;
+
+            border: 1px solid #dbeafe;
+            border-radius: 17px;
+
+            padding: 15px;
+
+            box-shadow:
+                0 5px 15px rgba(15,23,42,0.05);
+        }
+
+        .achievement-main {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .achievement-icon {
+            width: 52px;
+            height: 52px;
+
+            flex: 0 0 52px;
+
+            border-radius: 15px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 1.55rem;
+
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        .achievement-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .achievement-level {
+            margin: 0 0 3px;
+
+            font-size: 1rem;
+            font-weight: 900;
+
+            color: var(--text);
+        }
+
+        .achievement-description {
+            margin: 0;
+
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .xp-row {
+            margin-top: 13px;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .xp-bar {
+            flex: 1;
+
+            height: 8px;
+
+            background: #e2e8f0;
+
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .xp-fill {
+            height: 100%;
+            width: 0%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #3b82f6,
+                    #10b981
+                );
+
+            border-radius: 99px;
+
+            transition: width 0.8s ease;
+        }
+
+        .xp-text {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--muted);
+
+            white-space: nowrap;
+        }
+
+        /* =========================================================
+           PROFILE TABS
+        ========================================================= */
+
+        .profile-tabs {
+            margin-top: 18px;
+
+            background: #ffffff;
+
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+
+            position: sticky;
+            top: 61px;
+            z-index: 700;
+        }
+
+        .profile-tab {
+            position: relative;
+
+            height: 54px;
+
+            border: none;
+            background: transparent;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: #94a3b8;
+
+            font-size: 1.15rem;
+
+            cursor: pointer;
+
+            transition: color 0.2s ease;
+        }
+
+        .profile-tab.active {
+            color: var(--primary);
+        }
+
+        .profile-tab.active::after {
+            content: "";
+
+            position: absolute;
+
+            left: 28%;
+            right: 28%;
+            bottom: 0;
+
+            height: 3px;
+
+            background: var(--primary);
+
+            border-radius: 5px 5px 0 0;
+        }
+
+        .profile-tab-badge {
+            position: absolute;
+
+            top: 8px;
+            right: 30%;
+
+            min-width: 16px;
+            height: 16px;
+
+            padding: 0 4px;
+
+            border-radius: 999px;
+
+            background: #eff6ff;
+            color: var(--primary);
+
+            font-size: 0.55rem;
+            font-weight: 900;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* =========================================================
+           TAB CONTENT
+        ========================================================= */
+
+        .tab-content {
+            padding: 15px;
+            min-height: 300px;
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* =========================================================
+           EXAM CARD
+        ========================================================= */
+
+        .exam-card {
+            background: #ffffff;
+
+            border: 1px solid var(--border);
+            border-radius: 16px;
+
+            padding: 15px;
+
+            margin-bottom: 12px;
+
+            box-shadow:
+                0 4px 12px rgba(15,23,42,0.04);
+        }
+
+        .exam-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+        }
+
+        .exam-card-icon {
+            width: 43px;
+            height: 43px;
+
+            flex: 0 0 43px;
+
+            border-radius: 12px;
+
+            background: #eff6ff;
+            color: var(--primary);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 1rem;
+        }
+
+        .exam-card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .exam-card-title {
+            margin: 0;
+
+            font-size: 0.98rem;
+            font-weight: 850;
+
+            color: var(--text);
+
+            line-height: 1.3;
+        }
+
+        .exam-card-meta {
+            margin-top: 5px;
+
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .meta-chip {
+            background: #f1f5f9;
+
+            color: #475569;
+
+            border-radius: 6px;
+
+            padding: 4px 7px;
+
+            font-size: 0.63rem;
+            font-weight: 750;
+        }
+
+        .exam-date {
+            margin-top: 7px;
+
+            font-size: 0.68rem;
+            color: var(--muted);
+        }
+
+        .exam-arrow {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .exam-result-box {
+            margin-top: 12px;
+
+            padding: 9px 11px;
+
+            border-radius: 10px;
+
+            background: #f0fdf4;
+
+            border: 1px solid #bbf7d0;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 8px;
+        }
+
+        .result-score {
+            color: #15803d;
+
+            font-size: 0.8rem;
+            font-weight: 850;
+        }
+
+        .result-percent {
+            color: #166534;
+
+            font-size: 0.76rem;
+            font-weight: 800;
+        }
+
+        .exam-actions {
+            display: flex;
+            gap: 8px;
+
+            margin-top: 11px;
+        }
+
+        .exam-action {
+            flex: 1;
+
+            min-height: 39px;
+
+            border-radius: 9px;
+
+            padding: 8px 6px;
+
+            font-size: 0.73rem;
+            font-weight: 800;
+
+            cursor: pointer;
+
+            border: 1px solid var(--border);
+
+            background: #ffffff;
+            color: #475569;
+        }
+
+        .exam-action.primary {
+            color: var(--primary);
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .exam-action.green {
+            color: #059669;
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+        }
+
+        .exam-action.danger {
+            color: #dc2626;
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .exam-action:active {
+            transform: scale(0.97);
+        }
+
+        /* =========================================================
+           EMPTY STATE
+        ========================================================= */
+
+        .empty-state {
+            padding: 48px 20px;
+
+            text-align: center;
+
+            color: var(--muted);
+        }
+
+        .empty-icon {
+            width: 64px;
+            height: 64px;
+
+            margin: 0 auto 14px;
+
+            border-radius: 20px;
+
+            background: #eaf2ff;
+            color: #93c5fd;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 1.6rem;
+        }
+
+        .empty-state h3 {
+            margin: 0 0 6px;
+
+            color: #334155;
+
+            font-size: 0.98rem;
+        }
+
+        .empty-state p {
+            margin: 0;
+
+            font-size: 0.76rem;
+        }
+
+        /* =========================================================
+           LOADING
+        ========================================================= */
+
+        .loading-state {
+            padding: 45px 20px;
+
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .loading-state i {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        /* =========================================================
+           SETTINGS BOTTOM SHEET
+        ========================================================= */
+
+        .overlay {
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(15,23,42,0.48);
+
+            backdrop-filter: blur(4px);
+
+            z-index: 3000;
+
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .overlay.show {
+            display: flex;
+        }
+
+        .bottom-sheet {
+            width: 100%;
+            max-width: 480px;
+
+            background: #ffffff;
+
+            border-radius: 23px 23px 0 0;
+
+            padding: 13px 15px 32px;
+
+            animation: sheetUp 0.25s ease;
+        }
+
+        @keyframes sheetUp {
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .drag-handle {
+            width: 42px;
+            height: 5px;
+
+            background: #cbd5e1;
+
+            border-radius: 99px;
+
+            margin: 0 auto 17px;
+        }
+
+        .sheet-title {
+            margin: 0 0 12px;
+            padding: 0 6px;
+
+            font-size: 1.05rem;
+            font-weight: 850;
+        }
+
+        .sheet-option {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+            gap: 13px;
+
+            padding: 14px 12px;
+
+            border: none;
+            background: transparent;
+
+            border-radius: 12px;
+
+            color: #1e293b;
+
+            font-size: 0.92rem;
+            font-weight: 700;
+
+            text-align: left;
+
+            cursor: pointer;
+        }
+
+        .sheet-option:active {
+            background: #f1f5f9;
+        }
+
+        .sheet-option i {
+            width: 25px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .sheet-option.logout {
+            color: #dc2626;
+        }
+
+        .sheet-option.logout i {
+            color: #dc2626;
+        }
+
+        .sheet-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 7px 0;
+        }
+
+        /* =========================================================
+           FULL PAGE PANEL
+        ========================================================= */
+
+        .full-panel {
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 2500;
+
+            background: var(--bg);
+
+            overflow-y: auto;
+        }
+
+        .full-panel.show {
+            display: block;
+        }
+
+        .panel-header {
+            position: sticky;
+            top: 0;
+
+            z-index: 10;
+
+            height: 62px;
+
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+
+            border-bottom: 1px solid var(--border);
+
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 0 15px;
+        }
+
+        .back-button {
+            width: 40px;
+            height: 40px;
+
+            border: none;
+            background: transparent;
+
+            font-size: 1.35rem;
+            color: #334155;
+
+            cursor: pointer;
+        }
+
+        .panel-title {
+            margin: 0;
+
+            font-size: 1.05rem;
+            font-weight: 850;
+        }
+
+        .panel-body {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+
+            padding: 15px;
+        }
+
+        /* =========================================================
+           LEVEL PANEL
+        ========================================================= */
+
+        .level-big-card {
+            background:
+                linear-gradient(
+                    135deg,
+                    #1d4ed8,
+                    #3b82f6
+                );
+
+            color: #ffffff;
+
+            border-radius: 20px;
+
+            padding: 25px 20px;
+
+            text-align: center;
+
+            box-shadow:
+                0 12px 28px rgba(37,99,235,0.25);
+        }
+
+        .level-big-icon {
+            font-size: 3.3rem;
+            color: #fbbf24;
+
+            margin-bottom: 10px;
+        }
+
+        .level-big-title {
+            margin: 0;
+
+            font-size: 1.45rem;
+            font-weight: 900;
+        }
+
+        .level-big-desc {
+            margin: 6px 0 0;
+
+            opacity: 0.9;
+
+            font-size: 0.82rem;
+        }
+
+        .big-xp {
+            margin-top: 18px;
+
+            height: 12px;
+
+            background: rgba(255,255,255,0.22);
+
+            border-radius: 99px;
+
+            overflow: hidden;
+        }
+
+        .big-xp-fill {
+            height: 100%;
+            width: 0%;
+
+            background: #fbbf24;
+
+            border-radius: 99px;
+
+            transition: width 0.8s ease;
+        }
+
+        .big-xp-text {
+            margin-top: 8px;
+
+            font-size: 0.76rem;
+            font-weight: 800;
+        }
+
+        .level-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+
+            gap: 10px;
+
+            margin-top: 15px;
+        }
+
+        .level-stat {
+            background: #ffffff;
+
+            border: 1px solid var(--border);
+
+            border-radius: 14px;
+
+            padding: 15px 8px;
+
+            text-align: center;
+        }
+
+        .level-stat span {
+            display: block;
+
+            font-size: 0.65rem;
+            color: var(--muted);
+            font-weight: 750;
+        }
+
+        .level-stat strong {
+            display: block;
+
+            margin-top: 5px;
+
+            font-size: 1.15rem;
+        }
+
+        /* =========================================================
+           TIER MODAL
+        ========================================================= */
+
+        .center-overlay {
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 4000;
+
+            background: rgba(15,23,42,0.6);
+
+            backdrop-filter: blur(5px);
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 18px;
+        }
+
+        .center-overlay.show {
+            display: flex;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 450px;
+
+            max-height: 88vh;
+
+            overflow-y: auto;
+
+            background: #ffffff;
+
+            border-radius: 20px;
+
+            padding: 20px;
+        }
+
+        .modal-title {
+            margin: 0 0 15px;
+
+            text-align: center;
+
+            font-size: 1.15rem;
+            font-weight: 900;
+        }
+
+        .tier-item {
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 12px;
+
+            border-radius: 13px;
+
+            margin-bottom: 9px;
+
+            border: 1px solid var(--border);
+        }
+
+        .tier-icon {
+            width: 45px;
+            height: 45px;
+
+            flex: 0 0 45px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 1.35rem;
+        }
+
+        .tier-name {
+            margin: 0;
+
+            font-size: 0.9rem;
+            font-weight: 850;
+        }
+
+        .tier-points {
+            margin: 3px 0 0;
+
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        .modal-close {
+            width: 100%;
+
+            margin-top: 7px;
+
+            padding: 12px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: var(--primary);
+            color: #ffffff;
+
+            font-size: 0.9rem;
+            font-weight: 800;
+
+            cursor: pointer;
+        }
+
+        /* =========================================================
+           EDIT PROFILE
+        ========================================================= */
+
+        .form-card {
+            background: #ffffff;
+
+            border: 1px solid var(--border);
+
+            border-radius: 17px;
+
+            padding: 17px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+
+            margin-bottom: 6px;
+
+            font-size: 0.78rem;
+            font-weight: 800;
+
+            color: #475569;
+        }
+
+        .form-input {
+            width: 100%;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            border: 1px solid #cbd5e1;
+
+            outline: none;
+
+            font-size: 0.9rem;
+
+            background: #ffffff;
+
+            color: var(--text);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+
+            box-shadow:
+                0 0 0 3px rgba(59,130,246,0.10);
+        }
+
+        .save-profile-button {
+            width: 100%;
+
+            padding: 13px;
+
+            border: none;
+
+            border-radius: 11px;
+
+            background: var(--primary);
+
+            color: #ffffff;
+
+            font-weight: 850;
+
+            font-size: 0.9rem;
+
+            cursor: pointer;
+        }
+
+        /* =========================================================
+           COLLECTIONS
+        ========================================================= */
+
+        .collection-filters {
+            display: flex;
+            gap: 8px;
+
+            overflow-x: auto;
+
+            scrollbar-width: none;
+
+            margin-bottom: 13px;
+        }
+
+        .collection-filters::-webkit-scrollbar {
+            display: none;
+        }
+
+        .collection-pill {
+            white-space: nowrap;
+
+            border: 1px solid #cbd5e1;
+
+            background: #ffffff;
+
+            color: #475569;
+
+            padding: 7px 13px;
+
+            border-radius: 999px;
+
+            font-size: 0.72rem;
+            font-weight: 800;
+
+            cursor: pointer;
+        }
+
+        .collection-pill.active {
+            background: #eff6ff;
+
+            color: #1d4ed8;
+
+            border-color: #93c5fd;
+        }
+
+        .new-folder {
+            display: flex;
+            gap: 8px;
+
+            margin-top: 12px;
+        }
+
+        .new-folder input {
+            flex: 1;
+
+            border: 1px solid #cbd5e1;
+
+            border-radius: 10px;
+
+            padding: 11px;
+
+            outline: none;
+        }
+
+        .new-folder button {
+            border: none;
+
+            border-radius: 10px;
+
+            padding: 0 15px;
+
+            background: var(--green);
+
+            color: #ffffff;
+
+            font-weight: 800;
+        }
+
+        /* =========================================================
+           RESULT MODAL
+        ========================================================= */
+
+        .result-question {
+            background: #ffffff;
+
+            border: 1px solid var(--border);
+
+            border-radius: 12px;
+
+            padding: 13px;
+
+            margin-bottom: 10px;
+        }
+
+        .result-question.correct {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .result-question.wrong {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .result-question.unattempted {
+            background: #f8fafc;
+        }
+
+        .question-text {
+            font-size: 0.86rem;
+
+            font-weight: 800;
+
+            line-height: 1.45;
+
+            margin-bottom: 8px;
+        }
+
+        .answer-correct {
+            color: #166534;
+
+            font-size: 0.78rem;
+
+            font-weight: 800;
+
+            margin-top: 5px;
+        }
+
+        .answer-wrong {
+            color: #991b1b;
+
+            font-size: 0.78rem;
+
+            font-weight: 800;
+
+            margin-top: 5px;
+        }
+
+        .answer-real {
+            color: #065f46;
+
+            font-size: 0.78rem;
+
+            font-weight: 800;
+
+            margin-top: 5px;
+
+            padding-top: 5px;
+
+            border-top: 1px dashed #cbd5e1;
+        }
+
+        /* =========================================================
+           BOTTOM NAVIGATION
+        ========================================================= */
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 20px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #6b7280;
+            font-size: 0.75rem;
+            cursor: pointer;
+            flex: 1;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: #3b82f6;
+            font-weight: bold;
+        }
+
+        .nav-icon {
+            font-size: 1.3rem;
+            margin-bottom: 3px;
+        }
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+        @media (max-width: 360px) {
+
+            .quick-stat-value {
+                font-size: 1rem;
+            }
+
+            .quick-stat-label {
+                font-size: 0.56rem;
+            }
+
+            .profile-name {
+                font-size: 1.4rem;
+            }
+
+            .exam-action {
+                font-size: 0.67rem;
+            }
+        }
+    
+
+        /* =========================================================
+           EXAMMATE PROFILE — PREMIUM GAME UI
+        ========================================================== */
+        :root {
+            --primary: #416cf0; --primary-dark: #3159d8;
+            --text: #172344; --muted: #7885a1; --border: #e8edfa;
+            --bg: #f4f6ff; --card: #ffffff;
+        }
+        body { background: #eef2ff; color: var(--text); -webkit-font-smoothing: antialiased; padding-bottom: env(safe-area-inset-bottom); }
+        .app { background: #f7f8ff; min-height: 100dvh; padding-bottom: calc(104px + env(safe-area-inset-bottom)); box-shadow: 0 0 45px rgba(36,55,110,.07); }
+        .top-header { height: 68px; padding: 0 17px; background: rgba(255,255,255,.95); border-bottom: 1px solid rgba(220,228,250,.85); box-shadow: 0 8px 24px rgba(42,61,120,.06); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        .profile-header-brand { display:flex; align-items:center; gap:10px; }
+        .brand-mark { width:39px; height:39px; display:flex; align-items:center; justify-content:center; color:#fff; border-radius:13px; font-size:1.1rem; background:linear-gradient(145deg,#4e8cff,#6554ed); box-shadow:0 6px 14px rgba(72,104,236,.28); }
+        .brand-copy { display:flex; flex-direction:column; gap:1px; line-height:1.05; }
+        .brand-copy strong { color:#315fe0; font-size:1.22rem; font-weight:900; letter-spacing:-.55px; }
+        .brand-copy span { color:#8a96b0; font-size:.55rem; font-weight:850; letter-spacing:1.25px; }
+        .settings-button { width:43px; height:43px; border:1px solid #e7ebf7; border-radius:15px; color:#53617f; background:#f8f9ff; box-shadow:0 3px 9px rgba(40,58,110,.04); font-size:1.05rem; }
+        .settings-button:active { transform:scale(.94); background:#edf1ff; }
+        .profile-hero { padding:28px 18px 25px; color:#fff; border:0; overflow:hidden; background:radial-gradient(circle at 85% 8%,rgba(148,163,255,.35),transparent 31%),radial-gradient(circle at 8% 100%,rgba(65,108,240,.28),transparent 35%),linear-gradient(135deg,#172a60 0%,#273d83 53%,#4d4ac2 100%); }
+        .profile-hero:before,.profile-hero:after { content:""; position:absolute; border:1px solid rgba(255,255,255,.12); border-radius:50%; pointer-events:none; }
+        .profile-hero:before { width:190px;height:190px;right:-75px;top:-105px; } .profile-hero:after { width:135px;height:135px;left:-75px;bottom:-85px; }
+        .profile-avatar-wrap { width:104px;height:104px; z-index:1; }
+        .profile-avatar { width:104px;height:104px; border:4px solid rgba(255,255,255,.95); background:linear-gradient(145deg,#74a7ff,#654fe4); box-shadow:0 0 0 6px rgba(255,255,255,.12),0 12px 30px rgba(0,0,0,.22); }
+        .avatar-edit-dot { border:2px solid #273d83; background:#fff; }
+        .profile-name { color:#fff; font-size:1.62rem; letter-spacing:-.45px; }
+        .profile-email { color:rgba(235,241,255,.78); margin-bottom:14px; }
+        .achievement-pill { color:#fff; background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.23); box-shadow:inset 0 1px rgba(255,255,255,.12); backdrop-filter:blur(8px); }
+        .achievement-pill i { color:#ffd36a; }
+        .quick-stats { position:relative; z-index:2; margin: -1px 14px 0; border:1px solid #e5eafb; border-radius:17px; box-shadow:0 9px 24px rgba(37,55,112,.08); }
+        .quick-stat { padding:15px 4px; } .quick-stat-value { color:#24345f; font-size:1.18rem; } .quick-stat-label { color:#8994ad; letter-spacing:.25px; text-transform:uppercase; font-size:.57rem; }
+        .section { padding:20px 15px 0; } .section-heading { margin-bottom:12px; } .section-heading h2 { color:#202e54; font-size:1.03rem; letter-spacing:-.2px; }
+        .section-kicker { margin:4px 0 0; color:#929db5; font-size:.68rem; font-weight:650; }
+        .see-more { color:#496ff0; }
+        .achievement-card { border:1px solid #e4eafd; border-radius:18px; padding:16px; background:linear-gradient(135deg,#fff 0%,#f8f9ff 100%); box-shadow:0 7px 20px rgba(42,61,120,.055); }
+        .achievement-icon { width:58px;height:58px; flex-basis:58px; border-radius:17px; color:#fff; background:linear-gradient(145deg,#4d8cff,#6956e8); box-shadow:0 7px 15px rgba(73,105,230,.22); }
+        .achievement-level { color:#26365f; } .achievement-description { color:#8390aa; }
+        .xp-row { margin-top:16px; } .xp-bar { height:9px; background:#e9edfb; } .xp-fill { background:linear-gradient(90deg,#4e8cff,#6957e9); box-shadow:0 0 10px rgba(82,115,240,.28); } .xp-text { color:#53658e; font-variant-numeric:tabular-nums; }
+        /* Modern dimensional badge collection */
+        .badge-system-section { padding-top:18px; }
+        .badge-group { margin-top:15px; padding:14px; border:1px solid #e7ebf6; border-radius:19px; background:linear-gradient(155deg,#fff 0%,#f7f8ff 100%); box-shadow:0 8px 22px rgba(35,48,91,.055); }
+        .badge-group-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+        .badge-group-title { color:#273657; font-size:.9rem; font-weight:900; letter-spacing:-.2px; }
+        .badge-group-subtitle { color:#8b96ad; font-size:.65rem; margin-top:3px; }
+        .badge-grid { display:flex; gap:10px; overflow-x:auto; overflow-y:hidden; padding:2px 2px 10px; margin:0 -2px; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; scrollbar-width:thin; scrollbar-color:#c8d3f1 transparent; -webkit-overflow-scrolling:touch; }
+        .badge-grid::-webkit-scrollbar { height:4px; }
+        .badge-grid::-webkit-scrollbar-thumb { background:#c8d3f1; border-radius:99px; }
+        .badge-grid .badge-tile { flex:0 0 104px; width:104px; scroll-snap-align:start; }
+        .badge-tile { min-width:0; display:flex; flex-direction:column; align-items:center; text-align:center; gap:5px; padding:9px 4px 8px; border:1px solid #e9edf6; border-radius:15px; background:linear-gradient(180deg,#fff,#f8f9fd); }
+        .badge-tile.locked { background:linear-gradient(180deg,#f5f6f9,#eceff4); border-color:#e3e7ef; }
+        .badge-art { --badge-a:#77b7ff; --badge-b:#315bd8; position:relative; width:62px; height:66px; display:flex; align-items:center; justify-content:center; color:#fff; isolation:isolate; filter:drop-shadow(0 7px 5px rgba(24,39,80,.22)); }
+        .badge-art:before { content:""; position:absolute; inset:5px 7px 7px; z-index:-1; background:linear-gradient(145deg,var(--badge-a),var(--badge-b)); clip-path:polygon(50% 0%,91% 17%,86% 72%,50% 100%,14% 72%,9% 17%); border-radius:13px; box-shadow:inset 0 2px 2px rgba(255,255,255,.8),inset 0 -5px 8px rgba(0,0,0,.22),0 4px 0 rgba(0,0,0,.16); }
+        .badge-art:after { content:""; position:absolute; top:9px; left:15px; width:31px; height:13px; border-radius:50%; background:rgba(255,255,255,.28); filter:blur(4px); z-index:-1; }
+        .badge-art i { font-size:1.35rem; text-shadow:0 2px 2px rgba(0,0,0,.25),0 0 9px rgba(255,255,255,.35); transform:translateY(-1px); }
+        .badge-art.shape-round:before { clip-path:none; border-radius:50%; inset:6px 8px 8px; }
+        .badge-art.shape-diamond:before { clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%); inset:3px 8px 5px; }
+        .badge-art.shape-shield:before { clip-path:polygon(50% 0%,94% 15%,85% 72%,50% 100%,15% 72%,6% 15%); }
+        .badge-art.shape-star:before { clip-path:polygon(50% 0%,61% 34%,98% 36%,70% 59%,80% 96%,50% 74%,20% 96%,30% 59%,2% 36%,39% 34%); inset:5px; }
+        .badge-art.shape-crown:before { clip-path:polygon(5% 20%,30% 38%,50% 5%,70% 38%,95% 20%,86% 85%,14% 85%); inset:5px 4px 8px; }
+        .badge-art.theme-first { --badge-a:#ffe18a;--badge-b:#d27a16; }
+        .badge-art.theme-starter { --badge-a:#a4d9ff;--badge-b:#3677c8; }
+        .badge-art.theme-curious { --badge-a:#9de8d0;--badge-b:#178b75; }
+        .badge-art.theme-regular { --badge-a:#c5b7ff;--badge-b:#6547c8; }
+        .badge-art.theme-dedicated { --badge-a:#ffb8a0;--badge-b:#c44e45; }
+        .badge-art.theme-master { --badge-a:#f7d17b;--badge-b:#a95a21; }
+        .badge-art.theme-legend { --badge-a:#fff0a5;--badge-b:#bd8a14; }
+        .badge-art.theme-spark { --badge-a:#b7e8ff;--badge-b:#388cc4; }
+        .badge-art.theme-rise { --badge-a:#9de7c4;--badge-b:#24885d; }
+        .badge-art.theme-star { --badge-a:#ffe79b;--badge-b:#d28a17; }
+        .badge-art.theme-gem { --badge-a:#9be8ef;--badge-b:#287eae; }
+        .badge-art.theme-excellent { --badge-a:#ffcf83;--badge-b:#bc6a24; }
+        .badge-art.theme-outstanding { --badge-a:#d9c2ff;--badge-b:#7650bf; }
+        .badge-art.theme-perfect { --badge-a:#ffb4d0;--badge-b:#b73f7e; }
+        .badge-art.theme-flawless { --badge-a:#fff2b4;--badge-b:#d0a01d; }
+        .badge-art.theme-xp_bronze { --badge-a:#efbd91;--badge-b:#96512b; }
+        .badge-art.theme-xp_silver { --badge-a:#e3edff;--badge-b:#7187ae; }
+        .badge-art.theme-xp_gold { --badge-a:#ffe38c;--badge-b:#bd8017; }
+        .badge-art.theme-xp_champion { --badge-a:#ffb78e;--badge-b:#c44d36; }
+        .badge-art.theme-xp_master { --badge-a:#b6e7ff;--badge-b:#397ab8; }
+        .badge-art.theme-xp_legend { --badge-a:#f7d3ff;--badge-b:#8c45ad; }
+        .badge-art.theme-mastery_bengali { --badge-a:#ffb2a0;--badge-b:#b83d38; }
+        .badge-art.theme-mastery_english { --badge-a:#a9c7ff;--badge-b:#3554b8; }
+        .badge-tile.locked .badge-art { filter:grayscale(1) opacity(.48) drop-shadow(0 3px 3px rgba(24,39,80,.12)); }
+        .badge-tile.locked .badge-art:before { background:linear-gradient(145deg,#cbd1dc,#8792a5); }
+        .badge-name { color:#35425f; font-size:.63rem; font-weight:900; line-height:1.15; }
+        .badge-state { color:#8490a8; font-size:.52rem; font-weight:850; line-height:1.2; }
+        .badge-tile.unlocked .badge-state { color:#26835f; }
+        .badge-progress { width:88%; height:4px; border-radius:9px; background:#e7ebf3; overflow:hidden; margin-top:2px; }
+        .badge-progress span { display:block; height:100%; border-radius:9px; background:linear-gradient(90deg,#4d9cff,#6957e8); }
+        .streak-panel { padding:14px; border-radius:18px; background:radial-gradient(circle at 85% 0%,rgba(255,153,74,.2),transparent 34%),linear-gradient(145deg,#242d46,#111827); color:#fff; box-shadow:0 10px 24px rgba(20,29,49,.2); }
+        .streak-week { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; margin-top:14px; }
+        .streak-day { display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; }
+        .streak-flame { width:27px;height:30px; display:flex; align-items:center;justify-content:center; color:#657087; font-size:1.08rem; filter:grayscale(1); opacity:.42; }
+        .streak-day.active .streak-flame { color:#ff8a32; filter:drop-shadow(0 0 6px rgba(255,111,35,.45)); opacity:1; }
+        .streak-day.today .streak-flame { transform:scale(1.12); }
+        .streak-day-label { color:#aeb8ca; font-size:.54rem; font-weight:800; }
+        .streak-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:15px; padding-top:12px; border-top:1px solid rgba(255,255,255,.12); }
+        .streak-stat strong { display:block; color:#fff; font-size:1.08rem; font-weight:900; }
+        .streak-stat span { color:#aeb8ca; font-size:.55rem; }
+        .streak-caption { color:#b8c2d4; font-size:.64rem; }
+        .badge-loading { color:#8a96ad; font-size:.72rem; padding:10px 2px; }
+
+        .rank-section { padding-top:19px; }
+        .rank-collection { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px; }
+        .rank-badge-card { min-width:0; padding:10px 3px 9px; border:1px solid #e6eaf5; border-radius:14px; background:linear-gradient(180deg,#fff,#f8f9ff); display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center; transition:transform .2s ease,box-shadow .2s ease; }
+        .rank-badge-card:active { transform:scale(.96); }
+        .rank-badge-art { width:43px;height:46px; display:flex; align-items:center; justify-content:center; clip-path:polygon(50% 0%,91% 18%,84% 75%,50% 100%,16% 75%,9% 18%); font-size:1.18rem; color:#fff; filter:drop-shadow(0 4px 4px rgba(28,42,82,.16)); }
+        .rank-badge-name { color:#394766; font-size:.59rem; font-weight:850; line-height:1.1; white-space:nowrap; }
+        .rank-badge-state { color:#98a2b8; font-size:.45rem; font-weight:900; letter-spacing:.55px; }
+        .rank-badge-card.locked .rank-badge-art { background:linear-gradient(145deg,#dce2ee,#aeb8cb); color:#f7f9ff; filter:grayscale(.7); }
+        .rank-badge-card.locked .rank-badge-name { color:#929db2; }
+        .rank-badge-card.earned { border-color:#cbd8ff; background:linear-gradient(180deg,#f4f7ff,#fff); box-shadow:0 5px 13px rgba(65,108,240,.08); }
+        .rank-badge-card.earned .rank-badge-state { color:#4d72e9; }
+        .rank-novice .rank-badge-art { background:linear-gradient(145deg,#64c7a2,#168b70); }
+        .rank-bronze .rank-badge-art { background:linear-gradient(145deg,#e9ad70,#a85d2c); }
+        .rank-silver .rank-badge-art { background:linear-gradient(145deg,#dce5f3,#788ba9); }
+        .rank-gold .rank-badge-art { background:linear-gradient(145deg,#ffe28a,#d18a16); }
+        .rank-platinum .rank-badge-art { background:linear-gradient(145deg,#9be8ff,#4786d8); }
+        .profile-tabs { top:67px; margin-top:20px; border:1px solid #e8edfa; border-left:0;border-right:0; background:rgba(255,255,255,.96); backdrop-filter:blur(14px); }
+        .profile-tab { height:56px; color:#9aa5bb; } .profile-tab.active { color:#416cf0; } .profile-tab.active::after { left:25%;right:25%;height:3px;background:linear-gradient(90deg,#4e8cff,#7558e8); }
+        .profile-tab-badge { background:#edf2ff;color:#4b6fe8; }
+        .tab-content { padding:14px 13px; }
+        .exam-card { border:1px solid #e8edfa; border-radius:17px; box-shadow:0 5px 16px rgba(39,56,110,.045); transition:transform .18s ease,box-shadow .18s ease; }
+        .exam-card:active { transform:scale(.992); } .exam-card-icon { border-radius:14px; background:linear-gradient(145deg,#edf3ff,#f1efff); color:#4d70eb; }
+        .exam-card-title { color:#26365e; } .meta-chip { background:#f1f4fc;color:#63708e; }
+        .bottom-nav { position:fixed; bottom:max(0px,env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); width:100%; max-width:480px; display:grid; grid-template-columns:repeat(3,1fr); align-items:center; gap:8px; padding:9px 13px calc(9px + env(safe-area-inset-bottom)); box-sizing:border-box; border:1px solid rgba(225,231,249,.9); border-bottom:0; border-radius:20px 20px 0 0; background:rgba(255,255,255,.96); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); box-shadow:0 -8px 28px rgba(38,55,110,.09); z-index:1000; }
+        .nav-item { min-height:55px; gap:3px; justify-content:center; border-radius:14px; color:#8994aa; font-size:.66rem; font-weight:750; letter-spacing:.15px; transition:background .18s ease,color .18s ease,transform .18s ease; }
+        .nav-icon { margin:0; font-size:1.15rem; } .nav-item.active { color:#416cf0; background:linear-gradient(135deg,#edf3ff,#f4f1ff); }
+        .nav-item.nav-special { color:#bd8423; } .nav-item.nav-special .nav-icon { width:29px;height:25px;display:flex;align-items:center;justify-content:center;border-radius:9px;background:#fff4dc;color:#d59625; }
+        .nav-item:active { transform:scale(.95); }
+        .level-big-card { position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.15); background:radial-gradient(circle at 90% 0%,rgba(255,255,255,.2),transparent 34%),linear-gradient(135deg,#1d3475,#4653bd 58%,#6754d8); box-shadow:0 12px 28px rgba(55,76,180,.22); }
+        .level-big-icon { width:78px;height:78px;margin:0 auto 13px;display:flex;align-items:center;justify-content:center;border-radius:24px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);color:#ffda79;text-shadow:0 4px 12px rgba(0,0,0,.18); }
+        .big-xp { background:rgba(255,255,255,.2); } .big-xp-fill { background:linear-gradient(90deg,#ffdf83,#fff1bd); }
+        .level-stat { border-color:#e7ebf8; box-shadow:0 5px 14px rgba(37,55,112,.04); }
+        .tier-item { border-radius:15px; background:#f8f9ff!important; border-color:#e7ebf7; box-shadow:0 3px 10px rgba(37,55,112,.035); }
+        .tier-icon { width:48px;height:50px; border-radius:13px; background:linear-gradient(145deg,#eef3ff,#fff); }
+        .tier-item:first-of-type .tier-icon { color:#16a37c!important; }
+        .bottom-sheet,.modal-card,.form-card { box-shadow:0 14px 40px rgba(22,35,76,.15); }
+        button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid rgba(65,108,240,.35); outline-offset:2px; }
+        @media (min-width:481px) { body { padding:18px 0; } .app { min-height:calc(100dvh - 36px); border-radius:24px; overflow:hidden; } .top-header,.bottom-nav { max-width:480px; } .bottom-nav { border-radius:20px 20px 0 0; } }
+        @media (max-width:360px) { .rank-collection { gap:4px; } .rank-badge-art { width:38px;height:41px; } .rank-badge-name { font-size:.54rem; } }
+        @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+
+        /* Compact, consistent profile exam cards */
+        .exam-card { position:relative; padding:14px; margin-bottom:11px; border:1px solid #e5eaf7; border-radius:18px; background:linear-gradient(145deg,#fff 0%,#fbfcff 100%); box-shadow:0 5px 16px rgba(35,54,105,.055); cursor:pointer; transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease; }
+        .exam-card:active { transform:scale(.988); box-shadow:0 2px 8px rgba(35,54,105,.07); }
+        .exam-card:focus-visible { outline:3px solid rgba(65,108,240,.3); outline-offset:2px; }
+        .exam-card-header { display:flex; align-items:flex-start; gap:11px; }
+        .exam-card-icon { width:44px; height:44px; flex:0 0 44px; display:flex; align-items:center; justify-content:center; border-radius:14px; color:#fff; background:linear-gradient(145deg,#6397ff,#5855dc); box-shadow:0 6px 13px rgba(79,104,220,.2); font-size:1.08rem; }
+        .exam-card-icon.created { background:linear-gradient(145deg,#6397ff,#5855dc); }
+        .exam-card-icon.attempted { background:linear-gradient(145deg,#38c99b,#139a79); box-shadow:0 6px 13px rgba(19,154,121,.18); }
+        .exam-card-icon.social { background:linear-gradient(145deg,#8b83f5,#5b63d8); }
+        .exam-card-title { color:#24345d; font-size:.94rem; font-weight:900; line-height:1.35; overflow-wrap:anywhere; }
+        .exam-card-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+        .meta-chip { display:inline-flex; align-items:center; gap:5px; padding:5px 8px; border:1px solid #edf0f8; border-radius:8px; background:#f5f7fd; color:#596987; font-size:.64rem; font-weight:750; }
+        .exam-card-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:13px; padding-top:11px; border-top:1px solid #edf0f7; }
+        .exam-metric { min-width:0; text-align:center; padding:5px 2px; border-radius:9px; background:#f8f9fe; }
+        .exam-metric strong { display:block; color:#29395f; font-size:.79rem; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .exam-metric span { display:block; margin-top:3px; color:#929db4; font-size:.55rem; font-weight:800; text-transform:uppercase; letter-spacing:.25px; }
+        .exam-card-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px; color:#8995ad; font-size:.65rem; font-weight:650; }
+        .exam-card-footer .exam-open-hint { display:inline-flex; align-items:center; gap:5px; color:#5673dc; font-weight:800; white-space:nowrap; }
+        .exam-result-box { margin-top:11px; }
+        .streak-journey-section { padding-top:12px; }
+        .streak-journey-section .badge-group { margin-top:0; }
+        @media(max-width:360px) { .exam-card-metrics { gap:4px; } .exam-metric strong { font-size:.72rem; } .exam-metric span { font-size:.51rem; } }
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- =========================================================
+         TOP HEADER
+    ========================================================== -->
+
+    <header class="top-header">
+        <div class="profile-header-brand">
+            <span class="brand-mark"><i class="fas fa-graduation-cap"></i></span>
+            <div class="brand-copy">
+                <strong>ExamMate</strong>
+                <span>PLAYER PROFILE</span>
+            </div>
+        </div>
+        <button class="settings-button" type="button" onclick="openSettings()" aria-label="Open settings">
+            <i class="fas fa-sliders-h"></i>
+        </button>
+    </header>
+
+
+    <!-- =========================================================
+         PROFILE HERO
+    ========================================================== -->
+
+    <section class="profile-hero">
+
+        <div class="profile-avatar-wrap">
+
+            <div
+                class="profile-avatar"
+                id="main-avatar">
+                S
+            </div>
+
+            <div class="avatar-edit-dot">
+                <i class="fas fa-camera"></i>
+            </div>
+
+        </div>
+
+        <h2
+            class="profile-name"
+            id="main-name">
+            Loading...
+        </h2>
+
+        <p
+            class="profile-email"
+            id="main-email">
+            Loading...
+        </p>
+
+        <div
+            class="achievement-pill"
+            id="achievement-pill">
+
+            <i class="fas fa-seedling"></i>
+
+            <span id="achievement-pill-text">
+                Novice
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         QUICK STATS
+    ========================================================== -->
+
+    <div class="quick-stats">
+
+        <div class="quick-stat">
+            <span
+                class="quick-stat-value"
+                id="stat-taken">
+                0
+            </span>
+
+            <span class="quick-stat-label">
+                Taken
+            </span>
+        </div>
+
+        <div class="quick-stat">
+            <span
+                class="quick-stat-value"
+                id="stat-created">
+                0
+            </span>
+
+            <span class="quick-stat-label">
+                Created
+            </span>
+        </div>
+
+        <div class="quick-stat">
+            <span
+                class="quick-stat-value"
+                id="stat-average">
+                0%
+            </span>
+
+            <span class="quick-stat-label">
+                Average
+            </span>
+        </div>
+
+        <div class="quick-stat">
+            <span
+                class="quick-stat-value"
+                id="stat-points">
+                0
+            </span>
+
+            <span class="quick-stat-label">
+                Points
+            </span>
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         ACHIEVEMENT
+    ========================================================== -->
+
+    <section class="section">
+
+        <div class="section-heading">
+
+            <h2>
+                🏆 My Achievement
+            </h2>
+
+        </div>
+
+        <div
+            class="achievement-card"
+            id="achievement-card">
+
+            <div class="achievement-main">
+
+                <div
+                    class="achievement-icon"
+                    id="achievement-icon">
+                    <i class="fas fa-seedling"></i>
+                </div>
+
+                <div class="achievement-info">
+
+                    <p
+                        class="achievement-level"
+                        id="achievement-level">
+                        Novice
+                    </p>
+
+                    <p
+                        class="achievement-description"
+                        id="achievement-description">
+                        Keep participating in exams to level up.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="xp-row">
+
+                <div class="xp-bar">
+
+                    <div
+                        class="xp-fill"
+                        id="xp-fill">
+                    </div>
+
+                </div>
+
+                <span
+                    class="xp-text"
+                    id="xp-text">
+                    0 XP
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    
+	<!-- STREAK JOURNEY: placed immediately after level progress -->
+	<section class="section streak-journey-section">
+		<div class="badge-group">
+
+			<div class="badge-group-head">
+				<div>
+					<div class="badge-group-title">Streak Journey</div>
+					<div class="badge-group-subtitle">One completed exam makes a day active</div>
+				</div>
+				<i class="fas fa-fire" style="color:#f07832"></i>
+			</div>
+
+			<div class="streak-panel">
+
+				<!-- Current & Longest Streak -->
+				<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+					<div>
+						<div style="font-size:1.35rem;font-weight:950" id="profile-current-streak">0 Days</div>
+						<div class="streak-caption">Current streak</div>
+					</div>
+
+					<div style="text-align:right">
+						<div style="font-size:1.15rem;font-weight:900" id="profile-longest-streak">0 Days</div>
+						<div class="streak-caption">Longest streak</div>
+					</div>
+				</div>
+
+				<!-- Weekly Activity -->
+				<div class="streak-week" id="profile-streak-week">
+					<div class="badge-loading">Loading weekly activity…</div>
+				</div>
+
+				<!-- Streak Statistics -->
+				<div class="streak-stats">
+					<div class="streak-stat">
+						<strong id="profile-active-days">0</strong>
+						<span>Active days</span>
+					</div>
+
+					<div class="streak-stat">
+						<strong id="profile-week-days">0/7</strong>
+						<span>This week</span>
+					</div>
+
+					<div class="streak-stat">
+						<strong id="profile-streak-best">0</strong>
+						<span>Best streak</span>
+					</div>
+				</div>
+
+				<!-- Full Streak History Button -->
+				<a href="/streak_history.html"
+				   class="streak-history-link"
+				   style="
+					   display:flex;
+					   align-items:center;
+					   justify-content:center;
+					   gap:9px;
+					   width:100%;
+					   margin-top:15px;
+					   padding:12px;
+					   border-radius:12px;
+					   background:rgba(255,255,255,.12);
+					   border:1px solid rgba(255,255,255,.18);
+					   color:#ffffff;
+					   text-decoration:none;
+					   font-size:.82rem;
+					   font-weight:800;
+				   ">
+					<i class="fas fa-calendar-alt"></i>
+					View Full Streak History
+					<i class="fas fa-arrow-right"></i>
+				</a>
+
+			</div>
+		</div>
+    </section>
+    
+
+    <!-- PROFILE BADGE SYSTEM -->
+    <section class="section badge-system-section" aria-labelledby="profile-badges-title">
+        <div class="section-heading">
+            <div>
+                <h2 id="profile-badges-title">My Achievements</h2>
+                <p class="section-kicker">Every milestone tells your story</p>
+            </div>
+            <span class="achievement-pill" id="badge-total-pill"><i class="fas fa-medal"></i><span id="badge-total-text">Loading</span></span>
+        </div>
+
+        <div class="badge-group">
+            <div class="badge-group-head"><div><div class="badge-group-title">Achievement Badges</div><div class="badge-group-subtitle">Permanent exam milestones</div></div><i class="fas fa-trophy" style="color:#d49a2d"></i></div>
+            <div class="badge-grid" id="achievement-badges"><div class="badge-loading">Loading achievements…</div></div>
+        </div>
+
+        <div class="badge-group">
+            <div class="badge-group-head"><div><div class="badge-group-title">Performance Badges</div><div class="badge-group-subtitle">Based on your latest 10 completed exams</div></div><strong id="badge-performance-average" style="color:#4e69ce;font-size:.82rem">0%</strong></div>
+            <div class="badge-grid" id="performance-badges"><div class="badge-loading">Loading performance…</div></div>
+        </div>
+
+        <div class="badge-group">
+            <div class="badge-group-head"><div><div class="badge-group-title">XP Milestones</div><div class="badge-group-subtitle">Dynamic badges based on total XP</div></div><strong id="badge-xp-total" style="color:#9a6bce;font-size:.82rem">0 XP</strong></div>
+            <div class="badge-grid" id="xp-badges"><div class="badge-loading">Loading XP badges…</div></div>
+        </div>
+
+        <div class="badge-group">
+            <div class="badge-group-head"><div><div class="badge-group-title">Subject Mastery</div><div class="badge-group-subtitle">At least 3 exams and 90% subject average</div></div><i class="fas fa-graduation-cap" style="color:#5575ce"></i></div>
+            <div class="badge-grid" id="mastery-badges"><div class="badge-loading">Loading subject mastery…</div></div>
+        </div>
+    </section>
+
+
+    <!-- =========================================================
+         PROFILE TABS
+    ========================================================== -->
+
+    <nav class="profile-tabs">
+
+        <button
+            class="profile-tab active"
+            id="tab-created"
+            onclick="switchTab('created')"
+            title="Created Exams">
+
+            <i class="fas fa-file-lines"></i>
+
+            <span
+                class="profile-tab-badge"
+                id="created-count">
+                0
+            </span>
+
+        </button>
+
+
+        <button
+            class="profile-tab"
+            id="tab-attempted"
+            onclick="switchTab('attempted')"
+            title="Attempted Exams">
+
+            <i class="fas fa-clipboard-check"></i>
+
+            <span
+                class="profile-tab-badge"
+                id="attempted-count">
+                0
+            </span>
+
+        </button>
+
+
+        <button
+            class="profile-tab"
+            id="tab-saved"
+            onclick="switchTab('saved')"
+            title="Saved Exams">
+
+            <i class="far fa-bookmark"></i>
+
+            <span
+                class="profile-tab-badge"
+                id="saved-count">
+                0
+            </span>
+
+        </button>
+
+
+        <button
+            class="profile-tab"
+            id="tab-liked"
+            onclick="switchTab('liked')"
+            title="Liked Exams">
+
+            <i class="far fa-heart"></i>
+
+            <span
+                class="profile-tab-badge"
+                id="liked-count">
+                0
+            </span>
+
+        </button>
+
+    </nav>
+
+
+    <!-- =========================================================
+         TAB CONTENT
+    ========================================================== -->
+
+    <main class="tab-content">
+
+        <!-- CREATED -->
+        <section
+            class="tab-pane active"
+            id="pane-created">
+
+            <div id="created-container">
+
+                <div class="loading-state">
+
+                    <i class="fas fa-spinner fa-spin"></i>
+
+                    <div>
+                        Loading created exams...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ATTEMPTED -->
+        <section
+            class="tab-pane"
+            id="pane-attempted">
+
+            <div id="attempted-container">
+
+                <div class="loading-state">
+
+                    <i class="fas fa-spinner fa-spin"></i>
+
+                    <div>
+                        Loading attempted exams...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- SAVED -->
+        <section
+            class="tab-pane"
+            id="pane-saved">
+
+            <div id="saved-container">
+
+                <div class="loading-state">
+
+                    <i class="fas fa-spinner fa-spin"></i>
+
+                    <div>
+                        Loading saved exams...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- LIKED -->
+        <section
+            class="tab-pane"
+            id="pane-liked">
+
+            <div id="liked-container">
+
+                <div class="loading-state">
+
+                    <i class="fas fa-spinner fa-spin"></i>
+
+                    <div>
+                        Loading liked exams...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================================
+         BOTTOM NAVIGATION
+    ========================================================== -->
+
+<!-- FIXED BOTTOM NAVIGATION BAR — shared ExamMate layout -->
+<div class="bottom-nav" role="navigation" aria-label="Main navigation">
+    <a href="special_exams.html" class="nav-item nav-special" aria-label="Special Exams" title="Special Exams">
+        <span class="nav-icon"><i class="fas fa-trophy"></i></span>
+        <span>Special</span>
+    </a>
+    <a href="student_dashboard.html" class="nav-item" aria-label="Home" title="Home">
+        <span class="nav-icon"><i class="fas fa-home"></i></span>
+        <span>Home</span>
+    </a>
+    <a href="student_profile.html" class="nav-item active" aria-current="page" aria-label="Profile" title="Profile">
+        <span class="nav-icon"><i class="far fa-user"></i></span>
+        <span>Profile</span>
+    </a>
+</div>
+
+
+
+<!-- =========================================================
+     SETTINGS SHEET
+========================================================= -->
+
+<div
+    class="overlay"
+    id="settings-overlay"
+    onclick="closeSettingsOutside(event)">
+
+    <div class="bottom-sheet">
+
+        <div class="drag-handle"></div>
+
+        <h3 class="sheet-title">
+            Settings
+        </h3>
+
+
+        <button
+            class="sheet-option"
+            onclick="openEditProfile()">
+
+            <i class="fas fa-user-edit"></i>
+
+            <span>
+                Edit Profile
+            </span>
+
+        </button>
+
+
+        <hr class="sheet-divider">
+
+
+        <button
+            class="sheet-option logout"
+            onclick="logoutAccount()">
+
+            <i class="fas fa-right-from-bracket"></i>
+
+            <span>
+                Logout
+            </span>
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     EDIT PROFILE PANEL
+========================================================= -->
+
+<div
+    class="full-panel"
+    id="edit-profile-panel">
+
+    <div class="panel-header">
+
+        <button
+            class="back-button"
+            onclick="closeFullPanel()">
+
+            <i class="fas fa-arrow-left"></i>
+
+        </button>
+
+        <h2 class="panel-title">
+            Edit Profile
+        </h2>
+
+    </div>
+
+
+    <div class="panel-body">
+
+        <div class="form-card">
+
+            <div class="input-group">
+
+                <label>
+                    Full Name
+                </label>
+
+                <input
+                    type="text"
+                    id="edit-name-input"
+                    class="form-input"
+                    placeholder="Enter your name">
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="edit-email-display"
+                    class="form-input"
+                    disabled>
+
+            </div>
+
+
+            <button
+                class="save-profile-button"
+                onclick="saveProfileData()">
+
+                Save Changes
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     LEVEL PANEL
+========================================================= -->
+
+<div
+    class="full-panel"
+    id="level-panel">
+
+    <div class="panel-header">
+
+        <button
+            class="back-button"
+            onclick="closeFullPanel()">
+
+            <i class="fas fa-arrow-left"></i>
+
+        </button>
+
+        <h2 class="panel-title">
+            My Achievement
+        </h2>
+
+    </div>
+
+
+    <div class="panel-body">
+
+        <div class="level-big-card">
+
+            <div
+                class="level-big-icon"
+                id="level-big-icon">
+
+                <i class="fas fa-seedling"></i>
+
+            </div>
+
+            <h2
+                class="level-big-title"
+                id="level-big-title">
+                Novice
+            </h2>
+
+            <p
+                class="level-big-desc"
+                id="level-big-desc">
+                Keep participating to level up.
+            </p>
+
+
+            <div class="big-xp">
+
+                <div
+                    class="big-xp-fill"
+                    id="big-xp-fill">
+                </div>
+
+            </div>
+
+
+            <div
+                class="big-xp-text"
+                id="big-xp-text">
+                0 XP
+            </div>
+
+        </div>
+
+
+        <div class="level-stats">
+
+            <div class="level-stat">
+
+                <span>
+                    Highest
+                </span>
+
+                <strong
+                    id="level-highest">
+                    0%
+                </strong>
+
+            </div>
+
+
+            <div class="level-stat">
+
+                <span>
+                    Lowest
+                </span>
+
+                <strong
+                    id="level-lowest">
+                    0%
+                </strong>
+
+            </div>
+
+
+            <div class="level-stat">
+
+                <span>
+                    Average
+                </span>
+
+                <strong
+                    id="level-average">
+                    0%
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     ALL LEVELS MODAL
+========================================================= -->
+
+<div
+    class="center-overlay"
+    id="levels-modal"
+    onclick="closeModalOutside(event)">
+
+    <div class="modal-card">
+
+        <h3 class="modal-title">
+            🏆 Rank Progression
+        </h3>
+
+
+        <div class="tier-item"
+             style="background:#ecfdf5;">
+
+            <div class="tier-icon"
+                 style="color:#10b981;">
+
+                <i class="fas fa-seedling"></i>
+
+            </div>
+
+            <div>
+
+                <p class="tier-name">
+                    Novice
+                </p>
+
+                <p class="tier-points">
+                    0 - 49 Points
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="tier-item"
+             style="background:#fff7ed;">
+
+            <div class="tier-icon"
+                 style="color:#d97706;">
+
+                <i class="fas fa-medal"></i>
+
+            </div>
+
+            <div>
+
+                <p class="tier-name">
+                    Bronze Scholar
+                </p>
+
+                <p class="tier-points">
+                    50 - 99 Points
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="tier-item"
+             style="background:#f8fafc;">
+
+            <div class="tier-icon"
+                 style="color:#64748b;">
+
+                <i class="fas fa-medal"></i>
+
+            </div>
+
+            <div>
+
+                <p class="tier-name">
+                    Silver Achiever
+                </p>
+
+                <p class="tier-points">
+                    100 - 299 Points
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="tier-item"
+             style="background:#fefce8;">
+
+            <div class="tier-icon"
+                 style="color:#eab308;">
+
+                <i class="fas fa-trophy"></i>
+
+            </div>
+
+            <div>
+
+                <p class="tier-name">
+                    Gold Master
+                </p>
+
+                <p class="tier-points">
+                    300 - 599 Points
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="tier-item"
+             style="background:#fdf2f8;">
+
+            <div class="tier-icon"
+                 style="color:#dc2743;">
+
+                <i class="fas fa-crown"></i>
+
+            </div>
+
+            <div>
+
+                <p class="tier-name">
+                    Platinum Legend
+                </p>
+
+                <p class="tier-points">
+                    600+ Points
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <button
+            class="modal-close"
+            onclick="closeAllLevels()">
+
+            Close
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     COLLECTION MODAL
+========================================================= -->
+
+<div
+    class="center-overlay"
+    id="collection-modal"
+    onclick="closeCollectionOutside(event)">
+
+    <div class="modal-card">
+
+        <h3 class="modal-title">
+            🔖 Save to Collection
+        </h3>
+
+        <p style="
+            text-align:center;
+            color:#64748b;
+            font-size:0.75rem;
+            margin-top:-8px;
+            margin-bottom:15px;
+        ">
+            Choose a folder
+        </p>
+
+
+        <div id="collection-list"></div>
+
+
+        <div class="new-folder">
+
+            <input
+                type="text"
+                id="new-folder-input"
+                placeholder="Create new folder...">
+
+            <button onclick="createNewCollection()">
+                Add
+            </button>
+
+        </div>
+
+
+        <button
+            class="modal-close"
+            style="
+                background:#f1f5f9;
+                color:#475569;
+                margin-top:12px;
+            "
+            onclick="closeCollectionModal()">
+
+            Cancel
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     RESULT MODAL
+========================================================= -->
+
+<div
+    class="center-overlay"
+    id="result-modal">
+
+    <div class="modal-card">
+
+        <h3
+            class="modal-title"
+            id="result-title">
+            Exam Result
+        </h3>
+
+        <div id="result-container">
+
+            <div class="loading-state">
+
+                <i class="fas fa-spinner fa-spin"></i>
+
+                Loading result...
+
+            </div>
+
+        </div>
+
+
+        <button
+            class="modal-close"
+            onclick="closeResultModal()">
+
+            Close
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /* =========================================================
+       GLOBAL STATE
+    ========================================================== */
+
+    let globalProgress = {};
+    let globalHistory = [];
+    let allSocialExams = [];
+
+    let pendingSaveExamCode = null;
+
+    let activeTab = "created";
+
+
+    /* =========================================================
+       INITIALIZATION
+    ========================================================== */
+
+    window.addEventListener("load", async function () {
+
+        loadProfileData();
+
+        initCollections();
+
+        await loadAllProfileData();
+
+        switchTab("created");
+
+        window.history.replaceState(
+            { view: "profile" },
+            "",
+            window.location.href
+        );
+
+    });
+
+
+    /* =========================================================
+       PROFILE DATA
+    ========================================================== */
+
+    function loadProfileData() {
+
+        const name =
+            localStorage.getItem("userName") ||
+            "User";
+
+        const email =
+            localStorage.getItem("userEmail") ||
+            "user@email.com";
+
+
+        document.getElementById("main-name").innerText = name;
+
+        document.getElementById("main-email").innerText = email;
+
+        document.getElementById("edit-name-input").value = name;
+
+        document.getElementById("edit-email-display").value = email;
+
+
+        const avatar =
+            document.getElementById("main-avatar");
+
+
+        const savedAvatar =
+            localStorage.getItem("userAvatar");
+
+
+        if (savedAvatar) {
+
+            avatar.innerHTML =
+                `<img src="${escapeAttribute(savedAvatar)}"
+                      alt="Profile">`;
+
+        } else {
+
+            avatar.innerText =
+                name.charAt(0).toUpperCase() || "U";
+
+        }
+
+    }
+
+
+    /* =========================================================
+       LOAD ALL DATA
+    ========================================================== */
+
+    async function loadAllProfileData() {
+
+        const email =
+            localStorage.getItem("userEmail");
+
+        if (!email) {
+            return;
+        }
+
+
+        try {
+
+            const responses = await Promise.allSettled([
+
+                fetch("/api/get-student-progress", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: email
+                    })
+                }),
+
+                fetch("/api/get-student-history", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: email
+                    })
+                }),
+
+                fetch("/api/search-feed", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        query: "",
+                        class_name: "All",
+                        subject: "All",
+                        status: "All"
+                    })
+                }),
+
+                fetch("/api/profile/badges", { method: "GET", credentials: "same-origin" })
+
+            ]);
+
+
+            /* -------------------------------------------------
+               PROGRESS
+            ------------------------------------------------- */
+
+            if (
+                responses[0].status === "fulfilled" &&
+                responses[0].value.ok
+            ) {
+
+                const data =
+                    await responses[0].value.json();
+
+                if (data.success) {
+
+                    globalProgress = data;
+
+                    renderProgress(data);
+
+                }
+
+            }
+
+
+            /* -------------------------------------------------
+               HISTORY
+            ------------------------------------------------- */
+
+            if (
+                responses[1].status === "fulfilled" &&
+                responses[1].value.ok
+            ) {
+
+                const data =
+                    await responses[1].value.json();
+
+                if (data.success) {
+
+                    globalHistory =
+                        Array.isArray(data.history)
+                            ? data.history
+                            : [];
+
+                }
+
+            }
+
+
+            /* -------------------------------------------------
+               BADGES + STREAK
+            ------------------------------------------------- */
+            if (responses[3].status === "fulfilled" && responses[3].value.ok) {
+                const badgeData = await responses[3].value.json();
+                if (badgeData.success) renderProfileBadges(badgeData);
+            }
+
+            /* -------------------------------------------------
+               SOCIAL FEED
+            ------------------------------------------------- */
+
+            if (
+                responses[2].status === "fulfilled" &&
+                responses[2].value.ok
+            ) {
+
+                const data =
+                    await responses[2].value.json();
+
+                if (data.success) {
+
+                    allSocialExams =
+                        Array.isArray(data.feed)
+                            ? data.feed
+                            : [];
+
+                }
+
+            }
+
+
+            renderAllTabs();
+
+        } catch (error) {
+
+            console.error(
+                "Profile loading error:",
+                error
+            );
+
+            renderAllTabs();
+
+        }
+
+    }
+
+
+    /* =========================================================
+       RENDER PROGRESS
+    ========================================================== */
+
+    function renderProgress(data) {
+
+        const points =
+            Number(data.score) || 0;
+
+        const totalTaken =
+            Number(data.total_exams) || 0;
+
+        const highest =
+            Number(data.highest) || 0;
+
+        const lowest =
+            Number(data.lowest) || 0;
+
+
+        document.getElementById(
+            "stat-taken"
+        ).innerText = totalTaken;
+
+
+        document.getElementById(
+            "stat-points"
+        ).innerText = Number.isInteger(points)
+            ? points
+            : points.toFixed(1);
+
+
+        document.getElementById(
+            "level-highest"
+        ).innerText =
+            highest + "%";
+
+
+        document.getElementById(
+            "level-lowest"
+        ).innerText =
+            lowest + "%";
+
+
+        const average = Number(data.average_percentage) || 0;
+
+        document.getElementById("stat-average").innerText = average.toFixed(1) + "%";
+        document.getElementById("level-average").innerText = average.toFixed(1) + "%";
+
+        // Level and XP are loaded from the gamification backend, never from exam marks.
+        loadGamificationSummary();
+
+    }
+
+
+    async function loadGamificationSummary() {
+        try {
+            const response = await fetch("/api/gamification/summary", { credentials: "same-origin" });
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!data.success) return;
+            const xp = Number(data.xp_total) || 0;
+            const level = Number(data.level) || 1;
+            const progress = Math.max(0, Math.min(100, Number(data.level_progress_percent) || 0));
+            const title = `Level ${level}`;
+            const description = `${Math.max(0, Number(data.xp_to_next_level) || 0)} XP to next level`;
+            const icon = "fas fa-bolt";
+            ["achievement-level", "level-big-title"].forEach(id => { const el=document.getElementById(id); if(el) el.innerText=title; });
+            const pill=document.getElementById("achievement-pill-text"); if(pill) pill.innerText=title;
+            const desc=document.getElementById("achievement-description"); if(desc) desc.innerText=description;
+            const bigDesc=document.getElementById("level-big-desc"); if(bigDesc) bigDesc.innerText=description;
+            ["achievement-icon", "level-big-icon"].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=`<i class="${icon}"></i>`; });
+            ["xp-fill", "big-xp-fill"].forEach(id => { const el=document.getElementById(id); if(el) el.style.width=progress+"%"; });
+            ["xp-text", "big-xp-text"].forEach(id => { const el=document.getElementById(id); if(el) el.innerText=`${xp} XP · ${description}`; });
+            const xpTotal=document.getElementById("badge-xp-total"); if(xpTotal) xpTotal.innerText=`${xp} XP`;
+        } catch (error) { console.error("Gamification summary load failed", error); }
+    }
+
+    function renderProfileBadges(data) {
+        const badgeArrays = [
+            ["achievement-badges", data.achievements || []],
+            ["performance-badges", data.performance || []],
+            ["xp-badges", data.xp_badges || []],
+            ["mastery-badges", data.mastery || []]
+        ];
+        let unlockedCount = 0, totalCount = 0;
+        badgeArrays.forEach(([id, badges]) => {
+            const container = document.getElementById(id);
+            if (!container) return;
+            totalCount += badges.length;
+            unlockedCount += badges.filter(b => b.unlocked).length;
+            container.innerHTML = badges.map((badge, index) => {
+                const unlocked = !!badge.unlocked;
+                const progress = Math.max(0, Math.min(100, Number(badge.progress) || 0));
+                const shape = badge.theme && (badge.theme.includes("legend") || badge.theme.includes("perfect") || badge.theme.includes("flawless")) ? "shape-crown" :
+                    (badge.theme && (badge.theme.includes("gem") || badge.theme.includes("mastery")) ? "shape-diamond" :
+                    (index % 3 === 0 ? "shape-shield" : index % 3 === 1 ? "shape-round" : "shape-star"));
+                let state = unlocked ? (badge.permanent ? "UNLOCKED" : "ACTIVE") :
+                    (badge.exam_count !== undefined && badge.exam_count < (badge.required_exams || 3) ? `${badge.exam_count}/${badge.required_exams || 3} EXAMS` :
+                    (badge.threshold !== undefined ? `${badge.threshold}${id === "xp-badges" ? " XP" : id === "performance-badges" || id === "mastery-badges" ? "%" : " EXAMS"}` : "LOCKED"));
+                if (!unlocked && badge.threshold !== undefined && id === "achievement-badges") state = `${badge.current}/${badge.threshold} EXAMS`;
+                const currentText = id === "mastery-badges" ? `${Number(badge.current||0).toFixed(1)}% AVG` :
+                    id === "performance-badges" ? `${Number(badge.current||0).toFixed(1)}% AVG` :
+                    id === "xp-badges" ? `${Number(badge.current||0)} XP` : `${Number(badge.current||0)}/${badge.threshold}`;
+                return `<div class="badge-tile ${unlocked ? "unlocked" : "locked"}" title="${escapeAttribute(badge.description || badge.name)}">
+                    <div class="badge-art ${shape} theme-${escapeAttribute(badge.theme || "starter")}"><i class="fas ${escapeAttribute(badge.icon || "fa-medal")}"></i></div>
+                    <div class="badge-name">${escapeHtml(badge.name || "Badge")}</div>
+                    <div class="badge-state">${state}</div>
+                    <div class="badge-progress"><span style="width:${progress}%"></span></div>
+                    <div class="badge-state">${currentText}</div>
+                </div>`;
+            }).join("");
+        });
+        const pill=document.getElementById("badge-total-text"); if(pill) pill.innerText=`${unlockedCount}/${totalCount} Unlocked`;
+        const avg=document.getElementById("badge-performance-average"); if(avg) avg.innerText=`${Number(data.performance_average||0).toFixed(1)}%`;
+        const streak=data.streak || {};
+        const current=document.getElementById("profile-current-streak"); if(current) current.innerText=`${streak.current||0} Days`;
+        const longest=document.getElementById("profile-longest-streak"); if(longest) longest.innerText=`${streak.longest||0} Days`;
+        const active=document.getElementById("profile-active-days"); if(active) active.innerText=streak.total_active_days||0;
+        const best=document.getElementById("profile-streak-best"); if(best) best.innerText=streak.longest||0;
+        const week=Array.isArray(streak.week)?streak.week:[];
+        const weekCount=week.filter(d=>d.active).length;
+        const weekDays=document.getElementById("profile-week-days"); if(weekDays) weekDays.innerText=`${weekCount}/7`;
+        const weekContainer=document.getElementById("profile-streak-week");
+        if(weekContainer) weekContainer.innerHTML=week.map(day=>`<div class="streak-day ${day.active?"active":""} ${day.is_today?"today":""}" title="${day.date}: ${day.active?"Exam completed":"No exam completed"}"><div class="streak-flame"><i class="fas fa-fire"></i></div><div class="streak-day-label">${escapeHtml(day.day)}</div></div>`).join("");
+    }
+
+    /* =========================================================
+       LEVEL SYSTEM
+    ========================================================== */
+
+    function updateLevel(score) {
+
+        let title = "Novice";
+        let icon = "fas fa-seedling";
+
+        let description =
+            "Keep participating in exams to level up.";
+
+        let previous = 0;
+        let next = 50;
+
+
+        if (score >= 50 && score < 100) {
+
+            title = "Bronze Scholar";
+            icon = "fas fa-medal";
+
+            description =
+                "Great start! Keep building your exam journey.";
+
+            previous = 50;
+            next = 100;
+
+        }
+
+        else if (score >= 100 && score < 300) {
+
+            title = "Silver Achiever";
+            icon = "fas fa-medal";
+
+            description =
+                "You're becoming a consistent performer.";
+
+            previous = 100;
+            next = 300;
+
+        }
+
+        else if (score >= 300 && score < 600) {
+
+            title = "Gold Master";
+            icon = "fas fa-trophy";
+
+            description =
+                "Excellent performance. Keep pushing higher.";
+
+            previous = 300;
+            next = 600;
+
+        }
+
+        else if (score >= 600) {
+
+            title = "Platinum Legend";
+            icon = "fas fa-crown";
+
+            description =
+                "You've reached the highest current tier.";
+
+            previous = 600;
+            next = 600;
+
+        }
+
+
+        document.getElementById(
+            "achievement-level"
+        ).innerText = title;
+
+
+        document.getElementById(
+            "achievement-pill-text"
+        ).innerText = title;
+
+
+        document.getElementById(
+            "achievement-description"
+        ).innerText = description;
+
+
+        document.getElementById(
+            "achievement-icon"
+        ).innerHTML =
+            `<i class="${icon}"></i>`;
+
+
+        document.getElementById(
+            "level-big-title"
+        ).innerText = title;
+
+
+        document.getElementById(
+            "level-big-desc"
+        ).innerText = description;
+
+
+        document.getElementById(
+            "level-big-icon"
+        ).innerHTML =
+            `<i class="${icon}"></i>`;
+
+
+        let percentage = 100;
+
+        let xpText = `${score} XP`;
+
+
+        if (next > previous) {
+
+            percentage =
+                ((score - previous) /
+                (next - previous)) * 100;
+
+            percentage =
+                Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        percentage
+                    )
+                );
+
+            xpText =
+                `${score} / ${next} XP`;
+
+        } else {
+
+            xpText =
+                "🏆 Maximum Level";
+
+        }
+
+
+        document.getElementById(
+            "xp-fill"
+        ).style.width =
+            percentage + "%";
+
+
+        document.getElementById(
+            "big-xp-fill"
+        ).style.width =
+            percentage + "%";
+
+
+        document.getElementById(
+            "xp-text"
+        ).innerText = xpText;
+
+
+        document.getElementById(
+            "big-xp-text"
+        ).innerText = xpText;
+
+        renderRankCollection(score);
+
+    }
+
+
+    /* Rank badge visuals use the existing backend score only.
+       This is presentation logic; it does not award or modify XP. */
+    function renderRankCollection(score) {
+
+        const value = Math.max(0, Number(score) || 0);
+        const ranks = [
+            { key: "novice", name: "Novice", min: 0, icon: "fa-seedling" },
+            { key: "bronze", name: "Bronze", min: 50, icon: "fa-medal" },
+            { key: "silver", name: "Silver", min: 100, icon: "fa-shield-alt" },
+            { key: "gold", name: "Gold", min: 300, icon: "fa-trophy" },
+            { key: "platinum", name: "Platinum", min: 600, icon: "fa-crown" }
+        ];
+
+        const container = document.getElementById("rank-collection");
+        if (!container) return;
+
+        container.innerHTML = ranks.map(rank => {
+            const earned = value >= rank.min;
+            const state = earned ? (rank.key === "novice" ? "STARTER" : "UNLOCKED") : `${rank.min - value} XP TO GO`;
+            return `
+                <div class="rank-badge-card rank-${rank.key} ${earned ? "earned" : "locked"}"
+                     title="${rank.name}: ${earned ? "Unlocked" : `Unlock at ${rank.min} XP`}"
+                     aria-label="${rank.name} rank ${earned ? "unlocked" : "locked"}">
+                    <span class="rank-badge-art"><i class="fas ${rank.icon}"></i></span>
+                    <span class="rank-badge-name">${rank.name}</span>
+                    <span class="rank-badge-state">${state}</span>
+                </div>`;
+        }).join("");
+
+    }
+
+
+    /* =========================================================
+       TAB SYSTEM
+    ========================================================== */
+
+    function switchTab(tab) {
+
+        activeTab = tab;
+
+
+        document.querySelectorAll(
+            ".profile-tab"
+        ).forEach(button => {
+
+            button.classList.remove("active");
+
+        });
+
+
+        document.querySelectorAll(
+            ".tab-pane"
+        ).forEach(pane => {
+
+            pane.classList.remove("active");
+
+        });
+
+
+        const tabButton =
+            document.getElementById(
+                "tab-" + tab
+            );
+
+        const pane =
+            document.getElementById(
+                "pane-" + tab
+            );
+
+
+        if (tabButton) {
+            tabButton.classList.add("active");
+        }
+
+
+        if (pane) {
+            pane.classList.add("active");
+        }
+
+
+        renderTab(tab);
+
+    }
+
+
+    function renderTab(tab) {
+
+        if (tab === "created") {
+
+            renderCreatedExams();
+
+        }
+
+        else if (tab === "attempted") {
+
+            renderAttemptedExams();
+
+        }
+
+        else if (tab === "saved") {
+
+            renderSavedExams();
+
+        }
+
+        else if (tab === "liked") {
+
+            renderLikedExams();
+
+        }
+
+    }
+
+
+    function renderAllTabs() {
+
+        renderCreatedExams();
+
+        renderAttemptedExams();
+
+        renderSavedExams();
+
+        renderLikedExams();
+
+    }
+
+
+    /* =========================================================
+       CREATED EXAMS
+    ========================================================== */
+
+    function getCreatedExams() {
+
+        const name =
+            localStorage.getItem("userName") || "";
+
+        const email =
+            localStorage.getItem("userEmail") || "";
+
+
+        /*
+         * Current search-feed API exposes creator name
+         * through teacher_name. During the upcoming backend
+         * role merge this should become creator_name.
+         */
+
+        return allSocialExams.filter(exam => {
+
+            const creator =
+                String(
+                    exam.teacher_name ||
+                    exam.creator_name ||
+                    ""
+                ).trim().toLowerCase();
+
+
+            return creator &&
+                   name &&
+                   creator ===
+                   name.trim().toLowerCase();
+
+        });
+
+    }
+
+
+    function renderCreatedExams() {
+
+        const container =
+            document.getElementById(
+                "created-container"
+            );
+
+
+        const exams =
+            getCreatedExams();
+
+
+        document.getElementById(
+            "stat-created"
+        ).innerText =
+            exams.length;
+
+
+        document.getElementById(
+            "created-count"
+        ).innerText =
+            exams.length;
+
+
+        if (exams.length === 0) {
+
+            container.innerHTML =
+                emptyState(
+                    "fa-file-circle-plus",
+                    "No Created Exams",
+                    "Create your first exam and it will appear here."
+                );
+
+            return;
+
+        }
+
+
+        container.innerHTML = "";
+
+
+        exams.forEach(exam => {
+
+            container.innerHTML +=
+                renderCreatedExamCard(exam);
+
+        });
+
+    }
+
+
+    function renderCreatedExamCard(exam) {
+        return renderProfileExamCard(exam, { mode: "analysis", icon: "fa-file-lines", iconClass: "created" });
+    }
+
+    function renderProfileExamCard(exam, options = {}) {
+        const mode = options.mode || "attempt";
+        const icon = options.icon || "fa-file-lines";
+        const iconClass = options.iconClass || "social";
+        const code = String(exam.code || exam.exam_code || "");
+        const title = exam.name || exam.exam_name || "Untitled Exam";
+        const className = exam.class_name || "All Classes";
+        const subject = exam.subject || "General";
+        const postedDate = exam.date || exam.created_at || "Recently";
+        const likes = Number(exam.likes ?? exam.total_likes ?? 0) || 0;
+        const shares = Number(exam.shares ?? exam.share_count ?? 0) || 0;
+        const attemptsRaw = exam.attempts_count ?? exam.total_attempts ?? exam.attempt_count ?? exam.participant_count;
+        const attempts = attemptsRaw === undefined || attemptsRaw === null ? "—" : (Number(attemptsRaw) || 0);
+        const marksRaw = exam.total_marks ?? exam.full_marks ?? exam.max_marks ?? exam.marks;
+        const fullMarks = marksRaw === undefined || marksRaw === null || marksRaw === "" ? "—" : marksRaw;
+        const privateBadge = exam.is_private ? "Private" : "Public";
+        const clickAction = mode === "analysis" ? "analysis" : "attempt";
+        const resultScore = Number(exam.score) || 0;
+        const resultTotal = Number(exam.total) || 0;
+        const resultHTML = exam.is_attempted && resultTotal > 0 ? `
+            <div class="exam-result-box">
+                <span class="result-score">Score: ${resultScore}/${resultTotal}</span>
+                <span class="result-percent">${((resultScore / resultTotal) * 100).toFixed(1)}%</span>
+            </div>` : "";
+
+        return `
+            <article class="exam-card" role="button" tabindex="0"
+                aria-label="Open ${escapeAttribute(title)}"
+                onclick="handleProfileExamCardClick('${escapeAttribute(code)}','${clickAction}')"
+                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleProfileExamCardClick('${escapeAttribute(code)}','${clickAction}')} ">
+                <div class="exam-card-header">
+                    <div class="exam-card-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                    <div class="exam-card-info">
+                        <h3 class="exam-card-title">${escapeHtml(title)}</h3>
+                        <div class="exam-card-meta">
+                            <span class="meta-chip"><i class="fas fa-graduation-cap"></i>${escapeHtml(className)}</span>
+                            <span class="meta-chip"><i class="fas fa-book"></i>${escapeHtml(subject)}</span>
+                            ${mode === "analysis" ? `<span class="meta-chip"><i class="fas ${exam.is_private ? "fa-lock" : "fa-globe"}"></i>${privateBadge}</span>` : ""}
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right exam-arrow" aria-hidden="true"></i>
+                </div>
+                ${resultHTML}
+                <div class="exam-card-metrics">
+                    <div class="exam-metric"><strong>${escapeHtml(fullMarks)}</strong><span>Full Marks</span></div>
+                    <div class="exam-metric"><strong>${escapeHtml(attempts)}</strong><span>Attempts</span></div>
+                    <div class="exam-metric"><strong>${likes}</strong><span>Likes</span></div>
+                    <div class="exam-metric"><strong>${shares}</strong><span>Shares</span></div>
+                </div>
+                <div class="exam-card-footer">
+                    <span><i class="far fa-calendar-alt"></i> ${mode === "analysis" ? "Published" : "Exam date"}: ${escapeHtml(postedDate)}</span>
+                    <span class="exam-open-hint">${mode === "analysis" ? "View analysis" : "Open exam"} <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </article>`;
+    }
+
+    function handleProfileExamCardClick(code, action) {
+        if (!code) return;
+        if (action === "analysis") {
+            openExamAnalysis(code);
+        } else {
+            attemptExam(code);
+        }
+    }
+
+
+    /* =========================================================
+       ATTEMPTED EXAMS
+    ========================================================== */
+
+    function renderAttemptedExams() {
+        const container = document.getElementById("attempted-container");
+        document.getElementById("attempted-count").innerText = globalHistory.length;
+
+        if (globalHistory.length === 0) {
+            container.innerHTML = emptyState("fa-clipboard-check", "No Attempted Exams", "Exams you complete will appear here.");
+            return;
+        }
+
+        container.innerHTML = globalHistory.map(history => {
+            const code = history.exam_code || history.code || findExamCodeByName(history.exam_name);
+            const feedExam = allSocialExams.find(exam => String(exam.code) === String(code)) || {};
+            const exam = {
+                ...feedExam,
+                code,
+                name: history.exam_name || feedExam.name || "Exam",
+                date: history.date || history.date_taken || "Recently",
+                score: history.score,
+                total: history.total || history.total_questions,
+                is_attempted: true
+            };
+            return renderProfileExamCard(exam, { mode: "analysis", icon: "fa-clipboard-check", iconClass: "attempted" });
+        }).join("");
+    }
+
+
+    /* =========================================================
+       SAVED EXAMS
+    ========================================================== */
+
+    function renderSavedExams() {
+
+        const container =
+            document.getElementById(
+                "saved-container"
+            );
+
+
+        const saved =
+            allSocialExams.filter(exam => {
+
+                return checkStatus(
+                    exam.code,
+                    "save_",
+                    exam.is_saved
+                );
+
+            });
+
+
+        document.getElementById(
+            "saved-count"
+        ).innerText =
+            saved.length;
+
+
+        if (saved.length === 0) {
+
+            container.innerHTML =
+                emptyState(
+                    "fa-bookmark",
+                    "No Saved Exams",
+                    "Save useful exams to access them quickly later."
+                );
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            buildSocialExamList(
+                saved,
+                "saved"
+            );
+
+    }
+
+
+    /* =========================================================
+       LIKED EXAMS
+    ========================================================== */
+
+    function renderLikedExams() {
+
+        const container =
+            document.getElementById(
+                "liked-container"
+            );
+
+
+        const liked =
+            allSocialExams.filter(exam => {
+
+                return checkStatus(
+                    exam.code,
+                    "like_",
+                    exam.is_liked
+                );
+
+            });
+
+
+        document.getElementById(
+            "liked-count"
+        ).innerText =
+            liked.length;
+
+
+        if (liked.length === 0) {
+
+            container.innerHTML =
+                emptyState(
+                    "fa-heart",
+                    "No Liked Exams",
+                    "Exams you like will appear here."
+                );
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            buildSocialExamList(
+                liked,
+                "liked"
+            );
+
+    }
+
+
+    /* =========================================================
+       SOCIAL EXAM LIST
+    ========================================================== */
+
+    function buildSocialExamList(exams, type) {
+        return exams.map(exam => renderProfileExamCard(exam, {
+            mode: "attempt",
+            icon: type === "liked" ? "fa-heart" : "fa-bookmark",
+            iconClass: "social"
+        })).join("");
+    }
+
+
+    /* =========================================================
+       EMPTY STATE
+    ========================================================== */
+
+    function emptyState(
+        icon,
+        title,
+        description
+    ) {
+
+        return `
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+
+                    <i class="fas ${icon}"></i>
+
+                </div>
+
+                <h3>
+                    ${escapeHtml(title)}
+                </h3>
+
+                <p>
+                    ${escapeHtml(description)}
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =========================================================
+       COLLECTION SYSTEM
+    ========================================================== */
+
+    function initCollections() {
+
+        if (
+            !localStorage.getItem(
+                "user_collections"
+            )
+        ) {
+
+            localStorage.setItem(
+                "user_collections",
+                JSON.stringify([
+                    "All Saved"
+                ])
+            );
+
+        }
+
+    }
+
+
+    function getCollections() {
+
+        try {
+
+            return JSON.parse(
+                localStorage.getItem(
+                    "user_collections"
+                )
+            ) || ["All Saved"];
+
+        } catch {
+
+            return ["All Saved"];
+
+        }
+
+    }
+
+
+    function saveCollections(
+        collections
+    ) {
+
+        localStorage.setItem(
+            "user_collections",
+            JSON.stringify(collections)
+        );
+
+    }
+
+
+    function openCollectionModal(
+        examCode
+    ) {
+
+        pendingSaveExamCode =
+            examCode;
+
+
+        renderCollectionModal();
+
+
+        document
+            .getElementById("collection-modal")
+            .classList.add("show");
+
+
+        pushHistory("collection");
+
+    }
+
+
+    function renderCollectionModal() {
+
+        const list =
+            document.getElementById(
+                "collection-list"
+            );
+
+
+        list.innerHTML = "";
+
+
+        getCollections().forEach(
+            folder => {
+
+                list.innerHTML += `
+
+                    <button
+                        class="sheet-option"
+                        onclick="confirmSaveToCollection(
+                            '${escapeAttribute(folder)}'
+                        )">
+
+                        <i class="${
+                            folder === "All Saved"
+                                ? "fas fa-star"
+                                : "far fa-folder"
+                        }"></i>
+
+                        ${escapeHtml(folder)}
+
+                    </button>
+
+                `;
+
+            }
+        );
+
+    }
+
+
+    function closeCollectionModal() {
+
+        document
+            .getElementById("collection-modal")
+            .classList.remove("show");
+
+
+        pendingSaveExamCode = null;
+
+
+        const input =
+            document.getElementById(
+                "new-folder-input"
+            );
+
+
+        if (input) {
+            input.value = "";
+        }
+
+    }
+
+
+    function closeCollectionOutside(event) {
+
+        if (
+            event.target.id ===
+            "collection-modal"
+        ) {
+
+            closeCollectionModal();
+
+        }
+
+    }
+
+
+    function createNewCollection() {
+
+        const input =
+            document.getElementById(
+                "new-folder-input"
+            );
+
+
+        const value =
+            input.value.trim();
+
+
+        if (!value) {
+            return;
+        }
+
+
+        const collections =
+            getCollections();
+
+
+        if (
+            collections.includes(value)
+        ) {
+
+            alert(
+                "This folder already exists."
+            );
+
+            return;
+
+        }
+
+
+        collections.push(value);
+
+        saveCollections(collections);
+
+        input.value = "";
+
+        renderCollectionModal();
+
+    }
+
+
+    async function confirmSaveToCollection(
+        folder
+    ) {
+
+        if (!pendingSaveExamCode) {
+            return;
+        }
+
+
+        const code =
+            pendingSaveExamCode;
+
+
+        localStorage.setItem(
+            "save_" + code,
+            "true"
+        );
+
+
+        localStorage.setItem(
+            "exam_folder_" + code,
+            folder
+        );
+
+
+        try {
+
+            const email =
+                localStorage.getItem(
+                    "userEmail"
+                );
+
+
+            await fetch(
+                "/api/toggle-social",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        email: email,
+                        exam_code: code,
+                        type: "save"
+                    })
+                }
+            );
+
+        } catch (error) {
+
+            console.log(
+                "Save API error:",
+                error
+            );
+
+        }
+
+
+        closeCollectionModal();
+
+        renderSavedExams();
+
+    }
+
+
+    /* =========================================================
+       SOCIAL ACTIONS
+    ========================================================== */
+
+    function checkStatus(
+        code,
+        prefix,
+        databaseValue
+    ) {
+
+        const local =
+            localStorage.getItem(
+                prefix + code
+            );
+
+
+        if (local === "true") {
+            return true;
+        }
+
+
+        if (local === "false") {
+            return false;
+        }
+
+
+        return Boolean(databaseValue);
+
+    }
+
+
+    async function toggleSocialAction(
+        button,
+        code,
+        type
+    ) {
+
+        const email =
+            localStorage.getItem(
+                "userEmail"
+            );
+
+
+        if (!email) {
+            return;
+        }
+
+
+        if (type === "save") {
+
+            const current =
+                checkStatus(
+                    code,
+                    "save_",
+                    false
+                );
+
+
+            if (current) {
+
+                localStorage.setItem(
+                    "save_" + code,
+                    "false"
+                );
+
+                localStorage.removeItem(
+                    "exam_folder_" + code
+                );
+
+
+                try {
+
+                    await fetch(
+                        "/api/toggle-social",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                email: email,
+                                exam_code: code,
+                                type: "save"
+                            })
+                        }
+                    );
+
+                } catch {}
+
+                renderSavedExams();
+
+                renderLikedExams();
+
+                return;
+
+            }
+
+
+            openCollectionModal(code);
+
+            return;
+
+        }
+
+
+        if (type === "like") {
+
+            const current =
+                checkStatus(
+                    code,
+                    "like_",
+                    false
+                );
+
+
+            localStorage.setItem(
+                "like_" + code,
+                String(!current)
+            );
+
+
+            try {
+
+                await fetch(
+                    "/api/toggle-social",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            email: email,
+                            exam_code: code,
+                            type: "like"
+                        })
+                    }
+                );
+
+            } catch {}
+
+
+            renderLikedExams();
+
+            renderSavedExams();
+
+        }
+
+    }
+
+
+    /* =========================================================
+       ATTEMPT EXAM
+    ========================================================== */
+
+    function attemptExam(code) {
+
+        const exam =
+            allSocialExams.find(
+                item =>
+                    String(item.code) ===
+                    String(code)
+            );
+
+
+        if (
+            exam &&
+            exam.is_private
+        ) {
+
+            accessPrivateExam(code);
+
+            return;
+
+        }
+
+
+        window.location.href =
+            `student_exam.html?code=${encodeURIComponent(
+                code
+            )}`;
+
+    }
+
+
+    function reattemptExam(code) {
+
+        const exam =
+            allSocialExams.find(
+                item =>
+                    String(item.code) ===
+                    String(code)
+            );
+
+
+        if (
+            exam &&
+            exam.is_private
+        ) {
+
+            accessPrivateExamReattempt(
+                code
+            );
+
+            return;
+
+        }
+
+
+        window.location.href =
+            `student_exam.html?code=${encodeURIComponent(
+                code
+            )}&reattempt=true`;
+
+    }
+
+
+    function reattemptExamByName(
+        name
+    ) {
+
+        const code =
+            findExamCodeByName(name);
+
+
+        if (code) {
+
+            reattemptExam(code);
+
+        } else {
+
+            alert(
+                "Exam code could not be found."
+            );
+
+        }
+
+    }
+
+
+    function accessPrivateExam(
+        code
+    ) {
+
+        const entered =
+            prompt(
+                "🔒 This is a private exam.\n\nEnter the Exam Code:"
+            );
+
+
+        if (!entered) {
+            return;
+        }
+
+
+        if (
+            entered.trim().toUpperCase() ===
+            String(code).toUpperCase()
+        ) {
+
+            window.location.href =
+                `student_exam.html?code=${encodeURIComponent(
+                    code
+                )}`;
+
+        } else {
+
+            alert(
+                "❌ Incorrect Exam Code!"
+            );
+
+        }
+
+    }
+
+
+    function accessPrivateExamReattempt(
+        code
+    ) {
+
+        const entered =
+            prompt(
+                "🔒 This is a private exam.\n\nEnter the Exam Code to re-attempt:"
+            );
+
+
+        if (!entered) {
+            return;
+        }
+
+
+        if (
+            entered.trim().toUpperCase() ===
+            String(code).toUpperCase()
+        ) {
+
+            window.location.href =
+                `student_exam.html?code=${encodeURIComponent(
+                    code
+                )}&reattempt=true`;
+
+        } else {
+
+            alert(
+                "❌ Incorrect Exam Code!"
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       RESULT
+    ========================================================== */
+
+    async function showDetailedResult(
+        code,
+        name
+    ) {
+
+        if (!code) {
+
+            alert(
+                "Exam code could not be found."
+            );
+
+            return;
+
+        }
+
+
+        const modal =
+            document.getElementById(
+                "result-modal"
+            );
+
+
+        const container =
+            document.getElementById(
+                "result-container"
+            );
+
+
+        document.getElementById(
+            "result-title"
+        ).innerText =
+            `${name} - Result`;
+
+
+        container.innerHTML = `
+
+            <div class="loading-state">
+
+                <i class="fas fa-spinner fa-spin"></i>
+
+                <div>
+                    Fetching your result...
+                </div>
+
+            </div>
+
+        `;
+
+
+        modal.classList.add("show");
+
+
+        pushHistory("result");
+
+
+        const email =
+            localStorage.getItem(
+                "userEmail"
+            ) || "Guest Account";
+
+
+        try {
+
+            const questionResponse =
+                await fetch(
+                    "/api/get-exam-questions",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            exam_code: code
+                        })
+                    }
+                );
+
+
+            const reviewResponse =
+                await fetch(
+                    "/api/get-student-exam-review",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            email: email,
+                            exam_code: code
+                        })
+                    }
+                );
+
+
+            const questionData =
+                await questionResponse.json();
+
+
+            const reviewData =
+                await reviewResponse.json();
+
+
+            if (!questionData.success) {
+
+                container.innerHTML = `
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            <i class="fas fa-triangle-exclamation"></i>
+                        </div>
+
+                        <h3>
+                            Failed to load result
+                        </h3>
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+            const saved =
+                localStorage.getItem(
+                    "exam_result_" + code
+                );
+
+
+            const localAnswers =
+                saved
+                    ? JSON.parse(saved).answers
+                    : null;
+
+
+            const subjectiveData =
+                (
+                    reviewData.success &&
+                    reviewData.taken
+                )
+                    ? reviewData.subjective_data
+                    : null;
+
+
+            let totalMarks = 0;
+
+
+            questionData.questions.forEach(
+                question => {
+
+                    let marks =
+                        parseFloat(
+                            question.max_marks
+                        );
+
+
+                    if (
+                        Number.isNaN(marks)
+                    ) {
+
+                        marks =
+                            question.question_type ===
+                            "mcq"
+                                ? 1
+                                : 5;
+
+                    }
+
+
+                    totalMarks += marks;
+
+                }
+            );
+
+
+            let displayScore =
+                (
+                    reviewData.success &&
+                    reviewData.taken
+                )
+                    ? reviewData.total_score
+                    : 0;
+
+
+            document.getElementById(
+                "result-title"
+            ).innerHTML = `
+
+                ${escapeHtml(name)}
+
+                <br>
+
+                <span style="
+                    font-size:0.82rem;
+                    color:#3b82f6;
+                ">
+
+                    Total Score:
+                    ${displayScore}
+                    /
+                    ${totalMarks}
+
+                </span>
+
+            `;
+
+
+            let html = "";
+
+
+            questionData.questions.forEach(
+                (question, index) => {
+
+                    const studentAnswer =
+                        (
+                            localAnswers &&
+                            localAnswers[index]
+                        )
+                            ? localAnswers[index]
+                            : undefined;
+
+
+                    let attempted = false;
+
+
+                    if (
+                        question.question_type ===
+                        "subjective" &&
+                        subjectiveData &&
+                        subjectiveData[question.id]
+                    ) {
+
+                        attempted = true;
+
+                    }
+
+                    else if (
+                        studentAnswer !== undefined &&
+                        studentAnswer !== ""
+                    ) {
+
+                        attempted = true;
+
+                    }
+
+
+                    const correct =
+                        studentAnswer ===
+                        question.correct;
+
+
+                    let className =
+                        "unattempted";
+
+
+                    if (attempted) {
+
+                        className =
+                            correct
+                                ? "correct"
+                                : "wrong";
+
+                    }
+
+
+                    const marks =
+                        question.max_marks ||
+                        (
+                            question.question_type ===
+                            "mcq"
+                                ? 1
+                                : 5
+                        );
+
+
+                    html += `
+
+                        <div class="
+                            result-question
+                            ${className}
+                        ">
+
+                            <div class="question-text">
+
+                                Q${index + 1}.
+                                ${escapeHtml(
+                                    question.q_text ||
+                                    ""
+                                )}
+
+                                <span style="
+                                    font-size:0.65rem;
+                                    color:#64748b;
+                                ">
+
+                                    (${marks} Marks)
+
+                                </span>
+
+                            </div>
+
+                    `;
+
+
+                    if (
+                        question.question_type ===
+                        "subjective"
+                    ) {
+
+                        if (attempted) {
+
+                            html += `
+
+                                <div class="answer-correct">
+                                    ✅ Answer Uploaded
+                                </div>
+
+                            `;
+
+
+                            if (
+                                subjectiveData &&
+                                subjectiveData[
+                                    question.id
+                                ] &&
+                                subjectiveData[
+                                    question.id
+                                ].is_checked
+                            ) {
+
+                                html += `
+
+                                    <div class="answer-real">
+
+                                        শিক্ষক নম্বর দিয়েছেন:
+                                        ${
+                                            subjectiveData[
+                                                question.id
+                                            ].marks
+                                        }
+                                        /
+                                        ${marks}
+
+                                    </div>
+
+                                `;
+
+                            }
+
+                            else {
+
+                                html += `
+
+                                    <div style="
+                                        color:#d97706;
+                                        font-size:0.76rem;
+                                        font-weight:800;
+                                        margin-top:5px;
+                                    ">
+
+                                        ⏳ খাতা দেখা বাকি আছে
+
+                                    </div>
+
+                                `;
+
+                            }
+
+                        }
+
+                        else {
+
+                            html += `
+
+                                <div style="
+                                    color:#64748b;
+                                    font-size:0.76rem;
+                                ">
+
+                                    ⚠️ Not Attempted
+
+                                </div>
+
+                            `;
+
+                        }
+
+                    }
+
+                    else {
+
+                        const optionText =
+                            getOptionText(
+                                question,
+                                studentAnswer
+                            );
+
+
+                        const correctText =
+                            getOptionText(
+                                question,
+                                question.correct
+                            );
+
+
+                        if (attempted) {
+
+                            if (correct) {
+
+                                html += `
+
+                                    <div class="answer-correct">
+
+                                        ✅ Your Answer:
+                                        ${escapeHtml(
+                                            studentAnswer
+                                        )}
+                                        ${optionText
+                                            ? ") " +
+                                              escapeHtml(
+                                                  optionText
+                                              )
+                                            : ""}
+
+                                    </div>
+
+                                `;
+
+                            }
+
+                            else {
+
+                                html += `
+
+                                    <div class="answer-wrong">
+
+                                        ❌ Your Answer:
+                                        ${escapeHtml(
+                                            studentAnswer
+                                        )}
+                                        ${optionText
+                                            ? ") " +
+                                              escapeHtml(
+                                                  optionText
+                                              )
+                                            : ""}
+
+                                    </div>
+
+
+                                    <div class="answer-real">
+
+                                        🎯 Correct Answer:
+                                        ${escapeHtml(
+                                            question.correct
+                                        )}
+                                        ${correctText
+                                            ? ") " +
+                                              escapeHtml(
+                                                  correctText
+                                              )
+                                            : ""}
+
+                                    </div>
+
+                                `;
+
+                            }
+
+                        }
+
+                        else {
+
+                            html += `
+
+                                <div style="
+                                    color:#64748b;
+                                    font-size:0.76rem;
+                                ">
+
+                                    ⚠️ Not Attempted
+
+                                </div>
+
+
+                                <div class="answer-real">
+
+                                    🎯 Correct Answer:
+                                    ${escapeHtml(
+                                        question.correct
+                                    )}
+                                    ${correctText
+                                        ? ") " +
+                                          escapeHtml(
+                                              correctText
+                                          )
+                                        : ""}
+
+                                </div>
+
+                            `;
+
+                        }
+
+                    }
+
+
+                    html += `
+                        </div>
+                    `;
+
+                }
+            );
+
+
+            container.innerHTML =
+                html;
+
+
+            if (window.MathJax) {
+
+                MathJax
+                    .typesetPromise([
+                        container
+                    ])
+                    .catch(() => {});
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Result error:",
+                error
+            );
+
+
+            container.innerHTML = `
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        <i class="fas fa-wifi"></i>
+                    </div>
+
+                    <h3>
+                        Error loading result
+                    </h3>
+
+                    <p>
+                        Please try again.
+                    </p>
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+
+    function getOptionText(
+        question,
+        letter
+    ) {
+
+        if (!letter) {
+            return "";
+        }
+
+
+        if (letter === "A") {
+            return question.opt_a || "";
+        }
+
+        if (letter === "B") {
+            return question.opt_b || "";
+        }
+
+        if (letter === "C") {
+            return question.opt_c || "";
+        }
+
+        if (letter === "D") {
+            return question.opt_d || "";
+        }
+
+
+        return "";
+
+    }
+
+
+    function closeResultModal() {
+
+        document
+            .getElementById(
+                "result-modal"
+            )
+            .classList.remove("show");
+
+    }
+
+
+    /* =========================================================
+       LEVEL PANEL
+    ========================================================== */
+
+    function openLevelPanel() {
+
+        document
+            .getElementById(
+                "level-panel"
+            )
+            .classList.add("show");
+
+
+        pushHistory("level");
+
+    }
+
+
+    function openAllLevels() {
+
+        document
+            .getElementById(
+                "levels-modal"
+            )
+            .classList.add("show");
+
+
+        pushHistory("levels");
+
+    }
+
+
+    function closeAllLevels() {
+
+        document
+            .getElementById(
+                "levels-modal"
+            )
+            .classList.remove("show");
+
+    }
+
+
+    function closeModalOutside(event) {
+
+        if (
+            event.target.id ===
+            "levels-modal"
+        ) {
+
+            closeAllLevels();
+
+        }
+
+    }
+
+
+    /* =========================================================
+       SETTINGS
+    ========================================================== */
+
+    function openSettings() {
+
+        document
+            .getElementById(
+                "settings-overlay"
+            )
+            .classList.add("show");
+
+
+        pushHistory("settings");
+
+    }
+
+
+    function closeSettings() {
+
+        document
+            .getElementById(
+                "settings-overlay"
+            )
+            .classList.remove("show");
+
+    }
+
+
+    function closeSettingsOutside(event) {
+
+        if (
+            event.target.id ===
+            "settings-overlay"
+        ) {
+
+            closeSettings();
+
+        }
+
+    }
+
+
+    /* =========================================================
+       EDIT PROFILE
+    ========================================================== */
+
+    function openEditProfile() {
+
+        closeSettings();
+
+
+        document
+            .getElementById(
+                "edit-profile-panel"
+            )
+            .classList.add("show");
+
+
+        pushHistory("edit-profile");
+
+    }
+
+
+    async function saveProfileData() {
+
+        const name =
+            document
+                .getElementById(
+                    "edit-name-input"
+                )
+                .value
+                .trim();
+
+
+        const email =
+            localStorage.getItem(
+                "userEmail"
+            );
+
+
+        if (!name) {
+
+            alert(
+                "Name cannot be empty."
+            );
+
+            return;
+
+        }
+
+
+        if (!email) {
+
+            alert(
+                "User account could not be found."
+            );
+
+            return;
+
+        }
+
+
+        const button =
+            document.querySelector(
+                ".save-profile-button"
+            );
+
+
+        const originalText =
+            button.innerText;
+
+
+        button.innerText =
+            "Saving...";
+
+        button.disabled = true;
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/update-profile",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            email: email,
+                            name: name
+                        })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (data.success) {
+
+                localStorage.setItem(
+                    "userName",
+                    name
+                );
+
+
+                loadProfileData();
+
+
+                alert(
+                    "Profile updated successfully!"
+                );
+
+
+                closeFullPanel();
+
+
+            } else {
+
+                alert(
+                    data.error ||
+                    "Failed to update profile."
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            alert(
+                "Server error while updating profile."
+            );
+
+        }
+
+
+        button.innerText =
+            originalText;
+
+        button.disabled = false;
+
+    }
+
+
+    /* =========================================================
+       CREATED EXAM EDIT / DELETE
+    ========================================================== */
+
+    function openExamForEdit(code) {
+
+        /*
+         * Current project still has the old teacher-specific
+         * edit route/page. The backend merge phase will change
+         * this to the common edit system.
+         */
+
+        window.location.href =
+            `create_exam.html?edit=${encodeURIComponent(
+                code
+            )}`;
+
+    }
+
+
+    function openExamAnalysis(code) {
+
+        if (!code) {
+
+            alert(
+                "Exam code could not be found."
+            );
+
+            return;
+
+        }
+
+
+        window.location.href =
+            `/student_analytics.html?exam_code=${encodeURIComponent(code)}`;
+
+    }
+
+
+    async function deleteCreatedExam(
+        code
+    ) {
+
+        if (!code) {
+            return;
+        }
+
+
+        const confirmed =
+            confirm(
+                "আপনি কি সত্যিই এই পরীক্ষাটি ডিলিট করতে চান?\n\nডিলিট করলে পরীক্ষাটির সংশ্লিষ্ট ডেটা মুছে যেতে পারে।"
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/teacher-delete-exam",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            exam_code: code
+                        })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (data.success) {
+
+                alert(
+                    "পরীক্ষাটি সফলভাবে মুছে ফেলা হয়েছে।"
+                );
+
+
+                allSocialExams =
+                    allSocialExams.filter(
+                        exam =>
+                            String(exam.code) !==
+                            String(code)
+                    );
+
+
+                renderCreatedExams();
+
+            } else {
+
+                alert(
+                    data.error ||
+                    "Failed to delete exam."
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Server error."
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       FIND EXAM CODE
+    ========================================================== */
+
+    function findExamCodeByName(
+        name
+    ) {
+
+        const exam =
+            allSocialExams.find(
+                item =>
+                    String(item.name)
+                        .trim()
+                        .toLowerCase() ===
+                    String(name)
+                        .trim()
+                        .toLowerCase()
+            );
+
+
+        if (exam) {
+
+            return exam.code;
+
+        }
+
+
+        const historyMatch =
+            globalHistory.find(
+                item =>
+                    String(item.exam_name)
+                        .trim()
+                        .toLowerCase() ===
+                    String(name)
+                        .trim()
+                        .toLowerCase()
+            );
+
+
+        return historyMatch
+            ? historyMatch.exam_code ||
+              historyMatch.code ||
+              ""
+            : "";
+
+    }
+
+
+    /* =========================================================
+       PROFILE ANALYSIS TAB SUPPORT
+    ========================================================== */
+
+    function refreshProfileCounts() {
+
+        const created =
+            getCreatedExams();
+
+
+        const saved =
+            allSocialExams.filter(
+                exam =>
+                    checkStatus(
+                        exam.code,
+                        "save_",
+                        exam.is_saved
+                    )
+            );
+
+
+        const liked =
+            allSocialExams.filter(
+                exam =>
+                    checkStatus(
+                        exam.code,
+                        "like_",
+                        exam.is_liked
+                    )
+            );
+
+
+        document.getElementById(
+            "created-count"
+        ).innerText =
+            created.length;
+
+
+        document.getElementById(
+            "attempted-count"
+        ).innerText =
+            globalHistory.length;
+
+
+        document.getElementById(
+            "saved-count"
+        ).innerText =
+            saved.length;
+
+
+        document.getElementById(
+            "liked-count"
+        ).innerText =
+            liked.length;
+
+
+        document.getElementById(
+            "stat-created"
+        ).innerText =
+            created.length;
+
+    }
+
+
+    /* =========================================================
+       FULL PANEL CLOSE
+    ========================================================== */
+
+    function closeFullPanel() {
+
+        document.querySelectorAll(
+            ".full-panel"
+        ).forEach(panel => {
+
+            panel.classList.remove(
+                "show"
+            );
+
+        });
+
+    }
+
+
+    /* =========================================================
+       LOGOUT
+    ========================================================== */
+
+    function logoutAccount() {
+
+        if (
+            !confirm(
+                "Are you sure you want to log out?"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        localStorage.removeItem(
+            "userEmail"
+        );
+
+        localStorage.removeItem(
+            "userName"
+        );
+
+        /*
+         * userRole is intentionally not used by the
+         * new common profile system.
+         */
+
+        localStorage.removeItem(
+            "userRole"
+        );
+
+
+        window.location.href =
+            "/logout";
+
+    }
+
+
+    /* =========================================================
+       HISTORY / PHONE BACK BUTTON
+    ========================================================== */
+
+    function pushHistory(view) {
+
+        window.history.pushState(
+            {
+                view: view
+            },
+            "",
+            window.location.href
+        );
+
+    }
+
+
+    window.addEventListener(
+        "popstate",
+        function () {
+
+            const resultModal =
+                document.getElementById(
+                    "result-modal"
+                );
+
+
+            const levelsModal =
+                document.getElementById(
+                    "levels-modal"
+                );
+
+
+            const collectionModal =
+                document.getElementById(
+                    "collection-modal"
+                );
+
+
+            const settings =
+                document.getElementById(
+                    "settings-overlay"
+                );
+
+
+            const fullPanels =
+                document.querySelectorAll(
+                    ".full-panel.show"
+                );
+
+
+            if (
+                resultModal.classList.contains(
+                    "show"
+                )
+            ) {
+
+                closeResultModal();
+
+                return;
+
+            }
+
+
+            if (
+                levelsModal.classList.contains(
+                    "show"
+                )
+            ) {
+
+                closeAllLevels();
+
+                return;
+
+            }
+
+
+            if (
+                collectionModal.classList.contains(
+                    "show"
+                )
+            ) {
+
+                closeCollectionModal();
+
+                return;
+
+            }
+
+
+            if (
+                settings.classList.contains(
+                    "show"
+                )
+            ) {
+
+                closeSettings();
+
+                return;
+
+            }
+
+
+            if (fullPanels.length > 0) {
+
+                closeFullPanel();
+
+                return;
+
+            }
+
+
+            if (document.referrer) {
+
+                window.history.back();
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       PRIVATE SHARE / FUTURE USE
+    ========================================================== */
+
+    let currentShareData = {};
+
+
+    function triggerCustomShare(
+        examName,
+        examCode
+    ) {
+
+        const baseUrl =
+            window.location.origin;
+
+
+        const link =
+            `${baseUrl}/student_exam.html?code=${encodeURIComponent(
+                examCode
+            )}`;
+
+
+        currentShareData = {
+
+            title:
+                `ExamMate - ${examName}`,
+
+            text:
+                `🚀 Prepare with ExamMate!\n\n📚 ${examName}`,
+
+            url:
+                link
+
+        };
+
+
+        if (
+            navigator.share
+        ) {
+
+            navigator.share(
+                currentShareData
+            ).catch(() => {});
+
+        } else {
+
+            navigator.clipboard
+                .writeText(
+                    currentShareData.text +
+                    "\n\n" +
+                    currentShareData.url
+                )
+                .then(() => {
+
+                    alert(
+                        "Exam link copied successfully!"
+                    );
+
+                })
+                .catch(() => {
+
+                    alert(
+                        currentShareData.url
+                    );
+
+                });
+
+        }
+
+    }
+
+
+    /* =========================================================
+       UTILITY: ESCAPE HTML
+    ========================================================== */
+
+    function escapeHtml(value) {
+
+        if (
+            value === null ||
+            value === undefined
+        ) {
+
+            return "";
+
+        }
+
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    function escapeAttribute(value) {
+
+        return escapeHtml(value)
+            .replace(/`/g, "&#096;");
+
+    }
+
+
+    /* =========================================================
+       FINAL COUNT REFRESH
+    ========================================================== */
+
+    setTimeout(
+        refreshProfileCounts,
+        500
+    );
+
+</script>
+
+</body>
+</html>
