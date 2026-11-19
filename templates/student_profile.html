@@ -1867,27 +1867,85 @@
 
     </section>
 
+    
+	<!-- STREAK JOURNEY: placed immediately after level progress -->
+	<section class="section streak-journey-section">
+		<div class="badge-group">
 
-    <!-- STREAK JOURNEY: placed immediately after level progress -->
-    <section class="section streak-journey-section">
-<div class="badge-group">
-            <div class="badge-group-head"><div><div class="badge-group-title">Streak Journey</div><div class="badge-group-subtitle">One completed exam makes a day active</div></div><i class="fas fa-fire" style="color:#f07832"></i></div>
-            <div class="streak-panel">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-                    <div><div style="font-size:1.35rem;font-weight:950" id="profile-current-streak">0 Days</div><div class="streak-caption">Current streak</div></div>
-                    <div style="text-align:right"><div style="font-size:1.15rem;font-weight:900" id="profile-longest-streak">0 Days</div><div class="streak-caption">Longest streak</div></div>
-                </div>
-                <div class="streak-week" id="profile-streak-week"><div class="badge-loading">Loading weekly activity…</div></div>
-                <div class="streak-stats">
-                    <div class="streak-stat"><strong id="profile-active-days">0</strong><span>Active days</span></div>
-                    <div class="streak-stat"><strong id="profile-week-days">0/7</strong><span>This week</span></div>
-                    <div class="streak-stat"><strong id="profile-streak-best">0</strong><span>Best streak</span></div>
-                </div>
-            </div>
-            <p class="badge-group-subtitle" style="margin:9px 2px 0">Full calendar and all-time streak history will be available in the dedicated Streak History page.</p>
-        </div>
+			<div class="badge-group-head">
+				<div>
+					<div class="badge-group-title">Streak Journey</div>
+					<div class="badge-group-subtitle">One completed exam makes a day active</div>
+				</div>
+				<i class="fas fa-fire" style="color:#f07832"></i>
+			</div>
+
+			<div class="streak-panel">
+
+				<!-- Current & Longest Streak -->
+				<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+					<div>
+						<div style="font-size:1.35rem;font-weight:950" id="profile-current-streak">0 Days</div>
+						<div class="streak-caption">Current streak</div>
+					</div>
+
+					<div style="text-align:right">
+						<div style="font-size:1.15rem;font-weight:900" id="profile-longest-streak">0 Days</div>
+						<div class="streak-caption">Longest streak</div>
+					</div>
+				</div>
+
+				<!-- Weekly Activity -->
+				<div class="streak-week" id="profile-streak-week">
+					<div class="badge-loading">Loading weekly activity…</div>
+				</div>
+
+				<!-- Streak Statistics -->
+				<div class="streak-stats">
+					<div class="streak-stat">
+						<strong id="profile-active-days">0</strong>
+						<span>Active days</span>
+					</div>
+
+					<div class="streak-stat">
+						<strong id="profile-week-days">0/7</strong>
+						<span>This week</span>
+					</div>
+
+					<div class="streak-stat">
+						<strong id="profile-streak-best">0</strong>
+						<span>Best streak</span>
+					</div>
+				</div>
+
+				<!-- Full Streak History Button -->
+				<a href="/streak_history.html"
+				   class="streak-history-link"
+				   style="
+					   display:flex;
+					   align-items:center;
+					   justify-content:center;
+					   gap:9px;
+					   width:100%;
+					   margin-top:15px;
+					   padding:12px;
+					   border-radius:12px;
+					   background:rgba(255,255,255,.12);
+					   border:1px solid rgba(255,255,255,.18);
+					   color:#ffffff;
+					   text-decoration:none;
+					   font-size:.82rem;
+					   font-weight:800;
+				   ">
+					<i class="fas fa-calendar-alt"></i>
+					View Full Streak History
+					<i class="fas fa-arrow-right"></i>
+				</a>
+
+			</div>
+		</div>
     </section>
-
+    
 
     <!-- PROFILE BADGE SYSTEM -->
     <section class="section badge-system-section" aria-labelledby="profile-badges-title">
