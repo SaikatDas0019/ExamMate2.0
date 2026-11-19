@@ -1169,79 +1169,277 @@ def get_exam_questions_v2():
         conn.close()
 
 
+
 @app.route('/api/answer-exam-question-v2', methods=['POST'])
 def answer_exam_question_v2():
     """Grade one MCQ answer and permanently lock the first selection for this attempt."""
+
     user = _current_user()
     if not user:
         return jsonify({"success": False, "error": "Login required."}), 401
+
     if str(user.get('role', '')).lower() != 'student':
-        return jsonify({"success": False, "error": "Only student accounts can answer this exam."}), 403
+        return jsonify({
+            "success": False,
+            "error": "Only student accounts can answer this exam."
+        }), 403
+
     data = _request_data()
     email = _normalise_email(user.get('email'))
     exam_code = str(data.get('exam_code') or '').strip()
     attempt_id = str(data.get('attempt_id') or '').strip()
     selected = str(data.get('selected_option') or '').strip().upper()
+
     try:
         question_id = int(data.get('question_id'))
     except (TypeError, ValueError):
         question_id = 0
-    if not exam_code or not attempt_id or len(attempt_id) > 100 or question_id <= 0 or selected not in {'A','B','C','D'}:
-        return jsonify({"success": False, "error": "Invalid answer submission."}), 400
+
+    if (
+        not exam_code
+        or not attempt_id
+        or len(attempt_id) > 100
+        or question_id <= 0
+        or selected not in {'A', 'B', 'C', 'D'}
+    ):
+        return jsonify({
+            "success": False,
+            "error": "Invalid answer submission."
+        }), 400
 
     conn, db_type = get_db_connection()
+
     try:
         cursor = conn.cursor()
         ph = '%s' if db_type == 'postgres' else '?'
-        cursor.execute(f"SELECT correct_option, question_type FROM questions WHERE id = {ph} AND exam_code = {ph}", (question_id, exam_code))
+
+        # 1. Find the question and its correct answer.
+        cursor.execute(
+            f"""
+            SELECT correct_option, question_type
+            FROM questions
+            WHERE id = {ph} AND exam_code = {ph}
+            """,
+            (question_id, exam_code)
+        )
+
         question = cursor.fetchone()
-        if not question or str(_row_value(question, 'question_type', 1) or 'mcq').lower() != 'mcq':
-            return jsonify({"success": False, "error": "MCQ question not found."}), 404
-        correct = str(_row_value(question, 'correct_option', 0) or '').strip().upper()
+
+        if (
+            not question
+            or str(_row_value(question, 'question_type', 1) or 'mcq').lower() != 'mcq'
+        ):
+            return jsonify({
+                "success": False,
+                "error": "MCQ question not found."
+            }), 404
+
+        correct = str(
+            _row_value(question, 'correct_option', 0) or ''
+        ).strip().upper()
+
         is_correct = selected == correct
+
+        # 2. Save only the first selected answer.
         if db_type == 'postgres':
-            cursor.execute("""INSERT INTO exam_attempt_answers
-                (student_email, exam_code, attempt_id, question_id, selected_option, is_correct)
-                VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (student_email, exam_code, attempt_id, question_id) DO NOTHING""",
-                (email, exam_code, attempt_id, question_id, selected, is_correct))
+            cursor.execute(
+                """
+                INSERT INTO exam_attempt_answers
+                (student_email, exam_code, attempt_id, question_id,
+                 selected_option, is_correct)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                ON CONFLICT
+                (student_email, exam_code, attempt_id, question_id)
+                DO NOTHING
+                """,
+                (
+                    email, exam_code, attempt_id,
+                    question_id, selected, is_correct
+                )
+            )
         else:
-            cursor.execute("""INSERT OR IGNORE INTO exam_attempt_answers
-                (student_email, exam_code, attempt_id, question_id, selected_option, is_correct)
-                VALUES (?,?,?,?,?,?)""", (email, exam_code, attempt_id, question_id, selected, int(is_correct)))
-        cursor.execute(f"SELECT selected_option, is_correct FROM exam_attempt_answers WHERE student_email = {ph} AND exam_code = {ph} AND attempt_id = {ph} AND question_id = {ph}", (email, exam_code, attempt_id, question_id))
+            cursor.execute(
+                """
+                INSERT OR IGNORE INTO exam_attempt_answers
+                (student_email, exam_code, attempt_id, question_id,
+                 selected_option, is_correct)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    email, exam_code, attempt_id,
+                    question_id, selected, int(is_correct)
+                )
+            )
+
+        # Whether this request actually inserted a new answer.
+        was_new_answer = cursor.rowcount > 0
+
+        # 3. Retrieve the permanently locked answer.
+        cursor.execute(
+            f"""
+            SELECT selected_option, is_correct
+            FROM exam_attempt_answers
+            WHERE student_email = {ph}
+              AND exam_code = {ph}
+              AND attempt_id = {ph}
+              AND question_id = {ph}
+            """,
+            (email, exam_code, attempt_id, question_id)
+        )
+
         saved = cursor.fetchone()
-        conn.commit()
-        saved_option = str(_row_value(saved, 'selected_option', 0) or '').upper()
+
+        if not saved:
+            conn.rollback()
+            return jsonify({
+                "success": False,
+                "error": "Could not retrieve the saved answer."
+            }), 500
+
+        saved_option = str(
+            _row_value(saved, 'selected_option', 0) or ''
+        ).upper()
+
         saved_correct = bool(_row_value(saved, 'is_correct', 1))
-        cursor.execute(f"SELECT id FROM questions WHERE exam_code = {ph} AND LOWER(COALESCE(question_type, 'mcq')) = 'mcq' ORDER BY id", (exam_code,))
-        ordered_mcq_ids = [str(_row_value(row, 'id', 0)) for row in cursor.fetchall()]
-        cursor.execute(f"SELECT question_id, selected_option, is_correct FROM exam_attempt_answers WHERE student_email = {ph} AND exam_code = {ph} AND attempt_id = {ph}", (email, exam_code, attempt_id))
-        locked_rows = {str(_row_value(row, 'question_id', 0)): row for row in cursor.fetchall()}
-        current_run = max_run = wrong_count = answered_count = correct_count = 0
+
+        # 4. Get all MCQ question IDs in exam order.
+        cursor.execute(
+            f"""
+            SELECT id
+            FROM questions
+            WHERE exam_code = {ph}
+              AND LOWER(COALESCE(question_type, 'mcq')) = 'mcq'
+            ORDER BY id
+            """,
+            (exam_code,)
+        )
+
+        ordered_mcq_ids = [
+            str(_row_value(row, 'id', 0))
+            for row in cursor.fetchall()
+        ]
+
+        # 5. Get all locked answers for this attempt.
+        cursor.execute(
+            f"""
+            SELECT question_id, selected_option, is_correct
+            FROM exam_attempt_answers
+            WHERE student_email = {ph}
+              AND exam_code = {ph}
+              AND attempt_id = {ph}
+            """,
+            (email, exam_code, attempt_id)
+        )
+
+        locked_rows = {
+            str(_row_value(row, 'question_id', 0)): row
+            for row in cursor.fetchall()
+        }
+
+        # 6. Calculate each separate consecutive-correct streak.
+        current_run = 0
+        current_streak = 0
+        wrong_count = 0
+        answered_count = 0
+        correct_count = 0
+        xp_preview = 0
+        milestones = []
+
         for ordered_id in ordered_mcq_ids:
             row = locked_rows.get(ordered_id)
+
             if not row:
+                # An unanswered question breaks the current streak.
+                if current_run > 0:
+                    xp_preview += sum(
+                        reward
+                        for threshold, reward in XP_CONSECUTIVE_THRESHOLDS
+                        if current_run >= threshold
+                    )
+
                 current_run = 0
                 continue
+
             answered_count += 1
+
             if bool(_row_value(row, 'is_correct', 2)):
                 correct_count += 1
                 current_run += 1
-                max_run = max(max_run, current_run)
+
+                # Detect a newly achieved milestone.
+                if (
+                    was_new_answer
+                    and ordered_id == str(question_id)
+                    and saved_correct
+                ):
+                    for threshold, reward in XP_CONSECUTIVE_THRESHOLDS:
+                        if current_run == threshold:
+                            milestones.append({
+                                "threshold": threshold,
+                                "xp": reward
+                            })
+
             else:
                 wrong_count += 1
+
+                # Award the previous streak before resetting it.
+                if current_run > 0:
+                    xp_preview += sum(
+                        reward
+                        for threshold, reward in XP_CONSECUTIVE_THRESHOLDS
+                        if current_run >= threshold
+                    )
+
                 current_run = 0
-        xp_preview = sum(reward for threshold, reward in XP_CONSECUTIVE_THRESHOLDS if max_run >= threshold) - (2 * wrong_count)
-        if ordered_mcq_ids and answered_count == len(ordered_mcq_ids) and correct_count == len(ordered_mcq_ids):
+
+        # 7. Include the final streak if the exam ends with correct answers.
+        if current_run > 0:
+            xp_preview += sum(
+                reward
+                for threshold, reward in XP_CONSECUTIVE_THRESHOLDS
+                if current_run >= threshold
+            )
+
+        # The trailing consecutive-correct count.
+        current_streak = current_run
+
+        # 8. Apply wrong-answer penalty.
+        xp_preview -= (2 * wrong_count)
+
+        # 9. Perfect MCQ bonus.
+        if (
+            ordered_mcq_ids
+            and answered_count == len(ordered_mcq_ids)
+            and correct_count == len(ordered_mcq_ids)
+        ):
             xp_preview += 50
-        return jsonify({"success": True, "selected_option": saved_option, "is_correct": saved_correct,
-                        "correct_option": correct, "locked": True, "xp_preview": xp_preview})
+
+        conn.commit()
+
+        # 10. Send the result to the frontend.
+        return jsonify({
+            "success": True,
+            "selected_option": saved_option,
+            "is_correct": saved_correct,
+            "correct_option": correct,
+            "locked": True,
+            "xp_preview": xp_preview,
+            "current_streak": current_streak,
+            "milestones": milestones
+        }), 200
+
     except Exception:
         conn.rollback()
         app.logger.exception('V2 answer lock failed')
-        return jsonify({"success": False, "error": "Could not save this answer."}), 500
+
+        return jsonify({
+            "success": False,
+            "error": "Could not save this answer."
+        }), 500
+
     finally:
         conn.close()
+
 
 
 @app.route('/api/get-exam-review-answers-v2', methods=['POST'])
