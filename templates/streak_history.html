@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4f7fb">
+  <title>ExamMate | Streak History</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root{--primary:#3b82f6;--primary-dark:#2563eb;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--bg:#f4f7fb;--card:#fff;--green:#16a36a;--orange:#f07832;--shadow:0 8px 26px rgba(15,23,42,.06)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif}button,select{font:inherit}.page{max-width:980px;margin:0 auto;padding:0 18px 48px}.topbar{height:66px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:10;background:rgba(244,247,251,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);margin:0 -18px;padding:0 18px}.back{width:40px;height:40px;border:1px solid var(--border);border-radius:13px;background:#fff;color:#334155;display:grid;place-items:center;text-decoration:none}.topbar h1{font-size:1.12rem;margin:0;font-weight:850}.topbar p{font-size:.75rem;color:var(--muted);margin:3px 0 0}.hero{padding:26px 0 18px}.eyebrow{font-size:.72rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--primary)}.hero h2{font-size:1.7rem;margin:7px 0 5px;letter-spacing:-.04em}.hero p{margin:0;color:var(--muted);font-size:.9rem}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:8px 0 20px}.stat{background:var(--card);border:1px solid var(--border);border-radius:19px;padding:17px;box-shadow:var(--shadow);min-width:0}.stat-icon{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;margin-bottom:12px;font-size:1rem}.stat:nth-child(1) .stat-icon{background:#fff1e7;color:#ed7628}.stat:nth-child(2) .stat-icon{background:#fff7df;color:#c38a19}.stat:nth-child(3) .stat-icon{background:#e7f8ef;color:#15945e}.stat-value{font-size:1.7rem;font-weight:900;letter-spacing:-.04em;line-height:1.1}.stat-label{font-size:.76rem;color:var(--muted);font-weight:650;margin-top:5px}.panel{background:var(--card);border:1px solid var(--border);border-radius:21px;padding:19px;margin:14px 0;box-shadow:var(--shadow)}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}.panel-title{font-size:1.05rem;font-weight:850;margin:0}.panel-sub{font-size:.76rem;color:var(--muted);margin:5px 0 0}.month-controls{display:flex;align-items:center;gap:7px}.icon-btn{width:35px;height:35px;border:1px solid var(--border);border-radius:11px;background:#fff;color:#475569;cursor:pointer}.month-selects{display:flex;gap:6px}.month-selects select{height:35px;border:1px solid var(--border);border-radius:10px;background:#fff;color:#334155;padding:0 8px;font-size:.78rem;font-weight:700;max-width:130px}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}.weekday{text-align:center;color:#94a3b8;font-size:.68rem;font-weight:800;padding:3px 0 6px}.cal-day{border:1px solid transparent;background:#f8fafc;border-radius:12px;min-height:57px;padding:7px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#475569;cursor:default}.cal-day.blank{background:transparent}.cal-day .num{font-size:.76rem;font-weight:750}.cal-day .symbol{font-size:.92rem;line-height:1}.cal-day.active{background:#fff2e8;border-color:#ffd7bd;color:#b94d12;cursor:pointer}.cal-day.grace{background:#f1f5f9;border-color:#dbe3ed;color:#64748b;cursor:pointer}.cal-day.future{opacity:.42;background:#f1f5f9}.cal-day.inactive{background:#f8fafc}.cal-day.clickable:active{transform:scale(.96)}.legend{display:flex;flex-wrap:wrap;gap:13px;margin-top:15px}.legend-item{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--muted)}.legend-dot{width:11px;height:11px;border-radius:4px;background:#f8fafc;border:1px solid var(--border)}.legend-dot.active{background:#ffb27e;border-color:#ffb27e}.legend-dot.grace{background:#cbd5e1;border-color:#cbd5e1}.heatmap-wrap{overflow-x:auto;padding:4px 0 8px;scrollbar-width:thin}.heatmap{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,13px);grid-auto-columns:13px;gap:4px;min-width:max-content}.heat-cell{width:13px;height:13px;border:0;border-radius:3px;background:#edf1f6;padding:0;cursor:pointer}.heat-cell.i1{background:#c9f0d9}.heat-cell.i2{background:#83d7a7}.heat-cell.i3{background:#36b875}.heat-cell.i4{background:#137a4a}.heat-cell.grace{background:#cbd5e1;outline:1px solid #94a3b8}.heat-cell.future{opacity:.25;cursor:default}.heat-cell:focus-visible,.cal-day:focus-visible,.icon-btn:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}.heat-labels{display:grid;grid-template-rows:repeat(7,13px);gap:4px;margin-right:8px;color:#94a3b8;font-size:.62rem;line-height:13px}.heat-area{display:flex;align-items:flex-start}.heat-months{display:flex;justify-content:space-between;color:#94a3b8;font-size:.65rem;margin:0 0 7px 31px;min-width:560px}.heat-scroll{overflow-x:auto}.heat-legend{display:flex;align-items:center;justify-content:flex-end;gap:5px;color:var(--muted);font-size:.67rem;margin-top:10px}.heat-legend .heat-cell{display:inline-block;cursor:default}.empty{padding:24px 12px;text-align:center;color:var(--muted);font-size:.85rem}.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.48);z-index:50;display:none;align-items:flex-end;justify-content:center;padding:16px}.modal-backdrop.open{display:flex}.modal{width:min(100%,560px);max-height:82vh;overflow:auto;background:#fff;border-radius:22px;padding:20px;box-shadow:0 24px 70px rgba(0,0,0,.22);animation:rise .18s ease-out}@keyframes rise{from{transform:translateY(15px);opacity:.6}to{transform:translateY(0);opacity:1}}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.modal-head h3{font-size:1.05rem;margin:0}.close-btn{width:34px;height:34px;border:0;border-radius:10px;background:#f1f5f9;color:#475569;cursor:pointer}.modal-summary{font-size:.78rem;color:var(--muted);margin:7px 0 15px}.exam-list{display:grid;gap:10px}.exam-item{border:1px solid var(--border);border-radius:14px;padding:13px}.exam-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.exam-name{font-size:.86rem;font-weight:800}.exam-time{font-size:.7rem;color:var(--muted);white-space:nowrap}.exam-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.chip{font-size:.68rem;color:#475569;background:#f1f5f9;padding:5px 8px;border-radius:8px}.status-note{border-radius:13px;padding:14px;background:#f1f5f9;color:#475569;font-size:.83rem}.status-note i{margin-right:7px}.notice{color:var(--muted);font-size:.72rem;margin-top:13px;line-height:1.5}.loading{padding:30px;text-align:center;color:var(--muted)}.error{padding:18px;border-radius:14px;background:#fff1f2;color:#be123c;font-size:.84rem}.footer-note{text-align:center;color:#94a3b8;font-size:.68rem;padding:10px 0 25px}
+    @media(max-width:600px){.page{padding:0 13px 35px}.topbar{margin:0 -13px;padding:0 13px;height:60px}.hero{padding:21px 0 14px}.hero h2{font-size:1.45rem}.stats{gap:8px}.stat{padding:12px;border-radius:16px}.stat-icon{width:32px;height:32px;margin-bottom:9px}.stat-value{font-size:1.35rem}.stat-label{font-size:.65rem;line-height:1.25}.panel{padding:14px;border-radius:18px}.panel-head{flex-direction:column;align-items:stretch}.month-controls{justify-content:space-between}.month-selects{flex:1}.month-selects select{flex:1;max-width:none}.calendar{gap:4px}.cal-day{min-height:48px;border-radius:9px}.cal-day .num{font-size:.7rem}.cal-day .symbol{font-size:.8rem}.weekday{font-size:.62rem}.legend{gap:10px}.legend-item{font-size:.64rem}}
+    @media(min-width:800px){.cal-day{min-height:68px}.stat{padding:20px}.hero h2{font-size:1.9rem}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <a class="back" href="/student_profile.html" aria-label="Back to profile"><i class="fa-solid fa-arrow-left"></i></a>
+      <div><h1>Streak History</h1><p>Your consistency, day by day</p></div>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">Your learning journey</div>
+      <h2>Every active day counts.</h2>
+      <p>Track your exam activity, protect your streak and celebrate your consistency.</p>
+    </section>
+
+    <section class="stats" aria-label="Streak statistics">
+      <article class="stat"><div class="stat-icon"><i class="fa-solid fa-fire"></i></div><div class="stat-value" id="currentStreak">—</div><div class="stat-label">Current Streak</div></article>
+      <article class="stat"><div class="stat-icon"><i class="fa-solid fa-trophy"></i></div><div class="stat-value" id="longestStreak">—</div><div class="stat-label">Longest Streak</div></article>
+      <article class="stat"><div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div><div class="stat-value" id="activeDays">—</div><div class="stat-label">Total Active Days</div></article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div><h3 class="panel-title">Monthly Calendar</h3><p class="panel-sub" id="monthSummary">Your daily exam activity</p></div>
+        <div class="month-controls">
+          <button class="icon-btn" id="prevMonth" aria-label="Previous month"><i class="fa-solid fa-chevron-left"></i></button>
+          <div class="month-selects"><select id="monthSelect" aria-label="Select month"></select><select id="yearSelect" aria-label="Select year"></select></div>
+          <button class="icon-btn" id="nextMonth" aria-label="Next month"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="calendar" id="monthlyCalendar"><div class="loading">Loading calendar…</div></div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot active"></span> Active Day</span>
+        <span class="legend-item"><span class="legend-dot grace"></span> Grace Day</span>
+        <span class="legend-item"><span class="legend-dot"></span> Inactive</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><h3 class="panel-title">Yearly Activity</h3><p class="panel-sub">Your exam consistency throughout the year</p></div><strong id="heatmapYear" style="font-size:.85rem;color:#475569"></strong></div>
+      <div class="heatmap-wrap">
+        <div class="heat-months" id="heatMonthLabels"></div>
+        <div class="heat-area">
+          <div class="heat-labels"><span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span></div>
+          <div class="heat-scroll"><div class="heatmap" id="yearHeatmap" aria-label="Yearly activity heatmap"><div class="loading">Loading activity…</div></div></div>
+        </div>
+      </div>
+      <div class="heat-legend"><span>Less</span><span class="heat-cell"></span><span class="heat-cell i1"></span><span class="heat-cell i2"></span><span class="heat-cell i3"></span><span class="heat-cell i4"></span><span>More</span></div>
+      <p class="notice">Activity intensity is based on the number of completed exams in a day. A shield marks a Grace Day, which protects your streak but does not increase the active-day count.</p>
+    </section>
+    <p class="footer-note">All dates and activity are shown in India Standard Time (IST).</p>
+  </main>
+
+  <div class="modal-backdrop" id="detailsBackdrop" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
+    <section class="modal">
+      <div class="modal-head"><h3 id="detailsTitle">Activity Details</h3><button class="close-btn" id="closeDetails" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
+      <p class="modal-summary" id="detailsSummary"></p>
+      <div id="detailsContent"></div>
+    </section>
+  </div>
+
+  <script>
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const today = new Date();
+    let selectedYear = today.getFullYear();
+    let selectedMonth = today.getMonth()+1;
+    let accountYear = selectedYear;
+    let currentPayload = null;
+    const $ = id => document.getElementById(id);
+    const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const dateLabel = iso => { const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}); };
+    const formatTime = value => { if(!value) return 'Time unavailable'; const d=new Date(String(value).replace(' ','T')+'+05:30'); return isNaN(d)?'Time unavailable':d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); };
+
+    function initSelectors(){
+      $('monthSelect').innerHTML=monthNames.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
+      $('monthSelect').value=String(selectedMonth);
+      $('monthSelect').addEventListener('change',()=>{selectedMonth=Number($('monthSelect').value);loadHistory();});
+      $('yearSelect').addEventListener('change',()=>{selectedYear=Number($('yearSelect').value);if(selectedYear===today.getFullYear()&&selectedMonth>today.getMonth()+1)selectedMonth=today.getMonth()+1;$('monthSelect').value=String(selectedMonth);loadHistory();});
+      $('prevMonth').addEventListener('click',()=>{selectedMonth--;if(selectedMonth<1){selectedMonth=12;selectedYear--;}if(selectedYear<accountYear){selectedYear=accountYear;selectedMonth=1;}syncSelectors();loadHistory();});
+      $('nextMonth').addEventListener('click',()=>{selectedMonth++;if(selectedMonth>12){selectedMonth=1;selectedYear++;}if(selectedYear>today.getFullYear()||(selectedYear===today.getFullYear()&&selectedMonth>today.getMonth()+1)){selectedYear=today.getFullYear();selectedMonth=today.getMonth()+1;}syncSelectors();loadHistory();});
+      $('closeDetails').addEventListener('click',closeModal);
+      $('detailsBackdrop').addEventListener('click',e=>{if(e.target===$('detailsBackdrop'))closeModal();});
+      document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+    }
+    function syncSelectors(){
+      $('monthSelect').value=String(selectedMonth);
+      $('yearSelect').innerHTML=Array.from({length:Math.max(1,today.getFullYear()-accountYear+1)},(_,i)=>accountYear+i).map(y=>`<option value="${y}">${y}</option>`).join('');
+      $('yearSelect').value=String(selectedYear);
+      $('nextMonth').disabled=selectedYear===today.getFullYear()&&selectedMonth===today.getMonth()+1;
+      $('prevMonth').disabled=selectedYear===accountYear&&selectedMonth===1;
+    }
+    async function loadHistory(){
+      $('monthlyCalendar').innerHTML='<div class="loading">Loading calendar…</div>';
+      $('yearHeatmap').innerHTML='<div class="loading">Loading activity…</div>';
+      try{
+        const response=await fetch(`/api/streak-history?year=${selectedYear}&month=${selectedMonth}`,{credentials:'same-origin',headers:{'Accept':'application/json'}});
+        if(response.status===401){window.location.href='/';return;}
+        const data=await response.json();if(!response.ok||!data.success)throw new Error(data.error||'Unable to load streak history.');
+        currentPayload=data;
+        if(data.account_created_at){const parsed=new Date(String(data.account_created_at).replace(' ','T'));if(!isNaN(parsed))accountYear=Math.min(parsed.getFullYear(),today.getFullYear());}
+        syncSelectors();renderStats(data.stats);renderMonth(data.month);renderHeatmap(data.year);
+      }catch(error){$('monthlyCalendar').innerHTML=`<div class="error">${escapeHTML(error.message)}</div>`;$('yearHeatmap').innerHTML='';}
+    }
+    function renderStats(stats={}){$('currentStreak').textContent=Number(stats.current_streak||0);$('longestStreak').textContent=Number(stats.longest_streak||0);$('activeDays').textContent=Number(stats.total_active_days||0);}
+    function renderMonth(month){
+      $('monthSummary').textContent=`${monthNames[month.month-1]} ${month.year} · ${month.exam_count||0} completed exams`;
+      const names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      let html=names.map(n=>`<div class="weekday">${n}</div>`).join('');
+      (month.days||[]).forEach(day=>{
+        if(day.status==='blank'){html+='<div class="cal-day blank"></div>';return;}
+        const symbol=day.status==='active'?'🔥':day.status==='grace'?'🛡️':'';
+        const clickable=day.status==='active'||day.status==='grace';
+        html+=`<button class="cal-day ${day.status} ${clickable?'clickable':''}" ${clickable?`data-date="${day.date}"`: 'disabled'} aria-label="${day.date||''} ${day.status}"><span class="num">${day.day}</span><span class="symbol">${symbol}</span></button>`;
+      });
+      $('monthlyCalendar').innerHTML=html;
+      $('monthlyCalendar').querySelectorAll('[data-date]').forEach(btn=>btn.addEventListener('click',()=>openDay(btn.dataset.date,'month')));
+    }
+    function renderHeatmap(yearData){
+      $('heatmapYear').textContent=yearData.year;
+      const days=yearData.days||[];
+      if(!days.length){$('yearHeatmap').innerHTML='<div class="empty">No activity recorded for this year yet.</div>';$('heatMonthLabels').innerHTML='';return;}
+      const first=new Date(yearData.year,0,1);const offset=first.getDay();
+      const cells=Array(offset).fill(null).concat(days);
+      let html='';
+      cells.forEach((day,index)=>{
+        if(!day){html+='<span></span>';return;}
+        const level=day.intensity||0;const grace=day.status==='grace';
+        const future=day.status==='future';
+        html+=`<button class="heat-cell ${grace?'grace':`i${level}`} ${future?'future':''}" ${future?'disabled':`data-date="${day.date}"`} title="${escapeHTML(day.date)} · ${day.exam_count} exams${grace?' · Grace Day':''}" aria-label="${escapeHTML(day.date)}: ${day.exam_count} exams"></button>`;
+      });
+      $('yearHeatmap').innerHTML=html;
+      $('yearHeatmap').querySelectorAll('[data-date]').forEach(btn=>btn.addEventListener('click',()=>openDay(btn.dataset.date,'heatmap')));
+      const monthPositions=monthNames.map((name,index)=>({name,index,week:Math.floor((new Date(yearData.year,index,1).getDay()+Math.floor((new Date(yearData.year,index,1)-first)/86400000))/7)}));
+      $('heatMonthLabels').innerHTML=monthPositions.map(m=>`<span>${m.name.slice(0,3)}</span>`).join('');
+    }
+    function openDay(date,source){
+      const [y,m,d]=date.split('-').map(Number);const dayData=(currentPayload.month.days||[]).find(x=>x.date===date);
+      const heatData=(currentPayload.year.days||[]).find(x=>x.date===date);
+      const status=dayData?.status||heatData?.status||'inactive';
+      $('detailsTitle').textContent=dateLabel(date);
+      const exams=(currentPayload.activities_by_date||{})[date]||[];
+      if(status==='grace'){
+        $('detailsSummary').textContent='Your streak was protected on this day.';
+        $('detailsContent').innerHTML='<div class="status-note"><i class="fa-solid fa-shield-halved"></i><strong>Grace Day — No Exam Completed</strong></div>';
+      }else if(status==='active'){
+        $('detailsSummary').textContent=`${exams.length} exam${exams.length===1?'':'s'} completed on this day.`;
+        if(source==='heatmap'){
+          $('detailsContent').innerHTML=`<div class="exam-list">${exams.map(x=>`<div class="exam-item"><div class="exam-name">${escapeHTML(x.exam_name)}</div></div>`).join('')}</div>`;
+        }else{
+          $('detailsContent').innerHTML=`<div class="exam-list">${exams.map(x=>`<article class="exam-item"><div class="exam-top"><div class="exam-name">${escapeHTML(x.exam_name)}</div><div class="exam-time">${formatTime(x.completed_at)}</div></div><div class="exam-meta">${x.score!==null&&x.total_marks!==null?`<span class="chip">${Number(x.score).toFixed(2)} / ${Number(x.total_marks).toFixed(2)} marks</span>`:'<span class="chip">Marks unavailable for this older attempt</span>'}${x.percentage!==null?`<span class="chip">${Number(x.percentage).toFixed(1)}%</span>`:''}</div></article>`).join('')}</div>`;
+        }
+      }else{
+        $('detailsSummary').textContent='No exam activity was recorded for this date.';
+        $('detailsContent').innerHTML='<div class="status-note">No completed exam found for this day.</div>';
+      }
+      $('detailsBackdrop').classList.add('open');
+    }
+    function closeModal(){$('detailsBackdrop').classList.remove('open');}
+    initSelectors();syncSelectors();loadHistory();
+  </script>
+</body>
+</html>
