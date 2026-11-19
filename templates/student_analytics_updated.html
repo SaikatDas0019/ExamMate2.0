@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>ExamMate | My Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --page:#f5f7fb; --surface:#fff; --surface-soft:#f8faff; --ink:#172033;
+            --muted:#718096; --line:#e8edf5; --primary:#4f6bed; --primary-soft:#eef1ff;
+            --green:#16a37a; --green-soft:#eaf8f2; --orange:#e99a35; --orange-soft:#fff6e9;
+            --red:#e15b68; --red-soft:#fff0f1; --shadow:0 8px 28px rgba(25,42,78,.055);
+        }
+        * { box-sizing:border-box; }
+        body { margin:0; background:var(--page); color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+        button,select { font:inherit; }
+        .app-shell { width:min(100%,1120px); margin:0 auto; padding:24px 22px 100px; }
+        .topbar { display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+        .back-btn { width:42px; height:42px; border:1px solid var(--line); border-radius:14px; background:#fff; color:var(--ink); cursor:pointer; box-shadow:var(--shadow); }
+        .brand-mark { width:42px; height:42px; display:grid; place-items:center; border-radius:14px; color:#fff; background:linear-gradient(135deg,#6079f4,#4359d9); box-shadow:0 7px 16px #536ce53a; }
+        .brand-copy { flex:1; min-width:0; }
+        .brand-copy strong { display:block; font-size:15px; letter-spacing:.1px; }
+        .brand-copy span { color:var(--muted); font-size:12px; }
+        .top-link { color:var(--muted); text-decoration:none; font-size:13px; font-weight:700; padding:10px 12px; border-radius:11px; }
+        .hero { background:linear-gradient(115deg,#263c86 0%,#4f6bed 60%,#7187f4 100%); border-radius:24px; padding:26px; color:#fff; box-shadow:0 14px 32px rgba(58,81,183,.18); position:relative; overflow:hidden; }
+        .hero:after { content:""; position:absolute; width:230px; height:230px; border:1px solid #ffffff20; border-radius:50%; right:-55px; top:-110px; box-shadow:0 0 0 28px #ffffff09,0 0 0 58px #ffffff07; }
+        .hero-top { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; position:relative; z-index:1; }
+        .eyebrow { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; font-weight:800; opacity:.75; }
+        .hero h1 { margin:8px 0 7px; font-size:clamp(24px,4vw,34px); line-height:1.15; letter-spacing:-.7px; }
+        .hero p { margin:0; color:#e0e6ff; font-size:13px; line-height:1.6; max-width:570px; }
+        .hero-icon { width:54px; height:54px; flex:none; display:grid; place-items:center; border-radius:18px; background:#ffffff1c; font-size:22px; }
+        .filter-row { position:relative; z-index:2; margin-top:23px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+        .filter-label { font-size:12px; color:#e5eaff; font-weight:800; }
+        .select-wrap { min-width:min(100%,360px); position:relative; }
+        .select-wrap select { width:100%; appearance:none; border:1px solid #ffffff55; outline:none; border-radius:13px; padding:13px 42px 13px 14px; color:#fff; background:#ffffff1b; font-weight:700; font-size:13px; cursor:pointer; }
+        .select-wrap select option { color:#172033; background:#fff; }
+        .select-wrap i { position:absolute; right:15px; top:50%; transform:translateY(-50%); pointer-events:none; color:#fff; }
+        .filter-hint { color:#dce4ff; font-size:11px; }
+        .section { margin-top:27px; }
+        .section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:14px; margin-bottom:13px; }
+        .section-title { margin:0; font-size:17px; font-weight:850; letter-spacing:-.3px; }
+        .section-sub { margin:4px 0 0; color:var(--muted); font-size:12px; }
+        .section-kicker { color:var(--primary); font-size:11px; font-weight:800; background:var(--primary-soft); padding:7px 10px; border-radius:9px; white-space:nowrap; }
+        .metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:13px; }
+        .metric { background:var(--surface); border:1px solid var(--line); border-radius:17px; padding:17px; box-shadow:var(--shadow); min-width:0; }
+        .metric-top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .metric-label { color:var(--muted); font-size:11px; font-weight:750; }
+        .metric-icon { width:32px; height:32px; border-radius:11px; display:grid; place-items:center; background:var(--primary-soft); color:var(--primary); font-size:13px; }
+        .metric strong { display:block; margin-top:12px; font-size:25px; letter-spacing:-.8px; line-height:1; }
+        .metric small { display:block; margin-top:8px; color:var(--muted); font-size:10px; }
+        .grid-2 { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr); gap:15px; }
+        .card { background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:var(--shadow); min-width:0; }
+        .card-title { font-size:13px; font-weight:850; margin:0; }
+        .card-desc { margin:5px 0 0; color:var(--muted); font-size:11px; }
+        .chart-area { height:260px; margin-top:16px; position:relative; }
+        .chart-area.doughnut { height:220px; }
+        .insight-list { display:grid; gap:10px; margin-top:15px; }
+        .insight { display:flex; align-items:flex-start; gap:11px; padding:12px; border:1px solid var(--line); border-radius:13px; background:#fff; }
+        .insight-icon { width:34px; height:34px; flex:none; display:grid; place-items:center; border-radius:11px; background:var(--green-soft); color:var(--green); }
+        .insight.warning .insight-icon { background:var(--orange-soft); color:var(--orange); }
+        .insight.neutral .insight-icon { background:var(--primary-soft); color:var(--primary); }
+        .insight strong { display:block; font-size:12px; margin:1px 0 4px; }
+        .insight span { display:block; color:var(--muted); font-size:11px; line-height:1.5; }
+        .score-summary { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+        .score-chip { background:var(--surface-soft); border:1px solid var(--line); border-radius:12px; padding:12px; }
+        .score-chip span { display:block; color:var(--muted); font-size:10px; }
+        .score-chip strong { display:block; margin-top:5px; font-size:17px; }
+        .breakdown-legend { display:grid; gap:9px; margin-top:8px; }
+        .legend-row { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:11px; }
+        .legend-name { display:flex; align-items:center; gap:8px; color:var(--muted); }
+        .dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+        .attempt-list { display:grid; gap:10px; }
+        .attempt { display:grid; grid-template-columns:42px minmax(0,1fr) auto; align-items:center; gap:12px; border:1px solid var(--line); border-radius:14px; padding:13px; background:#fff; }
+        .attempt-index { width:40px; height:40px; border-radius:13px; display:grid; place-items:center; background:var(--primary-soft); color:var(--primary); font-size:12px; font-weight:900; }
+        .attempt-name { font-size:12px; font-weight:850; overflow-wrap:anywhere; }
+        .attempt-meta { color:var(--muted); font-size:10px; margin-top:5px; }
+        .attempt-score { text-align:right; white-space:nowrap; }
+        .attempt-score strong { display:block; font-size:14px; }
+        .attempt-score span { color:var(--muted); font-size:10px; }
+        .score-good { color:var(--green); } .score-mid { color:var(--orange); } .score-low { color:var(--red); }
+        .empty { padding:28px 14px; text-align:center; color:var(--muted); font-size:12px; border:1px dashed #d7deea; border-radius:14px; background:#fbfcff; }
+        .empty i { display:block; font-size:24px; margin-bottom:10px; color:#aab5c8; }
+        .footer-note { text-align:center; color:#96a0b2; font-size:10px; margin-top:24px; line-height:1.5; }
+        .bottom-nav { display:none; }
+        .loading { opacity:.65; pointer-events:none; }
+        @media(max-width:760px) {
+            .app-shell { padding:15px 14px 92px; }
+            .topbar { margin-bottom:16px; }
+            .top-link { display:none; }
+            .hero { border-radius:20px; padding:21px 18px; }
+            .hero-icon { width:45px; height:45px; border-radius:15px; font-size:18px; }
+            .filter-row { margin-top:19px; display:grid; grid-template-columns:1fr; gap:8px; }
+            .select-wrap { min-width:0; width:100%; }
+            .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+            .metric { padding:14px; border-radius:15px; }
+            .metric strong { font-size:23px; }
+            .grid-2 { grid-template-columns:1fr; }
+            .section { margin-top:23px; }
+            .section-title { font-size:16px; }
+            .chart-area { height:235px; }
+            .card { padding:15px; }
+            .attempt { grid-template-columns:36px minmax(0,1fr) auto; gap:9px; padding:11px; }
+            .attempt-index { width:35px; height:35px; border-radius:11px; }
+            .bottom-nav { position:fixed; z-index:20; left:0; right:0; bottom:0; display:flex; justify-content:space-around; padding:10px 8px calc(10px + env(safe-area-inset-bottom)); background:#ffffffed; backdrop-filter:blur(14px); border-top:1px solid var(--line); }
+            .bottom-nav a { flex:1; text-align:center; color:var(--muted); text-decoration:none; font-size:10px; font-weight:700; }
+            .bottom-nav a.active { color:var(--primary); }
+            .bottom-nav i { display:block; font-size:17px; margin-bottom:4px; }
+        }
+        @media(min-width:761px) and (max-width:950px) { .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+        /* =========================================================
+           EXAMMATE PROFILE VISUAL SYSTEM — ANALYTICS PAGE
+           Matched to the latest Student Profile UI
+        ========================================================== */
+        :root {
+            --page:#f7f8ff;
+            --surface:#ffffff;
+            --surface-soft:#f8f9ff;
+            --ink:#172344;
+            --muted:#7885a1;
+            --line:#e8edfa;
+            --primary:#416cf0;
+            --primary-soft:#edf2ff;
+            --green:#16a37c;
+            --green-soft:#eaf8f2;
+            --orange:#d59625;
+            --orange-soft:#fff4dc;
+            --red:#e15b68;
+            --red-soft:#fff0f1;
+            --shadow:0 7px 20px rgba(42,61,120,.055);
+        }
+        body {
+            background:#eef2ff;
+            color:var(--ink);
+            -webkit-font-smoothing:antialiased;
+        }
+        .app-shell {
+            background:#f7f8ff;
+            max-width:1120px;
+            padding-top:18px;
+        }
+        .topbar {
+            position:sticky;
+            top:0;
+            z-index:100;
+            margin:-18px -22px 20px;
+            padding:12px 22px;
+            min-height:68px;
+            background:rgba(255,255,255,.96);
+            border-bottom:1px solid rgba(220,228,250,.85);
+            box-shadow:0 8px 24px rgba(42,61,120,.06);
+            backdrop-filter:blur(16px);
+            -webkit-backdrop-filter:blur(16px);
+        }
+        .back-btn {
+            border:1px solid #e7ebf7;
+            border-radius:15px;
+            color:#53617f;
+            background:#f8f9ff;
+            box-shadow:0 3px 9px rgba(40,58,110,.04);
+        }
+        .brand-mark {
+            width:39px;
+            height:39px;
+            border-radius:13px;
+            background:linear-gradient(145deg,#4e8cff,#6554ed);
+            box-shadow:0 6px 14px rgba(72,104,236,.28);
+        }
+        .brand-copy strong {
+            color:#315fe0;
+            font-size:1.08rem;
+            font-weight:900;
+            letter-spacing:-.45px;
+        }
+        .brand-copy span {
+            color:#8a96b0;
+            font-size:.66rem;
+            font-weight:700;
+        }
+        .top-link {
+            color:#496ff0;
+            border:1px solid #e8edfa;
+            background:#f8f9ff;
+            border-radius:12px;
+        }
+        .hero {
+            border:1px solid rgba(255,255,255,.15);
+            border-radius:22px;
+            background:
+                radial-gradient(circle at 90% 0%,rgba(148,163,255,.25),transparent 34%),
+                linear-gradient(135deg,#172a60 0%,#273d83 53%,#4d4ac2 100%);
+            box-shadow:0 12px 28px rgba(55,76,180,.18);
+        }
+        .hero:after {
+            border-color:rgba(255,255,255,.12);
+            box-shadow:0 0 0 28px rgba(255,255,255,.035),0 0 0 58px rgba(255,255,255,.025);
+        }
+        .hero-icon {
+            border:1px solid rgba(255,255,255,.18);
+            background:rgba(255,255,255,.13);
+            border-radius:17px;
+        }
+        .select-wrap select {
+            border-color:rgba(255,255,255,.3);
+            border-radius:12px;
+            background:rgba(255,255,255,.13);
+        }
+        .section-title { color:#202e54; }
+        .section-sub { color:#8994ad; }
+        .section-kicker {
+            color:#4b6fe8;
+            background:#edf2ff;
+            border:1px solid #e4eafd;
+            border-radius:9px;
+        }
+        .metric,.card {
+            border-color:#e8edfa;
+            border-radius:17px;
+            box-shadow:0 5px 16px rgba(39,56,110,.045);
+        }
+        .metric { background:linear-gradient(145deg,#fff,#fbfcff); }
+        .metric-icon {
+            border-radius:12px;
+            background:linear-gradient(145deg,#edf3ff,#f1efff);
+            color:#4d70eb;
+        }
+        .card-title { color:#26365e; }
+        .card-desc,.metric-label,.metric small { color:#8390aa; }
+        .insight {
+            border-color:#e8edfa;
+            border-radius:13px;
+            background:linear-gradient(145deg,#fff,#fbfcff);
+        }
+        .insight-icon { border-radius:11px; }
+        .score-chip {
+            border-color:#e7ebf7;
+            border-radius:12px;
+            background:#f8f9ff;
+        }
+        .attempt {
+            border-color:#e5eaf7;
+            border-radius:15px;
+            background:linear-gradient(145deg,#fff 0%,#fbfcff 100%);
+            box-shadow:0 3px 10px rgba(35,54,105,.025);
+        }
+        .attempt-index {
+            border-radius:13px;
+            background:linear-gradient(145deg,#edf3ff,#f1efff);
+            color:#4d70eb;
+        }
+        .attempt-name { color:#26365e; }
+        .attempt-meta,.attempt-score span { color:#8995ad; }
+        .empty {
+            border-color:#dce3f3;
+            border-radius:14px;
+            background:#fbfcff;
+        }
+        .footer-note { color:#929db5; }
+        .bottom-nav {
+            position:fixed;
+            z-index:1000;
+            left:50%;
+            right:auto;
+            bottom:max(0px,env(safe-area-inset-bottom));
+            transform:translateX(-50%);
+            width:100%;
+            max-width:480px;
+            display:grid;
+            grid-template-columns:repeat(3,minmax(0,1fr));
+            align-items:center;
+            gap:8px;
+            padding:9px 13px calc(9px + env(safe-area-inset-bottom));
+            box-sizing:border-box;
+            border:1px solid rgba(225,231,249,.9);
+            border-bottom:0;
+            border-radius:20px 20px 0 0;
+            background:rgba(255,255,255,.96);
+            backdrop-filter:blur(18px);
+            -webkit-backdrop-filter:blur(18px);
+            box-shadow:0 -8px 28px rgba(38,55,110,.09);
+        }
+        .bottom-nav a {
+            min-height:55px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:3px;
+            border-radius:14px;
+            color:#8994aa;
+            text-decoration:none;
+            font-size:.66rem;
+            font-weight:750;
+            letter-spacing:.15px;
+        }
+        .bottom-nav a.active {
+            color:#416cf0;
+            background:linear-gradient(135deg,#edf3ff,#f4f1ff);
+        }
+        .bottom-nav i {
+            display:block;
+            margin:0;
+            font-size:1.15rem;
+        }
+        .app-shell { padding-bottom:125px; }
+        @media(max-width:760px) {
+            .app-shell { padding:0 13px 125px; }
+            .topbar {
+                margin:0 -13px 16px;
+                padding:9px 13px;
+                min-height:65px;
+            }
+            .hero { border-radius:19px; }
+            .metric { border-radius:15px; }
+            .card { border-radius:16px; }
+            .bottom-nav {
+                left:50%;
+                right:auto;
+                width:100%;
+                max-width:480px;
+            }
+        }
+        @media(min-width:481px) {
+            .bottom-nav { border-radius:20px 20px 0 0; }
+        }
+        @media(prefers-reduced-motion:reduce) {
+            *,*::before,*::after { transition-duration:.01ms!important; }
+        }
+
+    </style>
+</head>
+<body>
+    <main class="app-shell" id="app-shell">
+        <header class="topbar">
+            <button class="back-btn" onclick="history.length>1?history.back():location.href='/student_dashboard.html'" aria-label="Go back"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="brand-mark"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="brand-copy"><strong>ExamMate Analytics</strong><span>Your personal performance workspace</span></div>
+            <a class="top-link" href="/student_profile.html"><i class="fa-regular fa-user"></i> My Profile</a>
+        </header>
+
+        <section class="hero">
+            <div class="hero-top">
+                <div>
+                    <div class="eyebrow">Student performance centre</div>
+                    <h1 id="hero-title">My Analysis</h1>
+                    <p id="hero-description">Understand your progress, compare attempts and identify where you can improve.</p>
+                </div>
+                <div class="hero-icon"><i class="fa-solid fa-chart-simple"></i></div>
+            </div>
+            <div class="filter-row">
+                <label class="filter-label" for="exam-filter"><i class="fa-solid fa-filter"></i> ANALYSE</label>
+                <div class="select-wrap">
+                    <select id="exam-filter" aria-label="Select an exam">
+                        <option value="">All Exams · Overall performance</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <span class="filter-hint" id="filter-hint">Showing your complete exam history</span>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head">
+                <div><h2 class="section-title">Performance Overview</h2><p class="section-sub">A quick snapshot of your exam performance</p></div>
+                <span class="section-kicker" id="overview-tag">ALL EXAMS</span>
+            </div>
+            <div class="metrics">
+                <article class="metric"><div class="metric-top"><span class="metric-label">Total Attempts</span><span class="metric-icon"><i class="fa-solid fa-clipboard-check"></i></span></div><strong id="metric-attempts">—</strong><small id="metric-attempts-sub">Across all exams</small></article>
+                <article class="metric"><div class="metric-top"><span class="metric-label">Average Score</span><span class="metric-icon" style="color:var(--green);background:var(--green-soft)"><i class="fa-solid fa-chart-line"></i></span></div><strong id="metric-average">—</strong><small>Average percentage of available marks</small></article>
+                <article class="metric"><div class="metric-top"><span class="metric-label">Highest Score</span><span class="metric-icon" style="color:var(--orange);background:var(--orange-soft)"><i class="fa-solid fa-trophy"></i></span></div><strong id="metric-highest">—</strong><small id="metric-highest-sub">Best recorded attempt</small></article>
+                <article class="metric"><div class="metric-top"><span class="metric-label">Latest Score</span><span class="metric-icon" style="color:var(--red);background:var(--red-soft)"><i class="fa-solid fa-bolt"></i></span></div><strong id="metric-latest">—</strong><small id="metric-latest-sub">Most recent attempt</small></article>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head"><div><h2 class="section-title">Performance Trend</h2><p class="section-sub" id="trend-sub">Your score percentage across completed attempts</p></div><span class="section-kicker">SCORE TREND</span></div>
+            <div class="card"><div class="card-title">Attempt-by-attempt progress</div><p class="card-desc">Follow how your scores change over time.</p><div class="chart-area"><canvas id="trend-chart"></canvas></div></div>
+        </section>
+
+        <section class="section">
+            <div class="section-head"><div><h2 class="section-title">Performance Insights</h2><p class="section-sub">Highlights calculated from your available results</p></div></div>
+            <div class="grid-2">
+                <div class="card"><div class="card-title">What your results say</div><p class="card-desc">Positive signals and practical areas to focus on.</p><div class="insight-list" id="insight-list"><div class="empty">Loading insights…</div></div></div>
+                <div class="card"><div class="card-title">Best Performance</div><p class="card-desc">Your strongest recorded result in this filter.</p><div id="best-performance" class="insight-list"><div class="empty">Loading…</div></div><div style="height:12px"></div><div class="card-title">Needs Attention</div><p class="card-desc">A result that may deserve another review.</p><div id="needs-attention" class="insight-list"><div class="empty">Loading…</div></div></div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head"><div><h2 class="section-title">Exam Attempt History</h2><p class="section-sub">Every available attempt, including retakes</p></div><span class="section-kicker" id="history-count">0 RECORDS</span></div>
+            <div class="card"><div class="attempt-list" id="attempt-list"><div class="empty"><i class="fa-regular fa-folder-open"></i>Loading your attempts…</div></div></div>
+        </section>
+
+        <section class="section">
+            <div class="section-head"><div><h2 class="section-title">Detailed Score Breakdown</h2><p class="section-sub">How your recorded marks add up in this view</p></div></div>
+            <div class="grid-2">
+                <div class="card"><div class="card-title">Achieved vs. Remaining Marks</div><p class="card-desc">Combined marks from attempts with score data.</p><div class="chart-area doughnut"><canvas id="breakdown-chart"></canvas></div><div class="breakdown-legend"><div class="legend-row"><span class="legend-name"><i class="dot" style="background:#16a37a"></i>Achieved score</span><strong id="breakdown-achieved">—</strong></div><div class="legend-row"><span class="legend-name"><i class="dot" style="background:#e7ebf3"></i>Marks not achieved</span><strong id="breakdown-lost">—</strong></div></div></div>
+                <div class="card"><div class="card-title">Score Summary</div><p class="card-desc">Totals are based only on attempts with available marks.</p><div class="score-summary"><div class="score-chip"><span>Scored Marks</span><strong id="breakdown-total-score">—</strong></div><div class="score-chip"><span>Maximum Marks</span><strong id="breakdown-total-possible">—</strong></div><div class="score-chip"><span>Analysed Attempts</span><strong id="breakdown-valid-attempts">—</strong></div><div class="score-chip"><span>Missing Score Data</span><strong id="breakdown-missing">—</strong></div></div><div class="insight neutral" style="margin-top:13px"><div class="insight-icon"><i class="fa-solid fa-circle-info"></i></div><div><strong>About this breakdown</strong><span>Older attempts may appear in history even when their original score was not preserved. Negative marking can also make the achieved score lower than zero.</span></div></div></div>
+            </div>
+        </section>
+        <p class="footer-note">ExamMate Analytics · Times are shown in Indian Standard Time (IST).<br>Score percentage is not the same as question accuracy.</p>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Main navigation"><a href="/student_dashboard.html"><i class="fa-solid fa-house"></i><span>Home</span></a><a class="active" href="/student_analytics.html" aria-current="page"><i class="fa-solid fa-chart-column"></i><span>Analysis</span></a><a href="/student_profile.html"><i class="fa-regular fa-user"></i><span>Profile</span></a></nav>
+
+    <script>
+        let trendChart = null;
+        let breakdownChart = null;
+        let allExamOptions = [];
+        let activeExamCode = '';
+        let currentAttempts = [];
+
+        const $ = (id) => document.getElementById(id);
+        const number = (value, digits = 1) => Number(value || 0).toLocaleString('en-IN', {maximumFractionDigits:digits});
+        const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        const percentText = (value) => value == null || !Number.isFinite(Number(value)) ? 'N/A' : `${number(value)}%`;
+        const scoreClass = (value) => value >= 75 ? 'score-good' : value >= 45 ? 'score-mid' : 'score-low';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(location.search);
+            activeExamCode = params.get('exam_code') || '';
+            $('exam-filter').addEventListener('change', (event) => selectExam(event.target.value, true));
+            loadAnalytics();
+        });
+
+        async function loadAnalytics() {
+            $('app-shell').classList.add('loading');
+            try {
+                const url = '/api/get-student-analytics' + (activeExamCode ? `?exam_code=${encodeURIComponent(activeExamCode)}` : '');
+                const response = await fetch(url, {method:'GET', credentials:'same-origin', headers:{'Accept':'application/json'}});
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.error || 'Unable to load analytics.');
+                allExamOptions = data.exam_options || [];
+                currentAttempts = data.attempts || [];
+                renderFilter();
+                renderDashboard(currentAttempts);
+            } catch (error) {
+                console.error('Analytics loading error:', error);
+                $('attempt-list').innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i>${escapeHtml(error.message)}<br><br>Please sign in again or try refreshing this page.</div>`;
+                $('insight-list').innerHTML = '<div class="empty">Insights are unavailable.</div>';
+            } finally {
+                $('app-shell').classList.remove('loading');
+            }
+        }
+
+        function renderFilter() {
+            const select = $('exam-filter');
+            const options = ['<option value="">All Exams · Overall performance</option>'];
+            allExamOptions.forEach(exam => {
+                const latest = exam.latest_percentage == null ? 'Score unavailable' : `Latest ${percentText(exam.latest_percentage)}`;
+                options.push(`<option value="${escapeHtml(exam.exam_code)}">${escapeHtml(exam.exam_name)} · ${exam.attempt_count} attempt${exam.attempt_count === 1 ? '' : 's'} · ${latest}</option>`);
+            });
+            select.innerHTML = options.join('');
+            select.value = activeExamCode;
+            const selected = allExamOptions.find(exam => exam.exam_code === activeExamCode);
+            $('hero-title').textContent = selected ? selected.exam_name : 'My Analysis';
+            $('hero-description').textContent = selected ? 'A focused view of every available attempt for this exam.' : 'Understand your progress, compare attempts and identify where you can improve.';
+            $('overview-tag').textContent = selected ? 'SINGLE EXAM' : 'ALL EXAMS';
+            $('filter-hint').textContent = selected ? `${selected.attempt_count} recorded attempt${selected.attempt_count === 1 ? '' : 's'} for this exam` : 'Showing your complete exam history';
+            $('trend-sub').textContent = selected ? 'Score percentage across attempts of this exam' : 'Score percentage across all completed attempts';
+        }
+
+        function selectExam(code, updateUrl) {
+            activeExamCode = code || '';
+            if (updateUrl) {
+                const url = new URL(location.href);
+                if (activeExamCode) url.searchParams.set('exam_code', activeExamCode);
+                else url.searchParams.delete('exam_code');
+                history.pushState({exam_code:activeExamCode}, '', url);
+            }
+            loadAnalytics();
+        }
+        window.addEventListener('popstate', () => {
+            activeExamCode = new URLSearchParams(location.search).get('exam_code') || '';
+            loadAnalytics();
+        });
+
+        function renderDashboard(attempts) {
+            const valid = attempts.filter(item => item.score != null && item.total != null && Number(item.total) > 0 && item.percentage != null);
+            const percentages = valid.map(item => Number(item.percentage));
+            const average = percentages.length ? percentages.reduce((a,b)=>a+b,0) / percentages.length : null;
+            const highest = valid.length ? valid.reduce((a,b)=>Number(a.percentage) >= Number(b.percentage) ? a : b) : null;
+            const latest = attempts.find(item => item.percentage != null) || null;
+            const sumScore = valid.reduce((sum,item)=>sum + Number(item.score),0);
+            const sumTotal = valid.reduce((sum,item)=>sum + Number(item.total),0);
+            const missing = attempts.length - valid.length;
+
+            $('metric-attempts').textContent = attempts.length;
+            $('metric-attempts-sub').textContent = activeExamCode ? 'Attempts for selected exam' : 'Across all exams';
+            $('metric-average').textContent = average == null ? '—' : percentText(average);
+            $('metric-highest').textContent = highest ? percentText(highest.percentage) : '—';
+            $('metric-highest-sub').textContent = highest ? `${number(highest.score)}/${number(highest.total)} marks` : 'No score data available';
+            $('metric-latest').textContent = latest ? percentText(latest.percentage) : '—';
+            $('metric-latest-sub').textContent = latest ? `${number(latest.score)}/${number(latest.total)} marks · ${formatDate(latest.date)}` : 'No score data available';
+
+            renderTrend(valid);
+            renderInsights(attempts, valid, average, highest, latest);
+            renderAttempts(attempts);
+            renderBreakdown(sumScore, sumTotal, valid.length, missing);
+        }
+
+        function formatDate(value) {
+            if (!value) return 'Date unavailable';
+            const d = new Date(`${value}T00:00:00+05:30`);
+            return Number.isNaN(d.getTime()) ? escapeHtml(value) : d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',timeZone:'Asia/Kolkata'});
+        }
+        function formatDateTime(value) {
+            if (!value) return 'Date unavailable';
+            const normalized = String(value).replace(' ', 'T');
+            const d = new Date(normalized.includes('+') || normalized.endsWith('Z') ? normalized : `${normalized}+05:30`);
+            return Number.isNaN(d.getTime()) ? escapeHtml(value) : d.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+        }
+
+        function renderTrend(valid) {
+            let canvas = $('trend-chart');
+            const chartArea = document.querySelector('.chart-area:not(.doughnut)');
+            if (!canvas) {
+                chartArea.innerHTML = '<canvas id="trend-chart"></canvas>';
+                canvas = $('trend-chart');
+            }
+            if (trendChart) { trendChart.destroy(); trendChart = null; }
+            if (!valid.length) {
+                canvas.style.display = 'none';
+                chartArea.querySelector('.empty')?.remove();
+                chartArea.insertAdjacentHTML('beforeend', '<div class="empty"><i class="fa-solid fa-chart-line"></i>Not enough score data to draw a performance trend.</div>');
+                return;
+            }
+            canvas.style.display = 'block';
+            chartArea.querySelector('.empty')?.remove();
+            const chronological = [...valid].reverse();
+            trendChart = new Chart(canvas.getContext('2d'), {
+                type:'line',
+                data:{labels:chronological.map((item,index)=>`Attempt ${chronological.length-index}`),datasets:[{label:'Score %',data:chronological.map(item=>item.percentage),borderColor:'#536bed',backgroundColor:'rgba(83,107,237,.12)',fill:true,tension:.35,borderWidth:3,pointRadius:4,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2,pointBorderColor:'#536bed'}]},
+                options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` Score: ${number(ctx.parsed.y)}%`}}},scales:{y:{min:0,max:100,grid:{color:'#edf0f6'},ticks:{callback:value=>`${value}%`,font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10},maxRotation:0}}}}
+            });
+        }
+
+        function renderInsights(attempts, valid, average, highest, latest) {
+            const list = $('insight-list');
+            const insights = [];
+            if (!attempts.length) {
+                list.innerHTML = '<div class="empty"><i class="fa-regular fa-folder-open"></i>No exam attempts found for this view.</div>';
+                $('best-performance').innerHTML = '<div class="empty">No result available yet.</div>';
+                $('needs-attention').innerHTML = '<div class="empty">No result available yet.</div>';
+                return;
+            }
+            if (average != null) insights.push({type:'neutral',icon:'fa-chart-line',title:`Average score: ${percentText(average)}`,text:`Calculated from ${valid.length} attempt${valid.length===1?'':'s'} with available score data.`});
+            if (latest && valid.length > 1) {
+                const previous = valid[1];
+                const diff = Number(latest.percentage) - Number(previous.percentage);
+                insights.push({type:diff>=0?'':'warning',icon:diff>=0?'fa-arrow-trend-up':'fa-arrow-trend-down',title:diff>=0?'Your latest score improved': 'Your latest score decreased',text:`${Math.abs(diff).toFixed(1)} percentage points compared with the previous scored attempt.`});
+            } else if (valid.length === 1) insights.push({type:'neutral',icon:'fa-lightbulb',title:'Your first recorded score',text:'Complete another attempt to see how your performance changes over time.'});
+            if (attempts.some(item=>item.percentage==null)) insights.push({type:'warning',icon:'fa-circle-info',title:'Some older scores are unavailable',text:'These attempts are still counted in history, but cannot be included in score averages.'});
+            list.innerHTML = insights.map(item=>`<div class="insight ${item.type}"><div class="insight-icon"><i class="fa-solid ${item.icon}"></i></div><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.text)}</span></div></div>`).join('');
+
+            if (highest) $('best-performance').innerHTML = `<div class="insight"><div class="insight-icon"><i class="fa-solid fa-trophy"></i></div><div><strong class="${scoreClass(highest.percentage)}">${percentText(highest.percentage)} · ${number(highest.score)}/${number(highest.total)}</strong><span>${escapeHtml(highest.exam_name)} · ${formatDate(highest.date)}</span></div></div>`;
+            else $('best-performance').innerHTML = '<div class="empty">No scored attempt available.</div>';
+
+            const lowest = valid.length ? valid.reduce((a,b)=>Number(a.percentage)<=Number(b.percentage)?a:b) : null;
+            if (lowest && valid.length > 1) $('needs-attention').innerHTML = `<div class="insight warning"><div class="insight-icon"><i class="fa-solid fa-bullseye"></i></div><div><strong class="${scoreClass(lowest.percentage)}">${percentText(lowest.percentage)} · Review this attempt</strong><span>${escapeHtml(lowest.exam_name)} · ${formatDate(lowest.date)}. Revisit the questions and topics you found difficult.</span></div></div>`;
+            else $('needs-attention').innerHTML = '<div class="insight neutral"><div class="insight-icon"><i class="fa-solid fa-seedling"></i></div><div><strong>Keep building your history</strong><span>More scored attempts will help identify consistent strengths and improvement areas.</span></div></div>';
+        }
+
+        function renderAttempts(attempts) {
+            $('history-count').textContent = `${attempts.length} RECORD${attempts.length===1?'':'S'}`;
+            if (!attempts.length) {
+                $('attempt-list').innerHTML = '<div class="empty"><i class="fa-regular fa-folder-open"></i>No exam attempts found. Complete an exam to start building your analysis.</div>';
+                return;
+            }
+            $('attempt-list').innerHTML = attempts.map((item,index)=>{
+                const hasScore = item.score != null && item.total != null;
+                const pct = item.percentage;
+                const title = activeExamCode ? `Attempt ${attempts.length-index}` : item.exam_name;
+                return `<article class="attempt"><div class="attempt-index">${attempts.length-index}</div><div><div class="attempt-name">${escapeHtml(title)}</div><div class="attempt-meta">${activeExamCode ? escapeHtml(item.exam_name)+' · ' : ''}${formatDateTime(item.completed_at)}</div></div><div class="attempt-score">${hasScore?`<strong class="${scoreClass(pct)}">${number(item.score)}/${number(item.total)}</strong><span>${percentText(pct)}</span>`:'<strong>—</strong><span>Score unavailable</span>'}</div></article>`;
+            }).join('');
+        }
+
+        function renderBreakdown(achieved, possible, validCount, missingCount) {
+            const lost = possible - achieved;
+            $('breakdown-achieved').textContent = number(achieved,2);
+            $('breakdown-lost').textContent = number(lost,2);
+            $('breakdown-total-score').textContent = number(achieved,2);
+            $('breakdown-total-possible').textContent = number(possible,2);
+            $('breakdown-valid-attempts').textContent = validCount;
+            $('breakdown-missing').textContent = missingCount;
+            let canvas = $('breakdown-chart');
+            const chartArea = document.querySelector('.chart-area.doughnut');
+            if (!canvas) {
+                chartArea.innerHTML = '<canvas id="breakdown-chart"></canvas>';
+                canvas = $('breakdown-chart');
+            }
+            if (breakdownChart) { breakdownChart.destroy(); breakdownChart = null; }
+            if (!validCount || possible <= 0) {
+                canvas.style.display = 'none';
+                chartArea.querySelector('.empty')?.remove();
+                chartArea.insertAdjacentHTML('beforeend', '<div class="empty"><i class="fa-solid fa-chart-pie"></i>Score breakdown is unavailable.</div>');
+                return;
+            }
+            canvas.style.display = 'block';
+            chartArea.querySelector('.empty')?.remove();
+            breakdownChart = new Chart(canvas.getContext('2d'), {type:'doughnut',data:{labels:['Achieved score','Marks not achieved'],datasets:[{data:[Math.max(0,achieved),Math.max(0,lost)],backgroundColor:['#16a37a','#e7ebf3'],borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${number(ctx.raw,2)}`}}}}});
+        }
+    </script>
+</body>
+</html>
