@@ -1671,6 +1671,40 @@
         .streak-journey-section .badge-group { margin-top:0; }
         @media(max-width:360px) { .exam-card-metrics { gap:4px; } .exam-metric strong { font-size:.72rem; } .exam-metric span { font-size:.51rem; } }
 
+		.created-exam-actions {
+    	    display: flex;
+        	gap: 10px;
+      	  margin-top: 14px;
+    	}
+
+    	.created-action-btn {
+       	 flex: 1;
+       	 border: none;
+       	 border-radius: 10px;
+      	  padding: 10px 12px;
+       	 font-size: 13px;
+        	font-weight: 700;
+      	  cursor: pointer;
+        	display: flex;
+        	align-items: center;
+       	 justify-content: center;
+       	 gap: 7px;
+    	}
+
+    	.created-action-btn.edit {
+      	  background: #eef2ff;
+       	 color: #4f46e5;
+    	}
+
+    	.created-action-btn.delete {
+       	 background: #fff1f2;
+       	 color: #e11d48;
+    	}
+
+    	.created-action-btn:active {
+       	 transform: scale(.97);
+    	}
+		
 </style>
 </head>
 
@@ -3475,6 +3509,32 @@
                     <span><i class="far fa-calendar-alt"></i> ${mode === "analysis" ? "Published" : "Exam date"}: ${escapeHtml(postedDate)}</span>
                     <span class="exam-open-hint">${mode === "analysis" ? "View analysis" : "Open exam"} <i class="fas fa-arrow-right"></i></span>
                 </div>
+				
+				${mode === "analysis" ? `
+                <div class="created-exam-actions">
+
+                    <button
+                        type="button"
+                        class="created-action-btn edit"
+                        onclick="event.stopPropagation(); openExamForEdit('${escapeAttribute(code)}')">
+
+                        <i class="fas fa-pen"></i>
+                        Edit
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="created-action-btn delete"
+                        onclick="event.stopPropagation(); deleteCreatedExam('${escapeAttribute(code)}')">
+
+                        <i class="fas fa-trash"></i>
+                        Delete
+
+                    </button>
+
+                </div>
+            ` : ""}
             </article>`;
     }
 
@@ -5144,24 +5204,17 @@
     function openExamAnalysis(code) {
 
         if (!code) {
-
-            alert(
-                "Exam code could not be found."
-            );
-
+            alert("Exam code could not be found.");
             return;
-
         }
 
-
         window.location.href =
-            `/student_analytics.html?exam_code=${encodeURIComponent(code)}`;
-
+            `/teacher_analytics.html?exam_code=${encodeURIComponent(code)}`;
     }
 
 
     async function deleteCreatedExam(
-        code
+            code
     ) {
 
         if (!code) {
