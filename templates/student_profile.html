@@ -3388,7 +3388,7 @@
                 </div>` : ""}
                 <div class="exam-card-footer">
                     <span><i class="far fa-calendar-alt"></i> ${mode === "analysis" ? "Published" : "Exam date"}: ${escapeHtml(postedDate)}</span>
-                    <span class="exam-open-hint">${mode === "analysis" ? "View analysis" : (mode === "result" ? "View result" : "Open exam")} <i class="fas fa-arrow-right"></i></span>
+                    <span class="exam-open-hint">${mode === "analysis" ? "View analysis" : (mode === "result" ? "View performance" : "Open exam")}<i class="fas fa-arrow-right"></i></span>
                 </div>
 				
 				${mode === "analysis" ? `
@@ -3421,17 +3421,18 @@
 
     function handleProfileExamCardClick(code, action) {
         if (!code) return;
+
         if (action === "analysis") {
             openExamAnalysis(code);
+
         } else if (action === "result") {
-            const historyItem = globalHistory.find(item => String(item.exam_code || item.code || "") === String(code));
-            const exam = allSocialExams.find(item => String(item.code || item.exam_code || "") === String(code));
-            showDetailedResult(code, (historyItem && historyItem.exam_name) || (exam && (exam.name || exam.exam_name)) || "Exam");
+            window.location.href =
+                `/student_analytics.html?exam_code=${encodeURIComponent(code)}`;
+
         } else {
             attemptExam(code);
         }
     }
-
 
     /* =========================================================
        ATTEMPTED EXAMS
