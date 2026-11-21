@@ -217,9 +217,9 @@ def enforce_route_permissions():
             return jsonify({"success": False, "error": "Administrator access required."}), 403
 
     teacher_paths = (
-        "/api/create-exam", "/api/teacher-dashboard", "/api/teacher-analysis",
-        "/api/teacher-full-analytics", "/api/teacher-delete-exam",
-        "/api/teacher-update-exam", "/api/teacher-pending-evaluations",
+        "/api/create-exam",
+        "/api/teacher-dashboard",
+        "/api/teacher-pending-evaluations",
         "/api/teacher-submit-evaluation",
     )
     if path in teacher_paths:
@@ -231,6 +231,79 @@ def enforce_route_permissions():
         if supplied_email and supplied_email != _normalise_email(user.get("email")) and not _is_admin():
             return jsonify({"success": False, "error": "You cannot access another account."}), 403
 
+    # Analytics and exam management:
+    # Both Students and Teachers can access their OWN created exams.
+    owner_protected_paths = {
+        "/api/teacher-analysis",
+        "/api/teacher-delete-exam",
+        "/api/teacher-update-exam",
+    }
+
+    if path in owner_protected_paths:
+        if not user:
+            return jsonify({
+                "success": False,
+                "error": "Login required."
+            }), 401
+
+        exam_code = data.get("exam_code")
+
+        if not exam_code:
+            return jsonify({
+                "success": False,
+                "error": "Exam code is required."
+            }), 400
+
+        try:
+            conn, db_type = get_db_connection()
+            cursor = conn.cursor()
+
+            ph = "%s" if db_type == "postgres" else "?"
+
+            cursor.execute(
+                f"""
+                SELECT teacher_email
+                FROM exams
+                WHERE exam_code = {ph}
+                """,
+                (exam_code,)
+            )
+
+            exam = cursor.fetchone()
+            conn.close()
+
+            if not exam:
+                return jsonify({
+                    "success": False,
+                    "error": "Exam not found."
+                }), 404
+
+            owner_email = (
+                exam["teacher_email"]
+                if isinstance(exam, dict)
+                else exam[0]
+            )
+
+            current_email = _normalise_email(
+                user.get("email")
+            )
+
+            if _normalise_email(owner_email) != current_email:
+                return jsonify({
+                    "success": False,
+                    "error": "You do not own this exam."
+                }), 403
+
+        except Exception:
+            app.logger.exception(
+                "Exam ownership verification failed"
+            )
+
+            return jsonify({
+                "success": False,
+                "error": "Could not verify exam ownership."
+            }), 500
+            
         # A teacher may only manage exams that belong to their own account.
         exam_code = data.get("exam_code")
         if exam_code and not _is_admin():
@@ -2355,31 +2428,193 @@ def get_teacher_dashboard():
 
 @app.route('/api/teacher-analysis', methods=['POST'])
 def get_teacher_analysis():
-    data = request.get_json()
-    exam_code = data.get('exam_code')
+
+    data = request.get_json(silent=True) or {}
+    exam_code = data.get("exam_code")
+
+    if not exam_code:
+        return jsonify({
+            "success": False,
+            "error": "Exam code is required."
+        }), 400
+
+    conn = None
+
     try:
         conn, db_type = get_db_connection()
         cursor = conn.cursor()
-        ph = "%s" if db_type == 'postgres' else "?"
-        cursor.execute(f"SELECT users.name, results.student_email, results.score, results.total_questions FROM results JOIN users ON results.student_email = users.email WHERE results.exam_code = {ph}", (exam_code,))
-        rows = cursor.fetchall()
-        conn.close()
-        if not rows: return jsonify({"success": False, "error": "No students have taken this exam yet."})
-        total_students = len(rows)
-        total_q = rows[0]["total_questions"]
-        student_data = [{"name": r["name"], "email": r["student_email"], "score": float(r["score"]), "perf": round((float(r["score"])/total_q)*100, 2)} for r in rows]
-        avg_score = round(sum([r['score'] for r in student_data]) / total_students, 2)
-        sorted_students = sorted(student_data, key=lambda x: x['score'], reverse=True)
-        top_students = sorted_students[:10]
-        bottom_students = sorted_students[-10:] if len(sorted_students) > 10 else sorted_students[::-1]
-        chart_data = [0] * (total_q + 1)
-        for s in student_data:
-            int_score = int(max(0, s['score']))
-            if int_score <= total_q: chart_data[int_score] += 1
-        labels = [str(i) for i in range(total_q + 1)]
-        return jsonify({ "success": True, "total_students": total_students, "avg_score": avg_score, "total_q": total_q, "top": top_students, "bottom": bottom_students, "all_students": sorted_students, "chartLabels": labels, "chartData": chart_data })
-    except Exception as e: return jsonify({"success": False, "error": "Database error"}), 500
 
+        ph = "%s" if db_type == "postgres" else "?"
+
+        # Exam information
+        cursor.execute(
+            f"""
+            SELECT exam_code, exam_name, teacher_email, created_at
+            FROM exams
+            WHERE exam_code = {ph}
+            """,
+            (exam_code,)
+        )
+
+        exam = cursor.fetchone()
+
+        if not exam:
+            return jsonify({
+                "success": False,
+                "error": "Exam not found."
+            }), 404
+
+        exam_name = exam["exam_name"]
+        created_at = exam["created_at"]
+
+        # Total questions
+        cursor.execute(
+            f"""
+            SELECT COUNT(*) AS total
+            FROM questions
+            WHERE exam_code = {ph}
+            """,
+            (exam_code,)
+        )
+
+        question_row = cursor.fetchone()
+
+        total_questions = (
+            question_row["total"]
+            if isinstance(question_row, dict)
+            else question_row[0]
+        ) or 0
+
+        # Student attempts
+        cursor.execute(
+            f"""
+            SELECT
+                r.student_email,
+                COALESCE(u.name, r.student_email) AS student_name,
+                r.score,
+                r.total_questions,
+                r.date_taken
+            FROM results r
+            LEFT JOIN users u
+                ON r.student_email = u.email
+            WHERE r.exam_code = {ph}
+            ORDER BY r.score DESC
+            """,
+            (exam_code,)
+        )
+
+        rows = cursor.fetchall()
+
+        students = []
+
+        for row in rows:
+
+            if isinstance(row, dict):
+                name = row["student_name"]
+                email = row["student_email"]
+                score = float(row["score"] or 0)
+                total = int(row["total_questions"] or total_questions)
+                date_taken = row["date_taken"]
+            else:
+                name = row[1]
+                email = row[0]
+                score = float(row[2] or 0)
+                total = int(row[3] or total_questions)
+                date_taken = row[4]
+
+            percentage = (
+                round((score / total) * 100, 2)
+                if total > 0 else 0
+            )
+
+            students.append({
+                "name": name or email,
+                "email": email,
+                "score": score,
+                "total_questions": total,
+                "perf": percentage,
+                "date_taken": str(date_taken or "")
+            })
+
+        total_attempts = len(students)
+
+        unique_students = len({
+            s["email"] for s in students
+        })
+
+        percentages = [
+            s["perf"] for s in students
+        ]
+
+        average = (
+            round(sum(percentages) / len(percentages), 2)
+            if percentages else 0
+        )
+
+        highest = max(percentages) if percentages else 0
+        lowest = min(percentages) if percentages else 0
+
+        # Score distribution
+        score_distribution = {}
+
+        for student in students:
+            score = int(student["score"])
+            score_distribution[score] = (
+                score_distribution.get(score, 0) + 1
+            )
+
+        chart_labels = sorted(score_distribution.keys())
+
+        chart_data = [
+            score_distribution[score]
+            for score in chart_labels
+        ]
+
+        return jsonify({
+            "success": True,
+
+            "exam": {
+                "code": exam_code,
+                "name": exam_name,
+                "created_at": str(created_at or "")
+            },
+
+            "overview": {
+                "students": unique_students,
+                "attempts": total_attempts,
+                "average": average,
+                "highest": highest,
+                "lowest": lowest,
+                "total_questions": total_questions
+            },
+
+            "total_q": total_questions,
+
+            "all_students": students,
+
+            "top": students[:10],
+
+            "bottom": list(reversed(students[-10:])),
+
+            "chartLabels": chart_labels,
+
+            "chartData": chart_data
+        })
+
+    except Exception:
+        app.logger.exception(
+            "Teacher analytics error"
+        )
+
+        return jsonify({
+            "success": False,
+            "error": "Could not load exam analytics."
+        }), 500
+
+    finally:
+        if conn:
+            conn.close()
+            
 @app.route('/api/teacher-full-analytics', methods=['POST'])
 def teacher_full_analytics():
     data = request.get_json()
