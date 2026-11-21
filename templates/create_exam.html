@@ -1,149 +1,417 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMate | Create Custom Exam</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <script>
-        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
-    </script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExamMate | Create Exam</title>
 
-    <style>
-        :root { color-scheme: light; }
-        body { 
-            background-color: #f3f4f6; color: #1a1a1a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; display: flex; justify-content: center; 
-            overscroll-behavior-y: none; /* Pull-to-refresh Block */
-        }
-        .container { width: 100%; max-width: 500px; background-color: #ffffff; min-height: 100vh; padding: 1.5rem 1.5rem 5rem 1.5rem; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; }
-        
-        .back-btn { background: transparent; color: #10b981; border: none; font-weight: bold; font-size: 14px; cursor: pointer; padding: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
-        h1 { font-size: 24px; color: #1a1a1a; margin-top: 0; margin-bottom: 20px; }
-        
-        .card-basic { background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .card-ai { background-color: #faf5ff; border: 2px dashed #a855f7; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        h3 { margin-top: 0; font-size: 16px; color: #1a1a1a; margin-bottom: 15px;}
-        .ai-title { color: #7e22ce; font-size: 1.1rem; text-align: center; margin-bottom: 15px;}
-        
-        .input-group { margin-bottom: 12px; }
-        .input-group label { display: block; color: #333333; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
-        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 10px; background-color: #ffffff; color: #1a1a1a; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; outline: none; font-family: inherit;}
-        .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: #3b82f6; }
-        
-        .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: opacity 0.15s ease; box-sizing: border-box; }
-        .btn:active { transform: scale(0.98); }
-        .btn-add { background-color: #8b5cf6; box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3); margin-top: 5px; }
-        .btn-publish { background: linear-gradient(135deg, #10b981, #059669); padding: 15px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin-top: 20px;}
-        
-        .lang-toggle { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center;}
-        .lang-btn { padding: 4px 15px; font-size: 0.8rem; border-radius: 20px; border: 1px solid #8b5cf6; background: #ffffff; color: #8b5cf6; cursor: pointer; font-weight: bold; transition: background 0.15s;}
-        .lang-btn.active { background: #8b5cf6; color: #ffffff; }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-        .prompt-box { background: #e0e7ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #1e3a8a; }
-        .prompt-code { background: #ffffff; border: 1px dashed #93c5fd; padding: 12px; margin-top: 10px; border-radius: 6px; position: relative; max-height: 130px; overflow-y: auto; }
-        .prompt-code code { display: block; color: #334155; font-size: 0.8rem; white-space: pre-wrap; margin-top: 25px; font-family: inherit;}
-        .copy-btn { position: absolute; top: 8px; right: 8px; background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
+<script>
+window.MathJax = {
+    tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 
-        .manual-guide { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #475569;}
-        .manual-guide-title { font-weight: bold; color: #1e293b; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;}
+<style>
+:root {
+    --primary: #5146e5;
+    --primary-dark: #4338ca;
+    --purple: #7c3aed;
+    --bg: #f5f6fc;
+    --text: #172033;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --green: #059669;
+    --red: #dc2626;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
 
-        .preview-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-top: 15px;}
-        .q-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 10px; margin-bottom: 15px; transform: translateZ(0); }
-        .math-preview { background: #ffffff; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.95rem; overflow-x: auto;}
-        .q-card textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px; font-family: inherit; font-size: 0.9rem; resize: vertical;}
-        .q-card input { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;}
-        
-        .hidden { display: none !important; }
-    </style>
+.page {
+    width: 100%;
+    max-width: 850px;
+    margin: auto;
+    padding: 22px 18px 60px;
+}
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+.back-btn {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+.mode-label {
+    color: var(--primary);
+    background: #eeedff;
+    padding: 7px 12px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.header { margin-bottom: 22px; }
+.header h1 {
+    font-size: clamp(24px, 5vw, 32px);
+    margin: 0 0 7px;
+}
+.header p { margin: 0; color: var(--muted); font-size: 14px; }
+
+.card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 5px 18px rgba(15,23,42,.035);
+}
+.card-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px;
+    font-size: 17px;
+}
+.card-heading i { color: var(--primary); }
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 14px;
+}
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+.field input, .field select, .field textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    padding: 12px;
+    outline: none;
+    color: var(--text);
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(81,70,229,.10);
+}
+.field textarea { resize: vertical; }
+
+.ai-card {
+    background: linear-gradient(135deg,#f5f3ff,#eef2ff);
+    border: 1px solid #ddd6fe;
+}
+.ai-info {
+    color: #4c1d95;
+    background: rgba(255,255,255,.75);
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 15px;
+}
+.language-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.language-btn {
+    border: 1px solid #c4b5fd;
+    color: #6d28d9;
+    background: white;
+    border-radius: 25px;
+    padding: 7px 15px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.language-btn.active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: white;
+}
+.prompt-area {
+    background: white;
+    border: 1px dashed #a78bfa;
+    border-radius: 10px;
+    padding: 13px;
+    margin-bottom: 14px;
+}
+.prompt-area code {
+    display: block;
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #334155;
+    max-height: 145px;
+    overflow: auto;
+    padding-top: 28px;
+}
+.copy-btn {
+    float: right;
+    border: 0;
+    background: var(--primary);
+    color: white;
+    border-radius: 7px;
+    padding: 7px 10px;
+    font-size: 12px;
+}
+.btn {
+    border: 0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-weight: 700;
+    transition: .2s;
+}
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-purple { background: var(--purple); color: white; }
+.btn-light {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid var(--border);
+}
+.btn-danger {
+    background: #fff1f2;
+    color: var(--red);
+    border: 1px solid #fecdd3;
+}
+.btn-block { width: 100%; }
+
+.preview-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.question-count {
+    color: var(--green);
+    font-weight: 800;
+    font-size: 14px;
+}
+.question-card {
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 16px;
+    margin-top: 13px;
+    background: #fbfcff;
+}
+.question-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 13px;
+}
+.question-number { font-weight: 800; color: var(--primary); }
+.type-badge {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #e0e7ff;
+    color: #3730a3;
+}
+.question-card textarea {
+    width: 100%;
+    min-height: 75px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px;
+    margin: 8px 0 12px;
+    resize: vertical;
+}
+.option-grid {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 9px;
+    margin: 12px 0;
+}
+.option-field {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.option-field strong { font-size: 13px; }
+.option-field input {
+    min-width: 0;
+    width: 100%;
+    padding: 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+.question-bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+.question-bottom label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.question-bottom input, .question-bottom select {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: white;
+}
+.empty-state {
+    padding: 25px 15px;
+    text-align: center;
+    color: var(--muted);
+    background: #f8fafc;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+}
+.publish-area { margin-top: 22px; }
+.publish-btn {
+    background: linear-gradient(135deg,#5146e5,#7c3aed);
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    box-shadow: 0 7px 18px rgba(81,70,229,.2);
+}
+.hidden { display: none !important; }
+
+@media(max-width:600px) {
+    .page { padding: 15px 12px 45px; }
+    .card { padding: 16px; border-radius: 13px; }
+    .grid { grid-template-columns: 1fr; gap: 0; }
+    .option-grid { grid-template-columns: 1fr; }
+    .question-bottom { grid-template-columns: 1fr 1fr; }
+}
+</style>
 </head>
+
 <body>
+<div class="page">
 
-    <div class="container">
-        <button class="back-btn" onclick="handleBackNavigation()">&nbsp; ‹ &nbsp;</button>
+    <div class="topbar">
+        <button class="back-btn" onclick="handleBackNavigation()">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+        <span class="mode-label" id="mode-label">CREATE MODE</span>
+    </div>
 
-        <h1>Create Custom Exam</h1>
+    <div class="header">
+        <h1 id="page-title">Create Custom Exam</h1>
+        <p id="page-subtitle">Create your exam and add questions to publish it.</p>
+    </div>
 
-        <div class="card-basic">
-            <div class="input-group">
-                <label>Exam Name</label>
-                <input type="text" id="exam-name" placeholder="Physics Sem 1">
+    <!-- EXAM DETAILS -->
+    <section class="card">
+        <h3 class="card-heading">
+            <i class="fas fa-file-circle-plus"></i> Exam Information
+        </h3>
+
+        <div class="field">
+            <label for="exam-name">Exam Name</label>
+            <input id="exam-name" type="text" placeholder="Example: Physics Semester 1">
+        </div>
+
+        <div class="grid">
+            <div class="field">
+                <label for="exam-class">Class / Batch</label>
+                <input id="exam-class" type="text" placeholder="Class 12 / JEE">
             </div>
-            
-            <div class="grid-2x2">
-                <div class="input-group">
-                    <label>Class/Batch</label>
-                    <input type="text" id="exam-class" placeholder="e.g. Class 11, JEE">
-                </div>
-                <div class="input-group">
-                    <label>Subject</label>
-                    <input type="text" id="exam-subject" placeholder="e.g. Physics">
-                </div>
-            </div>
-
-            <div class="grid-2x2" style="margin-top: 10px;">
-                <div class="input-group">
-                    <label>Unique Exam Code</label>
-                    <input type="text" id="exam-code" placeholder="PHY-101" style="text-transform: uppercase;">
-                </div>
-                <div class="input-group">
-                    <label>Timer (Mins)</label>
-                    <input type="number" id="exam-timer" min="1" max="180" value="30">
-                </div>
-            </div>
-            
-            <div class="input-group" style="margin-top: 10px;">
-                <label>Negative Marks (Per Wrong Answer)</label>
-                <select id="exam-negative">
-                    <option value="0">No Negative Marking (0)</option>
-                    <option value="0.25">-0.25 Marks</option>
-                    <option value="0.33">-0.33 Marks</option>
-                    <option value="0.5">-0.50 Marks</option>
-                    <option value="1">-1.00 Mark</option>
-                </select>
-            </div>
-
-            <div class="input-group" style="margin-top: 10px;">
-                <label>Exam Visibility (Privacy)</label>
-                <select id="exam-privacy">
-                    <option value="false">Public (Visible in Feed to Everyone)</option>
-                    <option value="true">Private (Accessible via Exam Code Only)</option>
-                </select>
+            <div class="field">
+                <label for="exam-subject">Subject</label>
+                <input id="exam-subject" type="text" placeholder="Physics">
             </div>
         </div>
 
-        <div class="card-ai">
-            <h3 class="ai-title"><i class="fas fa-robot"></i> AI Smart Paste</h3>
-            
-            <div class="lang-toggle">
-                <button class="lang-btn active" id="btn-bn" onclick="toggleLanguage('bn')">বাংলা</button>
-                <button class="lang-btn" id="btn-en" onclick="toggleLanguage('en')">English</button>
+        <div class="grid">
+            <div class="field">
+                <label for="exam-code">Unique Exam Code</label>
+                <input id="exam-code" type="text" placeholder="PHY-101">
             </div>
+            <div class="field">
+                <label for="exam-timer">Timer (Minutes)</label>
+                <input id="exam-timer" type="number" min="1" max="180" value="30">
+            </div>
+        </div>
 
-            <div class="prompt-box">
-                <div id="inst-bn">
-                    <strong>কীভাবে প্রশ্ন তৈরি করবেন?</strong><br>
-                    ১. নিচের <strong>Copy Prompt</strong> বাটনে ক্লিক করে লেখাটি কপি করুন।<br>
-                    ২. <b>ChatGPT</b> বা <b>Gemini</b> তে গিয়ে প্রম্পটটি পেস্ট করুন এবং সাথে আপনার প্রশ্নপত্রের ছবি বা টেক্সট দিয়ে দিন।<br>
-                    ৩. AI যে উত্তর দেবে, সেটি কপি করে নিচের বক্সে পেস্ট করে <b>'অ্যাড করুন'</b> বাটনে ক্লিক করুন।
-                </div>
-                <div id="inst-en" class="hidden">
-                    <strong>How to generate questions?</strong><br>
-                    1. Click the <strong>Copy Prompt</strong> button below to copy the text.<br>
-                    2. Go to <b>ChatGPT</b> or <b>Gemini</b>, paste the prompt along with your question paper image or text.<br>
-                    3. Copy the AI's response, paste it in the box below, and click <b>'Add'</b>.
-                </div>
-                
-                <div class="prompt-code">
-                    <button onclick="copyPrompt('ai-prompt', 'copy-btn')" id="copy-btn" class="copy-btn"><i class="fas fa-copy"></i> Copy Prompt</button>
-                    <code id="ai-prompt">You are an expert Math Question Paper Formatter. Read the provided images/text and extract all questions accurately.
+        <div class="field">
+            <label for="exam-negative">Negative Marks (Per Wrong Answer)</label>
+            <select id="exam-negative">
+                <option value="0">No Negative Marking</option>
+                <option value="0.25">-0.25 Marks</option>
+                <option value="0.33">-0.33 Marks</option>
+                <option value="0.5">-0.50 Marks</option>
+                <option value="1">-1.00 Mark</option>
+            </select>
+        </div>
 
-Format:
+        <div class="field">
+            <label for="exam-privacy">Exam Visibility</label>
+            <select id="exam-privacy">
+                <option value="false">Public — Visible in Feed</option>
+                <option value="true">Private — Exam Code Only</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- AI SMART PASTE -->
+    <section class="card ai-card">
+        <h3 class="card-heading">
+            <i class="fas fa-robot"></i> AI Smart Paste
+        </h3>
+
+        <div class="language-row">
+            <button class="language-btn active" id="btn-bn" onclick="toggleLanguage('bn')">বাংলা</button>
+            <button class="language-btn" id="btn-en" onclick="toggleLanguage('en')">English</button>
+        </div>
+
+        <div class="ai-info" id="instruction-bn">
+            <b>কীভাবে প্রশ্ন তৈরি করবেন?</b><br>
+            ১. Copy Prompt বাটনে ক্লিক করে Prompt কপি করুন।<br>
+            ২. ChatGPT বা Gemini-তে Prompt-এর সঙ্গে প্রশ্নপত্রের ছবি বা টেক্সট দিন।<br>
+            ৩. AI-এর তৈরি প্রশ্ন কপি করে নিচের বক্সে পেস্ট করুন।
+        </div>
+
+        <div class="ai-info hidden" id="instruction-en">
+            <b>How to generate questions?</b><br>
+            1. Copy the prompt below.<br>
+            2. Paste it into ChatGPT or Gemini with your question paper.<br>
+            3. Paste the generated questions into the box below.
+        </div>
+
+        <div class="prompt-area">
+            <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">
+                <i class="fas fa-copy"></i> Copy Prompt
+            </button>
+            <code id="ai-prompt">You are an expert Question Paper Formatter. Extract all questions accurately.
 
 For MCQ:
 Q: [Question]
@@ -156,297 +424,516 @@ Ans: [A/B/C/D]
 For descriptive questions:
 Q: [Question]
 
-Math & LaTeX Rules:
-
-- Put every number, formula, fraction, variable, and mathematical symbol inside single "$...$".
-- Use valid LaTeX commands, e.g. $\frac{1}{2}$, $x^2$, $a+b=5$.
-- Never drop or alter LaTeX backslashes ("\").
-- Keep normal text completely outside "$...$".
+Rules:
+- Preserve the original question and options.
+- Put mathematical expressions inside single $...$.
+- Use valid LaTeX commands.
 - Do not use Markdown code blocks.
-- Preserve the original question and options accurately.</code>
-                </div>
-            </div>
-
-            <div class="manual-guide">
-                <div class="manual-guide-title"><i class="fas fa-edit"></i> <span id="manual-title-text">Manual question rules:</span></div>
-                <span id="manual-desc-text">আপনি চাইলে নিজে টাইপ করেও প্রশ্ন দিতে পারেন। শুধু নিচের মতো করে সাজিয়ে বক্সে পেস্ট করুন:</span>
-                <div style="background: #ffffff; padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; color: #334155; border: 1px solid #e2e8f0; font-size: 0.8rem;">
-                    <strong>Long Question:</strong><br>
-                    Q: Write Newton's second law.<br><br>
-                    <strong>MCQ:</strong><br>
-                    Q: What is the capital of France?<br>
-                    A) Berlin<br>
-                    B) Paris<br>
-                    C) Rome<br>
-                    D) Madrid<br>
-                    Ans: B
-                </div>
-            </div>
-
-            <div class="input-group">
-                <textarea id="scanned-text-result" rows="5" placeholder="ChatGPT বা Gemini থেকে কপি করা প্রশ্ন এখানে পেস্ট করুন..."></textarea>
-            </div>
-            
-            <button class="btn btn-add" id="btn-add-text" onclick="processScannedText()">অ্যাড করুন ➕</button>
+- Do not change the meaning of any question.</code>
         </div>
 
-        <div id="preview-section" class="hidden">
-            <h3 style="color:#10b981; margin-bottom: 5px;">Total Questions Ready: <span id="q-count-display">0</span></h3>
-            <p style="font-size:0.8rem; color:#64748b; margin-top: 0;">ভুল থাকলে নিচের বক্স থেকেই সরাসরি এডিট করতে পারবেন এবং সঠিক উত্তর বেছে নিতে পারবেন।</p>
-            <div class="preview-box" id="preview-list"></div>
+        <div class="field">
+            <label for="scanned-text-result">Paste Questions Here</label>
+            <textarea id="scanned-text-result" rows="7"
+                placeholder="AI থেকে পাওয়া প্রশ্ন এখানে পেস্ট করুন..."></textarea>
         </div>
 
-        <button class="btn btn-publish" onclick="publishExam()">Publish Exam 🚀</button>
+        <button class="btn btn-purple btn-block" id="btn-add-text" onclick="processScannedText()">
+            <i class="fas fa-plus"></i> Add Questions
+        </button>
+    </section>
 
+    <!-- QUESTION PREVIEW -->
+    <section class="card">
+        <div class="preview-heading">
+            <h3 class="card-heading" style="margin:0">
+                <i class="fas fa-list-check"></i> Questions
+            </h3>
+            <span class="question-count">
+                Total: <span id="q-count-display">0</span>
+            </span>
+        </div>
+
+        <p style="font-size:13px;color:#64748b;line-height:1.6">
+            প্রশ্নের লেখা, অপশন, সঠিক উত্তর এবং Marks এখান থেকেই পরিবর্তন করতে পারবে।
+        </p>
+
+        <div id="preview-list">
+            <div class="empty-state" id="empty-state">
+                <i class="fas fa-clipboard-list" style="font-size:25px;margin-bottom:10px"></i>
+                <div>No questions added yet.</div>
+                <small>AI Smart Paste ব্যবহার করে প্রশ্ন যোগ করো।</small>
+            </div>
+        </div>
+    </section>
+
+    <div class="publish-area">
+        <button class="btn publish-btn btn-block" id="publish-btn" onclick="publishExam()">
+            <i class="fas fa-rocket"></i> Publish Exam
+        </button>
     </div>
 
-    <script>
-        let tempQuestions = [];
+</div>
 
-        window.onload = () => {
-            window.history.replaceState({page: 'create_exam'}, "", window.location.href);
-        };
+<script>
+let tempQuestions = [];
+let isEditMode = false;
+let editingExamCode = "";
+let isSaving = false;
 
-        function toggleLanguage(lang) {
-            const btnBn = document.getElementById('btn-bn');
-            const btnEn = document.getElementById('btn-en');
-            const instBn = document.getElementById('inst-bn');
-            const instEn = document.getElementById('inst-en');
-            const textArea = document.getElementById('scanned-text-result');
-            const addBtn = document.getElementById('btn-add-text');
-            const manualTitle = document.getElementById('manual-title-text');
-            const manualDesc = document.getElementById('manual-desc-text');
+const $ = id => document.getElementById(id);
 
-            if (lang === 'en') {
-                btnEn.classList.add('active'); btnBn.classList.remove('active');
-                instEn.classList.remove('hidden'); instBn.classList.add('hidden');
-                textArea.placeholder = "Paste the generated questions from ChatGPT or Gemini here...";
-                addBtn.innerHTML = "Add Questions ➕";
-                manualTitle.innerText = "Manual Entry Format:";
-                manualDesc.innerText = "You can also type questions manually. Just format them like below and paste in the box:";
-            } else {
-                btnBn.classList.add('active'); btnEn.classList.remove('active');
-                instBn.classList.remove('hidden'); instEn.classList.add('hidden');
-                textArea.placeholder = "ChatGPT বা Gemini থেকে কপি করা প্রশ্ন এখানে পেস্ট করুন...";
-                addBtn.innerHTML = "অ্যাড করুন ➕";
-                manualTitle.innerText = "ম্যানুয়ালি প্রশ্ন দেওয়ার নিয়ম:";
-                manualDesc.innerText = "আপনি চাইলে নিজে টাইপ করেও প্রশ্ন দিতে পারেন। শুধু নিচের মতো করে সাজিয়ে বক্সে পেস্ট করুন:";
-            }
-        }
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
 
-        function copyPrompt(textId, btnId) {
-            const promptText = document.getElementById(textId).innerText;
-            navigator.clipboard.writeText(promptText).then(() => {
-                const btn = document.getElementById(btnId);
-                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                btn.style.background = '#10b981';
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-copy"></i> Copy Prompt';
-                    btn.style.background = '#3b82f6';
-                }, 2500);
-            });
-        }
+function escapeAttr(value) {
+    return escapeHTML(value);
+}
 
-        function updateUI() {
-            const previewSection = document.getElementById('preview-section');
-            const previewList = document.getElementById('preview-list');
-            document.getElementById('q-count-display').innerText = tempQuestions.length;
-            
-            if (tempQuestions.length > 0) {
-                previewSection.classList.remove('hidden');
-                let html = '';
-                tempQuestions.forEach((q, i) => {
-                    let typeBadge = q.question_type === 'mcq' 
-                        ? `<span style="background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:12px; font-size:0.75rem;">MCQ</span>` 
-                        : `<span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:12px; font-size:0.75rem;">Subjective (Image Upload)</span>`;
+function getReturnUrl() {
+    const ref = document.referrer || "";
+    if (ref.includes("student_profile")) return "/student_profile.html";
+    if (ref.includes("teacher_profile")) return "/teacher_profile.html";
 
-                    let optionsHtml = q.question_type === 'mcq' ? `
-                        <div class="math-preview" style="font-size: 0.85rem; color: #475569;">
-                            A) ${q.option_a} &nbsp;&nbsp; B) ${q.option_b} &nbsp;&nbsp; C) ${q.option_c} &nbsp;&nbsp; D) ${q.option_d}
-                        </div>
-                        <div class="grid-2x2" style="gap:5px; margin-bottom: 10px;">
-                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">A)</strong> <input type="text" value="${q.option_a}" onchange="updateQData(${i}, 'option_a', this.value)"></div>
-                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">B)</strong> <input type="text" value="${q.option_b}" onchange="updateQData(${i}, 'option_b', this.value)"></div>
-                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">C)</strong> <input type="text" value="${q.option_c}" onchange="updateQData(${i}, 'option_c', this.value)"></div>
-                            <div style="display:flex; align-items:center; gap:5px;"><strong style="font-size:0.8rem;">D)</strong> <input type="text" value="${q.option_d}" onchange="updateQData(${i}, 'option_d', this.value)"></div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:10px; background:#e0f2fe; padding:8px; border-radius:6px;">
-                            <label style="font-size:0.85rem; font-weight:bold; color:#0369a1; margin:0;">সঠিক উত্তর সিলেক্ট করুন:</label>
-                            <select onchange="updateQData(${i}, 'correct_option', this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #bae6fd;">
-                                <option value="A" ${q.correct_option === 'A' ? 'selected' : ''}>A</option>
-                                <option value="B" ${q.correct_option === 'B' ? 'selected' : ''}>B</option>
-                                <option value="C" ${q.correct_option === 'C' ? 'selected' : ''}>C</option>
-                                <option value="D" ${q.correct_option === 'D' ? 'selected' : ''}>D</option>
-                            </select>
-                        </div>
-                    ` : `
-                        <div style="background:#fef3c7; padding:10px; border-radius:6px; color:#b45309; font-size:0.85rem; text-align:center; margin-top:10px; border:1px dashed #f59e0b;">
-                            <i class="fas fa-camera"></i> পরীক্ষার সময় স্টুডেন্টরা এখানে খাতার ছবি আপলোড করবে।
-                        </div>
-                    `;
+    const role = (
+        localStorage.getItem("userRole") ||
+        localStorage.getItem("userCategory") ||
+        ""
+    ).toLowerCase();
 
-                    html += `
-                    <div class="q-card">
-                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px; align-items: center;">
-                            <strong style="color: #3b82f6;">Q${i + 1}: ${typeBadge}</strong>
-                            <button onclick="removeQuestion(${i})" style="background:none; border:none; color:#ef4444; font-size:0.85rem; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
-                        </div>
-                        
-                        <div class="input-group" style="margin-bottom: 10px;">
-                            <label style="color:#10b981; font-size:0.85rem;">Marks (প্রশ্নের মান):</label>
-                            <input type="number" step="0.5" value="${q.max_marks || (q.question_type==='mcq' ? 1.0 : 5.0)}" onchange="updateQData(${i}, 'max_marks', this.value)" style="border: 2px solid #10b981; border-radius:6px; font-weight:bold;">
-                        </div>
+    return role === "student"
+        ? "/student_dashboard.html"
+        : "/teacher_dashboard.html";
+}
 
-                        <div class="math-preview" style="margin-bottom: 5px;">
-                            <strong>Q:</strong> ${q.question_text}
-                        </div>
-                        <textarea onchange="updateQData(${i}, 'question_text', this.value)">${q.question_text}</textarea>
-                        
-                        ${optionsHtml}
-                    </div>`;
-                });
-                previewList.innerHTML = html;
-                if (window.MathJax) { MathJax.typesetPromise([previewList]).catch(function (err) { console.log(err.message); }); }
-            } else { previewSection.classList.add('hidden'); }
-        }
+function setEditMode(enabled) {
+    isEditMode = enabled;
 
-        function updateQData(index, field, value) { 
-            tempQuestions[index][field] = field === 'max_marks' ? parseFloat(value) : value; 
-            updateUI(); 
-        }
-        function removeQuestion(index) { 
-            if(confirm("প্রশ্নটি মুছে ফেলতে চান?")) { tempQuestions.splice(index, 1); updateUI(); } 
-        }
+    $("mode-label").textContent = enabled ? "EDIT MODE" : "CREATE MODE";
+    $("page-title").textContent = enabled ? "Edit Exam" : "Create Custom Exam";
+    $("page-subtitle").textContent = enabled
+        ? "Update your exam information and questions."
+        : "Create your exam and add questions to publish it.";
 
-        function processScannedText() {
-            const text = document.getElementById('scanned-text-result').value;
-            if (!text.trim()) { alert("Please paste questions in the box! / বক্সে প্রশ্ন পেস্ট করুন!"); return; }
+    $("publish-btn").innerHTML = enabled
+        ? '<i class="fas fa-save"></i> Update Exam'
+        : '<i class="fas fa-rocket"></i> Publish Exam';
 
-            let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            let currentQ = null;
-            let addedCount = 0;
+    $("exam-code").readOnly = enabled;
+    $("exam-code").style.background = enabled ? "#f1f5f9" : "#fff";
+}
 
-            for(let i=0; i<lines.length; i++) {
-                let line = lines[i];
-                let optMatch = line.match(/^[\(]?([A-D])[a-z]?[\)\.]?\s+(.*)/i); 
-                let ansMatch = line.match(/^(Ans|Answer|উত্তর)[\s\:\.\-]*([A-D])/i);
-                let qMatch = line.match(/^(Q|Question|প্রশ্ন)[\s\:\.\-]+(.*)/i);
+async function loadExamForEdit(code) {
+    setEditMode(true);
+    editingExamCode = code;
 
-                if (ansMatch && currentQ) { 
-                    currentQ.correct_option = ansMatch[2].toUpperCase();
-                } else if (optMatch && currentQ) {
-                    let optChar = optMatch[1].toUpperCase();
-                    if (optChar === 'A') currentQ.option_a = optMatch[2];
-                    if (optChar === 'B') currentQ.option_b = optMatch[2];
-                    if (optChar === 'C') currentQ.option_c = optMatch[2];
-                    if (optChar === 'D') currentQ.option_d = optMatch[2];
-                } else {
-                    if (qMatch || (!currentQ && line.length > 0)) {
-                        if (currentQ) { 
-                            currentQ.question_type = (currentQ.option_a && currentQ.option_b) ? 'mcq' : 'subjective';
-                            currentQ.max_marks = currentQ.question_type === 'mcq' ? 1.0 : 5.0;
-                            tempQuestions.push(currentQ); 
-                            addedCount++; 
-                        }
-                        let qText = qMatch ? qMatch[2] : line;
-                        currentQ = { question_text: qText, option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A", question_type: "subjective", max_marks: 5.0 };
-                    } else if (currentQ) {
-                        if (!currentQ.option_a) { currentQ.question_text += " \n" + line; }
-                    }
-                }
-            }
-            if (currentQ) { 
-                currentQ.question_type = (currentQ.option_a && currentQ.option_b) ? 'mcq' : 'subjective';
-                currentQ.max_marks = currentQ.question_type === 'mcq' ? 1.0 : 5.0;
-                tempQuestions.push(currentQ); 
-                addedCount++; 
-            }
+    $("publish-btn").disabled = true;
+    $("publish-btn").textContent = "Loading Exam...";
 
-            document.getElementById('scanned-text-result').value = ""; 
-            updateUI();
-            alert(`✅ ${addedCount} Questions added successfully!`);
-        }
-
-        async function publishExam() {
-            const examName = document.getElementById('exam-name').value;
-            const examClass = document.getElementById('exam-class').value || 'General';
-            const examSubject = document.getElementById('exam-subject').value || 'General';
-            const examCode = document.getElementById('exam-code').value.toUpperCase();
-            const timer = document.getElementById('exam-timer').value;
-            const negative = document.getElementById('exam-negative').value; 
-            const isPrivate = document.getElementById('exam-privacy').value === 'true';
-            const teacherEmail = localStorage.getItem('userEmail') || 'teacher@email.com';
-            
-            if (!examName || !examCode) { alert("Please provide the exam name and unique code."); return; }
-            if (tempQuestions.length === 0) { alert("Please add at least 1 question!"); return; }
-
-            const publishBtn = document.querySelector('.btn-publish');
-            publishBtn.innerText = "Publishing... ⏳"; publishBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/create-exam', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        exam_code: examCode, 
-                        exam_name: examName, 
-                        class_name: examClass,
-                        subject: examSubject,
-                        timer: timer, 
-                        negative_marks: negative, 
-                        is_private: isPrivate,
-                        teacher_email: teacherEmail, 
-                        questions: tempQuestions 
-                    })
-                });
-                const data = await response.json();
-                if (response.ok && data.success) {
-                    alert(`🎉 Awesome! Exam created.\nCode: ${examCode}`);
-                    window.location.href = 'teacher_dashboard.html';
-                } else { alert(data.error || "Failed to create exam."); }
-            } catch (error) { alert("Server error."); } 
-            finally { publishBtn.innerText = "Publish Exam 🚀"; publishBtn.disabled = false; }
-        }
-        
-        // ================= PERFECT BACK BUTTON HIERARCHY SYNC =================
-        function handleBackNavigation() {
-            if (tempQuestions.length > 0) {
-                if (confirm("⚠️ আপনার কিছু অসংরক্ষিত প্রশ্ন রয়েছে। আপনি কি সত্যিই পেজ থেকে বের হতে চান?")) {
-                    window.location.href = 'teacher_dashboard.html';
-                }
-            } else {
-                window.location.href = 'teacher_dashboard.html';
-            }
-        }
-
-        window.addEventListener('popstate', function (event) {
-            if (tempQuestions.length > 0) {
-                if (confirm("⚠️ আপনার কিছু অসংরক্ষিত প্রশ্ন রয়েছে। আপনি কি সত্যিই পেজ থেকে বের হতে চান?")) {
-                    window.location.href = 'teacher_dashboard.html';
-                } else {
-                    window.history.pushState({page: 'create_exam'}, "", window.location.href);
-                }
-            } else {
-                window.location.href = 'teacher_dashboard.html';
-            }
+    try {
+        const response = await fetch("/api/get-owned-exam-for-edit", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            credentials: "same-origin",
+            body: JSON.stringify({exam_code: code})
         });
 
-        // ================= PULL-TO-REFRESH BLOCKER =================
-        let touchStartY = 0;
-        
-        document.addEventListener('touchstart', e => {
-            touchStartY = e.touches[0].clientY;
-        }, { passive: false });
+        const data = await response.json();
 
-        document.addEventListener('touchmove', e => {
-            const touchY = e.touches[0].clientY;
-            const touchDiff = touchY - touchStartY;
-            
-            if (window.scrollY === 0 && touchDiff > 0) {
-                e.preventDefault();
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || "Unable to load this exam.");
+        }
+
+        const exam = data.exam || {};
+
+        $("exam-name").value = exam.exam_name || "";
+        $("exam-class").value = exam.class_name || "";
+        $("exam-subject").value = exam.subject || "";
+        $("exam-code").value = exam.exam_code || code;
+        $("exam-timer").value = exam.timer_minutes || 30;
+        $("exam-negative").value = String(exam.negative_marks ?? 0);
+        $("exam-privacy").value = String(
+            exam.is_private === true ||
+            exam.is_private === 1 ||
+            String(exam.is_private).toLowerCase() === "true"
+        );
+
+        tempQuestions = (data.questions || []).map(q => ({
+            id: q.id,
+            question_text: q.question_text || "",
+            option_a: q.option_a || "",
+            option_b: q.option_b || "",
+            option_c: q.option_c || "",
+            option_d: q.option_d || "",
+            correct_option: String(q.correct_option || "A").toUpperCase(),
+            question_type: q.question_type || "mcq",
+            max_marks: Number(q.max_marks ?? 1)
+        }));
+
+        updateUI();
+
+    } catch (error) {
+        alert(error.message || "Could not load exam.");
+        window.location.href = getReturnUrl();
+    } finally {
+        $("publish-btn").disabled = false;
+        $("publish-btn").innerHTML =
+            '<i class="fas fa-save"></i> Update Exam';
+    }
+}
+
+function toggleLanguage(lang) {
+    const english = lang === "en";
+
+    $("btn-en").classList.toggle("active", english);
+    $("btn-bn").classList.toggle("active", !english);
+
+    $("instruction-en").classList.toggle("hidden", !english);
+    $("instruction-bn").classList.toggle("hidden", english);
+
+    $("scanned-text-result").placeholder = english
+        ? "Paste generated questions here..."
+        : "AI থেকে পাওয়া প্রশ্ন এখানে পেস্ট করুন...";
+
+    $("btn-add-text").innerHTML = english
+        ? '<i class="fas fa-plus"></i> Add Questions'
+        : '<i class="fas fa-plus"></i> প্রশ্ন যোগ করুন';
+}
+
+async function copyPrompt() {
+    const text = $("ai-prompt").innerText;
+    try {
+        await navigator.clipboard.writeText(text);
+        $("copy-btn").innerHTML = '<i class="fas fa-check"></i> Copied';
+        setTimeout(() => {
+            $("copy-btn").innerHTML = '<i class="fas fa-copy"></i> Copy Prompt';
+        }, 1800);
+    } catch {
+        alert("Copy করা যায়নি। Prompt নিজে Select করে Copy করো।");
+    }
+}
+
+function updateUI() {
+    $("q-count-display").textContent = tempQuestions.length;
+
+    const preview = $("preview-list");
+
+    if (!tempQuestions.length) {
+        preview.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-clipboard-list" style="font-size:25px;margin-bottom:10px"></i>
+                <div>No questions added yet.</div>
+                <small>AI Smart Paste ব্যবহার করে প্রশ্ন যোগ করো।</small>
+            </div>`;
+        return;
+    }
+
+    preview.innerHTML = tempQuestions.map((q, i) => {
+        const isMCQ = q.question_type === "mcq";
+
+        const options = isMCQ ? `
+            <div class="option-grid">
+                ${["a","b","c","d"].map(letter => `
+                    <div class="option-field">
+                        <strong>${letter.toUpperCase()})</strong>
+                        <input type="text"
+                            aria-label="Option ${letter.toUpperCase()}"
+                            value="${escapeAttr(q["option_" + letter])}"
+                            onchange="updateQData(${i}, 'option_${letter}', this.value)">
+                    </div>
+                `).join("")}
+            </div>
+            <div class="field">
+                <label>Correct Answer</label>
+                <select onchange="updateQData(${i}, 'correct_option', this.value)">
+                    ${["A","B","C","D"].map(option => `
+                        <option value="${option}" ${q.correct_option === option ? "selected" : ""}>
+                            ${option}
+                        </option>
+                    `).join("")}
+                </select>
+            </div>
+        ` : `
+            <div style="background:#fffbeb;color:#92400e;padding:11px;border-radius:9px;font-size:12px">
+                <i class="fas fa-camera"></i>
+                Students will upload an answer image during the exam.
+            </div>
+        `;
+
+        return `
+            <div class="question-card">
+                <div class="question-top">
+                    <div>
+                        <span class="question-number">Question ${i + 1}</span>
+                        <span class="type-badge">${isMCQ ? "MCQ" : "Subjective"}</span>
+                    </div>
+                    <button class="btn btn-danger" style="padding:7px 10px;font-size:12px"
+                        onclick="removeQuestion(${i})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+
+                <label style="font-size:12px;font-weight:700">Question Text</label>
+                <textarea onchange="updateQData(${i}, 'question_text', this.value)">${escapeHTML(q.question_text)}</textarea>
+
+                ${options}
+
+                <div class="question-bottom">
+                    <div>
+                        <label>Question Type</label>
+                        <select onchange="changeQuestionType(${i}, this.value)">
+                            <option value="mcq" ${isMCQ ? "selected" : ""}>MCQ</option>
+                            <option value="subjective" ${!isMCQ ? "selected" : ""}>Subjective</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Marks</label>
+                        <input type="number" min="0.5" step="0.5"
+                            value="${Number(q.max_marks) || 1}"
+                            onchange="updateQData(${i}, 'max_marks', this.value)">
+                    </div>
+                </div>
+            </div>`;
+    }).join("");
+
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([preview]).catch(() => {});
+    }
+}
+
+function updateQData(index, field, value) {
+    if (!tempQuestions[index]) return;
+
+    if (field === "max_marks") {
+        const marks = Number(value);
+        tempQuestions[index][field] = marks > 0 ? marks : 1;
+    } else {
+        tempQuestions[index][field] = value;
+    }
+}
+
+function changeQuestionType(index, type) {
+    const q = tempQuestions[index];
+    if (!q) return;
+
+    q.question_type = type;
+    if (type === "mcq") {
+        q.max_marks = Number(q.max_marks) || 1;
+        q.correct_option = q.correct_option || "A";
+    } else {
+        q.max_marks = Number(q.max_marks) || 5;
+    }
+    updateUI();
+}
+
+function removeQuestion(index) {
+    if (!confirm("এই প্রশ্নটি মুছে ফেলতে চাও?")) return;
+    tempQuestions.splice(index, 1);
+    updateUI();
+}
+
+function processScannedText() {
+    const text = $("scanned-text-result").value.trim();
+
+    if (!text) {
+        alert("প্রথমে প্রশ্ন পেস্ট করো।");
+        return;
+    }
+
+    const lines = text.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+    let currentQ = null;
+    let added = 0;
+
+    function saveCurrent() {
+        if (!currentQ) return;
+
+        currentQ.question_type =
+            currentQ.option_a && currentQ.option_b ? "mcq" : "subjective";
+
+        currentQ.max_marks =
+            currentQ.question_type === "mcq" ? 1 : 5;
+
+        tempQuestions.push(currentQ);
+        added++;
+    }
+
+    for (const line of lines) {
+        const qMatch = line.match(/^(Q|Question|প্রশ্ন)[\s:.-]+(.*)/i);
+        const ansMatch = line.match(/^(Ans|Answer|উত্তর)[\s:.-]*([A-D])/i);
+        const optMatch = line.match(/^\s*([A-D])[\).]\s*(.*)/i);
+
+        if (qMatch) {
+            saveCurrent();
+            currentQ = {
+                question_text: qMatch[2],
+                option_a: "",
+                option_b: "",
+                option_c: "",
+                option_d: "",
+                correct_option: "A",
+                question_type: "subjective",
+                max_marks: 5
+            };
+        } else if (ansMatch && currentQ) {
+            currentQ.correct_option = ansMatch[2].toUpperCase();
+        } else if (optMatch && currentQ) {
+            currentQ["option_" + optMatch[1].toLowerCase()] = optMatch[2];
+        } else if (currentQ) {
+            currentQ.question_text += "\n" + line;
+        } else {
+            currentQ = {
+                question_text: line,
+                option_a: "",
+                option_b: "",
+                option_c: "",
+                option_d: "",
+                correct_option: "A",
+                question_type: "subjective",
+                max_marks: 5
+            };
+        }
+    }
+
+    saveCurrent();
+
+    $("scanned-text-result").value = "";
+    updateUI();
+    alert(added + "টি প্রশ্ন যোগ হয়েছে।");
+}
+
+function validateExam() {
+    const examName = $("exam-name").value.trim();
+    const examCode = $("exam-code").value.trim().toUpperCase();
+    const timer = Number($("exam-timer").value);
+
+    if (!examName || !examCode) {
+        alert("Exam Name এবং Exam Code দিতে হবে।");
+        return false;
+    }
+
+    if (!/^[A-Z0-9_-]{3,40}$/.test(examCode)) {
+        alert("Exam Code-এ 3-40টি অক্ষর, সংখ্যা, _ অথবা - ব্যবহার করো।");
+        return false;
+    }
+
+    if (!Number.isInteger(timer) || timer < 1 || timer > 180) {
+        alert("Timer 1 থেকে 180 মিনিটের মধ্যে হতে হবে।");
+        return false;
+    }
+
+    if (!tempQuestions.length) {
+        alert("কমপক্ষে একটি প্রশ্ন যোগ করতে হবে।");
+        return false;
+    }
+
+    for (let i = 0; i < tempQuestions.length; i++) {
+        const q = tempQuestions[i];
+
+        if (!String(q.question_text || "").trim()) {
+            alert(`Question ${i + 1}-এর লেখা ফাঁকা রাখা যাবে না।`);
+            return false;
+        }
+
+        if (q.question_type === "mcq") {
+            if (!q.option_a || !q.option_b || !q.option_c || !q.option_d) {
+                alert(`Question ${i + 1}-এর চারটি Option পূরণ করো।`);
+                return false;
             }
-        }, { passive: false });
-        // ===========================================================
-    </script>
+            if (!["A","B","C","D"].includes(q.correct_option)) {
+                alert(`Question ${i + 1}-এর সঠিক উত্তর নির্বাচন করো।`);
+                return false;
+            }
+        }
+
+        if (!(Number(q.max_marks) > 0)) {
+            alert(`Question ${i + 1}-এর Marks সঠিক নয়।`);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+async function publishExam() {
+    if (isSaving || !validateExam()) return;
+
+    const payload = {
+        exam_code: $("exam-code").value.trim().toUpperCase(),
+        exam_name: $("exam-name").value.trim(),
+        class_name: $("exam-class").value.trim() || "General",
+        subject: $("exam-subject").value.trim() || "General",
+        timer: Number($("exam-timer").value),
+        negative_marks: Number($("exam-negative").value),
+        is_private: $("exam-privacy").value === "true",
+        questions: tempQuestions
+    };
+
+    const endpoint = isEditMode
+        ? "/api/teacher-update-exam"
+        : "/api/create-exam";
+
+    const button = $("publish-btn");
+    isSaving = true;
+    button.disabled = true;
+    button.textContent = isEditMode ? "Updating..." : "Publishing...";
+
+    try {
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            credentials: "same-origin",
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || "Request failed.");
+        }
+
+        alert(isEditMode
+            ? "Exam successfully updated!"
+            : "Exam successfully published!");
+
+        window.location.href = data.redirect_url || getReturnUrl();
+
+    } catch (error) {
+        alert(error.message || "Server error. Please try again.");
+    } finally {
+        isSaving = false;
+        button.disabled = false;
+        button.innerHTML = isEditMode
+            ? '<i class="fas fa-save"></i> Update Exam'
+            : '<i class="fas fa-rocket"></i> Publish Exam';
+    }
+}
+
+function handleBackNavigation() {
+    if (tempQuestions.length && !confirm("তোমার পরিবর্তনগুলো Save হয়নি। বের হতে চাও?")) {
+        return;
+    }
+    window.location.href = getReturnUrl();
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+    const params = new URLSearchParams(window.location.search);
+    const editCode = params.get("edit");
+
+    if (editCode) {
+        await loadExamForEdit(editCode);
+    } else {
+        setEditMode(false);
+    }
+
+    window.history.replaceState({page: "create_exam"}, "", window.location.href);
+});
+</script>
 </body>
 </html>
