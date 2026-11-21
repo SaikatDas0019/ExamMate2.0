@@ -19,7 +19,7 @@ import hashlib
 import hmac
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from ai_learning import register_ai_learning_routes
 
 load_dotenv()
 
@@ -798,8 +798,23 @@ def init_db():
 
 init_db()
 
+# ==========================================
+# AI LEARNING SYSTEM - PHASE 1 INTEGRATION
+# ==========================================
+
+register_ai_learning_routes(
+    app=app,
+    get_db_connection=get_db_connection,
+    current_user=_current_user,
+    request_data=_request_data
+)
+
+# ==========================================
+# EXISTING APPLICATION ROUTES
+# ==========================================
+
 @app.route('/')
-def home(): 
+def home():
     resp = make_response(render_template('index.html'))
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     resp.headers['Pragma'] = 'no-cache'
