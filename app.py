@@ -217,8 +217,10 @@ def enforce_route_permissions():
             return jsonify({"success": False, "error": "Administrator access required."}), 403
 
     teacher_paths = (
-        "/api/create-exam",
         "/api/teacher-dashboard",
+        "/api/teacher-analysis",
+        "/api/teacher-full-analytics",
+        "/api/teacher-delete-exam",
         "/api/teacher-pending-evaluations",
         "/api/teacher-submit-evaluation",
     )
@@ -3087,10 +3089,159 @@ def teacher_delete_exam():
         if conn:
             conn.close()
 
+@app.route('/api/get-owned-exam-for-edit', methods=['POST'])
+def get_owned_exam_for_edit():
+    user = _current_user()
+
+    if not user:
+        return jsonify({
+            "success": False,
+            "error": "Login required."
+        }), 401
+
+    data = request.get_json(silent=True) or {}
+    exam_code = str(data.get("exam_code") or "").strip()
+
+    if not exam_code:
+        return jsonify({
+            "success": False,
+            "error": "Exam code is required."
+        }), 400
+
+    conn = None
+
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+
+        ph = "%s" if db_type == "postgres" else "?"
+
+        cursor.execute(
+            f"""
+            SELECT exam_code, exam_name, timer_minutes,
+                   negative_marks, teacher_email,
+                   class_name, subject, is_private
+            FROM exams
+            WHERE exam_code = {ph}
+            """,
+            (exam_code,)
+        )
+
+        exam_row = cursor.fetchone()
+
+        if not exam_row:
+            return jsonify({
+                "success": False,
+                "error": "Exam not found."
+            }), 404
+
+        exam = dict(exam_row)
+
+        current_email = _normalise_email(user.get("email"))
+        owner_email = _normalise_email(exam.get("teacher_email"))
+
+        if not _is_admin() and owner_email != current_email:
+            return jsonify({
+                "success": False,
+                "error": "You do not own this exam."
+            }), 403
+
+        cursor.execute(
+            f"""
+            SELECT id, question_text, option_a, option_b,
+                   option_c, option_d, correct_option,
+                   question_type, max_marks
+            FROM questions
+            WHERE exam_code = {ph}
+            ORDER BY id ASC
+            """,
+            (exam_code,)
+        )
+
+        questions = [dict(row) for row in cursor.fetchall()]
+
+        return jsonify({
+            "success": True,
+            "exam": {
+                "exam_code": exam["exam_code"],
+                "exam_name": exam["exam_name"],
+                "timer": exam["timer_minutes"],
+                "negative_marks": exam["negative_marks"],
+                "class_name": exam["class_name"],
+                "subject": exam["subject"],
+                "is_private": exam["is_private"]
+            },
+            "questions": questions
+        })
+
+    except Exception:
+        app.logger.exception("Failed to load exam for editing")
+
+        return jsonify({
+            "success": False,
+            "error": "Unable to load exam."
+        }), 500
+
+    finally:
+        if conn:
+            conn.close()
+
 @app.route('/api/teacher-update-exam', methods=['POST'])
 def teacher_update_exam():
     data = request.get_json(silent=True) or {}
-    exam_code = str(data.get('exam_code') or '').strip()
+    user = _current_user()
+    if not user:
+        return jsonify({
+            "success": False,
+            "error": "Login required."
+        }), 401
+    
+    exam_code = str(data.get("exam_code") or "").strip()
+
+    if not exam_code:
+        return jsonify({
+            "success": False,
+            "error": "Exam code is required."
+        }), 400
+
+    # Verify exam ownership
+    check_conn, check_db_type = get_db_connection()
+
+    try:
+        check_cursor = check_conn.cursor()
+        check_ph = "%s" if check_db_type == "postgres" else "?"
+
+        check_cursor.execute(
+            f"SELECT teacher_email FROM exams WHERE exam_code = {check_ph}",
+            (exam_code,)
+        )
+
+        owner_row = check_cursor.fetchone()
+
+        if not owner_row:
+            return jsonify({
+                "success": False,
+                "error": "Exam not found."
+            }), 404
+
+        owner_email = (
+            owner_row["teacher_email"]
+            if isinstance(owner_row, dict)
+            else owner_row[0]
+        )
+
+        if (
+            not _is_admin()
+            and _normalise_email(owner_email)
+            != _normalise_email(user.get("email"))
+        ):
+            return jsonify({
+                "success": False,
+                "error": "You do not own this exam."
+            }), 403
+
+    finally:
+        check_conn.close()
     exam_name = str(data.get('exam_name') or '').strip()
     timer = data.get('timer')
     questions = data.get('questions')
