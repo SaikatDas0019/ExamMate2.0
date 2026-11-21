@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import requests
-from flask import request, jsonify
+from flask import request, jsonify, render_template
 
 
 # ============================================================
@@ -435,7 +435,8 @@ def _call_gemini(
     message,
     context,
     history=None,
-    selected_model=None
+    selected_model=None,
+    teaching_mode="simple"
 ):
 
     if not GEMINI_API_KEY:
@@ -480,6 +481,43 @@ IMPORTANT:
 You are a tutor, not an examination authority.
 Do not claim that a question will definitely appear in an exam.
 """
+
+    teaching_modes = {
+        "simple": """
+Explain the topic in very simple language.
+Use beginner-friendly words and easy examples.
+""",
+        "step": """
+Explain step by step.
+Break the topic into small logical steps.
+Do not skip important reasoning.
+""",
+        "deep": """
+Provide a deeper conceptual explanation.
+Explain how and why things work.
+Include important details and connections.
+""",
+        "examples": """
+Focus on practical examples.
+Use multiple relevant examples to explain the concept.
+""",
+        "practice": """
+Teach through practice.
+Give a short practice question after explaining.
+Do not reveal the answer immediately unless requested.
+""",
+        "exam": """
+Focus on examination preparation.
+Highlight important concepts, formulas and common question patterns.
+Do not guarantee that anything will appear in an examination.
+"""
+    }
+
+    system_prompt += "\n\nSELECTED TEACHING MODE:\n"
+    system_prompt += teaching_modes.get(
+        teaching_mode,
+        teaching_modes["simple"]
+    )
 
     contents = []
 
@@ -1236,11 +1274,29 @@ def register_ai_learning_routes(
 
         try:
 
+            teaching_mode = _clean_text(
+                data.get("teaching_mode", "simple"),
+                30
+            ).lower()
+
+            allowed_modes = {
+                "simple",
+                "step",
+                "deep",
+                "examples",
+                "practice",
+                "exam"
+            }
+
+            if teaching_mode not in allowed_modes:
+                teaching_mode = "simple"
+
             answer, used_model = _call_gemini(
                 message=message,
                 context=context,
                 history=existing_messages,
-                selected_model=requested_model
+                selected_model=requested_model,
+                teaching_mode=teaching_mode
             )
 
         except RuntimeError as exc:
@@ -1419,6 +1475,146 @@ def register_ai_learning_routes(
             }
         }, "AI response generated.")
 
+    # ========================================================
+    # PAGE: AI LEARNING STUDIO
+    # ========================================================
+
+    @app.route("/ai-studio", methods=["GET"])
+    def ai_studio_page():
+
+        user, error = authenticated_user()
+
+        if error:
+            return error
+
+        return render_template(
+            "ai_dashboard.html",
+            user=user
+        )
+
+    # ========================================================
+    # API: RENAME / DELETE CONVERSATION
+    # ========================================================
+
+    @app.route(
+        "/api/ai/conversations/<conversation_id>",
+        methods=["PUT", "DELETE"]
+    )
+    def ai_conversation_manage(conversation_id):
+
+        user, error = authenticated_user()
+
+        if error:
+            return error
+
+        email = user["email"]
+
+        conversation = get_conversation(
+            conversation_id,
+            email
+        )
+
+        if not conversation:
+            return _error(
+                "Conversation not found.",
+                404
+            )
+
+        # RENAME
+        if request.method == "PUT":
+
+            data = request_data()
+
+            if not isinstance(data, dict):
+                return _error("Invalid request data.")
+
+            title = _clean_text(
+                data.get("title", ""),
+                150
+            )
+
+            if not title:
+                return _error(
+                    "Conversation title cannot be empty."
+                )
+
+            db.insert(
+                """
+                UPDATE ai_conversations
+                SET title = ?,
+                    updated_at = ?
+                WHERE conversation_id = ?
+                AND user_email = ?
+                """,
+                (
+                    title,
+                    _now_string(),
+                    conversation_id,
+                    email
+                )
+            )
+
+            return _success({
+                "conversation_id": conversation_id,
+                "title": title
+            }, "Conversation renamed.")
+
+        # DELETE
+        conn, db_type = db.connect()
+        cursor = conn.cursor()
+
+        try:
+
+            db.execute(
+                cursor,
+                db_type,
+                """
+                DELETE FROM ai_messages
+                WHERE conversation_id = ?
+                AND user_email = ?
+                """,
+                (
+                    conversation_id,
+                    email
+                )
+            )
+
+            db.execute(
+                cursor,
+                db_type,
+                """
+                DELETE FROM ai_conversations
+                WHERE conversation_id = ?
+                AND user_email = ?
+                """,
+                (
+                    conversation_id,
+                    email
+                )
+            )
+
+            conn.commit()
+
+        except Exception:
+
+            conn.rollback()
+
+            logger.exception(
+                "Could not delete AI conversation."
+            )
+
+            return _error(
+                "Could not delete conversation.",
+                500
+            )
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        return _success(
+            message="Conversation deleted."
+        )
     # ========================================================
     # API: USAGE INFORMATION
     # ========================================================
