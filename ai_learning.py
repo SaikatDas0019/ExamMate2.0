@@ -28,18 +28,18 @@ from flask import request, jsonify, render_template
 # CONFIGURATION
 # ============================================================
 
-IST = ZoneInfo("Asia/Kolkata")
+# ============================================================
+# OPENAI CONFIGURATION
+# ============================================================
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 
-DEFAULT_GEMINI_MODEL = os.getenv(
-    "GEMINI_MODEL",
-    "gemini-2.5-flash"
+DEFAULT_OPENAI_MODEL = os.getenv(
+    "OPENAI_MODEL",
+    "gpt-5.5"
 ).strip()
 
-GEMINI_API_URL = (
-    "https://generativelanguage.googleapis.com/v1beta/models/"
-)
+OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
 
 
 def _env_int(name, default, minimum=1, maximum=None):
@@ -442,25 +442,6 @@ def _context_prompt(context):
 # GEMINI PROVIDER
 # ============================================================
 
-def _available_models():
-
-    configured = os.getenv(
-        "GEMINI_AVAILABLE_MODELS",
-        DEFAULT_GEMINI_MODEL
-    )
-
-    models = [
-        item.strip()
-        for item in configured.split(",")
-        if item.strip()
-    ]
-
-    if DEFAULT_GEMINI_MODEL not in models:
-        models.insert(0, DEFAULT_GEMINI_MODEL)
-
-    return models
-
-
 def _normalise_mode(value):
     """
     Accept both new chat modes and legacy teaching modes.
@@ -488,77 +469,26 @@ def _normalise_mode(value):
     return aliases.get(value, "standard")
 
 
-def _gemini_error_message(status_code, error_data=None):
-    """
-    Return a safe, actionable message without exposing
-    provider internals to the frontend.
-    """
+def _available_openai_models():
 
-    error_data = (
-        error_data
-        if isinstance(error_data, dict)
-        else {}
+    configured = os.getenv(
+        "OPENAI_AVAILABLE_MODELS",
+        DEFAULT_OPENAI_MODEL
     )
 
-    provider_message = (
-        error_data.get("error", {}).get("message", "")
-        if isinstance(error_data.get("error"), dict)
-        else ""
-    )
+    models = [
+        item.strip()
+        for item in configured.split(",")
+        if item.strip()
+    ]
 
-    provider_message = _clean_text(
-        provider_message,
-        500
-    ).lower()
+    if DEFAULT_OPENAI_MODEL not in models:
+        models.insert(0, DEFAULT_OPENAI_MODEL)
 
-    if status_code == 400:
-
-        if (
-            "api key" in provider_message
-            or "key" in provider_message
-        ):
-            return (
-                "Gemini API configuration is invalid. "
-                "Please check the server API key."
-            )
-
-        return (
-            "The AI service rejected this request. "
-            "Please try rephrasing your question."
-        )
-
-    if status_code in (401, 403):
-        return (
-            "Gemini API access was denied. "
-            "Please check the API key and its permissions."
-        )
-
-    if status_code == 404:
-        return (
-            "The configured Gemini model was not found. "
-            "Please check GEMINI_MODEL in Render."
-        )
-
-    if status_code == 429:
-        return (
-            "The AI service is busy or its API quota "
-            "has been reached. Please try again later."
-        )
-
-    if status_code in (500, 502, 503, 504):
-        return (
-            "Gemini is temporarily unavailable. "
-            "Please try again shortly."
-        )
-
-    return (
-        "The AI service could not process your request. "
-        "Please try again."
-    )
+    return models
 
 
-
-def _call_gemini(
+def def _call_openai(
     message,
     context,
     history=None,
@@ -675,16 +605,43 @@ RESPONSE RULES:
 SELECTED RESPONSE MODE ({selected_mode.upper()}):
 {mode_instructions[selected_mode]}
 """
+    
+    if not OPENAI_API_KEY:
+        raise RuntimeError(
+            "OpenAI API key is not configured. "
+            "Add OPENAI_API_KEY in Render environment variables."
+        )
 
-    contents = []
+    configured_models = _available_openai_models()
+
+    primary_model = (
+        selected_model
+        if selected_model in configured_models
+        else DEFAULT_OPENAI_MODEL
+    )
+
+    models_to_try = [primary_model] + [
+        item for item in configured_models
+        if item != primary_model
+    ]
+
+    messages = [
+        {
+            "role": "system",
+            "content": system_prompt
+        }
+    ]
+
     history_items = (history or [])[-AI_MAX_HISTORY_MESSAGES:]
     total_history_chars = 0
 
-    for item in reversed(history_items):
+    for item in history_items:
+
         if not isinstance(item, dict):
             continue
 
         role = item.get("role")
+
         if role not in ("user", "assistant"):
             continue
 
@@ -692,6 +649,7 @@ SELECTED RESPONSE MODE ({selected_mode.upper()}):
             item.get("content", ""),
             AI_MAX_INPUT_LENGTH
         )
+
         if not content:
             continue
 
@@ -699,227 +657,226 @@ SELECTED RESPONSE MODE ({selected_mode.upper()}):
             continue
 
         total_history_chars += len(content)
-        contents.insert(0, {
-            "role": "model" if role == "assistant" else "user",
-            "parts": [{"text": content}]
+
+        messages.append({
+            "role": role,
+            "content": content
         })
 
-    # Avoid sending the current user message twice.
-    if contents and contents[-1]["role"] == "user":
-        last_text = contents[-1]["parts"][0]["text"]
-        if last_text.strip() == message.strip():
-            contents.pop()
+    # Avoid sending the current message twice.
+    if (
+        len(messages) > 1
+        and messages[-1]["role"] == "user"
+        and messages[-1]["content"].strip() == message.strip()
+    ):
+        messages.pop()
 
-    contents.append({
+    messages.append({
         "role": "user",
-        "parts": [{"text": message}]
+        "content": message
     })
 
-    payload = {
-        "systemInstruction": {
-            "parts": [{"text": system_prompt}]
-        },
-        "contents": contents,
-        "generationConfig": {
-            "temperature": 0.45 if selected_mode == "quick" else 0.55,
-            "maxOutputTokens": mode_tokens[selected_mode],
-        }
-    }
+    retry_attempts = _env_int(
+        "AI_RETRY_ATTEMPTS", 3, 1, 5
+    )
+
+    retry_base_seconds = _env_int(
+        "AI_RETRY_BASE_SECONDS", 2, 1, 10
+    )
 
     retryable_statuses = {429, 500, 502, 503, 504}
-    last_error_message = "Gemini is temporarily unavailable."
+
+    last_error_message = "OpenAI is temporarily unavailable."
     last_status = None
 
     for model_index, model in enumerate(models_to_try):
-        url = f"{GEMINI_API_URL}{model}:generateContent"
+
+        payload = {
+            "model": model,
+            "messages": messages,
+            "max_completion_tokens": mode_tokens[selected_mode]
+        }
 
         for attempt in range(1, retry_attempts + 1):
+
             try:
+
                 response = requests.post(
-                    url,
-                    headers={"x-goog-api-key": GEMINI_API_KEY},
+                    OPENAI_API_URL,
+                    headers={
+                        "Authorization": f"Bearer {OPENAI_API_KEY}",
+                        "Content-Type": "application/json"
+                    },
                     json=payload,
                     timeout=AI_REQUEST_TIMEOUT
                 )
 
             except requests.Timeout:
+
                 last_error_message = (
-                    "The AI response timed out while contacting Gemini."
+                    "The AI response timed out. Please try again."
                 )
+
                 logger.warning(
-                    "Gemini timeout: model=%s attempt=%s/%s",
+                    "OpenAI timeout: model=%s attempt=%s/%s",
                     model, attempt, retry_attempts
                 )
 
                 if attempt < retry_attempts:
-                    delay = min(retry_base_seconds * (2 ** (attempt - 1)), 10)
+                    delay = min(
+                        retry_base_seconds * (2 ** (attempt - 1)),
+                        10
+                    )
                     time.sleep(delay)
                     continue
 
                 break
 
             except requests.RequestException as exc:
+
                 last_error_message = (
-                    "Could not connect to the Gemini service."
+                    "Could not connect to the OpenAI service."
                 )
+
                 logger.warning(
-                    "Gemini connection error: model=%s attempt=%s/%s error=%s",
-                    model, attempt, retry_attempts, str(exc)[:300]
+                    "OpenAI connection error: model=%s error=%s",
+                    model, str(exc)[:300]
                 )
 
                 if attempt < retry_attempts:
-                    delay = min(retry_base_seconds * (2 ** (attempt - 1)), 10)
+                    delay = min(
+                        retry_base_seconds * (2 ** (attempt - 1)),
+                        10
+                    )
                     time.sleep(delay)
                     continue
 
                 break
 
             if response.status_code != 200:
+
                 try:
                     error_data = response.json()
                 except ValueError:
                     error_data = {}
 
-                provider_error = ""
-                if (
-                    isinstance(error_data, dict)
-                    and isinstance(error_data.get("error"), dict)
-                ):
-                    provider_error = _clean_text(
-                        error_data["error"].get("message", ""),
-                        500
-                    )
-
-                last_status = response.status_code
-                last_error_message = _gemini_error_message(
-                    response.status_code,
-                    error_data
+                error_obj = (
+                    error_data.get("error", {})
+                    if isinstance(error_data, dict)
+                    else {}
                 )
 
+                provider_message = _clean_text(
+                    error_obj.get("message", ""),
+                    500
+                )
+
+                last_status = response.status_code
+
                 logger.warning(
-                    "Gemini API error: HTTP %s model=%s attempt=%s/%s "
-                    "provider_message=%s",
+                    "OpenAI API error: HTTP %s model=%s "
+                    "attempt=%s/%s message=%s",
                     response.status_code,
                     model,
                     attempt,
                     retry_attempts,
-                    provider_error or response.text[:300]
+                    provider_message
                 )
 
+                if response.status_code == 401:
+                    raise RuntimeError(
+                        "OpenAI API authentication failed. "
+                        "Please check OPENAI_API_KEY."
+                    )
+
+                if response.status_code == 403:
+                    raise RuntimeError(
+                        "OpenAI API access denied. "
+                        "Please check API permissions."
+                    )
+
+                if response.status_code in (400, 404):
+                    raise RuntimeError(
+                        "OpenAI rejected the model or request. "
+                        "Please check OPENAI_MODEL and API settings."
+                    )
+
                 if response.status_code in retryable_statuses:
+
+                    last_error_message = (
+                        "OpenAI is temporarily busy or unavailable. "
+                        "Please try again shortly."
+                    )
+
                     if attempt < retry_attempts:
-                        # Respect a numeric Retry-After header when provided,
-                        # but cap the wait to keep requests from hanging.
-                        retry_after = response.headers.get("Retry-After", "")
+
+                        retry_after = response.headers.get(
+                            "Retry-After", ""
+                        )
+
                         try:
-                            delay = min(max(float(retry_after), 1), 10)
+                            delay = min(
+                                max(float(retry_after), 1),
+                                10
+                            )
                         except (TypeError, ValueError):
                             delay = min(
                                 retry_base_seconds * (2 ** (attempt - 1)),
                                 10
                             )
+
                         time.sleep(delay)
                         continue
 
-                    # Exhausted retries for this model; try next configured model.
                     break
 
-                # Invalid key, permissions, malformed request, or unknown model
-                # are not fixed by retrying the same request.
-                raise RuntimeError(last_error_message)
+                raise RuntimeError(
+                    "OpenAI could not process the request. "
+                    "Please try again."
+                )
 
             try:
                 data = response.json()
             except ValueError as exc:
-                logger.error(
-                    "Gemini returned invalid JSON for model %s.",
-                    model
-                )
                 raise RuntimeError(
-                    "The AI service returned an invalid response. "
-                    "Please try again."
+                    "OpenAI returned an invalid response."
                 ) from exc
 
-            candidates = (
-                data.get("candidates", [])
-                if isinstance(data, dict)
-                else []
-            )
+            choices = data.get("choices", [])
 
-            if not candidates:
-                prompt_feedback = (
-                    data.get("promptFeedback", {})
-                    if isinstance(data, dict)
-                    else {}
-                )
-                block_reason = _clean_text(
-                    prompt_feedback.get("blockReason", ""),
-                    100
-                )
-                logger.warning(
-                    "Gemini returned no candidates for model %s. "
-                    "Block reason: %s",
-                    model,
-                    block_reason or "unknown"
-                )
-
-                if block_reason:
-                    raise RuntimeError(
-                        "The AI service could not answer that request. "
-                        "Please rephrase it and try again."
-                    )
-
+            if not choices:
                 raise RuntimeError(
-                    "The AI service did not return an answer. "
+                    "OpenAI did not return an answer. "
                     "Please try again."
                 )
 
-            candidate = (
-                candidates[0]
-                if isinstance(candidates[0], dict)
-                else {}
+            answer = (
+                choices[0]
+                .get("message", {})
+                .get("content", "")
             )
-            parts = candidate.get("content", {}).get("parts", [])
 
-            answer = "\n".join(
-                part.get("text", "")
-                for part in parts
-                if (
-                    isinstance(part, dict)
-                    and isinstance(part.get("text"), str)
-                )
-            ).strip()
-
-            if not answer:
-                finish_reason = _clean_text(
-                    candidate.get("finishReason", ""),
-                    100
-                )
-                logger.warning(
-                    "Gemini returned empty text for model %s. "
-                    "Finish reason: %s",
-                    model,
-                    finish_reason or "unknown"
-                )
+            if not isinstance(answer, str) or not answer.strip():
                 raise RuntimeError(
-                    "The AI service returned an empty answer. "
+                    "OpenAI returned an empty answer. "
                     "Please try again."
                 )
 
             if model_index > 0:
                 logger.info(
-                    "Gemini fallback succeeded. primary=%s fallback=%s",
+                    "OpenAI fallback succeeded. primary=%s fallback=%s",
                     primary_model,
                     model
                 )
 
-            return answer, model
+            return answer.strip(), model
 
     logger.error(
-        "All configured Gemini models failed. models=%s last_status=%s",
+        "All configured OpenAI models failed. models=%s status=%s",
         models_to_try,
         last_status
     )
+
     raise RuntimeError(last_error_message)
 
 
@@ -1086,12 +1043,12 @@ def register_ai_learning_routes(
 
         return _success({
 
-            "provider": "gemini",
+            "provider": "openai",
 
-            "default_model": DEFAULT_GEMINI_MODEL,
+            "default_model": DEFAULT_OPENAI_MODEL,
 
-            "available_models": _available_models(),
-
+            "available_models": _available_openai_models(),
+            
             "daily_limit": AI_DAILY_LIMIT,
 
             "max_input_length": AI_MAX_INPUT_LENGTH,
@@ -1643,16 +1600,16 @@ def register_ai_learning_routes(
                 context = supplied_context
 
         # ----------------------------------------------------
-        # Select configured Gemini model
+        #  Select configured OpenAI model
         # ----------------------------------------------------
-
+        
         requested_model = _clean_text(
             data.get("model", ""),
             100
         )
 
-        if requested_model not in _available_models():
-            requested_model = DEFAULT_GEMINI_MODEL
+        if requested_model not in _available_openai_models():
+            requested_model = DEFAULT_OPENAI_MODEL
 
         # ----------------------------------------------------
         # Select response mode
@@ -1668,12 +1625,12 @@ def register_ai_learning_routes(
         )
 
         # ----------------------------------------------------
-        # Call Gemini
+        # Call OpenAI
         # ----------------------------------------------------
 
         try:
 
-            answer, used_model = _call_gemini(
+            answer, used_model = _call_openai(
                 message=message,
                 context=context,
                 history=existing_messages,
